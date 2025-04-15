@@ -1,7 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { firstValueFrom } from 'rxjs';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { firstValueFrom, map } from 'rxjs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
+import { BeyondtrustAuthTokenDtoInput } from '../../dtos/inputs';
+import { BeyondtrustAuthTokenDtoOutput } from '../../dtos/outputs';
+import { BeyondtrustAuthTokenGrantType } from '../../enums';
+import { BeyondtrustAuthToken } from '../../models';
 import { GenerateBeyondtrustAuthTokenCommand } from '../index.ts/generate-beyondtrust-auth-token.command';
 
 @CommandHandler(GenerateBeyondtrustAuthTokenCommand)
@@ -13,28 +18,37 @@ export class GenerateBeyondtrustAuthTokenCommandHandler
         private readonly httpService: HttpService,
     ) {}
 
-    // TODO refine return type and add event bus to report token generation failure/success
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public async execute(_command: GenerateBeyondtrustAuthTokenCommand): Promise<unknown> {
+    public async execute(): Promise<BeyondtrustAuthToken> {
         const response = await firstValueFrom(
-            this.httpService.post(
-                this.appConfigService.beyondTrust.auth.oauth2TokenUrl,
-                {
-                    // TODO refine
-                    // eslint-disable-next-line @typescript-eslint/naming-convention
-                    grant_type: 'client_credentials',
-                },
-                {
-                    // TODO refine
-                    headers: {
-                        Authorization: `Basic ${Buffer.from(
-                            `${this.appConfigService.beyondTrust.auth.clientId}:${this.appConfigService.beyondTrust.auth.secret}`,
-                        ).toString('base64')}`,
+            this.httpService
+                .post<BeyondtrustAuthTokenDtoOutput>(
+                    this.appConfigService.beyondTrust.auth.oauth2TokenUrl,
+                    {
+                        ...instanceToPlain(
+                            BeyondtrustAuthTokenDtoInput.create(BeyondtrustAuthTokenGrantType.ClientCredentials),
+                        ),
                     },
-                },
-            ),
+                    {
+                        headers: this.composeHeaders(),
+                    },
+                )
+                .pipe(map((response) => plainToInstance(BeyondtrustAuthTokenDtoOutput, response.data))),
         );
 
-        return response.data;
+        return {
+            type: response.tokenType,
+            accessToken: response.accessToken,
+            expiresInSeconds: response.expiresInSeconds,
+        };
+    }
+
+    private composeHeaders() {
+        const base64AuthHeader = Buffer.from(
+            `${this.appConfigService.beyondTrust.auth.clientId}:${this.appConfigService.beyondTrust.auth.secret}`,
+        ).toString('base64');
+
+        return {
+            Authorization: `Basic ${base64AuthHeader}`,
+        };
     }
 }
