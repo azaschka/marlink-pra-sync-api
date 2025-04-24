@@ -1,5 +1,6 @@
 import { Expose } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { JumpClientEndpointAgreementPolicyType, JumpClientGroupType } from '../../enums';
 
 export class ModifyJumpClientDtoInput {
     @Expose({ name: 'jump_group_id' })
@@ -9,7 +10,7 @@ export class ModifyJumpClientDtoInput {
 
     @Expose({ name: 'jump_group_type' })
     @IsNotEmpty()
-    public jumpGroupType!: 'shared'; // TODO
+    public jumpGroupType!: JumpClientGroupType;
 
     @IsString()
     @IsNotEmpty()
@@ -40,5 +41,5 @@ export class ModifyJumpClientDtoInput {
 
     @Expose({ name: 'endpoint_agreement_policy' })
     @IsNotEmpty()
-    public endpointAgreementPolicy!: 'accept'; // TODO
+    public endpointAgreementPolicy!: JumpClientEndpointAgreementPolicyType;
 }

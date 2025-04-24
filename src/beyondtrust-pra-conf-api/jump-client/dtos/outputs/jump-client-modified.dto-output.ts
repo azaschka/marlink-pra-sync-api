@@ -1,5 +1,12 @@
 import { Expose } from 'class-transformer';
 import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import {
+    JumpClientConnectionType,
+    JumpClientEndpointAgreementPolicyType,
+    JumpClientGroupType,
+    JumpClientInstallMode,
+    JumpClientUnavailableReasonType,
+} from '../../enums';
 
 export class JumpClientModifiedDtoOutput {
     @Expose({ name: 'jump_group_id' })
@@ -13,7 +20,7 @@ export class JumpClientModifiedDtoOutput {
 
     @Expose({ name: 'jump_group_type' })
     @IsNotEmpty()
-    public jumpGroupType!: 'shared'; // TODO
+    public jumpGroupType!: JumpClientGroupType;
 
     @IsString()
     @IsNotEmpty()
@@ -47,11 +54,11 @@ export class JumpClientModifiedDtoOutput {
 
     @Expose({ name: 'install_mode' })
     @IsNotEmpty()
-    public installMode!: 'unknown'; // TODO
+    public installMode!: JumpClientInstallMode;
 
     @Expose({ name: 'connection_type' })
     @IsNotEmpty()
-    public connectionType!: 'active'; // TODO
+    public connectionType!: JumpClientConnectionType;
 
     @Expose({ name: 'last_connect_timestamp' })
     @IsDateString()
@@ -75,7 +82,7 @@ export class JumpClientModifiedDtoOutput {
 
     @Expose({ name: 'unavailable_reason' })
     @IsNotEmpty()
-    public unavailableReason!: 'none'; // TODO
+    public unavailableReason!: JumpClientUnavailableReasonType;
 
     @Expose({ name: 'operating_system' })
     @IsString()
@@ -114,5 +121,5 @@ export class JumpClientModifiedDtoOutput {
 
     @Expose({ name: 'endpoint_agreement_policy' })
     @IsNotEmpty()
-    public endpointAgreementPolicy!: 'no_prompt'; // TODO
+    public endpointAgreementPolicy!: JumpClientEndpointAgreementPolicyType;
 }

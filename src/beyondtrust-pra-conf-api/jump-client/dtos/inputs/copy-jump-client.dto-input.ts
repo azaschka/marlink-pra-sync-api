@@ -1,5 +1,6 @@
 import { Expose } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { JumpClientGroupType } from '../../enums';
 
 export class CopyJumpClientDtoInput {
     @Expose({ name: 'jump_group_id' })
@@ -9,7 +10,7 @@ export class CopyJumpClientDtoInput {
 
     @Expose({ name: 'jump_group_type' })
     @IsNotEmpty()
-    public jumpGroupType!: 'shared'; // TODO
+    public jumpGroupType!: JumpClientGroupType;
 
     @IsString()
     @IsNotEmpty()

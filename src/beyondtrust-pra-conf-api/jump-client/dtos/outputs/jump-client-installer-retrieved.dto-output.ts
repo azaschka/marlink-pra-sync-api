@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
 import { JumpClientInstallerKeyInfoRetrievedDtoOutput } from './jump-client-installer-key-info-retrieved.dto-output';
 
 export class JumpClientInstallerRetrievedDtoOutput {
@@ -14,7 +15,7 @@ export class JumpClientInstallerRetrievedDtoOutput {
 
     @Expose({ name: 'jump_group_type' })
     @IsNotEmpty()
-    public jumpGroupType!: 'shared'; // TODO
+    public jumpGroupType!: JumpClientGroupType;
 
     @IsString()
     @IsNotEmpty()
@@ -40,7 +41,7 @@ export class JumpClientInstallerRetrievedDtoOutput {
 
     @Expose({ name: 'connection_type' })
     @IsNotEmpty()
-    public connectionType!: 'active'; // TODO
+    public connectionType!: JumpClientConnectionType;
 
     @Expose({ name: 'expiration_timestamp' })
     @IsDateString()
