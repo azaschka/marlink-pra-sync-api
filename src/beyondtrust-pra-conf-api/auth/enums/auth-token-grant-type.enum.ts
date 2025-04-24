@@ -1,3 +1,3 @@
-export enum BeyondtrustAuthTokenGrantType {
+export enum AuthTokenGrantType {
     ClientCredentials = 'client_credentials',
 }

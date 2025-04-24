@@ -1,1 +1,1 @@
-export * from './beyondtrust-auth-token-grant-type.enum';
+export * from './auth-token-grant-type.enum';

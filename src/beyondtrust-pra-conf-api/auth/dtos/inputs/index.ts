@@ -1,1 +1,1 @@
-export * from './beyondtrust-auth-token.dto-input';
+export * from './auth-token.dto-input';

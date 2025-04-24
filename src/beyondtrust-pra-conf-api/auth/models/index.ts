@@ -1,1 +1,1 @@
-export * from './beyondtrust-auth-token.model';
+export * from './auth-token.model';

@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class BeyondtrustAuthTokenDtoOutput {
+export class AuthTokenDtoOutput {
     @Expose({ name: 'token_type' })
     public tokenType!: string;
 
