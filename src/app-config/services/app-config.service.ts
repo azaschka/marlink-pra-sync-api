@@ -22,6 +22,9 @@ export class AppConfigService {
             },
             api: {
                 baseUrl: this.configService.get<string>('BEYONDTRUST_API_BASE_URL') ?? 'unknown',
+                path: {
+                    jumpClient: this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ?? 'unknown',
+                },
             },
         };
     }

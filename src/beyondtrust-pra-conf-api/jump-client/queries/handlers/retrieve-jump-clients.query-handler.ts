@@ -19,13 +19,11 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
     ) {}
 
     public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClientRetrieved[]> {
-        const url = `${this.appConfigService.beyondTrust.api.baseUrl}/jump-client`;
-
+        const url = `${this.appConfigService.beyondTrust.api.baseUrl}/${this.appConfigService.beyondTrust.api.path.jumpClient}`;
         const authToken = await this.commandBus.execute<GenerateBeyondtrustAuthTokenCommand, BeyondtrustAuthToken>(
             new GenerateBeyondtrustAuthTokenCommand(query.transactionId),
         );
-
-        const response = await firstValueFrom(
+        const result = await firstValueFrom(
             this.httpService
                 .get<JumpClientRetrievedDtoOutput[]>(url, {
                     params: {
@@ -53,7 +51,7 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
                 .pipe(map((response) => plainToInstance(JumpClientRetrievedDtoOutput, response.data))),
         );
 
-        return response.map((jumpClient) => ({
+        return result.map((jumpClient) => ({
             jumpGroupId: jumpClient.jumpGroupId,
             id: jumpClient.id,
             jumpGroupType: jumpClient.jumpGroupType,

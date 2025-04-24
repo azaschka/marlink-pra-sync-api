@@ -19,7 +19,7 @@ export class GenerateBeyondtrustAuthTokenCommandHandler
     ) {}
 
     public async execute(): Promise<BeyondtrustAuthToken> {
-        const response = await firstValueFrom(
+        const result = await firstValueFrom(
             this.httpService
                 .post<BeyondtrustAuthTokenDtoOutput>(
                     this.appConfigService.beyondTrust.auth.oauth2TokenUrl,
@@ -36,9 +36,9 @@ export class GenerateBeyondtrustAuthTokenCommandHandler
         );
 
         return {
-            type: response.tokenType,
-            accessToken: response.accessToken,
-            expiresInSeconds: response.expiresInSeconds,
+            type: result.tokenType,
+            accessToken: result.accessToken,
+            expiresInSeconds: result.expiresInSeconds,
         };
     }
 
