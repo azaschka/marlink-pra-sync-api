@@ -3,6 +3,7 @@ import { CommandBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { firstValueFrom, map } from 'rxjs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
+import { UrlUtility } from '../../../../shared/utilities';
 import { GenerateBeyondtrustAuthTokenCommand } from '../../../auth/commands/index.ts/generate-beyondtrust-auth-token.command';
 import { BeyondtrustAuthToken } from '../../../auth/models';
 import { RetrieveJumpClientsDtoInput } from '../../dtos/inputs';
@@ -19,7 +20,10 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
     ) {}
 
     public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClientRetrieved[]> {
-        const url = `${this.appConfigService.beyondTrust.api.baseUrl}/${this.appConfigService.beyondTrust.api.path.jumpClient}`;
+        const url = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.baseUrl,
+            this.appConfigService.beyondTrust.api.path.jumpClient,
+        );
         const authToken = await this.commandBus.execute<GenerateBeyondtrustAuthTokenCommand, BeyondtrustAuthToken>(
             new GenerateBeyondtrustAuthTokenCommand(query.transactionId),
         );
