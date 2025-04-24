@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { AxiosError, HttpStatusCode } from 'axios';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
-import { catchError, firstValueFrom, map, retry, timer } from 'rxjs';
+import { catchError, defer, firstValueFrom, map, retry, switchMap, timer } from 'rxjs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
 
@@ -26,50 +26,50 @@ export class HttpClientService {
 
     public async get<C, O>(cls: ClassConstructor<C>, url: string, params?: Record<string, unknown>): Promise<O> {
         const result = await firstValueFrom(
-            this.httpService
-                .get<O>(url, {
+            defer(async () => {
+                const authToken = await this.authTokenService.getAuthToken();
+
+                return this.httpService.get<O>(url, {
                     headers: {
-                        Authorization: await this.getBearerToken(),
+                        Authorization: `Bearer ${authToken.accessToken}`,
                     },
                     params: {
                         ...instanceToPlain(params),
                     },
-                })
-                .pipe(
-                    catchError((error) => {
+                });
+            }).pipe(
+                // flatten the Observable<Observable<AxiosResponse>> into Observable<AxiosResponse>
+                // using RxJS's `mergeMap` or `switchMap`
+                switchMap((response) => response), // unwrap inner Observable
+                catchError((error) => {
+                    if (error instanceof AxiosError) {
+                        console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
+                    } else {
+                        console.error(`Unknown error: ${error}`);
+                    }
+
+                    throw error;
+                }),
+                retry({
+                    count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
+                    delay: (error) => {
                         if (error instanceof AxiosError) {
-                            console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
-                        } else {
-                            console.error(`Unknown error: ${error}`);
+                            if (error.status === HttpStatusCode.Unauthorized) {
+                                this.authTokenService.invalidateAuthToken(); // token will refresh next attempt
+                            }
+
+                            if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
+                                return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
+                            }
                         }
 
                         throw error;
-                    }),
-                    retry({
-                        count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
-                        delay: (error) => {
-                            if (error instanceof AxiosError) {
-                                if (error.status === HttpStatusCode.Unauthorized) {
-                                    this.authTokenService.invalidateAuthToken();
-                                }
-
-                                if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
-                                    return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
-                                }
-                            }
-
-                            throw error;
-                        },
-                    }),
-                    map((response) => plainToInstance(cls, response.data)),
-                ),
+                    },
+                }),
+                map((response) => plainToInstance(cls, response.data)),
+            ),
         );
 
         return result as O;
-    }
-
-    private async getBearerToken(): Promise<string> {
-        const authToken = await this.authTokenService.getAuthToken();
-        return `Bearer ${authToken.accessToken}`;
     }
 }
