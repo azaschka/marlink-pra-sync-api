@@ -25,6 +25,11 @@ export class AppConfigService {
                 path: {
                     jumpClient: this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ?? 'unknown',
                 },
+                communication: {
+                    retryAttempts: this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS') ?? 0,
+                    retryDelayInMs:
+                        this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS') ?? 0,
+                },
             },
         };
     }
