@@ -48,7 +48,7 @@ describe('AuthTokenService', () => {
             const httpServicePostMethod = jest.spyOn(httpService, 'post');
 
             // Set current date for the first token generation
-            mockCurrentDate('2023-10-01T00:00:00Z');
+            mockCurrentDate('2025-10-01T00:00:00Z');
 
             const firstAuthToken = await service.getAuthToken();
 
@@ -59,7 +59,7 @@ describe('AuthTokenService', () => {
             });
 
             // The current time has elapsed by 30 seconds after the first token generation
-            mockCurrentDate('2023-10-01T00:00:30Z');
+            mockCurrentDate('2025-10-01T00:00:30Z');
 
             const secondAuthToken = await service.getAuthToken();
             expect(secondAuthToken).toStrictEqual(<AuthToken>{
@@ -75,7 +75,7 @@ describe('AuthTokenService', () => {
             const httpServicePostMethod = jest.spyOn(httpService, 'post');
 
             // Set current date for the first token generation
-            mockCurrentDate('2023-10-01T00:00:00Z');
+            mockCurrentDate('2025-10-01T00:00:00Z');
 
             const firstAuthToken = await service.getAuthToken();
 
@@ -86,7 +86,7 @@ describe('AuthTokenService', () => {
             });
 
             // The current time has elapsed by 5 seconds after the first token generation
-            mockCurrentDate('2023-10-01T00:00:05Z');
+            mockCurrentDate('2025-10-01T00:00:05Z');
 
             const secondAuthToken = await service.getAuthToken();
             expect(secondAuthToken).toStrictEqual(firstAuthToken);
