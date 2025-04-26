@@ -11,8 +11,8 @@ import { AuthToken } from '../models';
 
 @Injectable()
 export class AuthTokenService {
-    private static IN_MEMORY_AUTH_TOKEN: AuthToken | null = null;
-    private static IN_MEMORY_AUTH_TOKEN_EXPIRATION: Date | null = null;
+    private inMemoryAuthToken: AuthToken | null = null;
+    private inMemoryAuthTokenExpirationDate: Date | null = null;
 
     constructor(
         private readonly appConfigService: AppConfigService,
@@ -21,25 +21,25 @@ export class AuthTokenService {
 
     public async getAuthToken(): Promise<AuthToken> {
         if (
-            AuthTokenService.IN_MEMORY_AUTH_TOKEN &&
-            AuthTokenService.IN_MEMORY_AUTH_TOKEN_EXPIRATION &&
-            AuthTokenService.IN_MEMORY_AUTH_TOKEN_EXPIRATION > new Date()
+            this.inMemoryAuthToken &&
+            this.inMemoryAuthTokenExpirationDate &&
+            this.inMemoryAuthTokenExpirationDate > new Date()
         ) {
-            return AuthTokenService.IN_MEMORY_AUTH_TOKEN;
+            return this.inMemoryAuthToken;
         }
 
-        AuthTokenService.IN_MEMORY_AUTH_TOKEN = await this.generateAuthToken();
-        AuthTokenService.IN_MEMORY_AUTH_TOKEN_EXPIRATION = DateUtility.addSeconds(
+        this.inMemoryAuthToken = await this.generateAuthToken();
+        this.inMemoryAuthTokenExpirationDate = DateUtility.addSeconds(
             new Date(),
-            AuthTokenService.IN_MEMORY_AUTH_TOKEN.expiresInSeconds,
+            this.inMemoryAuthToken.expiresInSeconds,
         );
 
-        return AuthTokenService.IN_MEMORY_AUTH_TOKEN;
+        return this.inMemoryAuthToken;
     }
 
     public invalidateAuthToken(): void {
-        AuthTokenService.IN_MEMORY_AUTH_TOKEN = null;
-        AuthTokenService.IN_MEMORY_AUTH_TOKEN_EXPIRATION = null;
+        this.inMemoryAuthToken = null;
+        this.inMemoryAuthTokenExpirationDate = null;
     }
 
     private async generateAuthToken(): Promise<AuthToken> {
