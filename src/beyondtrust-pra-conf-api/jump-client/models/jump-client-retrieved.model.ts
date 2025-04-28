@@ -6,32 +6,31 @@ import {
     JumpClientUnavailableReasonType,
 } from '../enums';
 
-// TODO confirm required fields
 export interface JumpClientRetrieved {
     jumpGroupId: number;
-    id: number;
-    jumpGroupType: JumpClientGroupType;
-    name: string;
-    hostname: string;
-    fqdn: string;
-    tag: string;
-    comments: string;
-    jumpPolicyId: number;
-    sessionPolicyId: number;
-    installMode: JumpClientInstallMode;
-    connectionType: JumpClientConnectionType;
-    lastConnectTimestamp: Date;
-    lastDisconnectTimestamp: Date;
-    isLost: boolean;
-    needsUpdate: boolean;
-    unavailableReason: JumpClientUnavailableReasonType;
-    operatingSystem: string;
-    publicIp: string;
-    privateIp: string;
-    consoleUser: string;
-    expirationTimestamp: Date;
-    maxOfflineMinutes: number;
-    lastAccessTimestamp: Date;
-    endpointAgreementPolicy: JumpClientEndpointAgreementPolicyType;
+    id?: number;
+    jumpGroupType?: JumpClientGroupType;
+    name?: string;
+    hostname?: string;
+    fqdn?: string;
+    tag?: string;
+    comments?: string;
+    jumpPolicyId?: number | null;
+    sessionPolicyId?: number | null;
+    installMode?: JumpClientInstallMode;
+    connectionType?: JumpClientConnectionType;
+    lastConnectDate?: Date;
+    lastDisconnectDate?: Date;
+    isLost?: boolean;
+    needsUpdate?: boolean;
+    unavailableReasonType?: JumpClientUnavailableReasonType;
+    operatingSystem?: string;
+    publicIp?: string;
+    privateIp?: string;
+    consoleUser?: string;
+    expirationDate?: Date;
+    maxOfflineTimeInMinutes?: number;
+    lastAccessDate?: Date;
+    endpointAgreementPolicyType?: JumpClientEndpointAgreementPolicyType;
     jumpointProxy?: string | null;
 }

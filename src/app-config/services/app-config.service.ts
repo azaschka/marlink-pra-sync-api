@@ -23,6 +23,7 @@ export class AppConfigService {
             api: {
                 baseUrl: this.configService.get<string>('BEYONDTRUST_API_BASE_URL') ?? 'unknown',
                 path: {
+                    user: this.configService.get<string>('BEYONDTRUST_API_USER_PATH') ?? 'unknown',
                     jumpClient: this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ?? 'unknown',
                 },
                 communication: {

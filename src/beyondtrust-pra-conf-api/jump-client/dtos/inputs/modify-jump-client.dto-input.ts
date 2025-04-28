@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { JumpClientEndpointAgreementPolicyType, JumpClientGroupType } from '../../enums';
 
 export class ModifyJumpClientDtoInput {
@@ -9,37 +9,37 @@ export class ModifyJumpClientDtoInput {
     public jumpGroupId!: number;
 
     @Expose({ name: 'jump_group_type' })
-    @IsNotEmpty()
-    public jumpGroupType!: JumpClientGroupType;
+    @IsOptional()
+    public jumpGroupType?: JumpClientGroupType;
 
     @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    @IsOptional()
+    public name?: string;
 
     @IsString()
-    @IsNotEmpty()
-    public tag!: string;
+    @IsOptional()
+    public tag?: string;
 
     @IsString()
-    @IsNotEmpty()
-    public comments!: string;
+    @IsOptional()
+    public comments?: string;
 
     @Expose({ name: 'jump_policy_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpPolicyId!: number;
+    @IsOptional()
+    public jumpPolicyId?: number | null;
 
     @Expose({ name: 'session_policy_id' })
     @IsInt()
-    @IsNotEmpty()
-    public sessionPolicyId!: number;
+    @IsOptional()
+    public sessionPolicyId?: number | null;
 
     @Expose({ name: 'max_offline_minutes' })
     @IsInt()
-    @IsNotEmpty()
-    public maxOfflineMinutes!: number;
+    @IsOptional()
+    public maxOfflineMinutes?: number;
 
     @Expose({ name: 'endpoint_agreement_policy' })
-    @IsNotEmpty()
-    public endpointAgreementPolicy!: JumpClientEndpointAgreementPolicyType;
+    @IsOptional()
+    public endpointAgreementPolicy?: JumpClientEndpointAgreementPolicyType;
 }

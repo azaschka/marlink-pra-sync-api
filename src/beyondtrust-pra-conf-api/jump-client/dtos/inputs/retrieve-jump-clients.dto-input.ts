@@ -1,18 +1,9 @@
 import { Expose } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
+import { PaginationDtoInput } from '../../../../shared/dtos/inputs';
 import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
 
-export class RetrieveJumpClientsDtoInput {
-    @Expose({ name: 'per_page' })
-    @IsInt()
-    @IsNotEmpty()
-    public perPage!: number;
-
-    @Expose({ name: 'current_page' })
-    @IsInt()
-    @IsNotEmpty()
-    public currentPage!: number;
-
+export class RetrieveJumpClientsDtoInput extends PaginationDtoInput {
     @IsString()
     @IsOptional()
     public name?: string;

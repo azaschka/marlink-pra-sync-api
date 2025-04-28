@@ -9,6 +9,7 @@ import {
     JumpClientInstallMode,
     JumpClientUnavailableReasonType,
 } from '../../enums';
+import { JumpClientRetrieved } from '../../models';
 import { RetrieveJumpClientsQuery } from '../retrieve-jump-clients.query';
 import { RetrieveJumpClientsQueryHandler } from './retrieve-jump-clients.query-handler';
 
@@ -27,7 +28,7 @@ abstract class TestHelper {
                 jumpPolicyId: 456,
                 sessionPolicyId: 789,
                 installMode: JumpClientInstallMode.Unknown,
-                connectionType: JumpClientConnectionType.Passive,
+                connectionType: JumpClientConnectionType.Uninstalled,
                 lastConnectTimestamp: new Date('2025-10-01T00:00:00Z'),
                 lastDisconnectTimestamp: new Date('2025-10-02T00:00:00Z'),
                 isLost: false,
@@ -145,7 +146,40 @@ describe('RetrieveJumpClientsQueryHandler', () => {
                     'https://api.example.com/jump-client',
                     expectedHttpClientParams,
                 );
-                expect(result).toStrictEqual(TestHelper.mockedJumpClientRetrievedDtoOutputs);
+
+                expect(result.length).toBe(TestHelper.mockedJumpClientRetrievedDtoOutputs.length);
+
+                for (let i = 0; i < result.length; i++) {
+                    expect(result[i]).toStrictEqual(<JumpClientRetrieved>{
+                        jumpGroupId: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.jumpGroupId,
+                        id: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.id,
+                        jumpGroupType: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.jumpGroupType,
+                        name: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.name,
+                        hostname: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.hostname,
+                        fqdn: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.fqdn,
+                        tag: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.tag,
+                        comments: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.comments,
+                        jumpPolicyId: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.jumpPolicyId,
+                        sessionPolicyId: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.sessionPolicyId,
+                        installMode: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.installMode,
+                        connectionType: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.connectionType,
+                        lastConnectDate: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.lastConnectTimestamp,
+                        lastDisconnectDate: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.lastDisconnectTimestamp,
+                        isLost: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.isLost,
+                        needsUpdate: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.needsUpdate,
+                        unavailableReasonType: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.unavailableReason,
+                        operatingSystem: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.operatingSystem,
+                        publicIp: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.publicIp,
+                        privateIp: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.privateIp,
+                        consoleUser: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.consoleUser,
+                        expirationDate: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.expirationTimestamp,
+                        maxOfflineTimeInMinutes: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.maxOfflineMinutes,
+                        lastAccessDate: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.lastAccessTimestamp,
+                        endpointAgreementPolicyType:
+                            TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.endpointAgreementPolicy,
+                        jumpointProxy: TestHelper.mockedJumpClientRetrievedDtoOutputs[i]?.jumpointProxy,
+                    });
+                }
             },
         );
     });

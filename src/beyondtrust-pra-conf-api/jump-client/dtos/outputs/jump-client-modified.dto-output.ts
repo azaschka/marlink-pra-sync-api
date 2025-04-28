@@ -1,5 +1,4 @@
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsString } from 'class-validator';
 import {
     JumpClientConnectionType,
     JumpClientEndpointAgreementPolicyType,
@@ -10,116 +9,71 @@ import {
 
 export class JumpClientModifiedDtoOutput {
     @Expose({ name: 'jump_group_id' })
-    @IsInt()
-    @IsNotEmpty()
     public jumpGroupId!: number;
 
-    @IsInt()
-    @IsNotEmpty()
-    public id!: number;
+    public id?: number;
 
     @Expose({ name: 'jump_group_type' })
-    @IsNotEmpty()
-    public jumpGroupType!: JumpClientGroupType;
+    public jumpGroupType?: JumpClientGroupType;
 
-    @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    public name?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    public hostname!: string;
+    public hostname?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    public fqdn!: string;
+    public fqdn?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    public tag!: string;
+    public tag?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    public comments!: string;
+    public comments?: string;
 
     @Expose({ name: 'jump_policy_id' })
-    @IsInt()
-    @IsNotEmpty()
-    public jumpPolicyId!: number;
+    public jumpPolicyId?: number | null;
 
     @Expose({ name: 'session_policy_id' })
-    @IsInt()
-    @IsNotEmpty()
-    public sessionPolicyId!: number;
+    public sessionPolicyId?: number | null;
 
     @Expose({ name: 'install_mode' })
-    @IsNotEmpty()
-    public installMode!: JumpClientInstallMode;
+    public installMode?: JumpClientInstallMode;
 
     @Expose({ name: 'connection_type' })
-    @IsNotEmpty()
-    public connectionType!: JumpClientConnectionType;
+    public connectionType?: JumpClientConnectionType;
 
     @Expose({ name: 'last_connect_timestamp' })
-    @IsDateString()
-    @IsNotEmpty()
-    public lastConnectTimestamp!: Date;
+    public lastConnectTimestamp?: Date;
 
     @Expose({ name: 'last_disconnect_timestamp' })
-    @IsDateString()
-    @IsNotEmpty()
-    public lastDisconnectTimestamp!: Date;
+    public lastDisconnectTimestamp?: Date;
 
     @Expose({ name: 'is_lost' })
-    @IsBoolean()
-    @IsNotEmpty()
-    public isLost!: boolean;
+    public isLost?: boolean;
 
     @Expose({ name: 'needs_update' })
-    @IsBoolean()
-    @IsNotEmpty()
-    public needsUpdate!: boolean;
+    public needsUpdate?: boolean;
 
     @Expose({ name: 'unavailable_reason' })
-    @IsNotEmpty()
-    public unavailableReason!: JumpClientUnavailableReasonType;
+    public unavailableReason?: JumpClientUnavailableReasonType;
 
     @Expose({ name: 'operating_system' })
-    @IsString()
-    @IsNotEmpty()
-    public operatingSystem!: string;
+    public operatingSystem?: string;
 
     @Expose({ name: 'public_ip' })
-    @IsString()
-    @IsNotEmpty()
-    public publicIp!: string;
+    public publicIp?: string;
 
     @Expose({ name: 'private_ip' })
-    @IsString()
-    @IsNotEmpty()
-    public privateIp!: string;
+    public privateIp?: string;
 
     @Expose({ name: 'console_user' })
-    @IsString()
-    @IsNotEmpty()
-    public consoleUser!: string;
+    public consoleUser?: string;
 
     @Expose({ name: 'expiration_timestamp' })
-    @IsDateString()
-    @IsNotEmpty()
-    public expirationTimestamp!: Date;
+    public expirationTimestamp?: Date;
 
     @Expose({ name: 'max_offline_minutes' })
-    @IsInt()
-    @IsNotEmpty()
-    public maxOfflineMinutes!: number;
+    public maxOfflineMinutes?: number;
 
     @Expose({ name: 'last_access_timestamp' })
-    @IsDateString()
-    @IsNotEmpty()
-    public lastAccessTimestamp!: Date;
+    public lastAccessTimestamp?: Date;
 
     @Expose({ name: 'endpoint_agreement_policy' })
-    @IsNotEmpty()
-    public endpointAgreementPolicy!: JumpClientEndpointAgreementPolicyType;
+    public endpointAgreementPolicy?: JumpClientEndpointAgreementPolicyType;
 }
