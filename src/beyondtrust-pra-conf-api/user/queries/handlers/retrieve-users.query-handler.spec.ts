@@ -7,7 +7,6 @@ import {
     UserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType,
 } from '../../enums';
-import { UserRetrieved } from '../../models';
 import { RetrieveUsersQuery } from '../retrieve-users.query';
 import { RetrieveUsersQueryHandler } from './retrieve-users.query-handler';
 
@@ -179,75 +178,7 @@ describe('RetrieveUsersQueryHandler', () => {
                     expectedHttpClientParams,
                 );
 
-                expect(result.length).toBe(TestHelper.mockedUserRetrievedDtoOutputs.length);
-
-                for (let i = 0; i < result.length; i++) {
-                    expect(result[i]).toStrictEqual(<UserRetrieved>{
-                        publicDisplayName: TestHelper.mockedUserRetrievedDtoOutputs[i]?.publicDisplayName,
-                        id: TestHelper.mockedUserRetrievedDtoOutputs[i]?.id,
-                        securityProviderId: TestHelper.mockedUserRetrievedDtoOutputs[i]?.securityProviderId,
-                        username: TestHelper.mockedUserRetrievedDtoOutputs[i]?.username,
-                        passwordExpirationDate: TestHelper.mockedUserRetrievedDtoOutputs[i]?.passwordExpiration,
-                        email: TestHelper.mockedUserRetrievedDtoOutputs[i]?.emailAddress,
-                        preferredEmailLanguage: TestHelper.mockedUserRetrievedDtoOutputs[i]?.preferredEmailLanguage,
-                        isTwoFactorAuthRequired: TestHelper.mockedUserRetrievedDtoOutputs[i]?.twoFactorRequired,
-                        isLoginAllowed: TestHelper.mockedUserRetrievedDtoOutputs[i]?.enabled,
-                        lastAuthenticationDate: TestHelper.mockedUserRetrievedDtoOutputs[i]?.lastAuthentication,
-                        failedLoginAttempts: TestHelper.mockedUserRetrievedDtoOutputs[i]?.failedLogins,
-                        mustResetPasswordOnNextLogin:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.passwordResetNextLogin,
-                        creationDate: TestHelper.mockedUserRetrievedDtoOutputs[i]?.createdAt,
-                        hasTwoFactorAuthEnabled: TestHelper.mockedUserRetrievedDtoOutputs[i]?.twoFactorEnabled,
-                        fido2CredentialCount: TestHelper.mockedUserRetrievedDtoOutputs[i]?.fido2CredentialCount,
-                        fido2LastUsedDate: TestHelper.mockedUserRetrievedDtoOutputs[i]?.fido2LastUsedDate,
-                        hasAdminPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permAdmin,
-                        hasSetPasswordsPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permSetPasswords,
-                        hasAdminPushagentPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permAdminPushagents,
-                        viewSupportReportsPermissionType:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permViewSupportReports,
-                        viewVaultReportsPermissionType:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permViewVaultReports,
-                        hasViewSyslogReportsPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permViewSyslogReports,
-                        hasViewSdRecordingsPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permViewSdRecordings,
-                        hasEditJumpGroupsPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permEditJumpGroups,
-                        hasEditSdTeamsPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permEditSdTeams,
-                        hasEditCannedScriptsPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permEditCannedScripts,
-                        hasEditCustomRepLinksPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permEditCustomRepLinks,
-                        allowedAccessPermissionType: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permAccessAllowed,
-                        hasShareOtherTeamPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permShareOtherTeam,
-                        hasInviteExternalUserPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permInviteExternalUser,
-                        hasExtendedAvailabilityModeAllowedPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permExtendedAvailabilityModeAllowed,
-                        hasEditExternalKeyPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permEditExternalKey,
-                        hasSessionIdleTimeoutPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permSessionIdleTimeout,
-                        hasCollaboratePermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permCollaborate,
-                        hasCollaborateControlPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permCollaborateControl,
-                        hasJumpClientPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permJumpClient,
-                        hasLocalJumpPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permLocalJump,
-                        hasRemoteJumpPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permRemoteJump,
-                        hasRemoteVncPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permRemoteVnc,
-                        hasRemoteRdpPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permRemoteRdp,
-                        hasShellJumpPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permShellJump,
-                        defaultJumpItemRoleId: TestHelper.mockedUserRetrievedDtoOutputs[i]?.defaultJumpItemRoleId,
-                        privateJumpItemRoleId: TestHelper.mockedUserRetrievedDtoOutputs[i]?.privateJumpItemRoleId,
-                        inferiorJumpItemRoleId: TestHelper.mockedUserRetrievedDtoOutputs[i]?.inferiorJumpItemRoleId,
-                        unassignedJumpItemRoleId: TestHelper.mockedUserRetrievedDtoOutputs[i]?.unassignedJumpItemRoleId,
-                        hasWebJumpPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permWebJump,
-                        hasProtocolTunnelPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permProtocolTunnel,
-                        hasSdStaticPortForExternalToolsPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permSdStaticPortForExternalTools,
-                        hasVaultPermission: TestHelper.mockedUserRetrievedDtoOutputs[i]?.permVault,
-                        hasEndpointAutomationPermission:
-                            TestHelper.mockedUserRetrievedDtoOutputs[i]?.permEndpointAutomation,
-                    });
-                }
+                expect(result).toStrictEqual(TestHelper.mockedUserRetrievedDtoOutputs);
             },
         );
     });

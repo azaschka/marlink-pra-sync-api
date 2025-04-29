@@ -1,5 +1,5 @@
 export class RetrieveUsersQuery {
-    public readonly queryType = 'retrieve-users';
+    public readonly queryType = 'bt-retrieve-users';
 
     constructor(
         public readonly transactionId: string,

@@ -24,20 +24,16 @@ export class HttpClientService {
         private readonly authTokenService: AuthTokenService,
     ) {}
 
-    public async get<C, O>(cls: ClassConstructor<C>, url: string, params?: Record<string, unknown>): Promise<O> {
+    public async get<C, O>(cls: ClassConstructor<C>, url: string, params?: unknown): Promise<O> {
         const result = await firstValueFrom(
-            defer(async () => {
-                const authToken = await this.authTokenService.getAuthToken();
-
-                return this.httpService.get<O>(url, {
+            defer(async () =>
+                this.httpService.get<O>(url, {
                     headers: {
-                        Authorization: `Bearer ${authToken.accessToken}`,
+                        Authorization: await this.getAuthHeader(),
                     },
-                    params: {
-                        ...instanceToPlain(params),
-                    },
-                });
-            }).pipe(
+                    params: instanceToPlain(params),
+                }),
+            ).pipe(
                 // flatten the Observable<Observable<AxiosResponse>> into Observable<AxiosResponse>
                 // using RxJS's `mergeMap` or `switchMap`
                 switchMap((response) => response), // unwrap inner Observable
@@ -71,5 +67,53 @@ export class HttpClientService {
         );
 
         return result as O;
+    }
+
+    public async post<C, O>(cls: ClassConstructor<C>, url: string, body?: unknown): Promise<O> {
+        const result = await firstValueFrom(
+            defer(async () =>
+                this.httpService.post<O>(url, instanceToPlain(body), {
+                    headers: {
+                        Authorization: await this.getAuthHeader(),
+                    },
+                }),
+            ).pipe(
+                switchMap((response) => response),
+                catchError((error) => {
+                    if (error instanceof AxiosError) {
+                        console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
+                    } else {
+                        console.error(`Unknown error: ${error}`);
+                    }
+
+                    throw error;
+                }),
+                retry({
+                    count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
+                    delay: (error) => {
+                        if (error instanceof AxiosError) {
+                            if (error.status === HttpStatusCode.Unauthorized) {
+                                this.authTokenService.invalidateAuthToken(); // token will refresh next attempt
+                            }
+
+                            if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
+                                return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
+                            }
+                        }
+
+                        throw error;
+                    },
+                }),
+                map((response) => plainToInstance(cls, response.data)),
+            ),
+        );
+
+        return result as O;
+    }
+
+    private async getAuthHeader(): Promise<string> {
+        const authToken = await this.authTokenService.getAuthToken();
+
+        return `Bearer ${authToken.accessToken}`;
     }
 }

@@ -4,7 +4,6 @@ import { UrlUtility } from '../../../../shared/utilities';
 import { HttpClientService } from '../../../http-client/services/http-client.service';
 import { RetrieveJumpClientsDtoInput } from '../../dtos/inputs';
 import { JumpClientRetrievedDtoOutput } from '../../dtos/outputs';
-import { JumpClientRetrieved } from '../../models';
 import { RetrieveJumpClientsQuery } from '../retrieve-jump-clients.query';
 
 @QueryHandler(RetrieveJumpClientsQuery)
@@ -14,62 +13,29 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
         private readonly httpClientService: HttpClientService,
     ) {}
 
-    public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClientRetrieved[]> {
+    public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClientRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.path.jumpClient,
         );
-        const result = await this.httpClientService.get<JumpClientRetrievedDtoOutput, JumpClientRetrievedDtoOutput[]>(
+
+        return await this.httpClientService.get<JumpClientRetrievedDtoOutput, JumpClientRetrievedDtoOutput[]>(
             JumpClientRetrievedDtoOutput,
             url,
-            {
-                ...RetrieveJumpClientsDtoInput.create(
-                    query.pageSize,
-                    query.pageNumber,
-                    query.name,
-                    query.hostname,
-                    query.fqdn,
-                    query.tag,
-                    query.jumpGroupId,
-                    query.jumpGroupType,
-                    query.consoleUser,
-                    query.publicIp,
-                    query.privateIp,
-                    query.connectionType,
-                ),
-            },
-        );
-
-        return result.map(
-            (jumpClient) =>
-                <JumpClientRetrieved>{
-                    jumpGroupId: jumpClient.jumpGroupId,
-                    id: jumpClient.id,
-                    jumpGroupType: jumpClient.jumpGroupType,
-                    name: jumpClient.name,
-                    hostname: jumpClient.hostname,
-                    fqdn: jumpClient.fqdn,
-                    tag: jumpClient.tag,
-                    comments: jumpClient.comments,
-                    jumpPolicyId: jumpClient.jumpPolicyId,
-                    sessionPolicyId: jumpClient.sessionPolicyId,
-                    installMode: jumpClient.installMode,
-                    connectionType: jumpClient.connectionType,
-                    lastConnectDate: jumpClient.lastConnectTimestamp,
-                    lastDisconnectDate: jumpClient.lastDisconnectTimestamp,
-                    isLost: jumpClient.isLost,
-                    needsUpdate: jumpClient.needsUpdate,
-                    unavailableReasonType: jumpClient.unavailableReason,
-                    operatingSystem: jumpClient.operatingSystem,
-                    publicIp: jumpClient.publicIp,
-                    privateIp: jumpClient.privateIp,
-                    consoleUser: jumpClient.consoleUser,
-                    expirationDate: jumpClient.expirationTimestamp,
-                    maxOfflineTimeInMinutes: jumpClient.maxOfflineMinutes,
-                    lastAccessDate: jumpClient.lastAccessTimestamp,
-                    endpointAgreementPolicyType: jumpClient.endpointAgreementPolicy,
-                    jumpointProxy: jumpClient.jumpointProxy,
-                },
+            RetrieveJumpClientsDtoInput.create(
+                query.pageSize,
+                query.pageNumber,
+                query.name,
+                query.hostname,
+                query.fqdn,
+                query.tag,
+                query.jumpGroupId,
+                query.jumpGroupType,
+                query.consoleUser,
+                query.publicIp,
+                query.privateIp,
+                query.connectionType,
+            ),
         );
     }
 }

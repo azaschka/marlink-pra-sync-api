@@ -1,7 +1,7 @@
 import { JumpClientConnectionType, JumpClientGroupType } from '../enums';
 
 export class RetrieveJumpClientsQuery {
-    public readonly queryType = 'retrieve-jump-clients';
+    public readonly queryType = 'bt-retrieve-jump-clients';
 
     constructor(
         public readonly transactionId: string,
