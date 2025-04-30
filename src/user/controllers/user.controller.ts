@@ -1,8 +1,21 @@
-import { Body, Controller, Get, Param, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    UsePipes,
+    ValidationPipe,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateUserCommand, UpdateUserCommand } from '../commands';
+import { CreateUserCommand, DeleteUserCommand, UpdateUserCommand } from '../commands';
 import { CreateUserDtoInput, RetrieveUsersDtoInput, UpdateUserDtoInput } from '../dtos/inputs';
 import { UserCreatedDtoOutput, UserRetrievedDtoOutput, UserUpdatedDtoOutput } from '../dtos/outputs';
 import { UserCreated, UserRetrieved, UserUpdated } from '../models';
@@ -82,5 +95,12 @@ export class UserController {
         );
 
         return result;
+    }
+
+    @Delete(':id')
+    @ApiParam({ name: 'id', type: Number, required: true })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    public async deleteUser(@Param('id') id: number): Promise<void> {
+        await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand(UuidUtility.generate(), id));
     }
 }

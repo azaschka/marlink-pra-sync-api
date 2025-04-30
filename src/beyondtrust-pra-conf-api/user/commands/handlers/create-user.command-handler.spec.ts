@@ -116,7 +116,7 @@ describe('CreateUserCommandHandler', () => {
                 },
             },
         ])(
-            'should call HttpClientService with correct argument, publish the event and return the result',
+            'should call HttpClientService with correct argument and return the result',
             async ({ command, expectedHttpClientBody }) => {
                 const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 

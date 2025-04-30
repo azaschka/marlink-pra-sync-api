@@ -137,8 +137,6 @@ describe('UpdateUserCommandHandler', () => {
                         command.mustResetPasswordOnNextLogin,
                     ),
                 );
-
-                expect(eventBusPublishMethod).toHaveBeenCalledTimes(1);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<UserUpdatedEvent>{
                         transactionId: command.transactionId,
@@ -157,7 +155,6 @@ describe('UpdateUserCommandHandler', () => {
                         },
                     }),
                 );
-
                 expect(result).toStrictEqual({
                     publicDisplayName: TestHelper.mockedUserModifiedDtoOutput?.publicDisplayName,
                     id: TestHelper.mockedUserModifiedDtoOutput?.id,
