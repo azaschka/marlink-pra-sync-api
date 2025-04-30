@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateUserCommand } from '../commands';
-import { CreateUserDtoInput, RetrieveUsersDtoInput } from '../dtos/inputs';
-import { UserCreatedDtoOutput, UserRetrievedDtoOutput } from '../dtos/outputs';
-import { UserCreated, UserRetrieved } from '../models';
+import { CreateUserCommand, UpdateUserCommand } from '../commands';
+import { CreateUserDtoInput, RetrieveUsersDtoInput, UpdateUserDtoInput } from '../dtos/inputs';
+import { UserCreatedDtoOutput, UserRetrievedDtoOutput, UserUpdatedDtoOutput } from '../dtos/outputs';
+import { UserCreated, UserRetrieved, UserUpdated } from '../models';
 import { RetrieveUsersQuery } from '../queries';
 
 @ApiBearerAuth()
@@ -41,6 +41,33 @@ export class UserController {
         const result = await this.commandBus.execute<CreateUserCommand, UserCreated>(
             new CreateUserCommand(
                 UuidUtility.generate(),
+                dtoInput.publicDisplayName,
+                dtoInput.username,
+                dtoInput.password,
+                dtoInput.passwordExpirationDate,
+                dtoInput.email,
+                dtoInput.preferredEmailLanguage,
+                dtoInput.isTwoFactorAuthRequired,
+                dtoInput.isLoginAllowed,
+                dtoInput.failedLoginAttempts,
+                dtoInput.mustResetPasswordOnNextLogin,
+            ),
+        );
+
+        return result;
+    }
+
+    @Put(':id')
+    @ApiParam({ name: 'id', type: Number, required: true })
+    @ApiOkResponse({ type: UserUpdatedDtoOutput })
+    public async updateUser(
+        @Param('id') id: number,
+        @Body() dtoInput: UpdateUserDtoInput,
+    ): Promise<UserUpdatedDtoOutput> {
+        const result = await this.commandBus.execute<UpdateUserCommand, UserUpdated>(
+            new UpdateUserCommand(
+                UuidUtility.generate(),
+                id,
                 dtoInput.publicDisplayName,
                 dtoInput.username,
                 dtoInput.password,

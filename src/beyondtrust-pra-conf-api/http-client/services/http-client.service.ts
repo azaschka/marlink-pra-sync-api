@@ -111,6 +111,48 @@ export class HttpClientService {
         return result as O;
     }
 
+    public async patch<C, O>(cls: ClassConstructor<C>, url: string, body?: unknown): Promise<O> {
+        const result = await firstValueFrom(
+            defer(async () =>
+                this.httpService.patch<O>(url, instanceToPlain(body), {
+                    headers: {
+                        Authorization: await this.getAuthHeader(),
+                    },
+                }),
+            ).pipe(
+                switchMap((response) => response),
+                catchError((error) => {
+                    if (error instanceof AxiosError) {
+                        console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
+                    } else {
+                        console.error(`Unknown error: ${error}`);
+                    }
+
+                    throw error;
+                }),
+                retry({
+                    count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
+                    delay: (error) => {
+                        if (error instanceof AxiosError) {
+                            if (error.status === HttpStatusCode.Unauthorized) {
+                                this.authTokenService.invalidateAuthToken(); // token will refresh next attempt
+                            }
+
+                            if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
+                                return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
+                            }
+                        }
+
+                        throw error;
+                    },
+                }),
+                map((response) => plainToInstance(cls, response.data)),
+            ),
+        );
+
+        return result as O;
+    }
+
     private async getAuthHeader(): Promise<string> {
         const authToken = await this.authTokenService.getAuthToken();
 

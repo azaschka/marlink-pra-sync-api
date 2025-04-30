@@ -140,13 +140,7 @@ describe('CreateUserCommandHandler', () => {
                     expect.objectContaining(<UserCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: UserCreatedEvent.EVENT_TYPE,
-                        payload: {
-                            creationDate: result.creationDate,
-                            email: result.email,
-                            id: result.id,
-                            publicDisplayName: result.publicDisplayName,
-                            username: result.username,
-                        },
+                        payload: result,
                     }),
                 );
 

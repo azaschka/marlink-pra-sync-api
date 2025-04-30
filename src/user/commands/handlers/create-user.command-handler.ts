@@ -18,7 +18,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
     ) {}
 
     public async execute(command: CreateUserCommand): Promise<UserCreated> {
-        const user = await this.commandBus.execute<BTCreateUserCommand, UserCreatedDtoOutput>(
+        const btUser = await this.commandBus.execute<BTCreateUserCommand, UserCreatedDtoOutput>(
             new BTCreateUserCommand(
                 command.transactionId,
                 command.publicDisplayName,
@@ -34,73 +34,67 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
             ),
         );
 
-        this.eventBus.publish(
-            new UserCreatedEvent(command.transactionId, {
-                publicDisplayName: user.publicDisplayName,
-                id: user.id,
-                username: user.username,
-                email: user.emailAddress,
-                creationDate: user.createdAt,
-            }),
-        );
-
-        return {
-            publicDisplayName: user.publicDisplayName,
-            id: user.id,
-            securityProviderId: user.securityProviderId,
-            username: user.username,
-            passwordExpirationDate: user.passwordExpiration,
-            email: user.emailAddress,
-            preferredEmailLanguage: user.preferredEmailLanguage,
-            isTwoFactorAuthRequired: user.twoFactorRequired,
-            isLoginAllowed: user.enabled,
-            lastAuthenticationDate: user.lastAuthentication,
-            failedLoginAttempts: user.failedLogins,
-            mustResetPasswordOnNextLogin: user.passwordResetNextLogin,
-            creationDate: user.createdAt,
-            hasTwoFactorAuthEnabled: user.twoFactorEnabled,
-            fido2CredentialCount: user.fido2CredentialCount,
-            fido2LastUsedDate: user.fido2LastUsedDate,
-            hasAdminPermission: user.permAdmin,
-            hasSetPasswordsPermission: user.permSetPasswords,
-            hasAdminPushagentPermission: user.permAdminPushagents,
-            viewSupportReportsPermissionType: user.permViewSupportReports
-                ? mapFromBTUserViewSupportReportsPermissionType(user.permViewSupportReports)
+        const user: UserCreated = {
+            publicDisplayName: btUser.publicDisplayName,
+            id: btUser.id,
+            securityProviderId: btUser.securityProviderId,
+            username: btUser.username,
+            passwordExpirationDate: btUser.passwordExpiration,
+            email: btUser.emailAddress,
+            preferredEmailLanguage: btUser.preferredEmailLanguage,
+            isTwoFactorAuthRequired: btUser.twoFactorRequired,
+            isLoginAllowed: btUser.enabled,
+            lastAuthenticationDate: btUser.lastAuthentication,
+            failedLoginAttempts: btUser.failedLogins,
+            mustResetPasswordOnNextLogin: btUser.passwordResetNextLogin,
+            creationDate: btUser.createdAt,
+            hasTwoFactorAuthEnabled: btUser.twoFactorEnabled,
+            fido2CredentialCount: btUser.fido2CredentialCount,
+            fido2LastUsedDate: btUser.fido2LastUsedDate,
+            hasAdminPermission: btUser.permAdmin,
+            hasSetPasswordsPermission: btUser.permSetPasswords,
+            hasAdminPushagentPermission: btUser.permAdminPushagents,
+            viewSupportReportsPermissionType: btUser.permViewSupportReports
+                ? mapFromBTUserViewSupportReportsPermissionType(btUser.permViewSupportReports)
                 : undefined,
-            viewVaultReportsPermissionType: user.permViewVaultReports
-                ? mapFromBTUserViewVaultReportsPermissionType(user.permViewVaultReports)
+            viewVaultReportsPermissionType: btUser.permViewVaultReports
+                ? mapFromBTUserViewVaultReportsPermissionType(btUser.permViewVaultReports)
                 : undefined,
-            hasViewSyslogReportsPermission: user.permViewSyslogReports,
-            hasViewSdRecordingsPermission: user.permViewSdRecordings,
-            hasEditJumpGroupsPermission: user.permEditJumpGroups,
-            hasEditSdTeamsPermission: user.permEditSdTeams,
-            hasEditCannedScriptsPermission: user.permEditCannedScripts,
-            hasEditCustomRepLinksPermission: user.permEditCustomRepLinks,
-            allowedAccessPermissionType: user.permAccessAllowed
-                ? mapFromBTUserAllowedAccessPermissionType(user.permAccessAllowed)
+            hasViewSyslogReportsPermission: btUser.permViewSyslogReports,
+            hasViewSdRecordingsPermission: btUser.permViewSdRecordings,
+            hasEditJumpGroupsPermission: btUser.permEditJumpGroups,
+            hasEditSdTeamsPermission: btUser.permEditSdTeams,
+            hasEditCannedScriptsPermission: btUser.permEditCannedScripts,
+            hasEditCustomRepLinksPermission: btUser.permEditCustomRepLinks,
+            allowedAccessPermissionType: btUser.permAccessAllowed
+                ? mapFromBTUserAllowedAccessPermissionType(btUser.permAccessAllowed)
                 : undefined,
-            hasShareOtherTeamPermission: user.permShareOtherTeam,
-            hasInviteExternalUserPermission: user.permInviteExternalUser,
-            hasExtendedAvailabilityModeAllowedPermission: user.permExtendedAvailabilityModeAllowed,
-            hasEditExternalKeyPermission: user.permEditExternalKey,
-            hasSessionIdleTimeoutPermission: user.permSessionIdleTimeout,
-            hasCollaboratePermission: user.permCollaborate,
-            hasCollaborateControlPermission: user.permCollaborateControl,
-            hasJumpClientPermission: user.permJumpClient,
-            hasLocalJumpPermission: user.permLocalJump,
-            hasRemoteJumpPermission: user.permRemoteJump,
-            hasRemoteVncPermission: user.permRemoteVnc,
-            hasRemoteRdpPermission: user.permRemoteRdp,
-            hasShellJumpPermission: user.permShellJump,
-            defaultJumpItemRoleId: user.defaultJumpItemRoleId,
-            privateJumpItemRoleId: user.privateJumpItemRoleId,
-            inferiorJumpItemRoleId: user.inferiorJumpItemRoleId,
-            unassignedJumpItemRoleId: user.unassignedJumpItemRoleId,
-            hasWebJumpPermission: user.permWebJump,
-            hasProtocolTunnelPermission: user.permProtocolTunnel,
-            hasSdStaticPortForExternalToolsPermission: user.permSdStaticPortForExternalTools,
-            hasVaultPermission: user.permVault,
-            hasEndpointAutomationPermission: user.permEndpointAutomation,
+            hasShareOtherTeamPermission: btUser.permShareOtherTeam,
+            hasInviteExternalUserPermission: btUser.permInviteExternalUser,
+            hasExtendedAvailabilityModeAllowedPermission: btUser.permExtendedAvailabilityModeAllowed,
+            hasEditExternalKeyPermission: btUser.permEditExternalKey,
+            hasSessionIdleTimeoutPermission: btUser.permSessionIdleTimeout,
+            hasCollaboratePermission: btUser.permCollaborate,
+            hasCollaborateControlPermission: btUser.permCollaborateControl,
+            hasJumpClientPermission: btUser.permJumpClient,
+            hasLocalJumpPermission: btUser.permLocalJump,
+            hasRemoteJumpPermission: btUser.permRemoteJump,
+            hasRemoteVncPermission: btUser.permRemoteVnc,
+            hasRemoteRdpPermission: btUser.permRemoteRdp,
+            hasShellJumpPermission: btUser.permShellJump,
+            defaultJumpItemRoleId: btUser.defaultJumpItemRoleId,
+            privateJumpItemRoleId: btUser.privateJumpItemRoleId,
+            inferiorJumpItemRoleId: btUser.inferiorJumpItemRoleId,
+            unassignedJumpItemRoleId: btUser.unassignedJumpItemRoleId,
+            hasWebJumpPermission: btUser.permWebJump,
+            hasProtocolTunnelPermission: btUser.permProtocolTunnel,
+            hasSdStaticPortForExternalToolsPermission: btUser.permSdStaticPortForExternalTools,
+            hasVaultPermission: btUser.permVault,
+            hasEndpointAutomationPermission: btUser.permEndpointAutomation,
         };
+
+        this.eventBus.publish(new UserCreatedEvent(command.transactionId, user));
+
+        return user;
     }
 }
