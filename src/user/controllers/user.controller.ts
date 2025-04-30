@@ -22,8 +22,8 @@ import { UserCreated, UserRetrieved, UserUpdated } from '../models';
 import { RetrieveUsersQuery } from '../queries';
 
 @ApiBearerAuth()
-@ApiTags('User')
-@Controller('user')
+@ApiTags('Users')
+@Controller('users')
 @UsePipes(new ValidationPipe({ transform: true }))
 export class UserController {
     constructor(

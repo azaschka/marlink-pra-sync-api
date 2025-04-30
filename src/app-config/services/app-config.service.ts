@@ -25,6 +25,7 @@ export class AppConfigService {
                 path: {
                     user: this.configService.get<string>('BEYONDTRUST_API_USER_PATH') ?? 'unknown',
                     jumpClient: this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ?? 'unknown',
+                    groupPolicy: this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_PATH') ?? 'unknown',
                 },
                 communication: {
                     retryAttempts: this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS') ?? 0,
