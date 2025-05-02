@@ -1,8 +1,21 @@
-import { Body, Controller, Get, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    UsePipes,
+    ValidationPipe,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateGroupPolicyCommand, UpdateGroupPolicyCommand } from '../commands';
+import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, UpdateGroupPolicyCommand } from '../commands';
 import { CreateGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput, UpdateGroupPolicyDtoInput } from '../dtos/inputs';
 import {
     GroupPoliciesRetrievedDtoOutput,
@@ -111,5 +124,14 @@ export class GroupPolicyController {
         );
 
         return result;
+    }
+
+    @Delete(':id')
+    @ApiParam({ name: 'id', type: Number, required: true })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    public async deleteGroupPolicy(@Param('id') id: number): Promise<void> {
+        await this.commandBus.execute<DeleteGroupPolicyCommand, void>(
+            new DeleteGroupPolicyCommand(UuidUtility.generate(), id),
+        );
     }
 }

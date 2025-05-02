@@ -1,4 +1,9 @@
 import { CreateGroupPolicyCommandHandler } from './create-group-policy.command-handler';
+import { DeleteGroupPolicyCommandHandler } from './delete-group-policy.command-handler';
 import { UpdateGroupPolicyCommandHandler } from './update-group-policy.command-handler';
 
-export const CommandHandlers = [CreateGroupPolicyCommandHandler, UpdateGroupPolicyCommandHandler];
+export const CommandHandlers = [
+    CreateGroupPolicyCommandHandler,
+    UpdateGroupPolicyCommandHandler,
+    DeleteGroupPolicyCommandHandler,
+];
