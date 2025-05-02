@@ -15,3 +15,18 @@ export function mapFromBTAccessPermissionStatusType(
             throw new Error(`Unknown BTAccessPermissionStatusType: ${btAccessPermissionStatusType}`);
     }
 }
+
+export function mapToBTAccessPermissionStatusType(
+    accessPermissionStatusType: AccessPermissionStatusType,
+): BTAccessPermissionStatusType {
+    switch (accessPermissionStatusType) {
+        case AccessPermissionStatusType.Defined:
+            return BTAccessPermissionStatusType.Defined;
+        case AccessPermissionStatusType.Final:
+            return BTAccessPermissionStatusType.Final;
+        case AccessPermissionStatusType.NotDefined:
+            return BTAccessPermissionStatusType.NotDefined;
+        default:
+            throw new Error(`Unknown AccessPermissionStatusType: ${accessPermissionStatusType}`);
+    }
+}

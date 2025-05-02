@@ -1,10 +1,11 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { RetrieveGroupPoliciesDtoInput } from '../dtos/inputs';
-import { GroupPoliciesRetrievedDtoOutput } from '../dtos/outputs';
-import { GroupPoliciesRetrieved } from '../models';
+import { CreateGroupPolicyCommand } from '../commands';
+import { CreateGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput } from '../dtos/inputs';
+import { GroupPoliciesRetrievedDtoOutput, GroupPolicyCreatedDtoOutput } from '../dtos/outputs';
+import { GroupPoliciesRetrieved, GroupPolicyCreated } from '../models';
 import { RetrieveGroupPoliciesQuery } from '../queries';
 
 @ApiBearerAuth()
@@ -12,7 +13,10 @@ import { RetrieveGroupPoliciesQuery } from '../queries';
 @Controller('group-policies')
 @UsePipes(new ValidationPipe({ transform: true }))
 export class GroupPolicyController {
-    constructor(private readonly queryBus: QueryBus) {}
+    constructor(
+        private readonly commandBus: CommandBus,
+        private readonly queryBus: QueryBus,
+    ) {}
 
     @Get()
     @ApiOkResponse({ type: GroupPoliciesRetrievedDtoOutput, isArray: true })
@@ -25,6 +29,41 @@ export class GroupPolicyController {
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
+            ),
+        );
+
+        return result;
+    }
+
+    @Post()
+    @ApiCreatedResponse({ type: GroupPolicyCreatedDtoOutput })
+    public async createGroupPolicy(@Body() dtoInput: CreateGroupPolicyDtoInput): Promise<GroupPolicyCreatedDtoOutput> {
+        const result = await this.commandBus.execute<CreateGroupPolicyCommand, GroupPolicyCreated>(
+            new CreateGroupPolicyCommand(
+                UuidUtility.generate(),
+                dtoInput.name,
+                dtoInput.hasEndpointsAccessPermission,
+                dtoInput.accessPermissionStatusType,
+                dtoInput.hasShareOtherTeamPermission,
+                dtoInput.hasInviteExternalUserPermission,
+                dtoInput.userSessionIdleTimeoutInSeconds,
+                dtoInput.hasEnableExtendedAvailabilityModePermission,
+                dtoInput.hasEditExternalKeyPermission,
+                dtoInput.hasCollaboratePermission,
+                dtoInput.hasCollaborateControlPermission,
+                dtoInput.hasJumpClientPermission,
+                dtoInput.hasLocalJumpPermission,
+                dtoInput.hasRemoteJumpPermission,
+                dtoInput.hasRemoteVncPermission,
+                dtoInput.hasRemoteRdpPermission,
+                dtoInput.hasShellJumpPermission,
+                dtoInput.hasWebJumpPermission,
+                dtoInput.hasProtocolTunnelPermission,
+                dtoInput.hasSdStaticPortForExternalToolsPermission,
+                dtoInput.defaultJumpItemRoleId,
+                dtoInput.privateJumpItemRoleId,
+                dtoInput.inferiorJumpItemRoleId,
+                dtoInput.unassignedJumpItemRoleId,
             ),
         );
 

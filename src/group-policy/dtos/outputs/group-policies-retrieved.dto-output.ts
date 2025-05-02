@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-
 import { AccessPermissionStatusType } from '../../enums';
 import { GroupPoliciesRetrieved } from '../../models';
 
