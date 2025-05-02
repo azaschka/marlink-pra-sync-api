@@ -1,11 +1,15 @@
-import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateGroupPolicyCommand } from '../commands';
-import { CreateGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput } from '../dtos/inputs';
-import { GroupPoliciesRetrievedDtoOutput, GroupPolicyCreatedDtoOutput } from '../dtos/outputs';
-import { GroupPoliciesRetrieved, GroupPolicyCreated } from '../models';
+import { CreateGroupPolicyCommand, UpdateGroupPolicyCommand } from '../commands';
+import { CreateGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput, UpdateGroupPolicyDtoInput } from '../dtos/inputs';
+import {
+    GroupPoliciesRetrievedDtoOutput,
+    GroupPolicyCreatedDtoOutput,
+    GroupPolicyUpdatedDtoOutput,
+} from '../dtos/outputs';
+import { GroupPoliciesRetrieved, GroupPolicyCreated, GroupPolicyUpdated } from '../models';
 import { RetrieveGroupPoliciesQuery } from '../queries';
 
 @ApiBearerAuth()
@@ -41,6 +45,45 @@ export class GroupPolicyController {
         const result = await this.commandBus.execute<CreateGroupPolicyCommand, GroupPolicyCreated>(
             new CreateGroupPolicyCommand(
                 UuidUtility.generate(),
+                dtoInput.name,
+                dtoInput.hasEndpointsAccessPermission,
+                dtoInput.accessPermissionStatusType,
+                dtoInput.hasShareOtherTeamPermission,
+                dtoInput.hasInviteExternalUserPermission,
+                dtoInput.userSessionIdleTimeoutInSeconds,
+                dtoInput.hasEnableExtendedAvailabilityModePermission,
+                dtoInput.hasEditExternalKeyPermission,
+                dtoInput.hasCollaboratePermission,
+                dtoInput.hasCollaborateControlPermission,
+                dtoInput.hasJumpClientPermission,
+                dtoInput.hasLocalJumpPermission,
+                dtoInput.hasRemoteJumpPermission,
+                dtoInput.hasRemoteVncPermission,
+                dtoInput.hasRemoteRdpPermission,
+                dtoInput.hasShellJumpPermission,
+                dtoInput.hasWebJumpPermission,
+                dtoInput.hasProtocolTunnelPermission,
+                dtoInput.hasSdStaticPortForExternalToolsPermission,
+                dtoInput.defaultJumpItemRoleId,
+                dtoInput.privateJumpItemRoleId,
+                dtoInput.inferiorJumpItemRoleId,
+                dtoInput.unassignedJumpItemRoleId,
+            ),
+        );
+
+        return result;
+    }
+
+    @Put(':id')
+    @ApiOkResponse({ type: GroupPolicyUpdatedDtoOutput })
+    public async updateGroupPolicy(
+        @Query('id') id: number,
+        @Body() dtoInput: UpdateGroupPolicyDtoInput,
+    ): Promise<GroupPolicyUpdatedDtoOutput> {
+        const result = await this.commandBus.execute<UpdateGroupPolicyCommand, GroupPolicyUpdated>(
+            new UpdateGroupPolicyCommand(
+                UuidUtility.generate(),
+                id,
                 dtoInput.name,
                 dtoInput.hasEndpointsAccessPermission,
                 dtoInput.accessPermissionStatusType,
