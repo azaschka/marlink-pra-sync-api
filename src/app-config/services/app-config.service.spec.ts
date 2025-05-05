@@ -157,6 +157,84 @@ describe('AppConfigService', () => {
             });
         });
     });
+
+    describe('database', () => {
+        it.each([
+            {
+                input: {
+                    env: 'production',
+                    type: 'mysql',
+                    host: 'localhost',
+                    port: 3306,
+                    username: 'root',
+                    password: 'password',
+                    database: 'test',
+                },
+                expected: {
+                    type: 'mysql',
+                    host: 'localhost',
+                    port: 3306,
+                    username: 'root',
+                    password: 'password',
+                    database: 'test',
+                    synchronize: false,
+                    logging: false,
+                    autoLoadEntities: true,
+                },
+            },
+            {
+                input: {
+                    env: 'test',
+                },
+                expected: {
+                    type: undefined,
+                    host: 'unknown',
+                    port: 0,
+                    username: 'unknown',
+                    password: 'unknown',
+                    database: 'unknown',
+                    synchronize: true,
+                    logging: true,
+                    autoLoadEntities: true,
+                },
+            },
+        ])('should return the database configuration as expected', ({ input, expected }) => {
+            configService.get = jest.fn().mockImplementation((key: string) => {
+                switch (key) {
+                    case 'ENV':
+                        return input.env;
+                    case 'DB_TYPE':
+                        return input.type;
+                    case 'DB_HOST':
+                        return input.host;
+                    case 'DB_PORT':
+                        return input.port;
+                    case 'DB_USERNAME':
+                        return input.username;
+                    case 'DB_PASSWORD':
+                        return input.password;
+                    case 'DB_NAME':
+                        return input.database;
+                    default:
+                        return undefined;
+                }
+            });
+
+            expect(service.database).toEqual({
+                type: expected.type,
+                host: expected.host,
+                port: expected.port,
+                username: expected.username,
+                password: expected.password,
+                database: expected.database,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                entities: expect.anything(),
+                synchronize: expected.synchronize,
+                logging: expected.logging,
+                autoLoadEntities: expected.autoLoadEntities,
+            });
+        });
+    });
 });
 
 function mockConfigService() {

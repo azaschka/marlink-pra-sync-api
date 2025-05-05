@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 @Injectable()
 export class AppConfigService {
@@ -54,6 +55,21 @@ export class AppConfigService {
                         AppConfigService.DEFAULT_UNDEFINED_NUMBER,
                 },
             },
+        };
+    }
+
+    public get database(): TypeOrmModuleOptions {
+        return {
+            type: this.configService.get<'mariadb' | 'mysql'>('DB_TYPE') ?? undefined,
+            host: this.configService.get<string>('DB_HOST') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
+            port: this.configService.get<number>('DB_PORT') ?? AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+            username: this.configService.get<string>('DB_USERNAME') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
+            password: this.configService.get<string>('DB_PASSWORD') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
+            database: this.configService.get<string>('DB_NAME') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: this.env !== 'production',
+            logging: this.env !== 'production',
+            autoLoadEntities: true,
         };
     }
 }

@@ -1,0 +1,77 @@
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { AccessPermissionStatusType } from '../../enums';
+
+@Entity({ name: 'group_policies' })
+export class GroupPolicyEntity {
+    @Column({ name: 'name', type: 'varchar', length: 255 })
+    public name!: string;
+
+    @PrimaryGeneratedColumn({ name: 'id', type: 'int' })
+    public id?: number;
+
+    @Column({ name: 'has_endpoints_access_permission', type: 'boolean', nullable: true })
+    public hasEndpointsAccessPermission?: boolean;
+
+    @Column({ name: 'access_permission_status_type', type: 'enum', enum: AccessPermissionStatusType, nullable: true })
+    public accessPermissionStatusType?: AccessPermissionStatusType;
+
+    @Column({ name: 'has_share_other_team_permission', type: 'boolean', nullable: true })
+    public hasShareOtherTeamPermission?: boolean;
+
+    @Column({ name: 'has_invite_external_user_permission', type: 'boolean', nullable: true })
+    public hasInviteExternalUserPermission?: boolean;
+
+    @Column({ name: 'user_session_idle_timeout_in_seconds', type: 'int', nullable: true })
+    public userSessionIdleTimeoutInSeconds?: number;
+
+    @Column({ name: 'has_enable_extended_availability_mode_permission', type: 'boolean', nullable: true })
+    public hasEnableExtendedAvailabilityModePermission?: boolean;
+
+    @Column({ name: 'has_edit_external_key_permission', type: 'boolean', nullable: true })
+    public hasEditExternalKeyPermission?: boolean;
+
+    @Column({ name: 'has_collaborate_permission', type: 'boolean', nullable: true })
+    public hasCollaboratePermission?: boolean;
+
+    @Column({ name: 'has_collaborate_control_permission', type: 'boolean', nullable: true })
+    public hasCollaborateControlPermission?: boolean;
+
+    @Column({ name: 'has_jump_client_permission', type: 'boolean', nullable: true })
+    public hasJumpClientPermission?: boolean;
+
+    @Column({ name: 'has_local_jump_permission', type: 'boolean', nullable: true })
+    public hasLocalJumpPermission?: boolean;
+
+    @Column({ name: 'has_remote_jump_permission', type: 'boolean', nullable: true })
+    public hasRemoteJumpPermission?: boolean;
+
+    @Column({ name: 'has_remote_vnc_permission', type: 'boolean', nullable: true })
+    public hasRemoteVncPermission?: boolean;
+
+    @Column({ name: 'has_remote_rdp_permission', type: 'boolean', nullable: true })
+    public hasRemoteRdpPermission?: boolean;
+
+    @Column({ name: 'has_shell_jump_permission', type: 'boolean', nullable: true })
+    public hasShellJumpPermission?: boolean;
+
+    @Column({ name: 'has_web_jump_permission', type: 'boolean', nullable: true })
+    public hasWebJumpPermission?: boolean;
+
+    @Column({ name: 'has_protocol_tunnel_permission', type: 'boolean', nullable: true })
+    public hasProtocolTunnelPermission?: boolean;
+
+    @Column({ name: 'has_sd_static_port_for_external_tools_permission', type: 'boolean', nullable: true })
+    public hasSdStaticPortForExternalToolsPermission?: boolean;
+
+    @Column({ name: 'default_jump_item_role_id', type: 'int', nullable: true })
+    public defaultJumpItemRoleId?: number;
+
+    @Column({ name: 'private_jump_item_role_id', type: 'int', nullable: true })
+    public privateJumpItemRoleId?: number;
+
+    @Column({ name: 'inferior_jump_item_role_id', type: 'int', nullable: true })
+    public inferiorJumpItemRoleId?: number;
+
+    @Column({ name: 'unassigned_jump_item_role_id', type: 'int', nullable: true })
+    public unassignedJumpItemRoleId?: number;
+}
