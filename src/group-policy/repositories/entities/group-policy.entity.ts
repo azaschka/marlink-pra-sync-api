@@ -74,4 +74,59 @@ export class GroupPolicyEntity {
 
     @Column({ name: 'unassigned_jump_item_role_id', type: 'int', nullable: true })
     public unassignedJumpItemRoleId?: number;
+
+    public static create(
+        name: string,
+        id?: number,
+        hasEndpointsAccessPermission?: boolean,
+        accessPermissionStatusType?: AccessPermissionStatusType,
+        hasShareOtherTeamPermission?: boolean,
+        hasInviteExternalUserPermission?: boolean,
+        userSessionIdleTimeoutInSeconds?: number,
+        hasEnableExtendedAvailabilityModePermission?: boolean,
+        hasEditExternalKeyPermission?: boolean,
+        hasCollaboratePermission?: boolean,
+        hasCollaborateControlPermission?: boolean,
+        hasJumpClientPermission?: boolean,
+        hasLocalJumpPermission?: boolean,
+        hasRemoteJumpPermission?: boolean,
+        hasRemoteVncPermission?: boolean,
+        hasRemoteRdpPermission?: boolean,
+        hasShellJumpPermission?: boolean,
+        hasWebJumpPermission?: boolean,
+        hasProtocolTunnelPermission?: boolean,
+        hasSdStaticPortForExternalToolsPermission?: boolean,
+        defaultJumpItemRoleId?: number,
+        privateJumpItemRoleId?: number,
+        inferiorJumpItemRoleId?: number,
+        unassignedJumpItemRoleId?: number,
+    ): GroupPolicyEntity {
+        const entity = new GroupPolicyEntity();
+        entity.name = name;
+        entity.id = id;
+        entity.hasEndpointsAccessPermission = hasEndpointsAccessPermission;
+        entity.accessPermissionStatusType = accessPermissionStatusType;
+        entity.hasShareOtherTeamPermission = hasShareOtherTeamPermission;
+        entity.hasInviteExternalUserPermission = hasInviteExternalUserPermission;
+        entity.userSessionIdleTimeoutInSeconds = userSessionIdleTimeoutInSeconds;
+        entity.hasEnableExtendedAvailabilityModePermission = hasEnableExtendedAvailabilityModePermission;
+        entity.hasEditExternalKeyPermission = hasEditExternalKeyPermission;
+        entity.hasCollaboratePermission = hasCollaboratePermission;
+        entity.hasCollaborateControlPermission = hasCollaborateControlPermission;
+        entity.hasJumpClientPermission = hasJumpClientPermission;
+        entity.hasLocalJumpPermission = hasLocalJumpPermission;
+        entity.hasRemoteJumpPermission = hasRemoteJumpPermission;
+        entity.hasRemoteVncPermission = hasRemoteVncPermission;
+        entity.hasRemoteRdpPermission = hasRemoteRdpPermission;
+        entity.hasShellJumpPermission = hasShellJumpPermission;
+        entity.hasWebJumpPermission = hasWebJumpPermission;
+        entity.hasProtocolTunnelPermission = hasProtocolTunnelPermission;
+        entity.hasSdStaticPortForExternalToolsPermission = hasSdStaticPortForExternalToolsPermission;
+        entity.defaultJumpItemRoleId = defaultJumpItemRoleId;
+        entity.privateJumpItemRoleId = privateJumpItemRoleId;
+        entity.inferiorJumpItemRoleId = inferiorJumpItemRoleId;
+        entity.unassignedJumpItemRoleId = unassignedJumpItemRoleId;
+
+        return entity;
+    }
 }
