@@ -2,13 +2,14 @@ import { DataSource } from 'typeorm';
 import { BaseRepositoryService } from './base-repository.service';
 
 class MockEntity {
-    public id!: number;
+    public id?: number;
+    public name!: string;
 }
 
 abstract class TestHelper {
-    public static mockRepositoryEntity(id: number): MockEntity {
+    public static mockRepositoryEntity(name: string): MockEntity {
         const entity = new MockEntity();
-        entity.id = id;
+        entity.name = name;
         return entity;
     }
 }
@@ -23,12 +24,23 @@ describe('BaseRepositoryService', () => {
     });
 
     describe('create', () => {
-        it('should connect to db, start transaction, save the entity, commit the transaction and release the connection ', async () => {
+        it('should connect to db, start transaction, create and save the entity, commit the transaction, release the connection and return the value', async () => {
+            const expectedEntityId = 123;
+            const entity = TestHelper.mockRepositoryEntity('entity-1');
+
             const dataSourceCreateQueryRunnerConnectMethod = jest.spyOn(dataSource.createQueryRunner(), 'connect');
             const dataSourceCreateQueryRunnerStartTransactionMethod = jest.spyOn(
                 dataSource.createQueryRunner(),
                 'startTransaction',
             );
+            const dataSourceCreateQueryRunnerManagerCreateMethod = jest
+                .spyOn(dataSource.createQueryRunner().manager, 'create')
+                .mockImplementation(() => {
+                    return {
+                        ...entity,
+                        id: expectedEntityId,
+                    } as unknown as [MockEntity]; // Fake the return type
+                });
             const dataSourceCreateQueryRunnerManagerSaveMethod = jest.spyOn(
                 dataSource.createQueryRunner().manager,
                 'save',
@@ -43,28 +55,39 @@ describe('BaseRepositoryService', () => {
             );
             const dataSourceCreateQueryRunnerReleaseMethod = jest.spyOn(dataSource.createQueryRunner(), 'release');
 
-            const entity = TestHelper.mockRepositoryEntity(1);
-
-            await service.create(entity);
+            const result = await service.create(entity);
 
             expect(dataSourceCreateQueryRunnerConnectMethod).toHaveBeenCalledTimes(1);
             expect(dataSourceCreateQueryRunnerStartTransactionMethod).toHaveBeenCalledTimes(1);
-            expect(dataSourceCreateQueryRunnerManagerSaveMethod).toHaveBeenCalledWith(MockEntity, entity);
+            expect(dataSourceCreateQueryRunnerManagerCreateMethod).toHaveBeenCalledWith(MockEntity, entity);
+            expect(dataSourceCreateQueryRunnerManagerSaveMethod).toHaveBeenCalledWith(entity);
             expect(dataSourceCreateQueryRunnerCommitTransactionMethod).toHaveBeenCalledTimes(1);
             expect(dataSourceCreateQueryRunnerRollbackTransactionMethod).not.toHaveBeenCalled();
             expect(dataSourceCreateQueryRunnerReleaseMethod).toHaveBeenCalledTimes(1);
+            expect(result).toStrictEqual({
+                id: expectedEntityId,
+                name: entity.name,
+            });
         });
 
         it('should connect to db, start transaction, rollback the transaction and release the connection when an error occurs on saving or commiting the db operation', async () => {
+            const error = new Error('Error 123');
+            const entity = TestHelper.mockRepositoryEntity('entity-1');
+
             const dataSourceCreateQueryRunnerConnectMethod = jest.spyOn(dataSource.createQueryRunner(), 'connect');
             const dataSourceCreateQueryRunnerStartTransactionMethod = jest.spyOn(
                 dataSource.createQueryRunner(),
                 'startTransaction',
             );
-            const dataSourceCreateQueryRunnerManagerSaveMethod = jest.spyOn(
+            const dataSourceCreateQueryRunnerManagerCreateMethod = jest.spyOn(
                 dataSource.createQueryRunner().manager,
-                'save',
+                'create',
             );
+            const dataSourceCreateQueryRunnerManagerSaveMethod = jest
+                .spyOn(dataSource.createQueryRunner().manager, 'save')
+                .mockImplementation(() => {
+                    throw error;
+                });
             const dataSourceCreateQueryRunnerCommitTransactionMethod = jest.spyOn(
                 dataSource.createQueryRunner(),
                 'commitTransaction',
@@ -74,19 +97,13 @@ describe('BaseRepositoryService', () => {
                 'rollbackTransaction',
             );
             const dataSourceCreateQueryRunnerReleaseMethod = jest.spyOn(dataSource.createQueryRunner(), 'release');
-
-            const error = new Error('Error 123');
-            const entity = TestHelper.mockRepositoryEntity(1);
-
-            dataSourceCreateQueryRunnerManagerSaveMethod.mockImplementationOnce(() => {
-                throw error;
-            });
 
             await expect(service.create(entity)).rejects.toThrow(error);
 
             expect(dataSourceCreateQueryRunnerConnectMethod).toHaveBeenCalledTimes(1);
             expect(dataSourceCreateQueryRunnerStartTransactionMethod).toHaveBeenCalledTimes(1);
-            expect(dataSourceCreateQueryRunnerManagerSaveMethod).toHaveBeenCalledWith(MockEntity, entity);
+            expect(dataSourceCreateQueryRunnerManagerCreateMethod).toHaveBeenCalledWith(MockEntity, entity);
+            expect(dataSourceCreateQueryRunnerManagerSaveMethod).toHaveBeenCalledWith(entity);
             expect(dataSourceCreateQueryRunnerCommitTransactionMethod).not.toHaveBeenCalled();
             expect(dataSourceCreateQueryRunnerRollbackTransactionMethod).toHaveBeenCalledTimes(1);
             expect(dataSourceCreateQueryRunnerReleaseMethod).toHaveBeenCalledTimes(1);
@@ -100,6 +117,7 @@ function mockDataSource(): DataSource {
         connect: jest.fn(),
         startTransaction: jest.fn(),
         manager: {
+            create: jest.fn(),
             save: jest.fn(),
         },
         commitTransaction: jest.fn(),
