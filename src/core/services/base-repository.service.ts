@@ -14,7 +14,7 @@ export class BaseRepositoryService<T> {
 
         try {
             const createdEntity = queryRunner.manager.create(this.entity, entity);
-            await queryRunner.manager.save(entity);
+            await queryRunner.manager.save(createdEntity);
             await queryRunner.commitTransaction();
 
             return createdEntity;
