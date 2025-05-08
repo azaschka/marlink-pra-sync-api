@@ -2,7 +2,7 @@ import { BaseEvent } from '../../core/events';
 import { GroupPolicy } from '../models';
 
 export interface GroupPolicyCreationFailedEventPayload {
-    error: unknown;
+    errorMessage: string;
     groupPolicy: GroupPolicy;
 }
 

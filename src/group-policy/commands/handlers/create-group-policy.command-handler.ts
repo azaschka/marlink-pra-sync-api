@@ -1,6 +1,7 @@
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateGroupPolicyCommand as BTCreateGroupPolicyCommand } from '../../../beyondtrust-pra-conf-api/group-policy/commands';
 import { GroupPolicyCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
+import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { GroupPolicyCreatedEvent, GroupPolicyCreationFailedEvent } from '../../events';
 import { mapFromBTAccessPermissionStatusType, mapToBTAccessPermissionStatusType } from '../../mappers';
 import { GroupPolicy } from '../../models';
@@ -33,7 +34,7 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyCreationFailedEvent(command.transactionId, {
-                    error: error,
+                    errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicy: groupPolicyEntity,
                 }),
             );

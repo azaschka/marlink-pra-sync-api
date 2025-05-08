@@ -2,6 +2,7 @@ import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateGroupPolicyCommand as BTCreateGroupPolicyCommand } from '../../../beyondtrust-pra-conf-api/group-policy/commands';
 import { GroupPolicyCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { AccessPermissionStatusType as BTAccessPermissionStatusType } from '../../../beyondtrust-pra-conf-api/group-policy/enums';
+import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { AccessPermissionStatusType } from '../../enums';
 import { GroupPolicyCreatedEvent, GroupPolicyCreationFailedEvent } from '../../events';
 import { mapFromBTAccessPermissionStatusType, mapToBTAccessPermissionStatusType } from '../../mappers';
@@ -217,6 +218,9 @@ describe('CreateGroupPolicyCommandHandler', () => {
                 .spyOn(groupPolicyRepositoryService, 'create')
                 .mockRejectedValue(expectedError);
             const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+            const errorProcessorUtilityStringifyMethod = jest
+                .spyOn(ErrorProcessorUtility, 'stringify')
+                .mockReturnValue('expected-error-message');
 
             // Act & Assert
             await expect(
@@ -228,12 +232,13 @@ describe('CreateGroupPolicyCommandHandler', () => {
             expect(commandBusExecuteMethod).toHaveBeenCalled();
             expect(groupPolicyEntityCreateWithoutIdMethod).toHaveBeenCalled();
             expect(groupPolicyRepositoryServiceCreateMethod).toHaveBeenCalled();
+            expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining({
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyCreationFailedEvent.EVENT_TYPE,
                     payload: {
-                        error: expectedError,
+                        errorMessage: 'expected-error-message',
                         groupPolicy: groupPolicyEntityToBeCreated,
                     },
                 }),
