@@ -18,11 +18,11 @@ import { UuidUtility } from '../../shared/utilities';
 import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, UpdateGroupPolicyCommand } from '../commands';
 import { CreateGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput, UpdateGroupPolicyDtoInput } from '../dtos/inputs';
 import {
-    GroupPoliciesRetrievedDtoOutput,
     GroupPolicyCreatedDtoOutput,
+    GroupPolicyRetrievedDtoOutput,
     GroupPolicyUpdatedDtoOutput,
 } from '../dtos/outputs';
-import { GroupPoliciesRetrieved, GroupPolicyCreated, GroupPolicyUpdated } from '../models';
+import { GroupPolicy } from '../models';
 import { RetrieveGroupPoliciesQuery } from '../queries';
 
 @ApiBearerAuth()
@@ -36,11 +36,11 @@ export class GroupPolicyController {
     ) {}
 
     @Get()
-    @ApiOkResponse({ type: GroupPoliciesRetrievedDtoOutput, isArray: true })
+    @ApiOkResponse({ type: GroupPolicyRetrievedDtoOutput, isArray: true })
     public async getGroupPolicies(
         @Query() dtoInput: RetrieveGroupPoliciesDtoInput,
-    ): Promise<GroupPoliciesRetrievedDtoOutput[]> {
-        const result = await this.queryBus.execute<RetrieveGroupPoliciesQuery, GroupPoliciesRetrieved[]>(
+    ): Promise<GroupPolicyRetrievedDtoOutput[]> {
+        const result = await this.queryBus.execute<RetrieveGroupPoliciesQuery, GroupPolicy[]>(
             new RetrieveGroupPoliciesQuery(
                 UuidUtility.generate(),
                 dtoInput.pageSize,
@@ -55,7 +55,7 @@ export class GroupPolicyController {
     @Post()
     @ApiCreatedResponse({ type: GroupPolicyCreatedDtoOutput })
     public async createGroupPolicy(@Body() dtoInput: CreateGroupPolicyDtoInput): Promise<GroupPolicyCreatedDtoOutput> {
-        const result = await this.commandBus.execute<CreateGroupPolicyCommand, GroupPolicyCreated>(
+        const result = await this.commandBus.execute<CreateGroupPolicyCommand, GroupPolicy>(
             new CreateGroupPolicyCommand(
                 UuidUtility.generate(),
                 dtoInput.name,
@@ -93,7 +93,7 @@ export class GroupPolicyController {
         @Query('id') id: number,
         @Body() dtoInput: UpdateGroupPolicyDtoInput,
     ): Promise<GroupPolicyUpdatedDtoOutput> {
-        const result = await this.commandBus.execute<UpdateGroupPolicyCommand, GroupPolicyUpdated>(
+        const result = await this.commandBus.execute<UpdateGroupPolicyCommand, GroupPolicy>(
             new UpdateGroupPolicyCommand(
                 UuidUtility.generate(),
                 id,

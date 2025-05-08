@@ -1,13 +1,13 @@
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { UrlUtility } from '../../../../shared/utilities';
 import { HttpClientService } from '../../../http-client/services/http-client.service';
-import { GroupPoliciesRetrievedDtoOutput } from '../../dtos/outputs';
+import { GroupPolicyRetrievedDtoOutput } from '../../dtos/outputs';
 import { AccessPermissionStatusType } from '../../enums';
 import { RetrieveGroupPoliciesQuery } from '../retrieve-group-policies.query';
 import { RetrieveGroupPoliciesQueryHandler } from './retrieve-group-policies.query-handler';
 
 abstract class TestHelper {
-    public static get mockedGroupPoliciesRetrievedDtoOutputs(): GroupPoliciesRetrievedDtoOutput[] {
+    public static get mockedGroupPoliciesRetrievedDtoOutputs(): GroupPolicyRetrievedDtoOutput[] {
         return [
             {
                 name: 'group-policy-1',

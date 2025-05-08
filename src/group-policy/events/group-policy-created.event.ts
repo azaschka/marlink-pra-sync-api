@@ -1,7 +1,9 @@
 import { BaseEvent } from '../../core/events';
-import { GroupPolicyCreated } from '../models';
+import { GroupPolicy } from '../models';
 
-export type GroupPolicyCreatedEventPayload = GroupPolicyCreated;
+export interface GroupPolicyCreatedEventPayload {
+    groupPolicy: GroupPolicy;
+}
 
 export class GroupPolicyCreatedEvent extends BaseEvent {
     public static readonly EVENT_TYPE = 'group-policy-created';

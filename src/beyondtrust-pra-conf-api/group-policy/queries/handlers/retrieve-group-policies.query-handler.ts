@@ -3,7 +3,7 @@ import { AppConfigService } from '../../../../app-config/services/app-config.ser
 import { UrlUtility } from '../../../../shared/utilities';
 import { HttpClientService } from '../../../http-client/services/http-client.service';
 import { RetrieveGroupPoliciesDtoInput } from '../../dtos/inputs';
-import { GroupPoliciesRetrievedDtoOutput } from '../../dtos/outputs';
+import { GroupPolicyRetrievedDtoOutput } from '../../dtos/outputs';
 import { RetrieveGroupPoliciesQuery } from '../retrieve-group-policies.query';
 
 @QueryHandler(RetrieveGroupPoliciesQuery)
@@ -13,14 +13,14 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
         private readonly httpClientService: HttpClientService,
     ) {}
 
-    public async execute(query: RetrieveGroupPoliciesQuery): Promise<GroupPoliciesRetrievedDtoOutput[]> {
+    public async execute(query: RetrieveGroupPoliciesQuery): Promise<GroupPolicyRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.path.groupPolicy,
         );
 
-        return await this.httpClientService.get<GroupPoliciesRetrievedDtoOutput, GroupPoliciesRetrievedDtoOutput[]>(
-            GroupPoliciesRetrievedDtoOutput,
+        return await this.httpClientService.get<GroupPolicyRetrievedDtoOutput, GroupPolicyRetrievedDtoOutput[]>(
+            GroupPolicyRetrievedDtoOutput,
             url,
             RetrieveGroupPoliciesDtoInput.create(query.pageSize, query.pageNumber, query.name),
         );

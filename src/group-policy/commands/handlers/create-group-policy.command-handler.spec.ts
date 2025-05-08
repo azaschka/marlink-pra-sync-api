@@ -3,8 +3,10 @@ import { CreateGroupPolicyCommand as BTCreateGroupPolicyCommand } from '../../..
 import { GroupPolicyCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { AccessPermissionStatusType as BTAccessPermissionStatusType } from '../../../beyondtrust-pra-conf-api/group-policy/enums';
 import { AccessPermissionStatusType } from '../../enums';
-import { GroupPolicyCreatedEvent } from '../../events';
-import { mapToBTAccessPermissionStatusType } from '../../mappers';
+import { GroupPolicyCreatedEvent, GroupPolicyCreationFailedEvent } from '../../events';
+import { mapFromBTAccessPermissionStatusType, mapToBTAccessPermissionStatusType } from '../../mappers';
+import { GroupPolicyEntity } from '../../repositories/entities';
+import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { CreateGroupPolicyCommand } from '../create-group-policy.command';
 import { CreateGroupPolicyCommandHandler } from './create-group-policy.command-handler';
 
@@ -48,12 +50,18 @@ abstract class TestHelper {
 describe('CreateGroupPolicyCommandHandler', () => {
     let commandBus: CommandBus;
     let eventBus: EventBus;
+    let groupPolicyRepositoryService: GroupPolicyRepositoryService;
     let handler: CreateGroupPolicyCommandHandler;
 
     beforeEach(() => {
         commandBus = mockCommandBus();
         eventBus = mockEventBus();
-        handler = new CreateGroupPolicyCommandHandler(commandBus, eventBus);
+        groupPolicyRepositoryService = mockGroupPolicyRepositoryService();
+        handler = new CreateGroupPolicyCommandHandler(commandBus, eventBus, groupPolicyRepositoryService);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('execute', () => {
@@ -89,13 +97,26 @@ describe('CreateGroupPolicyCommandHandler', () => {
                 name: 'group-policy-2',
             },
         ])(
-            'should call the command bus with correct parameters, publish an event and return the result',
+            'should call the command bus and repository service with correct parameters, publish an event and return the result',
             async (command) => {
+                // Arrange
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
                 const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
 
+                const groupPolicyEntityToBeCreated = {} as GroupPolicyEntity;
+                const groupPolicyEntityCreateWithoutIdMethod = jest
+                    .spyOn(GroupPolicyEntity, 'createWithoutId')
+                    .mockReturnValue(groupPolicyEntityToBeCreated);
+
+                const expectedResult = { id: 123 } as GroupPolicyEntity;
+                const groupPolicyRepositoryServiceCreateMethod = jest
+                    .spyOn(groupPolicyRepositoryService, 'create')
+                    .mockResolvedValue(expectedResult);
+
+                // Act
                 const result = await handler.execute(command);
 
+                // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateGroupPolicyCommand(
                         command.transactionId,
@@ -126,46 +147,98 @@ describe('CreateGroupPolicyCommandHandler', () => {
                         command.unassignedJumpItemRoleId,
                     ),
                 );
+                expect(groupPolicyEntityCreateWithoutIdMethod).toHaveBeenCalledWith(
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.name,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.id,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permAccessAllowed,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.accessPermStatus
+                        ? mapFromBTAccessPermissionStatusType(
+                              TestHelper.mockedGroupPolicyCreatedDtoOutput.accessPermStatus,
+                          )
+                        : undefined,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permShareOtherTeam,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permInviteExternalUser,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permSessionIdleTimeout,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permExtendedAvailabilityModeAllowed,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permEditExternalKey,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permCollaborate,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permCollaborateControl,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permJumpClient,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permLocalJump,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permRemoteJump,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permRemoteVnc,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permRemoteRdp,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permShellJump,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permWebJump,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permProtocolTunnel,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.permSdStaticPortForExternalTools,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.defaultJumpItemRoleId,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.privateJumpItemRoleId,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.inferiorJumpItemRoleId,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.unassignedJumpItemRoleId,
+                );
+                expect(groupPolicyRepositoryServiceCreateMethod).toHaveBeenCalledWith(groupPolicyEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<GroupPolicyCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: GroupPolicyCreatedEvent.EVENT_TYPE,
-                        payload: result,
+                        payload: {
+                            groupPolicy: result,
+                        },
                     }),
                 );
-                expect(result).toStrictEqual({
-                    name: TestHelper.mockedGroupPolicyCreatedDtoOutput.name,
-                    id: TestHelper.mockedGroupPolicyCreatedDtoOutput.id,
-                    hasEndpointsAccessPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permAccessAllowed,
-                    accessPermissionStatusType: TestHelper.mockedGroupPolicyCreatedDtoOutput.accessPermStatus,
-                    hasShareOtherTeamPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permShareOtherTeam,
-                    hasInviteExternalUserPermission:
-                        TestHelper.mockedGroupPolicyCreatedDtoOutput.permInviteExternalUser,
-                    userSessionIdleTimeoutInSeconds:
-                        TestHelper.mockedGroupPolicyCreatedDtoOutput.permSessionIdleTimeout,
-                    hasEnableExtendedAvailabilityModePermission:
-                        TestHelper.mockedGroupPolicyCreatedDtoOutput.permExtendedAvailabilityModeAllowed,
-                    hasEditExternalKeyPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permEditExternalKey,
-                    hasCollaboratePermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permCollaborate,
-                    hasCollaborateControlPermission:
-                        TestHelper.mockedGroupPolicyCreatedDtoOutput.permCollaborateControl,
-                    hasJumpClientPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permJumpClient,
-                    hasLocalJumpPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permLocalJump,
-                    hasRemoteJumpPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permRemoteJump,
-                    hasRemoteVncPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permRemoteVnc,
-                    hasRemoteRdpPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permRemoteRdp,
-                    hasShellJumpPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permShellJump,
-                    hasWebJumpPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permWebJump,
-                    hasProtocolTunnelPermission: TestHelper.mockedGroupPolicyCreatedDtoOutput.permProtocolTunnel,
-                    hasSdStaticPortForExternalToolsPermission:
-                        TestHelper.mockedGroupPolicyCreatedDtoOutput.permSdStaticPortForExternalTools,
-                    defaultJumpItemRoleId: TestHelper.mockedGroupPolicyCreatedDtoOutput.defaultJumpItemRoleId,
-                    privateJumpItemRoleId: TestHelper.mockedGroupPolicyCreatedDtoOutput.privateJumpItemRoleId,
-                    inferiorJumpItemRoleId: TestHelper.mockedGroupPolicyCreatedDtoOutput.inferiorJumpItemRoleId,
-                    unassignedJumpItemRoleId: TestHelper.mockedGroupPolicyCreatedDtoOutput.unassignedJumpItemRoleId,
-                });
+                expect(result).toBe(expectedResult);
             },
         );
+
+        it('should throw an error if the command bus fails', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute').mockRejectedValue(new Error('Error'));
+
+            // Act & Assert
+            await expect(
+                handler.execute(<CreateGroupPolicyCommand>{
+                    transactionId: 'transaction-1',
+                    name: 'group-policy-1',
+                }),
+            ).rejects.toThrow('Error');
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should throw an error and publish an event if the repository service fails', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+            const groupPolicyEntityToBeCreated = { name: 'group-policy-1', btId: 123 } as GroupPolicyEntity;
+            const groupPolicyEntityCreateWithoutIdMethod = jest
+                .spyOn(GroupPolicyEntity, 'createWithoutId')
+                .mockReturnValue(groupPolicyEntityToBeCreated);
+            const expectedError = new Error('Error');
+            const groupPolicyRepositoryServiceCreateMethod = jest
+                .spyOn(groupPolicyRepositoryService, 'create')
+                .mockRejectedValue(expectedError);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+
+            // Act & Assert
+            await expect(
+                handler.execute(<CreateGroupPolicyCommand>{
+                    transactionId: 'transaction-1',
+                    name: 'group-policy-1',
+                }),
+            ).rejects.toThrow(expectedError);
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+            expect(groupPolicyEntityCreateWithoutIdMethod).toHaveBeenCalled();
+            expect(groupPolicyRepositoryServiceCreateMethod).toHaveBeenCalled();
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: GroupPolicyCreationFailedEvent.EVENT_TYPE,
+                    payload: {
+                        error: expectedError,
+                        groupPolicy: groupPolicyEntityToBeCreated,
+                    },
+                }),
+            );
+        });
     });
 });
 
@@ -181,4 +254,11 @@ function mockCommandBus() {
     commandBus.execute = jest.fn().mockResolvedValue(TestHelper.mockedGroupPolicyCreatedDtoOutput);
 
     return commandBus;
+}
+
+function mockGroupPolicyRepositoryService() {
+    const groupPolicyRepositoryService = {} as GroupPolicyRepositoryService;
+    groupPolicyRepositoryService.create = jest.fn();
+
+    return groupPolicyRepositoryService;
 }

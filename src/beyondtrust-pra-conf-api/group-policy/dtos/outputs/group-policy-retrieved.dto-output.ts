@@ -1,10 +1,10 @@
 import { Expose } from 'class-transformer';
 import { AccessPermissionStatusType } from '../../enums';
 
-export class GroupPoliciesRetrievedDtoOutput {
+export class GroupPolicyRetrievedDtoOutput {
     public name!: string;
 
-    public id?: number;
+    public id!: number;
 
     @Expose({ name: 'perm_access_allowed' })
     public permAccessAllowed?: boolean;

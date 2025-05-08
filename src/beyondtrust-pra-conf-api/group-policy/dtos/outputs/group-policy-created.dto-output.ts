@@ -4,7 +4,7 @@ import { AccessPermissionStatusType } from '../../enums';
 export class GroupPolicyCreatedDtoOutput {
     public name!: string;
 
-    public id?: number;
+    public id!: number;
 
     @Expose({ name: 'perm_access_allowed' })
     public permAccessAllowed?: boolean;

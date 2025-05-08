@@ -1,18 +1,6 @@
 import { DataSource } from 'typeorm';
-import { GroupPolicyEntity } from '../entities';
+import { BaseRepositoryService } from '../../../core/services/base-repository.service';
 import { GroupPolicyRepositoryService } from './group-policy-repository.service';
-
-// Mock BaseRepositoryService
-const baseRepositoryCreateMethod = jest.fn();
-jest.mock('../../../core/services/base-repository.service', () => {
-    return {
-        BaseRepositoryService: jest.fn().mockImplementation(() => {
-            return {
-                create: baseRepositoryCreateMethod,
-            };
-        }),
-    };
-});
 
 describe('GroupPolicyRepositoryService', () => {
     let service: GroupPolicyRepositoryService;
@@ -23,13 +11,45 @@ describe('GroupPolicyRepositoryService', () => {
         service = new GroupPolicyRepositoryService(dataSource);
     });
 
-    describe('create', () => {
-        it('should call create method from the base class', async () => {
-            const entity = {} as GroupPolicyEntity;
+    describe('createOrUpdateByBTId', () => {
+        it('should call createOrUpdate with the correct parameters', async () => {
+            const entity = { btId: 1, name: 'Test Policy' };
+            const expectedConflictPaths = ['btId'];
+            const baseRepositoryCreateOrUpdateMethod = jest
+                .spyOn(BaseRepositoryService.prototype, 'createOrUpdate')
+                .mockReturnValue(Promise.resolve());
 
-            await service.create(entity);
+            await service.createOrUpdateByBTId(entity);
 
-            expect(baseRepositoryCreateMethod).toHaveBeenCalledWith(entity);
+            expect(baseRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(entity, expectedConflictPaths);
+        });
+    });
+
+    describe('findOneByBTId', () => {
+        it('should call findOneBy with the correct parameters', async () => {
+            const btId = 1;
+            const expectedWhere = { btId: btId };
+            const baseRepositoryFindOneByMethod = jest
+                .spyOn(BaseRepositoryService.prototype, 'findOneBy')
+                .mockReturnValue(Promise.resolve());
+
+            await service.findOneByBTId(btId);
+
+            expect(baseRepositoryFindOneByMethod).toHaveBeenCalledWith(expectedWhere);
+        });
+    });
+
+    describe('deleteByBTId', () => {
+        it('should call deleteBy with the correct parameters', async () => {
+            const btId = 1;
+            const expectedWhere = { btId: btId };
+            const baseRepositoryDeleteByMethod = jest
+                .spyOn(BaseRepositoryService.prototype, 'deleteBy')
+                .mockReturnValue(Promise.resolve());
+
+            await service.deleteByBTId(btId);
+
+            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
         });
     });
 });

@@ -1,13 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AccessPermissionStatusType } from '../../enums';
-import { GroupPolicyUpdated } from '../../models';
+import { GroupPolicy } from '../../models';
 
-export class GroupPolicyUpdatedDtoOutput implements GroupPolicyUpdated {
+export class GroupPolicyUpdatedDtoOutput implements GroupPolicy {
+    @ApiProperty({ required: true, type: Number })
+    public id!: number;
+
     @ApiProperty({ required: true, type: String })
     public name!: string;
 
-    @ApiProperty({ required: false, type: Number })
-    public id?: number;
+    @ApiProperty({ required: true, type: Number })
+    public btId!: number;
 
     @ApiProperty({ required: false, type: Boolean })
     public hasEndpointsAccessPermission?: boolean;
