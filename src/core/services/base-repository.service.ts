@@ -58,6 +58,26 @@ export class BaseRepositoryService<T> {
         }
     }
 
+    public async findBy<K extends Extract<keyof T, string>>(
+        where: Pick<T, K>,
+        pageNumber: number,
+        pageSize: number,
+    ): Promise<T[]> {
+        const queryRunner = await this.createQueryRunnerAndConnect();
+
+        try {
+            const entities = await queryRunner.manager.find(this.entity, {
+                where: where,
+                skip: (pageNumber - 1) * pageSize,
+                take: pageSize,
+            });
+
+            return entities as T[];
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
     public async deleteBy<K extends Extract<keyof T, string>>(where: Pick<T, K>): Promise<void> {
         const queryRunner = await this.createQueryRunnerAndConnect();
         await queryRunner.startTransaction();

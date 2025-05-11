@@ -180,6 +180,50 @@ describe('BaseRepositoryService', () => {
         });
     });
 
+    describe('findBy', () => {
+        it('should connect to db, find the entities and return the value', async () => {
+            const dbEntities = [
+                TestHelper.mockRepositoryEntity('entity-1'),
+                TestHelper.mockRepositoryEntity('entity-2'),
+            ];
+            const {
+                dataSourceQueryRunnerConnectMethod,
+                dataSourceQueryRunnerManagerFindMethod,
+                dataSourceQueryRunnerReleaseMethod,
+            } = spyDataSource(dataSource);
+            dataSourceQueryRunnerManagerFindMethod.mockResolvedValue(dbEntities);
+
+            const result = await service.findBy({ id: 1 }, 1, 10);
+
+            expect(dataSourceQueryRunnerConnectMethod).toHaveBeenCalledTimes(1);
+            expect(dataSourceQueryRunnerManagerFindMethod).toHaveBeenCalledWith(MockEntity, {
+                where: { id: 1 },
+                skip: 0,
+                take: 10,
+            });
+            expect(dataSourceQueryRunnerReleaseMethod).toHaveBeenCalledTimes(1);
+            expect(result).toBe(dbEntities);
+        });
+
+        it('should throw an error when an error occurs on finding the entity', async () => {
+            const error = new Error('Error 123');
+            const {
+                dataSourceQueryRunnerConnectMethod,
+                dataSourceQueryRunnerManagerFindMethod,
+                dataSourceQueryRunnerReleaseMethod,
+            } = spyDataSource(dataSource);
+            dataSourceQueryRunnerManagerFindMethod.mockImplementation(() => {
+                throw error;
+            });
+
+            await expect(service.findBy({ id: 1 }, 1, 10)).rejects.toThrow(error);
+
+            expect(dataSourceQueryRunnerConnectMethod).toHaveBeenCalledTimes(1);
+            expect(dataSourceQueryRunnerManagerFindMethod).toHaveBeenCalledTimes(1);
+            expect(dataSourceQueryRunnerReleaseMethod).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('deleteBy', () => {
         it('should connect to db, start transaction, delete the entity, commit the transaction, release the connection and return the value', async () => {
             const {
@@ -237,6 +281,7 @@ function mockDataSource(): DataSource {
             save: jest.fn(),
             upsert: jest.fn(),
             findOne: jest.fn(),
+            find: jest.fn(),
             delete: jest.fn(),
         },
         commitTransaction: jest.fn(),
@@ -261,6 +306,9 @@ function spyDataSource(dataSource: DataSource) {
     const dataSourceQueryRunnerManagerFindOneMethod = jest
         .spyOn(dataSource.createQueryRunner().manager, 'findOne')
         .mockResolvedValue(null);
+    const dataSourceQueryRunnerManagerFindMethod = jest
+        .spyOn(dataSource.createQueryRunner().manager, 'find')
+        .mockResolvedValue([] as unknown as MockEntity[]);
     const dataSourceQueryRunnerManagerDeleteMethod = jest
         .spyOn(dataSource.createQueryRunner().manager, 'delete')
         .mockResolvedValue({} as DeleteResult);
@@ -281,6 +329,7 @@ function spyDataSource(dataSource: DataSource) {
         dataSourceQueryRunnerManagerCreateMethod,
         dataSourceQueryRunnerManagerUpsertMethod,
         dataSourceQueryRunnerManagerFindOneMethod,
+        dataSourceQueryRunnerManagerFindMethod,
         dataSourceQueryRunnerManagerDeleteMethod,
         dataSourceQueryRunnerManagerSaveMethod,
         dataSourceQueryRunnerCommitTransactionMethod,

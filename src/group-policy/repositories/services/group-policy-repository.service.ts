@@ -9,15 +9,15 @@ export class GroupPolicyRepositoryService extends BaseRepositoryService<GroupPol
         super(dataSource, GroupPolicyEntity);
     }
 
-    public async createOrUpdateByBTId(entity: Partial<GroupPolicyEntity>): Promise<void> {
-        await super.createOrUpdate(entity, ['btId']);
+    public async createOrUpdateById(entity: Partial<GroupPolicyEntity>): Promise<void> {
+        await super.createOrUpdate(entity, ['id']);
     }
 
-    public async findOneByBTId(btId: number): Promise<GroupPolicyEntity | null> {
-        return await super.findOneBy({ btId: btId });
+    public async findOneById(id: number): Promise<GroupPolicyEntity | null> {
+        return await super.findOneBy({ id: id });
     }
 
-    public async deleteByBTId(btId: number): Promise<void> {
-        return await super.deleteBy({ btId: btId });
+    public async deleteById(id: number): Promise<void> {
+        return await super.deleteBy({ id: id });
     }
 }

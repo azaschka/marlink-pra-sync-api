@@ -1,17 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 import { AccessPermissionStatusType } from '../../enums';
 import { GroupPolicy } from '../../models';
 
 @Entity({ name: 'group_policies' })
 export class GroupPolicyEntity implements GroupPolicy {
-    @PrimaryGeneratedColumn({ name: 'id', type: 'int' })
+    @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
 
     @Column({ name: 'name', type: 'varchar', length: 255 })
     public name!: string;
-
-    @Column({ name: 'bt_id', type: 'int', unique: true })
-    public btId!: number;
 
     @Column({ name: 'has_endpoints_access_permission', type: 'boolean', nullable: true })
     public hasEndpointsAccessPermission?: boolean;
@@ -79,9 +76,9 @@ export class GroupPolicyEntity implements GroupPolicy {
     @Column({ name: 'unassigned_jump_item_role_id', type: 'int', nullable: true })
     public unassignedJumpItemRoleId?: number;
 
-    public static createWithoutId(
+    public static create(
+        id: number,
         name: string,
-        btId: number,
         hasEndpointsAccessPermission?: boolean,
         accessPermissionStatusType?: AccessPermissionStatusType,
         hasShareOtherTeamPermission?: boolean,
@@ -106,8 +103,8 @@ export class GroupPolicyEntity implements GroupPolicy {
         unassignedJumpItemRoleId?: number,
     ): GroupPolicyEntity {
         const entity = new GroupPolicyEntity();
+        entity.id = id;
         entity.name = name;
-        entity.btId = btId;
         entity.hasEndpointsAccessPermission = hasEndpointsAccessPermission;
         entity.accessPermissionStatusType = accessPermissionStatusType;
         entity.hasShareOtherTeamPermission = hasShareOtherTeamPermission;
@@ -130,64 +127,6 @@ export class GroupPolicyEntity implements GroupPolicy {
         entity.privateJumpItemRoleId = privateJumpItemRoleId;
         entity.inferiorJumpItemRoleId = inferiorJumpItemRoleId;
         entity.unassignedJumpItemRoleId = unassignedJumpItemRoleId;
-
-        return entity;
-    }
-
-    public static create(
-        id: number,
-        name: string,
-        btId: number,
-        hasEndpointsAccessPermission?: boolean,
-        accessPermissionStatusType?: AccessPermissionStatusType,
-        hasShareOtherTeamPermission?: boolean,
-        hasInviteExternalUserPermission?: boolean,
-        userSessionIdleTimeoutInSeconds?: number,
-        hasEnableExtendedAvailabilityModePermission?: boolean,
-        hasEditExternalKeyPermission?: boolean,
-        hasCollaboratePermission?: boolean,
-        hasCollaborateControlPermission?: boolean,
-        hasJumpClientPermission?: boolean,
-        hasLocalJumpPermission?: boolean,
-        hasRemoteJumpPermission?: boolean,
-        hasRemoteVncPermission?: boolean,
-        hasRemoteRdpPermission?: boolean,
-        hasShellJumpPermission?: boolean,
-        hasWebJumpPermission?: boolean,
-        hasProtocolTunnelPermission?: boolean,
-        hasSdStaticPortForExternalToolsPermission?: boolean,
-        defaultJumpItemRoleId?: number,
-        privateJumpItemRoleId?: number,
-        inferiorJumpItemRoleId?: number,
-        unassignedJumpItemRoleId?: number,
-    ) {
-        const entity = this.createWithoutId(
-            name,
-            btId,
-            hasEndpointsAccessPermission,
-            accessPermissionStatusType,
-            hasShareOtherTeamPermission,
-            hasInviteExternalUserPermission,
-            userSessionIdleTimeoutInSeconds,
-            hasEnableExtendedAvailabilityModePermission,
-            hasEditExternalKeyPermission,
-            hasCollaboratePermission,
-            hasCollaborateControlPermission,
-            hasJumpClientPermission,
-            hasLocalJumpPermission,
-            hasRemoteJumpPermission,
-            hasRemoteVncPermission,
-            hasRemoteRdpPermission,
-            hasShellJumpPermission,
-            hasWebJumpPermission,
-            hasProtocolTunnelPermission,
-            hasSdStaticPortForExternalToolsPermission,
-            defaultJumpItemRoleId,
-            privateJumpItemRoleId,
-            inferiorJumpItemRoleId,
-            unassignedJumpItemRoleId,
-        );
-        entity.id = id;
 
         return entity;
     }

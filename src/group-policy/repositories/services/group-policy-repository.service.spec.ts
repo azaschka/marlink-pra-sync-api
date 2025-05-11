@@ -11,43 +11,43 @@ describe('GroupPolicyRepositoryService', () => {
         service = new GroupPolicyRepositoryService(dataSource);
     });
 
-    describe('createOrUpdateByBTId', () => {
+    describe('createOrUpdateById', () => {
         it('should call createOrUpdate with the correct parameters', async () => {
-            const entity = { btId: 1, name: 'Test Policy' };
-            const expectedConflictPaths = ['btId'];
+            const entity = { id: 1, name: 'Test Policy' };
+            const expectedConflictPaths = ['id'];
             const baseRepositoryCreateOrUpdateMethod = jest
                 .spyOn(BaseRepositoryService.prototype, 'createOrUpdate')
                 .mockReturnValue(Promise.resolve());
 
-            await service.createOrUpdateByBTId(entity);
+            await service.createOrUpdateById(entity);
 
             expect(baseRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(entity, expectedConflictPaths);
         });
     });
 
-    describe('findOneByBTId', () => {
+    describe('findOneById', () => {
         it('should call findOneBy with the correct parameters', async () => {
-            const btId = 1;
-            const expectedWhere = { btId: btId };
+            const id = 1;
+            const expectedWhere = { id: id };
             const baseRepositoryFindOneByMethod = jest
                 .spyOn(BaseRepositoryService.prototype, 'findOneBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.findOneByBTId(btId);
+            await service.findOneById(id);
 
             expect(baseRepositoryFindOneByMethod).toHaveBeenCalledWith(expectedWhere);
         });
     });
 
-    describe('deleteByBTId', () => {
+    describe('deleteById', () => {
         it('should call deleteBy with the correct parameters', async () => {
-            const btId = 1;
-            const expectedWhere = { btId: btId };
+            const id = 1;
+            const expectedWhere = { id: id };
             const baseRepositoryDeleteByMethod = jest
                 .spyOn(BaseRepositoryService.prototype, 'deleteBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteByBTId(btId);
+            await service.deleteById(id);
 
             expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
         });

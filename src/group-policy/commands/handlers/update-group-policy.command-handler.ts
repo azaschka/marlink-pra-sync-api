@@ -1,9 +1,12 @@
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { ModifyGroupPolicyCommand as BTModifyGroupPolicyCommand } from '../../../beyondtrust-pra-conf-api/group-policy/commands';
 import { GroupPolicyModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
-import { GroupPolicyUpdatedEvent } from '../../events';
+import { ErrorProcessorUtility } from '../../../shared/utilities';
+import { GroupPolicyUpdatedEvent, GroupPolicyUpdateFailedEvent } from '../../events';
 import { mapFromBTAccessPermissionStatusType, mapToBTAccessPermissionStatusType } from '../../mappers';
-import { GroupPolicyUpdated } from '../../models';
+import { GroupPolicy } from '../../models';
+import { GroupPolicyEntity } from '../../repositories/entities';
+import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { UpdateGroupPolicyCommand } from '../update-group-policy.command';
 
 @CommandHandler(UpdateGroupPolicyCommand)
@@ -11,10 +14,37 @@ export class UpdateGroupPolicyCommandHandler implements ICommandHandler<UpdateGr
     constructor(
         private readonly commandBus: CommandBus,
         private readonly eventBus: EventBus,
+        private readonly groupPolicyRepositoryService: GroupPolicyRepositoryService,
     ) {}
 
-    public async execute(command: UpdateGroupPolicyCommand): Promise<GroupPolicyUpdated> {
-        const btGroupPolicy = await this.commandBus.execute<BTModifyGroupPolicyCommand, GroupPolicyModifiedDtoOutput>(
+    public async execute(command: UpdateGroupPolicyCommand): Promise<GroupPolicy> {
+        const btGroupPolicy = await this.modifyBTGroupPolicy(command);
+        const groupPolicyEntity = this.createGroupPolicyEntity(btGroupPolicy);
+
+        try {
+            const updatedGroupPolicy = await this.updateGroupPolicy(groupPolicyEntity);
+
+            this.eventBus.publish(
+                new GroupPolicyUpdatedEvent(command.transactionId, {
+                    groupPolicy: updatedGroupPolicy,
+                }),
+            );
+
+            return updatedGroupPolicy;
+        } catch (error) {
+            this.eventBus.publish(
+                new GroupPolicyUpdateFailedEvent(command.transactionId, {
+                    errorMessage: ErrorProcessorUtility.stringify(error),
+                    groupPolicy: groupPolicyEntity,
+                }),
+            );
+
+            throw error;
+        }
+    }
+
+    private async modifyBTGroupPolicy(command: UpdateGroupPolicyCommand) {
+        return await this.commandBus.execute<BTModifyGroupPolicyCommand, GroupPolicyModifiedDtoOutput>(
             new BTModifyGroupPolicyCommand(
                 command.transactionId,
                 command.id,
@@ -45,69 +75,48 @@ export class UpdateGroupPolicyCommandHandler implements ICommandHandler<UpdateGr
                 command.unassignedJumpItemRoleId,
             ),
         );
-
-        const groupPolicyUpdated: GroupPolicyUpdated = {
-            name: btGroupPolicy.name,
-            id: btGroupPolicy.id,
-            hasEndpointsAccessPermission: btGroupPolicy.permAccessAllowed,
-            accessPermissionStatusType: btGroupPolicy.accessPermStatus
-                ? mapFromBTAccessPermissionStatusType(btGroupPolicy.accessPermStatus)
-                : undefined,
-            hasShareOtherTeamPermission: btGroupPolicy.permShareOtherTeam,
-            hasInviteExternalUserPermission: btGroupPolicy.permInviteExternalUser,
-            userSessionIdleTimeoutInSeconds: btGroupPolicy.permSessionIdleTimeout,
-            hasEnableExtendedAvailabilityModePermission: btGroupPolicy.permExtendedAvailabilityModeAllowed,
-            hasEditExternalKeyPermission: btGroupPolicy.permEditExternalKey,
-            hasCollaboratePermission: btGroupPolicy.permCollaborate,
-            hasCollaborateControlPermission: btGroupPolicy.permCollaborateControl,
-            hasJumpClientPermission: btGroupPolicy.permJumpClient,
-            hasLocalJumpPermission: btGroupPolicy.permLocalJump,
-            hasRemoteJumpPermission: btGroupPolicy.permRemoteJump,
-            hasRemoteVncPermission: btGroupPolicy.permRemoteVnc,
-            hasRemoteRdpPermission: btGroupPolicy.permRemoteRdp,
-            hasShellJumpPermission: btGroupPolicy.permShellJump,
-            hasWebJumpPermission: btGroupPolicy.permWebJump,
-            hasProtocolTunnelPermission: btGroupPolicy.permProtocolTunnel,
-            hasSdStaticPortForExternalToolsPermission: btGroupPolicy.permSdStaticPortForExternalTools,
-            defaultJumpItemRoleId: btGroupPolicy.defaultJumpItemRoleId,
-            privateJumpItemRoleId: btGroupPolicy.privateJumpItemRoleId,
-            inferiorJumpItemRoleId: btGroupPolicy.inferiorJumpItemRoleId,
-            unassignedJumpItemRoleId: btGroupPolicy.unassignedJumpItemRoleId,
-        };
-
-        this.publishEvent(command);
-
-        return groupPolicyUpdated;
     }
 
-    private publishEvent(command: UpdateGroupPolicyCommand) {
-        this.eventBus.publish(
-            new GroupPolicyUpdatedEvent(command.transactionId, {
-                name: command.name,
-                id: command.id,
-                hasEndpointsAccessPermission: command.hasEndpointsAccessPermission,
-                accessPermissionStatusType: command.accessPermissionStatusType,
-                hasShareOtherTeamPermission: command.hasShareOtherTeamPermission,
-                hasInviteExternalUserPermission: command.hasInviteExternalUserPermission,
-                userSessionIdleTimeoutInSeconds: command.userSessionIdleTimeoutInSeconds,
-                hasEnableExtendedAvailabilityModePermission: command.hasEnableExtendedAvailabilityModePermission,
-                hasEditExternalKeyPermission: command.hasEditExternalKeyPermission,
-                hasCollaboratePermission: command.hasCollaboratePermission,
-                hasCollaborateControlPermission: command.hasCollaborateControlPermission,
-                hasJumpClientPermission: command.hasJumpClientPermission,
-                hasLocalJumpPermission: command.hasLocalJumpPermission,
-                hasRemoteJumpPermission: command.hasRemoteJumpPermission,
-                hasRemoteVncPermission: command.hasRemoteVncPermission,
-                hasRemoteRdpPermission: command.hasRemoteRdpPermission,
-                hasShellJumpPermission: command.hasShellJumpPermission,
-                hasWebJumpPermission: command.hasWebJumpPermission,
-                hasProtocolTunnelPermission: command.hasProtocolTunnelPermission,
-                hasSdStaticPortForExternalToolsPermission: command.hasSdStaticPortForExternalToolsPermission,
-                defaultJumpItemRoleId: command.defaultJumpItemRoleId,
-                privateJumpItemRoleId: command.privateJumpItemRoleId,
-                inferiorJumpItemRoleId: command.inferiorJumpItemRoleId,
-                unassignedJumpItemRoleId: command.unassignedJumpItemRoleId,
-            }),
+    private createGroupPolicyEntity(btGroupPolicy: GroupPolicyModifiedDtoOutput) {
+        return GroupPolicyEntity.create(
+            btGroupPolicy.id,
+            btGroupPolicy.name,
+            btGroupPolicy.permAccessAllowed,
+            btGroupPolicy.accessPermStatus
+                ? mapFromBTAccessPermissionStatusType(btGroupPolicy.accessPermStatus)
+                : undefined,
+            btGroupPolicy.permShareOtherTeam,
+            btGroupPolicy.permInviteExternalUser,
+            btGroupPolicy.permSessionIdleTimeout,
+            btGroupPolicy.permExtendedAvailabilityModeAllowed,
+            btGroupPolicy.permEditExternalKey,
+            btGroupPolicy.permCollaborate,
+            btGroupPolicy.permCollaborateControl,
+            btGroupPolicy.permJumpClient,
+            btGroupPolicy.permLocalJump,
+            btGroupPolicy.permRemoteJump,
+            btGroupPolicy.permRemoteVnc,
+            btGroupPolicy.permRemoteRdp,
+            btGroupPolicy.permShellJump,
+            btGroupPolicy.permWebJump,
+            btGroupPolicy.permProtocolTunnel,
+            btGroupPolicy.permSdStaticPortForExternalTools,
+            btGroupPolicy.defaultJumpItemRoleId,
+            btGroupPolicy.privateJumpItemRoleId,
+            btGroupPolicy.inferiorJumpItemRoleId,
+            btGroupPolicy.unassignedJumpItemRoleId,
         );
+    }
+
+    private async updateGroupPolicy(groupPolicyEntity: GroupPolicyEntity) {
+        await this.groupPolicyRepositoryService.createOrUpdateById(groupPolicyEntity);
+
+        const createdOrUpdatedGroupPolicy = await this.groupPolicyRepositoryService.findOneById(groupPolicyEntity.id);
+
+        if (!createdOrUpdatedGroupPolicy) {
+            throw new Error('Group policy has been created or updated but could not be retrieved.');
+        }
+
+        return createdOrUpdatedGroupPolicy;
     }
 }

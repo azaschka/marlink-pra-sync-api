@@ -3,7 +3,6 @@ import { AccessPermissionStatusType } from '../enums';
 export interface GroupPolicy {
     id: number;
     name: string;
-    btId: number;
     hasEndpointsAccessPermission?: boolean;
     accessPermissionStatusType?: AccessPermissionStatusType;
     hasShareOtherTeamPermission?: boolean;

@@ -77,9 +77,9 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
     }
 
     private createGroupPolicyEntity(btGroupPolicy: GroupPolicyCreatedDtoOutput) {
-        return GroupPolicyEntity.createWithoutId(
-            btGroupPolicy.name,
+        return GroupPolicyEntity.create(
             btGroupPolicy.id,
+            btGroupPolicy.name,
             btGroupPolicy.permAccessAllowed,
             btGroupPolicy.accessPermStatus
                 ? mapFromBTAccessPermissionStatusType(btGroupPolicy.accessPermStatus)

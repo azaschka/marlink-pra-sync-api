@@ -9,9 +9,6 @@ export class GroupPolicyUpdatedDtoOutput implements GroupPolicy {
     @ApiProperty({ required: true, type: String })
     public name!: string;
 
-    @ApiProperty({ required: true, type: Number })
-    public btId!: number;
-
     @ApiProperty({ required: false, type: Boolean })
     public hasEndpointsAccessPermission?: boolean;
 

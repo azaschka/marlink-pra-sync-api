@@ -104,12 +104,12 @@ describe('CreateGroupPolicyCommandHandler', () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
                 const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
 
-                const groupPolicyEntityToBeCreated = {} as GroupPolicyEntity;
-                const groupPolicyEntityCreateWithoutIdMethod = jest
-                    .spyOn(GroupPolicyEntity, 'createWithoutId')
+                const groupPolicyEntityToBeCreated = { id: 123 } as GroupPolicyEntity;
+                const groupPolicyEntityCreateMethod = jest
+                    .spyOn(GroupPolicyEntity, 'create')
                     .mockReturnValue(groupPolicyEntityToBeCreated);
 
-                const expectedResult = { id: 123 } as GroupPolicyEntity;
+                const expectedResult = { id: 321 } as GroupPolicyEntity;
                 const groupPolicyRepositoryServiceCreateMethod = jest
                     .spyOn(groupPolicyRepositoryService, 'create')
                     .mockResolvedValue(expectedResult);
@@ -148,9 +148,9 @@ describe('CreateGroupPolicyCommandHandler', () => {
                         command.unassignedJumpItemRoleId,
                     ),
                 );
-                expect(groupPolicyEntityCreateWithoutIdMethod).toHaveBeenCalledWith(
-                    TestHelper.mockedGroupPolicyCreatedDtoOutput.name,
+                expect(groupPolicyEntityCreateMethod).toHaveBeenCalledWith(
                     TestHelper.mockedGroupPolicyCreatedDtoOutput.id,
+                    TestHelper.mockedGroupPolicyCreatedDtoOutput.name,
                     TestHelper.mockedGroupPolicyCreatedDtoOutput.permAccessAllowed,
                     TestHelper.mockedGroupPolicyCreatedDtoOutput.accessPermStatus
                         ? mapFromBTAccessPermissionStatusType(
@@ -209,9 +209,9 @@ describe('CreateGroupPolicyCommandHandler', () => {
         it('should throw an error and publish an event if the repository service fails', async () => {
             // Arrange
             const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
-            const groupPolicyEntityToBeCreated = { name: 'group-policy-1', btId: 123 } as GroupPolicyEntity;
-            const groupPolicyEntityCreateWithoutIdMethod = jest
-                .spyOn(GroupPolicyEntity, 'createWithoutId')
+            const groupPolicyEntityToBeCreated = { name: 'group-policy-1', id: 123 } as GroupPolicyEntity;
+            const groupPolicyEntityCreateMethod = jest
+                .spyOn(GroupPolicyEntity, 'create')
                 .mockReturnValue(groupPolicyEntityToBeCreated);
             const expectedError = new Error('Error');
             const groupPolicyRepositoryServiceCreateMethod = jest
@@ -230,7 +230,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
-            expect(groupPolicyEntityCreateWithoutIdMethod).toHaveBeenCalled();
+            expect(groupPolicyEntityCreateMethod).toHaveBeenCalled();
             expect(groupPolicyRepositoryServiceCreateMethod).toHaveBeenCalled();
             expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
