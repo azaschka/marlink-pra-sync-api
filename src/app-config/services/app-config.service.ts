@@ -45,6 +45,9 @@ export class AppConfigService {
                     groupPolicy:
                         this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    team:
+                        this.configService.get<string>('BEYONDTRUST_API_TEAM_PATH') ??
+                        AppConfigService.DEFAULT_UNDEFINED_STRING,
                 },
                 communication: {
                     retryAttempts:

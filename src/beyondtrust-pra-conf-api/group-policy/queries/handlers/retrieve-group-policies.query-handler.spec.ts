@@ -7,7 +7,7 @@ import { RetrieveGroupPoliciesQuery } from '../retrieve-group-policies.query';
 import { RetrieveGroupPoliciesQueryHandler } from './retrieve-group-policies.query-handler';
 
 abstract class TestHelper {
-    public static get mockedGroupPoliciesRetrievedDtoOutputs(): GroupPolicyRetrievedDtoOutput[] {
+    public static get mockedGroupPolicyRetrievedDtoOutputs(): GroupPolicyRetrievedDtoOutput[] {
         return [
             {
                 name: 'group-policy-1',
@@ -112,7 +112,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
                     expectedHttpClientParams,
                 );
 
-                expect(result).toStrictEqual(TestHelper.mockedGroupPoliciesRetrievedDtoOutputs);
+                expect(result).toStrictEqual(TestHelper.mockedGroupPolicyRetrievedDtoOutputs);
             },
         );
     });
@@ -120,7 +120,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
 
 function mockHttpClientService() {
     const service = {} as HttpClientService;
-    service.get = jest.fn().mockResolvedValue(TestHelper.mockedGroupPoliciesRetrievedDtoOutputs);
+    service.get = jest.fn().mockResolvedValue(TestHelper.mockedGroupPolicyRetrievedDtoOutputs);
 
     return service;
 }
