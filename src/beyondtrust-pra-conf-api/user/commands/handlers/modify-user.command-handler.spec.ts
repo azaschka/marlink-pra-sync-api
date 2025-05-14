@@ -125,7 +125,7 @@ describe('ModifyUserCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/user/${command.userId}`,
+                    `https://api.example.com/user/${command.id}`,
                     expectedHttpClientBody,
                 );
 

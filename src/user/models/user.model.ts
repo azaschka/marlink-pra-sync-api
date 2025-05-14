@@ -4,9 +4,9 @@ import {
     UserViewVaultReportsPermissionType,
 } from '../enums';
 
-export interface UserCreated {
+export interface User {
+    id: number;
     publicDisplayName: string;
-    id?: number;
     securityProviderId?: number;
     username?: string;
     passwordExpirationDate?: Date | null;

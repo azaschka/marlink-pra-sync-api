@@ -1,13 +1,16 @@
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateUserCommand as BTCreateUserCommand } from '../../../beyondtrust-pra-conf-api/user/commands';
 import { UserCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
-import { UserCreatedEvent } from '../../events';
+import { ErrorProcessorUtility } from '../../../shared/utilities';
+import { UserCreatedEvent, UserCreationFailedEvent } from '../../events';
 import {
     mapFromBTUserAllowedAccessPermissionType,
     mapFromBTUserViewSupportReportsPermissionType,
     mapFromBTUserViewVaultReportsPermissionType,
 } from '../../mappers';
-import { UserCreated } from '../../models';
+import { User } from '../../models';
+import { UserEntity } from '../../repositories/entities';
+import { UserRepositoryService } from '../../repositories/services/user-repository.service';
 import { CreateUserCommand } from '../create-user.command';
 
 @CommandHandler(CreateUserCommand)
@@ -15,10 +18,37 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
     constructor(
         private readonly commandBus: CommandBus,
         private readonly eventBus: EventBus,
+        private readonly userRepositoryService: UserRepositoryService,
     ) {}
 
-    public async execute(command: CreateUserCommand): Promise<UserCreated> {
-        const btUser = await this.commandBus.execute<BTCreateUserCommand, UserCreatedDtoOutput>(
+    public async execute(command: CreateUserCommand): Promise<User> {
+        const btUser = await this.createBTUser(command);
+        const userEntity = this.createUserEntity(btUser);
+
+        try {
+            const createdUser = await this.userRepositoryService.create(userEntity);
+
+            this.eventBus.publish(
+                new UserCreatedEvent(command.transactionId, {
+                    user: createdUser,
+                }),
+            );
+
+            return createdUser;
+        } catch (error) {
+            this.eventBus.publish(
+                new UserCreationFailedEvent(command.transactionId, {
+                    errorMessage: ErrorProcessorUtility.stringify(error),
+                    user: userEntity,
+                }),
+            );
+
+            throw error;
+        }
+    }
+
+    private async createBTUser(command: CreateUserCommand) {
+        return await this.commandBus.execute<BTCreateUserCommand, UserCreatedDtoOutput>(
             new BTCreateUserCommand(
                 command.transactionId,
                 command.publicDisplayName,
@@ -33,68 +63,64 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
                 command.mustResetPasswordOnNextLogin,
             ),
         );
+    }
 
-        const user: UserCreated = {
-            publicDisplayName: btUser.publicDisplayName,
-            id: btUser.id,
-            securityProviderId: btUser.securityProviderId,
-            username: btUser.username,
-            passwordExpirationDate: btUser.passwordExpiration,
-            email: btUser.emailAddress,
-            preferredEmailLanguage: btUser.preferredEmailLanguage,
-            isTwoFactorAuthRequired: btUser.twoFactorRequired,
-            isLoginAllowed: btUser.enabled,
-            lastAuthenticationDate: btUser.lastAuthentication,
-            failedLoginAttempts: btUser.failedLogins,
-            mustResetPasswordOnNextLogin: btUser.passwordResetNextLogin,
-            creationDate: btUser.createdAt,
-            hasTwoFactorAuthEnabled: btUser.twoFactorEnabled,
-            fido2CredentialCount: btUser.fido2CredentialCount,
-            fido2LastUsedDate: btUser.fido2LastUsedDate,
-            hasAdminPermission: btUser.permAdmin,
-            hasSetPasswordsPermission: btUser.permSetPasswords,
-            hasAdminPushagentPermission: btUser.permAdminPushagents,
-            viewSupportReportsPermissionType: btUser.permViewSupportReports
+    private createUserEntity(btUser: UserCreatedDtoOutput) {
+        return UserEntity.create(
+            btUser.id,
+            btUser.publicDisplayName,
+            btUser.securityProviderId,
+            btUser.username,
+            btUser.passwordExpiration,
+            btUser.emailAddress,
+            btUser.preferredEmailLanguage,
+            btUser.twoFactorRequired,
+            btUser.enabled,
+            btUser.lastAuthentication,
+            btUser.failedLogins,
+            btUser.passwordResetNextLogin,
+            btUser.createdAt,
+            btUser.twoFactorEnabled,
+            btUser.fido2CredentialCount,
+            btUser.fido2LastUsedDate,
+            btUser.permAdmin,
+            btUser.permSetPasswords,
+            btUser.permAdminPushagents,
+            btUser.permViewSupportReports
                 ? mapFromBTUserViewSupportReportsPermissionType(btUser.permViewSupportReports)
                 : undefined,
-            viewVaultReportsPermissionType: btUser.permViewVaultReports
+            btUser.permViewVaultReports
                 ? mapFromBTUserViewVaultReportsPermissionType(btUser.permViewVaultReports)
                 : undefined,
-            hasViewSyslogReportsPermission: btUser.permViewSyslogReports,
-            hasViewSdRecordingsPermission: btUser.permViewSdRecordings,
-            hasEditJumpGroupsPermission: btUser.permEditJumpGroups,
-            hasEditSdTeamsPermission: btUser.permEditSdTeams,
-            hasEditCannedScriptsPermission: btUser.permEditCannedScripts,
-            hasEditCustomRepLinksPermission: btUser.permEditCustomRepLinks,
-            allowedAccessPermissionType: btUser.permAccessAllowed
-                ? mapFromBTUserAllowedAccessPermissionType(btUser.permAccessAllowed)
-                : undefined,
-            hasShareOtherTeamPermission: btUser.permShareOtherTeam,
-            hasInviteExternalUserPermission: btUser.permInviteExternalUser,
-            hasExtendedAvailabilityModeAllowedPermission: btUser.permExtendedAvailabilityModeAllowed,
-            hasEditExternalKeyPermission: btUser.permEditExternalKey,
-            hasSessionIdleTimeoutPermission: btUser.permSessionIdleTimeout,
-            hasCollaboratePermission: btUser.permCollaborate,
-            hasCollaborateControlPermission: btUser.permCollaborateControl,
-            hasJumpClientPermission: btUser.permJumpClient,
-            hasLocalJumpPermission: btUser.permLocalJump,
-            hasRemoteJumpPermission: btUser.permRemoteJump,
-            hasRemoteVncPermission: btUser.permRemoteVnc,
-            hasRemoteRdpPermission: btUser.permRemoteRdp,
-            hasShellJumpPermission: btUser.permShellJump,
-            defaultJumpItemRoleId: btUser.defaultJumpItemRoleId,
-            privateJumpItemRoleId: btUser.privateJumpItemRoleId,
-            inferiorJumpItemRoleId: btUser.inferiorJumpItemRoleId,
-            unassignedJumpItemRoleId: btUser.unassignedJumpItemRoleId,
-            hasWebJumpPermission: btUser.permWebJump,
-            hasProtocolTunnelPermission: btUser.permProtocolTunnel,
-            hasSdStaticPortForExternalToolsPermission: btUser.permSdStaticPortForExternalTools,
-            hasVaultPermission: btUser.permVault,
-            hasEndpointAutomationPermission: btUser.permEndpointAutomation,
-        };
-
-        this.eventBus.publish(new UserCreatedEvent(command.transactionId, user));
-
-        return user;
+            btUser.permViewSyslogReports,
+            btUser.permViewSdRecordings,
+            btUser.permEditJumpGroups,
+            btUser.permEditSdTeams,
+            btUser.permEditCannedScripts,
+            btUser.permEditCustomRepLinks,
+            btUser.permAccessAllowed ? mapFromBTUserAllowedAccessPermissionType(btUser.permAccessAllowed) : undefined,
+            btUser.permShareOtherTeam,
+            btUser.permInviteExternalUser,
+            btUser.permExtendedAvailabilityModeAllowed,
+            btUser.permEditExternalKey,
+            btUser.permSessionIdleTimeout,
+            btUser.permCollaborate,
+            btUser.permCollaborateControl,
+            btUser.permJumpClient,
+            btUser.permLocalJump,
+            btUser.permRemoteJump,
+            btUser.permRemoteVnc,
+            btUser.permRemoteRdp,
+            btUser.permShellJump,
+            btUser.defaultJumpItemRoleId,
+            btUser.privateJumpItemRoleId,
+            btUser.inferiorJumpItemRoleId,
+            btUser.unassignedJumpItemRoleId,
+            btUser.permWebJump,
+            btUser.permProtocolTunnel,
+            btUser.permSdStaticPortForExternalTools,
+            btUser.permVault,
+            btUser.permEndpointAutomation,
+        );
     }
 }

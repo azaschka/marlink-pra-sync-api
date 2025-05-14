@@ -3,6 +3,7 @@ import { UuidUtility } from '../../shared/utilities';
 import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, UpdateGroupPolicyCommand } from '../commands';
 import { AccessPermissionStatusType } from '../enums';
 import { GroupPolicy } from '../models';
+import { RetrieveGroupPoliciesQuery } from '../queries';
 import { GroupPolicyController } from './group-policy.controller';
 
 describe('GroupPolicyController', () => {
@@ -19,19 +20,19 @@ describe('GroupPolicyController', () => {
         UuidUtility.generate = jest.fn(() => 'uuid-123');
     });
 
-    describe('getGroupPolicies', () => {
+    describe('retrieveGroupPolicies', () => {
         it('should execute the query bus with the correct parameters and return the result', async () => {
             const expectedResult = [] as GroupPolicy[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.getGroupPolicies({ pageSize: 10, pageNumber: 1, name: 'group-policy-1' });
+            const result = await controller.retrieveGroupPolicies({
+                pageSize: 10,
+                pageNumber: 1,
+                name: 'group-policy-1',
+            });
 
             expect(queryBusExecuteSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    pageSize: 10,
-                    pageNumber: 1,
-                    name: 'group-policy-1',
-                }),
+                new RetrieveGroupPoliciesQuery('uuid-123', 10, 1, 'group-policy-1'),
             );
             expect(result).toBe(expectedResult);
         });

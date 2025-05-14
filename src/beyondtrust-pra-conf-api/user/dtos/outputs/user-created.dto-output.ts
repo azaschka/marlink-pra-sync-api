@@ -9,7 +9,7 @@ export class UserCreatedDtoOutput {
     @Expose({ name: 'public_display_name' })
     public publicDisplayName!: string;
 
-    public id?: number;
+    public id!: number;
 
     @Expose({ name: 'security_provider_id' })
     public securityProviderId?: number;

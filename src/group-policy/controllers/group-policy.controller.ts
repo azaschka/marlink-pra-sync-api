@@ -37,7 +37,7 @@ export class GroupPolicyController {
 
     @Get()
     @ApiOkResponse({ type: GroupPolicyRetrievedDtoOutput, isArray: true })
-    public async getGroupPolicies(
+    public async retrieveGroupPolicies(
         @Query() dtoInput: RetrieveGroupPoliciesDtoInput,
     ): Promise<GroupPolicyRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveGroupPoliciesQuery, GroupPolicy[]>(

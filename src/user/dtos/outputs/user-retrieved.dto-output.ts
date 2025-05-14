@@ -4,14 +4,14 @@ import {
     UserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType,
 } from '../../enums';
-import { UserRetrieved } from '../../models';
+import { User } from '../../models';
 
-export class UserRetrievedDtoOutput implements UserRetrieved {
+export class UserRetrievedDtoOutput implements User {
+    @ApiProperty({ required: true, type: Number })
+    public id!: number;
+
     @ApiProperty({ required: true, type: String })
     public publicDisplayName!: string;
-
-    @ApiProperty({ required: false, type: Number })
-    public id?: number;
 
     @ApiProperty({ required: false, type: Number })
     public securityProviderId?: number;

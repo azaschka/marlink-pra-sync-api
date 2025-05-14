@@ -3,6 +3,6 @@ export class DeleteUserCommand {
 
     constructor(
         public readonly transactionId: string,
-        public readonly userId: number,
+        public readonly id: number,
     ) {}
 }

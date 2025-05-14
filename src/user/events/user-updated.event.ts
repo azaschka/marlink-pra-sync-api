@@ -1,7 +1,9 @@
 import { BaseEvent } from '../../core/events';
-import { UserUpdated } from '../models';
+import { User } from '../models';
 
-export type UserUpdatedEventPayload = Partial<UserUpdated>;
+export interface UserUpdatedEventPayload {
+    user: User;
+}
 
 export class UserUpdatedEvent extends BaseEvent {
     public static readonly EVENT_TYPE = 'user-updated';

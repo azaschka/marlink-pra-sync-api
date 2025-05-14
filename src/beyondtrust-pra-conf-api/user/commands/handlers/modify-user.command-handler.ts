@@ -17,7 +17,7 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.path.user,
-            command.userId.toString(),
+            command.id.toString(),
         );
 
         return await this.httpClientService.patch<UserModifiedDtoOutput, UserModifiedDtoOutput>(

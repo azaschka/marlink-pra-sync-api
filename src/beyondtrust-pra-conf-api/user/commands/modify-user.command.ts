@@ -3,7 +3,7 @@ export class ModifyUserCommand {
 
     constructor(
         public readonly transactionId: string,
-        public readonly userId: number,
+        public readonly id: number,
         public readonly publicDisplayName: string,
         public readonly username?: string,
         public readonly password?: string,

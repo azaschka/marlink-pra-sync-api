@@ -5,7 +5,6 @@ import { AccessPermissionStatusType as BTAccessPermissionStatusType } from '../.
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { AccessPermissionStatusType } from '../../enums';
 import { GroupPolicyUpdatedEvent, GroupPolicyUpdateFailedEvent } from '../../events';
-import { mapFromBTAccessPermissionStatusType, mapToBTAccessPermissionStatusType } from '../../mappers';
 import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { UpdateGroupPolicyCommand } from '../update-group-policy.command';
@@ -59,10 +58,6 @@ describe('UpdateGroupPolicyCommandHandler', () => {
         eventBus = mockEventBus();
         groupPolicyRepositoryService = mockGroupPolicyRepositoryService();
         handler = new UpdateGroupPolicyCommandHandler(commandBus, eventBus, groupPolicyRepositoryService);
-    });
-
-    afterEach(() => {
-        jest.clearAllMocks();
     });
 
     describe('execute', () => {
@@ -129,9 +124,7 @@ describe('UpdateGroupPolicyCommandHandler', () => {
                         command.id,
                         command.name,
                         command.hasEndpointsAccessPermission,
-                        command.accessPermissionStatusType
-                            ? mapToBTAccessPermissionStatusType(command.accessPermissionStatusType)
-                            : undefined,
+                        command.accessPermissionStatusType as unknown as BTAccessPermissionStatusType,
                         command.hasShareOtherTeamPermission,
                         command.hasInviteExternalUserPermission,
                         command.userSessionIdleTimeoutInSeconds,
@@ -158,11 +151,7 @@ describe('UpdateGroupPolicyCommandHandler', () => {
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.id,
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.name,
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.permAccessAllowed,
-                    TestHelper.mockedGroupPolicyModifiedDtoOutput.accessPermStatus
-                        ? mapFromBTAccessPermissionStatusType(
-                              TestHelper.mockedGroupPolicyModifiedDtoOutput.accessPermStatus,
-                          )
-                        : undefined,
+                    TestHelper.mockedGroupPolicyModifiedDtoOutput.accessPermStatus,
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.permShareOtherTeam,
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.permInviteExternalUser,
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.permSessionIdleTimeout,

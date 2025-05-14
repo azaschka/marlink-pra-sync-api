@@ -6,7 +6,10 @@ import {
     UserViewSupportReportsPermissionType as BTUserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType as BTUserViewVaultReportsPermissionType,
 } from '../../../beyondtrust-pra-conf-api/user/enums';
-import { UserUpdatedEvent } from '../../events';
+import { ErrorProcessorUtility } from '../../../shared/utilities';
+import { UserUpdatedEvent, UserUpdateFailedEvent } from '../../events';
+import { UserEntity } from '../../repositories/entities';
+import { UserRepositoryService } from '../../repositories/services/user-repository.service';
 import { UpdateUserCommand } from '../update-user.command';
 import { UpdateUserCommandHandler } from './update-user.command-handler';
 
@@ -83,19 +86,21 @@ abstract class TestHelper {
 describe('UpdateUserCommandHandler', () => {
     let commandBus: CommandBus;
     let eventBus: EventBus;
+    let userRepositoryService: UserRepositoryService;
     let handler: UpdateUserCommandHandler;
 
     beforeEach(() => {
         commandBus = mockCommandBus();
         eventBus = mockEventBus();
-        handler = new UpdateUserCommandHandler(commandBus, eventBus);
+        userRepositoryService = mockUserRepositoryService();
+        handler = new UpdateUserCommandHandler(commandBus, eventBus, userRepositoryService);
     });
 
     describe('execute', () => {
         it.each([
             <UpdateUserCommand>{
                 transactionId: 'transaction-1',
-                userId: 1,
+                id: 123,
                 publicDisplayName: 'display-name-1',
                 username: 'user-1',
                 password: 'password-1',
@@ -109,22 +114,36 @@ describe('UpdateUserCommandHandler', () => {
             },
             <UpdateUserCommand>{
                 transactionId: 'transaction-2',
-                userId: 2,
+                id: 456,
                 publicDisplayName: 'display-name-2',
                 username: 'user-2',
             },
         ])(
-            'should call the command bus with correct parameters, publish an event and return the result',
+            'should call the command bus and repository service with correct parameters, publish an event and return the result',
             async (command) => {
+                // Arrange
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
                 const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
 
+                const userEntityToBeUpdated = { id: 123 } as UserEntity;
+                const userEntityCreateMethod = jest.spyOn(UserEntity, 'create').mockReturnValue(userEntityToBeUpdated);
+
+                const expectedResult = { id: 321 } as UserEntity;
+                const userRepositoryServiceCreateOrUpdateByIdMethod = jest
+                    .spyOn(userRepositoryService, 'createOrUpdateById')
+                    .mockResolvedValue(Promise.resolve());
+                const userRepositoryServiceFindByIdMethod = jest
+                    .spyOn(userRepositoryService, 'findOneById')
+                    .mockResolvedValue(Promise.resolve(expectedResult));
+
+                // Act
                 const result = await handler.execute(command);
 
+                // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyUserCommand(
                         command.transactionId,
-                        command.userId,
+                        command.id,
                         command.publicDisplayName,
                         command.username,
                         command.password,
@@ -137,80 +156,126 @@ describe('UpdateUserCommandHandler', () => {
                         command.mustResetPasswordOnNextLogin,
                     ),
                 );
+                expect(userEntityCreateMethod).toHaveBeenCalledWith(
+                    TestHelper.mockedUserModifiedDtoOutput.id,
+                    TestHelper.mockedUserModifiedDtoOutput.publicDisplayName,
+                    TestHelper.mockedUserModifiedDtoOutput.securityProviderId,
+                    TestHelper.mockedUserModifiedDtoOutput.username,
+                    TestHelper.mockedUserModifiedDtoOutput.passwordExpiration,
+                    TestHelper.mockedUserModifiedDtoOutput.emailAddress,
+                    TestHelper.mockedUserModifiedDtoOutput.preferredEmailLanguage,
+                    TestHelper.mockedUserModifiedDtoOutput.twoFactorRequired,
+                    TestHelper.mockedUserModifiedDtoOutput.enabled,
+                    TestHelper.mockedUserModifiedDtoOutput.lastAuthentication,
+                    TestHelper.mockedUserModifiedDtoOutput.failedLogins,
+                    TestHelper.mockedUserModifiedDtoOutput.passwordResetNextLogin,
+                    TestHelper.mockedUserModifiedDtoOutput.createdAt,
+                    TestHelper.mockedUserModifiedDtoOutput.twoFactorEnabled,
+                    TestHelper.mockedUserModifiedDtoOutput.fido2CredentialCount,
+                    TestHelper.mockedUserModifiedDtoOutput.fido2LastUsedDate,
+                    TestHelper.mockedUserModifiedDtoOutput.permAdmin,
+                    TestHelper.mockedUserModifiedDtoOutput.permSetPasswords,
+                    TestHelper.mockedUserModifiedDtoOutput.permAdminPushagents,
+                    TestHelper.mockedUserModifiedDtoOutput.permViewSupportReports,
+                    TestHelper.mockedUserModifiedDtoOutput.permViewVaultReports,
+                    TestHelper.mockedUserModifiedDtoOutput.permViewSyslogReports,
+                    TestHelper.mockedUserModifiedDtoOutput.permViewSdRecordings,
+                    TestHelper.mockedUserModifiedDtoOutput.permEditJumpGroups,
+                    TestHelper.mockedUserModifiedDtoOutput.permEditSdTeams,
+                    TestHelper.mockedUserModifiedDtoOutput.permEditCannedScripts,
+                    TestHelper.mockedUserModifiedDtoOutput.permEditCustomRepLinks,
+                    TestHelper.mockedUserModifiedDtoOutput.permAccessAllowed,
+                    TestHelper.mockedUserModifiedDtoOutput.permShareOtherTeam,
+                    TestHelper.mockedUserModifiedDtoOutput.permInviteExternalUser,
+                    TestHelper.mockedUserModifiedDtoOutput.permExtendedAvailabilityModeAllowed,
+                    TestHelper.mockedUserModifiedDtoOutput.permEditExternalKey,
+                    TestHelper.mockedUserModifiedDtoOutput.permSessionIdleTimeout,
+                    TestHelper.mockedUserModifiedDtoOutput.permCollaborate,
+                    TestHelper.mockedUserModifiedDtoOutput.permCollaborateControl,
+                    TestHelper.mockedUserModifiedDtoOutput.permJumpClient,
+                    TestHelper.mockedUserModifiedDtoOutput.permLocalJump,
+                    TestHelper.mockedUserModifiedDtoOutput.permRemoteJump,
+                    TestHelper.mockedUserModifiedDtoOutput.permRemoteVnc,
+                    TestHelper.mockedUserModifiedDtoOutput.permRemoteRdp,
+                    TestHelper.mockedUserModifiedDtoOutput.permShellJump,
+                    TestHelper.mockedUserModifiedDtoOutput.defaultJumpItemRoleId,
+                    TestHelper.mockedUserModifiedDtoOutput.privateJumpItemRoleId,
+                    TestHelper.mockedUserModifiedDtoOutput.inferiorJumpItemRoleId,
+                    TestHelper.mockedUserModifiedDtoOutput.unassignedJumpItemRoleId,
+                    TestHelper.mockedUserModifiedDtoOutput.permWebJump,
+                    TestHelper.mockedUserModifiedDtoOutput.permProtocolTunnel,
+                    TestHelper.mockedUserModifiedDtoOutput.permSdStaticPortForExternalTools,
+                    TestHelper.mockedUserModifiedDtoOutput.permVault,
+                    TestHelper.mockedUserModifiedDtoOutput.permEndpointAutomation,
+                );
+                expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated);
+                expect(userRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<UserUpdatedEvent>{
                         transactionId: command.transactionId,
                         eventType: UserUpdatedEvent.EVENT_TYPE,
                         payload: {
-                            id: command.userId,
-                            publicDisplayName: command.publicDisplayName,
-                            username: command.username,
-                            passwordExpirationDate: command.passwordExpirationDate,
-                            email: command.email,
-                            preferredEmailLanguage: command.preferredEmailLanguage,
-                            isTwoFactorAuthRequired: command.isTwoFactorAuthRequired,
-                            isLoginAllowed: command.isLoginAllowed,
-                            failedLoginAttempts: command.failedLoginAttempts,
-                            mustResetPasswordOnNextLogin: command.mustResetPasswordOnNextLogin,
+                            user: result,
                         },
                     }),
                 );
-                expect(result).toStrictEqual({
-                    publicDisplayName: TestHelper.mockedUserModifiedDtoOutput?.publicDisplayName,
-                    id: TestHelper.mockedUserModifiedDtoOutput?.id,
-                    securityProviderId: TestHelper.mockedUserModifiedDtoOutput?.securityProviderId,
-                    username: TestHelper.mockedUserModifiedDtoOutput?.username,
-                    passwordExpirationDate: TestHelper.mockedUserModifiedDtoOutput?.passwordExpiration,
-                    email: TestHelper.mockedUserModifiedDtoOutput?.emailAddress,
-                    preferredEmailLanguage: TestHelper.mockedUserModifiedDtoOutput?.preferredEmailLanguage,
-                    isTwoFactorAuthRequired: TestHelper.mockedUserModifiedDtoOutput?.twoFactorRequired,
-                    isLoginAllowed: TestHelper.mockedUserModifiedDtoOutput?.enabled,
-                    lastAuthenticationDate: TestHelper.mockedUserModifiedDtoOutput?.lastAuthentication,
-                    failedLoginAttempts: TestHelper.mockedUserModifiedDtoOutput?.failedLogins,
-                    mustResetPasswordOnNextLogin: TestHelper.mockedUserModifiedDtoOutput?.passwordResetNextLogin,
-                    creationDate: TestHelper.mockedUserModifiedDtoOutput?.createdAt,
-                    hasTwoFactorAuthEnabled: TestHelper.mockedUserModifiedDtoOutput?.twoFactorEnabled,
-                    fido2CredentialCount: TestHelper.mockedUserModifiedDtoOutput?.fido2CredentialCount,
-                    fido2LastUsedDate: TestHelper.mockedUserModifiedDtoOutput?.fido2LastUsedDate,
-                    hasAdminPermission: TestHelper.mockedUserModifiedDtoOutput?.permAdmin,
-                    hasSetPasswordsPermission: TestHelper.mockedUserModifiedDtoOutput?.permSetPasswords,
-                    hasAdminPushagentPermission: TestHelper.mockedUserModifiedDtoOutput?.permAdminPushagents,
-                    viewSupportReportsPermissionType: TestHelper.mockedUserModifiedDtoOutput?.permViewSupportReports,
-                    viewVaultReportsPermissionType: TestHelper.mockedUserModifiedDtoOutput?.permViewVaultReports,
-                    hasViewSyslogReportsPermission: TestHelper.mockedUserModifiedDtoOutput?.permViewSyslogReports,
-                    hasViewSdRecordingsPermission: TestHelper.mockedUserModifiedDtoOutput?.permViewSdRecordings,
-                    hasEditJumpGroupsPermission: TestHelper.mockedUserModifiedDtoOutput?.permEditJumpGroups,
-                    hasEditSdTeamsPermission: TestHelper.mockedUserModifiedDtoOutput?.permEditSdTeams,
-                    hasEditCannedScriptsPermission: TestHelper.mockedUserModifiedDtoOutput?.permEditCannedScripts,
-                    hasEditCustomRepLinksPermission: TestHelper.mockedUserModifiedDtoOutput?.permEditCustomRepLinks,
-                    allowedAccessPermissionType: TestHelper.mockedUserModifiedDtoOutput?.permAccessAllowed,
-                    hasShareOtherTeamPermission: TestHelper.mockedUserModifiedDtoOutput?.permShareOtherTeam,
-                    hasInviteExternalUserPermission: TestHelper.mockedUserModifiedDtoOutput?.permInviteExternalUser,
-                    hasExtendedAvailabilityModeAllowedPermission:
-                        TestHelper.mockedUserModifiedDtoOutput?.permExtendedAvailabilityModeAllowed,
-                    hasEditExternalKeyPermission: TestHelper.mockedUserModifiedDtoOutput?.permEditExternalKey,
-                    hasSessionIdleTimeoutPermission: TestHelper.mockedUserModifiedDtoOutput?.permSessionIdleTimeout,
-                    hasCollaboratePermission: TestHelper.mockedUserModifiedDtoOutput?.permCollaborate,
-                    hasCollaborateControlPermission: TestHelper.mockedUserModifiedDtoOutput?.permCollaborateControl,
-                    hasJumpClientPermission: TestHelper.mockedUserModifiedDtoOutput?.permJumpClient,
-                    hasLocalJumpPermission: TestHelper.mockedUserModifiedDtoOutput?.permLocalJump,
-                    hasRemoteJumpPermission: TestHelper.mockedUserModifiedDtoOutput?.permRemoteJump,
-                    hasRemoteVncPermission: TestHelper.mockedUserModifiedDtoOutput?.permRemoteVnc,
-                    hasRemoteRdpPermission: TestHelper.mockedUserModifiedDtoOutput?.permRemoteRdp,
-                    hasShellJumpPermission: TestHelper.mockedUserModifiedDtoOutput?.permShellJump,
-                    defaultJumpItemRoleId: TestHelper.mockedUserModifiedDtoOutput?.defaultJumpItemRoleId,
-                    privateJumpItemRoleId: TestHelper.mockedUserModifiedDtoOutput?.privateJumpItemRoleId,
-                    inferiorJumpItemRoleId: TestHelper.mockedUserModifiedDtoOutput?.inferiorJumpItemRoleId,
-                    unassignedJumpItemRoleId: TestHelper.mockedUserModifiedDtoOutput?.unassignedJumpItemRoleId,
-                    hasWebJumpPermission: TestHelper.mockedUserModifiedDtoOutput?.permWebJump,
-                    hasProtocolTunnelPermission: TestHelper.mockedUserModifiedDtoOutput?.permProtocolTunnel,
-                    hasSdStaticPortForExternalToolsPermission:
-                        TestHelper.mockedUserModifiedDtoOutput?.permSdStaticPortForExternalTools,
-                    hasVaultPermission: TestHelper.mockedUserModifiedDtoOutput?.permVault,
-                    hasEndpointAutomationPermission: TestHelper.mockedUserModifiedDtoOutput?.permEndpointAutomation,
-                });
+                expect(result).toBe(expectedResult);
             },
         );
+
+        it('should throw an error if the command bus fails', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute').mockRejectedValue(new Error('Error'));
+
+            // Act & Assert
+            await expect(
+                handler.execute(<UpdateUserCommand>{
+                    transactionId: 'transaction-1',
+                    id: 123,
+                    publicDisplayName: 'display-name-1',
+                    username: 'user-1',
+                }),
+            ).rejects.toThrow('Error');
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should throw an error and publish an event if the repository service fails', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+            const userEntityToBeCreated = { publicDisplayName: 'user-1', id: 123 } as UserEntity;
+            const userEntityCreateMethod = jest.spyOn(UserEntity, 'create').mockReturnValue(userEntityToBeCreated);
+            const expectedError = new Error('Error');
+            const userRepositoryServiceCreateOrUpdateByIdMethod = jest
+                .spyOn(userRepositoryService, 'createOrUpdateById')
+                .mockRejectedValue(expectedError);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+            const errorProcessorUtilityStringifyMethod = jest
+                .spyOn(ErrorProcessorUtility, 'stringify')
+                .mockReturnValue('expected-error-message');
+
+            // Act & Assert
+            await expect(
+                handler.execute(<UpdateUserCommand>{
+                    transactionId: 'transaction-1',
+                    id: 123,
+                    publicDisplayName: 'user-1',
+                }),
+            ).rejects.toThrow(expectedError);
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+            expect(userEntityCreateMethod).toHaveBeenCalled();
+            expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalled();
+            expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: UserUpdateFailedEvent.EVENT_TYPE,
+                    payload: {
+                        errorMessage: 'expected-error-message',
+                        user: userEntityToBeCreated,
+                    },
+                }),
+            );
+        });
     });
 });
 
@@ -226,4 +291,12 @@ function mockCommandBus() {
     commandBus.execute = jest.fn().mockResolvedValue(TestHelper.mockedUserModifiedDtoOutput);
 
     return commandBus;
+}
+
+function mockUserRepositoryService() {
+    const userRepositoryService = {} as UserRepositoryService;
+    userRepositoryService.createOrUpdateById = jest.fn();
+    userRepositoryService.findOneById = jest.fn();
+
+    return userRepositoryService;
 }

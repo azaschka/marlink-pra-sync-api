@@ -1,7 +1,9 @@
 import { BaseEvent } from '../../core/events';
-import { UserCreated } from '../models';
+import { User } from '../models';
 
-export type UserCreatedEventPayload = UserCreated;
+export interface UserCreatedEventPayload {
+    user: User;
+}
 
 export class UserCreatedEvent extends BaseEvent {
     public static readonly EVENT_TYPE = 'user-created';

@@ -18,7 +18,7 @@ import { UuidUtility } from '../../shared/utilities';
 import { CreateUserCommand, DeleteUserCommand, UpdateUserCommand } from '../commands';
 import { CreateUserDtoInput, RetrieveUsersDtoInput, UpdateUserDtoInput } from '../dtos/inputs';
 import { UserCreatedDtoOutput, UserRetrievedDtoOutput, UserUpdatedDtoOutput } from '../dtos/outputs';
-import { UserCreated, UserRetrieved, UserUpdated } from '../models';
+import { User } from '../models';
 import { RetrieveUsersQuery } from '../queries';
 
 @ApiBearerAuth()
@@ -34,7 +34,7 @@ export class UserController {
     @Get()
     @ApiOkResponse({ type: UserRetrievedDtoOutput, isArray: true })
     public async retrieveUsers(@Query() dtoInput: RetrieveUsersDtoInput): Promise<UserRetrievedDtoOutput[]> {
-        const result = await this.queryBus.execute<RetrieveUsersQuery, UserRetrieved[]>(
+        const result = await this.queryBus.execute<RetrieveUsersQuery, User[]>(
             new RetrieveUsersQuery(
                 UuidUtility.generate(),
                 dtoInput.pageSize,
@@ -51,7 +51,7 @@ export class UserController {
     @Post()
     @ApiCreatedResponse({ type: UserCreatedDtoOutput })
     public async createUser(@Body() dtoInput: CreateUserDtoInput): Promise<UserCreatedDtoOutput> {
-        const result = await this.commandBus.execute<CreateUserCommand, UserCreated>(
+        const result = await this.commandBus.execute<CreateUserCommand, User>(
             new CreateUserCommand(
                 UuidUtility.generate(),
                 dtoInput.publicDisplayName,
@@ -77,7 +77,7 @@ export class UserController {
         @Param('id') id: number,
         @Body() dtoInput: UpdateUserDtoInput,
     ): Promise<UserUpdatedDtoOutput> {
-        const result = await this.commandBus.execute<UpdateUserCommand, UserUpdated>(
+        const result = await this.commandBus.execute<UpdateUserCommand, User>(
             new UpdateUserCommand(
                 UuidUtility.generate(),
                 id,
