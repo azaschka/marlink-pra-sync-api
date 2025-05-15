@@ -1,5 +1,5 @@
-export class UpdateUserCommand {
-    public readonly commandType = 'update-user';
+export class ModifyUserCommand {
+    public readonly commandType = 'modify-user';
 
     constructor(
         public readonly transactionId: string,

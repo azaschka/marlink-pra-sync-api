@@ -2,11 +2,11 @@ import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { ModifyTeamCommand as BTModifyTeamCommand } from '../../../beyondtrust-pra-conf-api/team/commands';
 import { TeamModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { TeamUpdatedEvent, TeamUpdateFailedEvent } from '../../events';
+import { TeamModifiedEvent, TeamModificationFailedEvent } from '../../events';
 import { TeamEntity } from '../../repositories/entities';
 import { TeamRepositoryService } from '../../repositories/services/team-repository.service';
-import { UpdateTeamCommand } from '../update-team.command';
-import { UpdateTeamCommandHandler } from './update-team.command-handler';
+import { ModifyTeamCommand } from '../modify-team.command';
+import { ModifyTeamCommandHandler } from './modify-team.command-handler';
 
 abstract class TestHelper {
     public static get mockedTeamModifiedDtoOutput(): TeamModifiedDtoOutput {
@@ -19,29 +19,29 @@ abstract class TestHelper {
     }
 }
 
-describe('UpdateTeamCommandHandler', () => {
+describe('ModifyTeamCommandHandler', () => {
     let commandBus: CommandBus;
     let eventBus: EventBus;
     let teamRepositoryService: TeamRepositoryService;
-    let handler: UpdateTeamCommandHandler;
+    let handler: ModifyTeamCommandHandler;
 
     beforeEach(() => {
         commandBus = mockCommandBus();
         eventBus = mockEventBus();
         teamRepositoryService = mockTeamRepositoryService();
-        handler = new UpdateTeamCommandHandler(commandBus, eventBus, teamRepositoryService);
+        handler = new ModifyTeamCommandHandler(commandBus, eventBus, teamRepositoryService);
     });
 
     describe('execute', () => {
         it.each([
-            <UpdateTeamCommand>{
+            <ModifyTeamCommand>{
                 transactionId: 'transaction-1',
                 id: 1,
                 name: 'team-1',
                 codeName: 'team-code-1',
                 comments: 'team-comments-1',
             },
-            <UpdateTeamCommand>{
+            <ModifyTeamCommand>{
                 transactionId: 'transaction-2',
                 id: 2,
                 name: 'team-2',
@@ -86,9 +86,9 @@ describe('UpdateTeamCommandHandler', () => {
                 expect(teamRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(teamEntityToBeUpdated);
                 expect(teamRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(teamEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
-                    expect.objectContaining(<TeamUpdatedEvent>{
+                    expect.objectContaining(<TeamModifiedEvent>{
                         transactionId: command.transactionId,
-                        eventType: TeamUpdatedEvent.EVENT_TYPE,
+                        eventType: TeamModifiedEvent.EVENT_TYPE,
                         payload: {
                             team: result,
                         },
@@ -104,7 +104,7 @@ describe('UpdateTeamCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(<UpdateTeamCommand>{
+                handler.execute(<ModifyTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
                 }),
@@ -128,7 +128,7 @@ describe('UpdateTeamCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(<UpdateTeamCommand>{
+                handler.execute(<ModifyTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
                 }),
@@ -140,7 +140,7 @@ describe('UpdateTeamCommandHandler', () => {
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining({
                     transactionId: 'transaction-1',
-                    eventType: TeamUpdateFailedEvent.EVENT_TYPE,
+                    eventType: TeamModificationFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'expected-error-message',
                         team: teamEntityToBeCreated,

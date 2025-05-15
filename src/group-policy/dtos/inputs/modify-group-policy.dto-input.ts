@@ -1,11 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AccessPermissionStatusType } from '../../enums';
-import { GroupPolicy } from '../../models';
 
-export class GroupPolicyUpdatedDtoOutput implements GroupPolicy {
-    @ApiProperty({ required: true, type: Number })
-    public id!: number;
-
+export class ModifyGroupPolicyDtoInput {
     @ApiProperty({ required: true, type: String })
     public name!: string;
 

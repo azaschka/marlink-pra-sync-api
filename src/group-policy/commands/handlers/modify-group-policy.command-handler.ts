@@ -2,22 +2,22 @@ import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/c
 import { ModifyGroupPolicyCommand as BTModifyGroupPolicyCommand } from '../../../beyondtrust-pra-conf-api/group-policy/commands';
 import { GroupPolicyModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { GroupPolicyUpdatedEvent, GroupPolicyUpdateFailedEvent } from '../../events';
+import { GroupPolicyModifiedEvent, GroupPolicyModificationFailedEvent } from '../../events';
 import { mapFromBTAccessPermissionStatusType, mapToBTAccessPermissionStatusType } from '../../mappers';
 import { GroupPolicy } from '../../models';
 import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
-import { UpdateGroupPolicyCommand } from '../update-group-policy.command';
+import { ModifyGroupPolicyCommand } from '../modify-group-policy.command';
 
-@CommandHandler(UpdateGroupPolicyCommand)
-export class UpdateGroupPolicyCommandHandler implements ICommandHandler<UpdateGroupPolicyCommand> {
+@CommandHandler(ModifyGroupPolicyCommand)
+export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGroupPolicyCommand> {
     constructor(
         private readonly commandBus: CommandBus,
         private readonly eventBus: EventBus,
         private readonly groupPolicyRepositoryService: GroupPolicyRepositoryService,
     ) {}
 
-    public async execute(command: UpdateGroupPolicyCommand): Promise<GroupPolicy> {
+    public async execute(command: ModifyGroupPolicyCommand): Promise<GroupPolicy> {
         const btGroupPolicy = await this.modifyBTGroupPolicy(command);
         const groupPolicyEntity = this.createGroupPolicyEntity(btGroupPolicy);
 
@@ -25,7 +25,7 @@ export class UpdateGroupPolicyCommandHandler implements ICommandHandler<UpdateGr
             const updatedGroupPolicy = await this.updateGroupPolicy(groupPolicyEntity);
 
             this.eventBus.publish(
-                new GroupPolicyUpdatedEvent(command.transactionId, {
+                new GroupPolicyModifiedEvent(command.transactionId, {
                     groupPolicy: updatedGroupPolicy,
                 }),
             );
@@ -33,7 +33,7 @@ export class UpdateGroupPolicyCommandHandler implements ICommandHandler<UpdateGr
             return updatedGroupPolicy;
         } catch (error) {
             this.eventBus.publish(
-                new GroupPolicyUpdateFailedEvent(command.transactionId, {
+                new GroupPolicyModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicy: groupPolicyEntity,
                 }),
@@ -43,7 +43,7 @@ export class UpdateGroupPolicyCommandHandler implements ICommandHandler<UpdateGr
         }
     }
 
-    private async modifyBTGroupPolicy(command: UpdateGroupPolicyCommand) {
+    private async modifyBTGroupPolicy(command: ModifyGroupPolicyCommand) {
         return await this.commandBus.execute<BTModifyGroupPolicyCommand, GroupPolicyModifiedDtoOutput>(
             new BTModifyGroupPolicyCommand(
                 command.transactionId,

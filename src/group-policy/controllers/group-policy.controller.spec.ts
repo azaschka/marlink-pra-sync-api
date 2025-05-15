@@ -1,6 +1,6 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, UpdateGroupPolicyCommand } from '../commands';
+import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, ModifyGroupPolicyCommand } from '../commands';
 import { AccessPermissionStatusType } from '../enums';
 import { GroupPolicy } from '../models';
 import { RetrieveGroupPoliciesQuery } from '../queries';
@@ -101,12 +101,12 @@ describe('GroupPolicyController', () => {
         });
     });
 
-    describe('updateGroupPolicy', () => {
+    describe('modifyGroupPolicy', () => {
         it('should execute the command bus with the correct parameters and return the result', async () => {
             const expectedResult = {} as GroupPolicy;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.updateGroupPolicy(1, {
+            const result = await controller.modifyGroupPolicy(1, {
                 name: 'group-policy-1',
                 hasEndpointsAccessPermission: true,
                 accessPermissionStatusType: AccessPermissionStatusType.Defined,
@@ -133,7 +133,7 @@ describe('GroupPolicyController', () => {
             });
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(
-                new UpdateGroupPolicyCommand(
+                new ModifyGroupPolicyCommand(
                     'uuid-123',
                     1,
                     'group-policy-1',

@@ -6,8 +6,8 @@ import {
     HttpCode,
     HttpStatus,
     Param,
+    Patch,
     Post,
-    Put,
     Query,
     UsePipes,
     ValidationPipe,
@@ -15,9 +15,9 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateUserCommand, DeleteUserCommand, UpdateUserCommand } from '../commands';
-import { CreateUserDtoInput, RetrieveUsersDtoInput, UpdateUserDtoInput } from '../dtos/inputs';
-import { UserCreatedDtoOutput, UserRetrievedDtoOutput, UserUpdatedDtoOutput } from '../dtos/outputs';
+import { CreateUserCommand, DeleteUserCommand, ModifyUserCommand } from '../commands';
+import { CreateUserDtoInput, ModifyUserDtoInput, RetrieveUsersDtoInput } from '../dtos/inputs';
+import { UserCreatedDtoOutput, UserModifiedDtoOutput, UserRetrievedDtoOutput } from '../dtos/outputs';
 import { User } from '../models';
 import { RetrieveUsersQuery } from '../queries';
 
@@ -70,15 +70,15 @@ export class UserController {
         return result;
     }
 
-    @Put(':id')
+    @Patch(':id')
     @ApiParam({ name: 'id', type: Number, required: true })
-    @ApiOkResponse({ type: UserUpdatedDtoOutput })
-    public async updateUser(
+    @ApiOkResponse({ type: UserModifiedDtoOutput })
+    public async modifyUser(
         @Param('id') id: number,
-        @Body() dtoInput: UpdateUserDtoInput,
-    ): Promise<UserUpdatedDtoOutput> {
-        const result = await this.commandBus.execute<UpdateUserCommand, User>(
-            new UpdateUserCommand(
+        @Body() dtoInput: ModifyUserDtoInput,
+    ): Promise<UserModifiedDtoOutput> {
+        const result = await this.commandBus.execute<ModifyUserCommand, User>(
+            new ModifyUserCommand(
                 UuidUtility.generate(),
                 id,
                 dtoInput.publicDisplayName,

@@ -7,11 +7,11 @@ import {
     UserViewVaultReportsPermissionType as BTUserViewVaultReportsPermissionType,
 } from '../../../beyondtrust-pra-conf-api/user/enums';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { UserUpdatedEvent, UserUpdateFailedEvent } from '../../events';
+import { UserModifiedEvent, UserModificationFailedEvent } from '../../events';
 import { UserEntity } from '../../repositories/entities';
 import { UserRepositoryService } from '../../repositories/services/user-repository.service';
-import { UpdateUserCommand } from '../update-user.command';
-import { UpdateUserCommandHandler } from './update-user.command-handler';
+import { ModifyUserCommand } from '../modify-user.command';
+import { ModifyUserCommandHandler } from './modify-user.command-handler';
 
 // Mock mapper function to return original/input value
 jest.mock('../../mappers', () => ({
@@ -83,22 +83,22 @@ abstract class TestHelper {
     }
 }
 
-describe('UpdateUserCommandHandler', () => {
+describe('ModifyUserCommandHandler', () => {
     let commandBus: CommandBus;
     let eventBus: EventBus;
     let userRepositoryService: UserRepositoryService;
-    let handler: UpdateUserCommandHandler;
+    let handler: ModifyUserCommandHandler;
 
     beforeEach(() => {
         commandBus = mockCommandBus();
         eventBus = mockEventBus();
         userRepositoryService = mockUserRepositoryService();
-        handler = new UpdateUserCommandHandler(commandBus, eventBus, userRepositoryService);
+        handler = new ModifyUserCommandHandler(commandBus, eventBus, userRepositoryService);
     });
 
     describe('execute', () => {
         it.each([
-            <UpdateUserCommand>{
+            <ModifyUserCommand>{
                 transactionId: 'transaction-1',
                 id: 123,
                 publicDisplayName: 'display-name-1',
@@ -112,7 +112,7 @@ describe('UpdateUserCommandHandler', () => {
                 failedLoginAttempts: 0,
                 mustResetPasswordOnNextLogin: false,
             },
-            <UpdateUserCommand>{
+            <ModifyUserCommand>{
                 transactionId: 'transaction-2',
                 id: 456,
                 publicDisplayName: 'display-name-2',
@@ -211,9 +211,9 @@ describe('UpdateUserCommandHandler', () => {
                 expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated);
                 expect(userRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
-                    expect.objectContaining(<UserUpdatedEvent>{
+                    expect.objectContaining(<UserModifiedEvent>{
                         transactionId: command.transactionId,
-                        eventType: UserUpdatedEvent.EVENT_TYPE,
+                        eventType: UserModifiedEvent.EVENT_TYPE,
                         payload: {
                             user: result,
                         },
@@ -229,7 +229,7 @@ describe('UpdateUserCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(<UpdateUserCommand>{
+                handler.execute(<ModifyUserCommand>{
                     transactionId: 'transaction-1',
                     id: 123,
                     publicDisplayName: 'display-name-1',
@@ -255,7 +255,7 @@ describe('UpdateUserCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(<UpdateUserCommand>{
+                handler.execute(<ModifyUserCommand>{
                     transactionId: 'transaction-1',
                     id: 123,
                     publicDisplayName: 'user-1',
@@ -268,7 +268,7 @@ describe('UpdateUserCommandHandler', () => {
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining({
                     transactionId: 'transaction-1',
-                    eventType: UserUpdateFailedEvent.EVENT_TYPE,
+                    eventType: UserModificationFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'expected-error-message',
                         user: userEntityToBeCreated,

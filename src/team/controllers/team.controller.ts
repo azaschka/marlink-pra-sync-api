@@ -6,8 +6,8 @@ import {
     HttpCode,
     HttpStatus,
     Param,
+    Patch,
     Post,
-    Put,
     Query,
     UsePipes,
     ValidationPipe,
@@ -15,9 +15,9 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateTeamCommand, DeleteTeamCommand, UpdateTeamCommand } from '../commands';
-import { CreateTeamDtoInput, RetrieveTeamsDtoInput, UpdateTeamDtoInput } from '../dtos/inputs';
-import { TeamCreatedDtoOutput, TeamRetrievedDtoOutput, TeamUpdatedDtoOutput } from '../dtos/outputs';
+import { CreateTeamCommand, DeleteTeamCommand, ModifyTeamCommand } from '../commands';
+import { CreateTeamDtoInput, ModifyTeamDtoInput, RetrieveTeamsDtoInput } from '../dtos/inputs';
+import { TeamCreatedDtoOutput, TeamModifiedDtoOutput, TeamRetrievedDtoOutput } from '../dtos/outputs';
 import { Team } from '../models';
 import { RetrieveTeamsQuery } from '../queries';
 
@@ -57,14 +57,14 @@ export class TeamController {
         return result;
     }
 
-    @Put(':id')
-    @ApiOkResponse({ type: TeamUpdatedDtoOutput })
-    public async updateTeam(
+    @Patch(':id')
+    @ApiOkResponse({ type: TeamModifiedDtoOutput })
+    public async modifyTeam(
         @Query('id') id: number,
-        @Body() dtoInput: UpdateTeamDtoInput,
-    ): Promise<TeamUpdatedDtoOutput> {
-        const result = await this.commandBus.execute<UpdateTeamCommand, Team>(
-            new UpdateTeamCommand(UuidUtility.generate(), id, dtoInput.name, dtoInput.codeName, dtoInput.comments),
+        @Body() dtoInput: ModifyTeamDtoInput,
+    ): Promise<TeamModifiedDtoOutput> {
+        const result = await this.commandBus.execute<ModifyTeamCommand, Team>(
+            new ModifyTeamCommand(UuidUtility.generate(), id, dtoInput.name, dtoInput.codeName, dtoInput.comments),
         );
 
         return result;

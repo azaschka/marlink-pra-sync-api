@@ -1,6 +1,6 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateUserCommand, DeleteUserCommand, UpdateUserCommand } from '../commands';
+import { CreateUserCommand, DeleteUserCommand, ModifyUserCommand } from '../commands';
 import { User } from '../models';
 import { RetrieveUsersQuery } from '../queries';
 import { UserController } from './user.controller';
@@ -70,12 +70,12 @@ describe('UserController', () => {
         });
     });
 
-    describe('updateUser', () => {
+    describe('modifyUser', () => {
         it('should execute the command bus with the correct parameters and return the result', async () => {
             const expectedResult = {} as User;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.updateUser(1, {
+            const result = await controller.modifyUser(1, {
                 publicDisplayName: 'user-1',
                 username: 'username-1',
                 password: undefined,
@@ -87,7 +87,7 @@ describe('UserController', () => {
             });
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(
-                new UpdateUserCommand(
+                new ModifyUserCommand(
                     'uuid-123',
                     1,
                     'user-1',

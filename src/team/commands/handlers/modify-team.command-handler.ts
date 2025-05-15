@@ -2,21 +2,21 @@ import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/c
 import { ModifyTeamCommand as BTModifyTeamCommand } from '../../../beyondtrust-pra-conf-api/team/commands';
 import { TeamModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { TeamUpdatedEvent, TeamUpdateFailedEvent } from '../../events';
+import { TeamModificationFailedEvent, TeamModifiedEvent } from '../../events';
 import { Team } from '../../models';
 import { TeamEntity } from '../../repositories/entities';
 import { TeamRepositoryService } from '../../repositories/services/team-repository.service';
-import { UpdateTeamCommand } from '../update-team.command';
+import { ModifyTeamCommand } from '../modify-team.command';
 
-@CommandHandler(UpdateTeamCommand)
-export class UpdateTeamCommandHandler implements ICommandHandler<UpdateTeamCommand> {
+@CommandHandler(ModifyTeamCommand)
+export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamCommand> {
     constructor(
         private readonly commandBus: CommandBus,
         private readonly eventBus: EventBus,
         private readonly teamRepositoryService: TeamRepositoryService,
     ) {}
 
-    public async execute(command: UpdateTeamCommand): Promise<Team> {
+    public async execute(command: ModifyTeamCommand): Promise<Team> {
         const btTeam = await this.modifyBTTeam(command);
         const teamEntity = this.createTeamEntity(btTeam);
 
@@ -24,7 +24,7 @@ export class UpdateTeamCommandHandler implements ICommandHandler<UpdateTeamComma
             const updatedTeam = await this.updateTeam(teamEntity);
 
             this.eventBus.publish(
-                new TeamUpdatedEvent(command.transactionId, {
+                new TeamModifiedEvent(command.transactionId, {
                     team: updatedTeam,
                 }),
             );
@@ -32,7 +32,7 @@ export class UpdateTeamCommandHandler implements ICommandHandler<UpdateTeamComma
             return updatedTeam;
         } catch (error) {
             this.eventBus.publish(
-                new TeamUpdateFailedEvent(command.transactionId, {
+                new TeamModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     team: teamEntity,
                 }),
@@ -42,7 +42,7 @@ export class UpdateTeamCommandHandler implements ICommandHandler<UpdateTeamComma
         }
     }
 
-    private async modifyBTTeam(command: UpdateTeamCommand) {
+    private async modifyBTTeam(command: ModifyTeamCommand) {
         return await this.commandBus.execute<BTModifyTeamCommand, TeamModifiedDtoOutput>(
             new BTModifyTeamCommand(
                 command.transactionId,

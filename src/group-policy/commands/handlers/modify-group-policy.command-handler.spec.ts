@@ -4,11 +4,11 @@ import { GroupPolicyModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/
 import { AccessPermissionStatusType as BTAccessPermissionStatusType } from '../../../beyondtrust-pra-conf-api/group-policy/enums';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { AccessPermissionStatusType } from '../../enums';
-import { GroupPolicyUpdatedEvent, GroupPolicyUpdateFailedEvent } from '../../events';
+import { GroupPolicyModifiedEvent, GroupPolicyModificationFailedEvent } from '../../events';
 import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
-import { UpdateGroupPolicyCommand } from '../update-group-policy.command';
-import { UpdateGroupPolicyCommandHandler } from './update-group-policy.command-handler';
+import { ModifyGroupPolicyCommand } from '../modify-group-policy.command';
+import { ModifyGroupPolicyCommandHandler } from './modify-group-policy.command-handler';
 
 // Mock mapper function to return original/input value
 jest.mock('../../mappers', () => ({
@@ -47,22 +47,22 @@ abstract class TestHelper {
     }
 }
 
-describe('UpdateGroupPolicyCommandHandler', () => {
+describe('ModifyGroupPolicyCommandHandler', () => {
     let commandBus: CommandBus;
     let eventBus: EventBus;
     let groupPolicyRepositoryService: GroupPolicyRepositoryService;
-    let handler: UpdateGroupPolicyCommandHandler;
+    let handler: ModifyGroupPolicyCommandHandler;
 
     beforeEach(() => {
         commandBus = mockCommandBus();
         eventBus = mockEventBus();
         groupPolicyRepositoryService = mockGroupPolicyRepositoryService();
-        handler = new UpdateGroupPolicyCommandHandler(commandBus, eventBus, groupPolicyRepositoryService);
+        handler = new ModifyGroupPolicyCommandHandler(commandBus, eventBus, groupPolicyRepositoryService);
     });
 
     describe('execute', () => {
         it.each([
-            <UpdateGroupPolicyCommand>{
+            <ModifyGroupPolicyCommand>{
                 transactionId: 'transaction-1',
                 id: 1,
                 name: 'group-policy-1',
@@ -89,7 +89,7 @@ describe('UpdateGroupPolicyCommandHandler', () => {
                 inferiorJumpItemRoleId: 3,
                 unassignedJumpItemRoleId: 4,
             },
-            <UpdateGroupPolicyCommand>{
+            <ModifyGroupPolicyCommand>{
                 transactionId: 'transaction-2',
                 id: 2,
                 name: 'group-policy-2',
@@ -180,9 +180,9 @@ describe('UpdateGroupPolicyCommandHandler', () => {
                     groupPolicyEntityToBeUpdated.id,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
-                    expect.objectContaining(<GroupPolicyUpdatedEvent>{
+                    expect.objectContaining(<GroupPolicyModifiedEvent>{
                         transactionId: command.transactionId,
-                        eventType: GroupPolicyUpdatedEvent.EVENT_TYPE,
+                        eventType: GroupPolicyModifiedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicy: result,
                         },
@@ -198,7 +198,7 @@ describe('UpdateGroupPolicyCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(<UpdateGroupPolicyCommand>{
+                handler.execute(<ModifyGroupPolicyCommand>{
                     transactionId: 'transaction-1',
                     name: 'group-policy-1',
                 }),
@@ -224,7 +224,7 @@ describe('UpdateGroupPolicyCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(<UpdateGroupPolicyCommand>{
+                handler.execute(<ModifyGroupPolicyCommand>{
                     transactionId: 'transaction-1',
                     name: 'group-policy-1',
                 }),
@@ -236,7 +236,7 @@ describe('UpdateGroupPolicyCommandHandler', () => {
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining({
                     transactionId: 'transaction-1',
-                    eventType: GroupPolicyUpdateFailedEvent.EVENT_TYPE,
+                    eventType: GroupPolicyModificationFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'expected-error-message',
                         groupPolicy: groupPolicyEntityToBeCreated,

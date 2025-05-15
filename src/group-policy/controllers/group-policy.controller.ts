@@ -6,8 +6,8 @@ import {
     HttpCode,
     HttpStatus,
     Param,
+    Patch,
     Post,
-    Put,
     Query,
     UsePipes,
     ValidationPipe,
@@ -15,12 +15,12 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, UpdateGroupPolicyCommand } from '../commands';
-import { CreateGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput, UpdateGroupPolicyDtoInput } from '../dtos/inputs';
+import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, ModifyGroupPolicyCommand } from '../commands';
+import { CreateGroupPolicyDtoInput, ModifyGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput } from '../dtos/inputs';
 import {
     GroupPolicyCreatedDtoOutput,
+    GroupPolicyModifiedDtoOutput,
     GroupPolicyRetrievedDtoOutput,
-    GroupPolicyUpdatedDtoOutput,
 } from '../dtos/outputs';
 import { GroupPolicy } from '../models';
 import { RetrieveGroupPoliciesQuery } from '../queries';
@@ -87,14 +87,14 @@ export class GroupPolicyController {
         return result;
     }
 
-    @Put(':id')
-    @ApiOkResponse({ type: GroupPolicyUpdatedDtoOutput })
-    public async updateGroupPolicy(
+    @Patch(':id')
+    @ApiOkResponse({ type: GroupPolicyModifiedDtoOutput })
+    public async modifyGroupPolicy(
         @Query('id') id: number,
-        @Body() dtoInput: UpdateGroupPolicyDtoInput,
-    ): Promise<GroupPolicyUpdatedDtoOutput> {
-        const result = await this.commandBus.execute<UpdateGroupPolicyCommand, GroupPolicy>(
-            new UpdateGroupPolicyCommand(
+        @Body() dtoInput: ModifyGroupPolicyDtoInput,
+    ): Promise<GroupPolicyModifiedDtoOutput> {
+        const result = await this.commandBus.execute<ModifyGroupPolicyCommand, GroupPolicy>(
+            new ModifyGroupPolicyCommand(
                 UuidUtility.generate(),
                 id,
                 dtoInput.name,

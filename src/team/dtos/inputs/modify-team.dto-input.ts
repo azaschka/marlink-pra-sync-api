@@ -1,10 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Team } from '../../models';
 
-export class TeamUpdatedDtoOutput implements Team {
-    @ApiProperty({ required: true, type: Number })
-    public id!: number;
-
+export class ModifyTeamDtoInput {
     @ApiProperty({ required: true, type: String })
     public name!: string;
 

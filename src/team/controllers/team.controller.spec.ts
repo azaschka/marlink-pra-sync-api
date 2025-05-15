@@ -1,6 +1,6 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UuidUtility } from '../../shared/utilities';
-import { CreateTeamCommand, DeleteTeamCommand, UpdateTeamCommand } from '../commands';
+import { CreateTeamCommand, DeleteTeamCommand, ModifyTeamCommand } from '../commands';
 import { Team } from '../models';
 import { RetrieveTeamsQuery } from '../queries';
 import { TeamController } from './team.controller';
@@ -56,19 +56,19 @@ describe('TeamController', () => {
         });
     });
 
-    describe('updateTeam', () => {
+    describe('modifyTeam', () => {
         it('should execute the command bus with the correct parameters and return the result', async () => {
             const expectedResult = {} as Team;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.updateTeam(1, {
+            const result = await controller.modifyTeam(1, {
                 name: 'team-1',
                 codeName: 'team-code-1',
                 comments: 'team comments 1',
             });
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(
-                new UpdateTeamCommand('uuid-123', 1, 'team-1', 'team-code-1', 'team comments 1'),
+                new ModifyTeamCommand('uuid-123', 1, 'team-1', 'team-code-1', 'team comments 1'),
             );
             expect(result).toBe(expectedResult);
         });

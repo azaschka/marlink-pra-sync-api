@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class UpdateUserDtoInput {
+export class ModifyUserDtoInput {
     @ApiProperty({ required: true, type: String })
     @IsNotEmpty()
     @IsString()

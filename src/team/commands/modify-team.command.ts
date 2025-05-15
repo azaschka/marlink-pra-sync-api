@@ -1,5 +1,5 @@
-export class UpdateTeamCommand {
-    public readonly commandType = 'update-team';
+export class ModifyTeamCommand {
+    public readonly commandType = 'modify-team';
 
     constructor(
         public readonly transactionId: string,

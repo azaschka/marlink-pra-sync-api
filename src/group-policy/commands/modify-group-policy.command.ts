@@ -1,7 +1,7 @@
 import { AccessPermissionStatusType } from '../enums';
 
-export class UpdateGroupPolicyCommand {
-    public readonly commandType = 'update-group-policy';
+export class ModifyGroupPolicyCommand {
+    public readonly commandType = 'modify-group-policy';
 
     constructor(
         public readonly transactionId: string,

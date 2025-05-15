@@ -2,7 +2,7 @@ import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/c
 import { ModifyUserCommand as BTModifyUserCommand } from '../../../beyondtrust-pra-conf-api/user/commands';
 import { UserModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { UserUpdatedEvent, UserUpdateFailedEvent } from '../../events';
+import { UserModifiedEvent, UserModificationFailedEvent } from '../../events';
 import {
     mapFromBTUserAllowedAccessPermissionType,
     mapFromBTUserViewSupportReportsPermissionType,
@@ -11,17 +11,17 @@ import {
 import { User } from '../../models';
 import { UserEntity } from '../../repositories/entities';
 import { UserRepositoryService } from '../../repositories/services/user-repository.service';
-import { UpdateUserCommand } from '../update-user.command';
+import { ModifyUserCommand } from '../modify-user.command';
 
-@CommandHandler(UpdateUserCommand)
-export class UpdateUserCommandHandler implements ICommandHandler<UpdateUserCommand> {
+@CommandHandler(ModifyUserCommand)
+export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserCommand> {
     constructor(
         private readonly commandBus: CommandBus,
         private readonly eventBus: EventBus,
         private readonly userRepositoryService: UserRepositoryService,
     ) {}
 
-    public async execute(command: UpdateUserCommand): Promise<User> {
+    public async execute(command: ModifyUserCommand): Promise<User> {
         const btUser = await this.modifyBTUser(command);
         const userEntity = this.createUserEntity(btUser);
 
@@ -29,7 +29,7 @@ export class UpdateUserCommandHandler implements ICommandHandler<UpdateUserComma
             const updatedUser = await this.updateUser(userEntity);
 
             this.eventBus.publish(
-                new UserUpdatedEvent(command.transactionId, {
+                new UserModifiedEvent(command.transactionId, {
                     user: updatedUser,
                 }),
             );
@@ -37,7 +37,7 @@ export class UpdateUserCommandHandler implements ICommandHandler<UpdateUserComma
             return updatedUser;
         } catch (error) {
             this.eventBus.publish(
-                new UserUpdateFailedEvent(command.transactionId, {
+                new UserModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     user: userEntity,
                 }),
@@ -47,7 +47,7 @@ export class UpdateUserCommandHandler implements ICommandHandler<UpdateUserComma
         }
     }
 
-    private async modifyBTUser(command: UpdateUserCommand) {
+    private async modifyBTUser(command: ModifyUserCommand) {
         return await this.commandBus.execute<BTModifyUserCommand, UserModifiedDtoOutput>(
             new BTModifyUserCommand(
                 command.transactionId,

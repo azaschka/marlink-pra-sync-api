@@ -6,7 +6,7 @@ import {
 } from '../../enums';
 import { User } from '../../models';
 
-export class UserUpdatedDtoOutput implements User {
+export class UserModifiedDtoOutput implements User {
     @ApiProperty({ required: true, type: Number })
     public id!: number;
 
