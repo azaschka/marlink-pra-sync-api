@@ -62,6 +62,7 @@ describe('AppConfigService', () => {
                             jumpClient: 'api-path-jump-client-1',
                             groupPolicy: 'api-path-group-policy-1',
                             team: 'api-path-team-1',
+                            jumpGroup: 'api-path-jump-group-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -82,6 +83,7 @@ describe('AppConfigService', () => {
                             jumpClient: 'api-path-jump-client-1',
                             groupPolicy: 'api-path-group-policy-1',
                             team: 'api-path-team-1',
+                            jumpGroup: 'api-path-jump-group-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -105,6 +107,7 @@ describe('AppConfigService', () => {
                             jumpClient: 'unknown',
                             groupPolicy: 'unknown',
                             team: 'unknown',
+                            jumpGroup: 'unknown',
                         },
                         communication: {
                             retryAttempts: 0,
@@ -132,6 +135,8 @@ describe('AppConfigService', () => {
                         return input.api?.path?.groupPolicy;
                     case 'BEYONDTRUST_API_TEAM_PATH':
                         return input.api?.path?.team;
+                    case 'BEYONDTRUST_API_JUMP_GROUP_PATH':
+                        return input.api?.path?.jumpGroup;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
                         return input.api?.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
@@ -154,6 +159,7 @@ describe('AppConfigService', () => {
                         jumpClient: expected.api.path.jumpClient,
                         groupPolicy: expected.api.path.groupPolicy,
                         team: expected.api.path.team,
+                        jumpGroup: expected.api.path.jumpGroup,
                     },
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,
