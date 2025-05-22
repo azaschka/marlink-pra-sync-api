@@ -2,7 +2,7 @@ import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { ModifyTeamCommand as BTModifyTeamCommand } from '../../../beyondtrust-pra-conf-api/team/commands';
 import { TeamModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { TeamModifiedEvent, TeamModificationFailedEvent } from '../../events';
+import { TeamModificationFailedEvent, TeamModifiedEvent } from '../../events';
 import { TeamEntity } from '../../repositories/entities';
 import { TeamRepositoryService } from '../../repositories/services/team-repository.service';
 import { ModifyTeamCommand } from '../modify-team.command';
@@ -110,6 +110,47 @@ describe('ModifyTeamCommandHandler', () => {
                 }),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should throw an error if the team retrieval from repository returns null', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+            const teamEntityToBeCreated = { name: 'team-1', id: 123 } as TeamEntity;
+            const teamEntityCreateMethod = jest.spyOn(TeamEntity, 'create').mockReturnValue(teamEntityToBeCreated);
+            const teamRepositoryServiceCreateOrUpdateByIdMethod = jest.spyOn(
+                teamRepositoryService,
+                'createOrUpdateById',
+            );
+            const teamRepositoryServiceFindByIdMethod = jest
+                .spyOn(teamRepositoryService, 'findOneById')
+                .mockResolvedValue(null);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+            const errorProcessorUtilityStringifyMethod = jest
+                .spyOn(ErrorProcessorUtility, 'stringify')
+                .mockReturnValue('expected-error-message');
+
+            // Act & Assert
+            await expect(
+                handler.execute(<ModifyTeamCommand>{
+                    transactionId: 'transaction-1',
+                    name: 'team-1',
+                }),
+            ).rejects.toThrow();
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+            expect(teamEntityCreateMethod).toHaveBeenCalled();
+            expect(teamRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalled();
+            expect(teamRepositoryServiceFindByIdMethod).toHaveBeenCalled();
+            expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalled();
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: TeamModificationFailedEvent.EVENT_TYPE,
+                    payload: {
+                        errorMessage: 'expected-error-message',
+                        team: teamEntityToBeCreated,
+                    },
+                }),
+            );
         });
 
         it('should throw an error and publish an event if the repository service fails', async () => {

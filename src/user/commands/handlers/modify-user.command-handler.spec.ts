@@ -7,7 +7,7 @@ import {
     UserViewVaultReportsPermissionType as BTUserViewVaultReportsPermissionType,
 } from '../../../beyondtrust-pra-conf-api/user/enums';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { UserModifiedEvent, UserModificationFailedEvent } from '../../events';
+import { UserModificationFailedEvent, UserModifiedEvent } from '../../events';
 import { UserEntity } from '../../repositories/entities';
 import { UserRepositoryService } from '../../repositories/services/user-repository.service';
 import { ModifyUserCommand } from '../modify-user.command';
@@ -237,6 +237,47 @@ describe('ModifyUserCommandHandler', () => {
                 }),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should throw an error if the user retrieval from repository returns null', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+            const userEntityToBeCreated = { publicDisplayName: 'user-1', id: 123 } as UserEntity;
+            const userEntityCreateMethod = jest.spyOn(UserEntity, 'create').mockReturnValue(userEntityToBeCreated);
+            const userRepositoryServiceCreateOrUpdateByIdMethod = jest.spyOn(
+                userRepositoryService,
+                'createOrUpdateById',
+            );
+            const userRepositoryServiceFindByIdMethod = jest
+                .spyOn(userRepositoryService, 'findOneById')
+                .mockResolvedValue(null);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+            const errorProcessorUtilityStringifyMethod = jest
+                .spyOn(ErrorProcessorUtility, 'stringify')
+                .mockReturnValue('expected-error-message');
+
+            // Act & Assert
+            await expect(
+                handler.execute(<ModifyUserCommand>{
+                    transactionId: 'transaction-1',
+                    publicDisplayName: 'user-1',
+                }),
+            ).rejects.toThrow();
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+            expect(userEntityCreateMethod).toHaveBeenCalled();
+            expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalled();
+            expect(userRepositoryServiceFindByIdMethod).toHaveBeenCalled();
+            expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalled();
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: UserModificationFailedEvent.EVENT_TYPE,
+                    payload: {
+                        errorMessage: 'expected-error-message',
+                        user: userEntityToBeCreated,
+                    },
+                }),
+            );
         });
 
         it('should throw an error and publish an event if the repository service fails', async () => {

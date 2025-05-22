@@ -88,7 +88,8 @@
             "\\.query\\.ts",
             "\\.handler\\.ts",
             "\\.dto-input\\.ts",
-            "\\.dto-output\\.ts"
+            "\\.dto-output\\.ts",
+            "\\.entity\\.ts"
         ],
         "coverageDirectory": "../coverage",
         "testEnvironment": "node"

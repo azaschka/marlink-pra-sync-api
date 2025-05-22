@@ -51,6 +51,9 @@ export class AppConfigService {
                     jumpGroup:
                         this.configService.get<string>('BEYONDTRUST_API_JUMP_GROUP_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    jumpPolicy:
+                        this.configService.get<string>('BEYONDTRUST_API_JUMP_POLICY_PATH') ??
+                        AppConfigService.DEFAULT_UNDEFINED_STRING,
                 },
                 communication: {
                     retryAttempts:

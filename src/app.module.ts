@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtrust-pra-conf-api.module';
 import { GroupPolicyModule } from './group-policy/group-policy.module';
 import { JumpGroupModule } from './jump-group/jump-group.module';
+import { JumpPolicyModule } from './jump-policy/jump-policy.module';
 import { TeamModule } from './team/team.module';
 import { UserModule } from './user/user.module';
 
@@ -23,6 +24,7 @@ import { UserModule } from './user/user.module';
         GroupPolicyModule,
         TeamModule,
         JumpGroupModule,
+        JumpPolicyModule,
     ],
     controllers: [AppController],
 })

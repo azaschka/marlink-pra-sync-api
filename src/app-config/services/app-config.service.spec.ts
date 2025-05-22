@@ -63,6 +63,7 @@ describe('AppConfigService', () => {
                             groupPolicy: 'api-path-group-policy-1',
                             team: 'api-path-team-1',
                             jumpGroup: 'api-path-jump-group-1',
+                            jumpPolicy: 'api-path-jump-policy-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -84,6 +85,7 @@ describe('AppConfigService', () => {
                             groupPolicy: 'api-path-group-policy-1',
                             team: 'api-path-team-1',
                             jumpGroup: 'api-path-jump-group-1',
+                            jumpPolicy: 'api-path-jump-policy-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -108,6 +110,7 @@ describe('AppConfigService', () => {
                             groupPolicy: 'unknown',
                             team: 'unknown',
                             jumpGroup: 'unknown',
+                            jumpPolicy: 'unknown',
                         },
                         communication: {
                             retryAttempts: 0,
@@ -137,6 +140,8 @@ describe('AppConfigService', () => {
                         return input.api?.path?.team;
                     case 'BEYONDTRUST_API_JUMP_GROUP_PATH':
                         return input.api?.path?.jumpGroup;
+                    case 'BEYONDTRUST_API_JUMP_POLICY_PATH':
+                        return input.api?.path?.jumpPolicy;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
                         return input.api?.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
@@ -160,6 +165,7 @@ describe('AppConfigService', () => {
                         groupPolicy: expected.api.path.groupPolicy,
                         team: expected.api.path.team,
                         jumpGroup: expected.api.path.jumpGroup,
+                        jumpPolicy: expected.api.path.jumpPolicy,
                     },
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,

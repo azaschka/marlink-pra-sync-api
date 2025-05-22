@@ -4,7 +4,7 @@ import { GroupPolicyModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/
 import { AccessPermissionStatusType as BTAccessPermissionStatusType } from '../../../beyondtrust-pra-conf-api/group-policy/enums';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { AccessPermissionStatusType } from '../../enums';
-import { GroupPolicyModifiedEvent, GroupPolicyModificationFailedEvent } from '../../events';
+import { GroupPolicyModificationFailedEvent, GroupPolicyModifiedEvent } from '../../events';
 import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { ModifyGroupPolicyCommand } from '../modify-group-policy.command';
@@ -204,6 +204,49 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                 }),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should throw an error if the group policy retrieval from repository returns null', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+            const groupPolicyEntityToBeCreated = { name: 'group-policy-1', id: 123 } as GroupPolicyEntity;
+            const groupPolicyEntityCreateMethod = jest
+                .spyOn(GroupPolicyEntity, 'create')
+                .mockReturnValue(groupPolicyEntityToBeCreated);
+            const groupPolicyRepositoryServiceCreateOrUpdateByIdMethod = jest.spyOn(
+                groupPolicyRepositoryService,
+                'createOrUpdateById',
+            );
+            const groupPolicyRepositoryServiceFindByIdMethod = jest
+                .spyOn(groupPolicyRepositoryService, 'findOneById')
+                .mockResolvedValue(null);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+            const errorProcessorUtilityStringifyMethod = jest
+                .spyOn(ErrorProcessorUtility, 'stringify')
+                .mockReturnValue('expected-error-message');
+
+            // Act & Assert
+            await expect(
+                handler.execute(<ModifyGroupPolicyCommand>{
+                    transactionId: 'transaction-1',
+                    name: 'group-policy-1',
+                }),
+            ).rejects.toThrow();
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+            expect(groupPolicyEntityCreateMethod).toHaveBeenCalled();
+            expect(groupPolicyRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalled();
+            expect(groupPolicyRepositoryServiceFindByIdMethod).toHaveBeenCalled();
+            expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalled();
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: GroupPolicyModificationFailedEvent.EVENT_TYPE,
+                    payload: {
+                        errorMessage: 'expected-error-message',
+                        groupPolicy: groupPolicyEntityToBeCreated,
+                    },
+                }),
+            );
         });
 
         it('should throw an error and publish an event if the repository service fails', async () => {

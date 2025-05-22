@@ -116,6 +116,49 @@ describe('ModifyJumpGroupCommandHandler', () => {
             expect(commandBusExecuteMethod).toHaveBeenCalled();
         });
 
+        it('should throw an error if the jump group retrieval from repository returns null', async () => {
+            // Arrange
+            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+            const jumpGroupEntityToBeCreated = { name: 'jump-group-1', id: 123 } as JumpGroupEntity;
+            const jumpGroupEntityCreateMethod = jest
+                .spyOn(JumpGroupEntity, 'create')
+                .mockReturnValue(jumpGroupEntityToBeCreated);
+            const jumpGroupRepositoryServiceCreateOrUpdateByIdMethod = jest.spyOn(
+                jumpGroupRepositoryService,
+                'createOrUpdateById',
+            );
+            const jumpGroupRepositoryServiceFindByIdMethod = jest
+                .spyOn(jumpGroupRepositoryService, 'findOneById')
+                .mockResolvedValue(null);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+            const errorProcessorUtilityStringifyMethod = jest
+                .spyOn(ErrorProcessorUtility, 'stringify')
+                .mockReturnValue('expected-error-message');
+
+            // Act & Assert
+            await expect(
+                handler.execute(<ModifyJumpGroupCommand>{
+                    transactionId: 'transaction-1',
+                    name: 'jump-group-1',
+                }),
+            ).rejects.toThrow();
+            expect(commandBusExecuteMethod).toHaveBeenCalled();
+            expect(jumpGroupEntityCreateMethod).toHaveBeenCalled();
+            expect(jumpGroupRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalled();
+            expect(jumpGroupRepositoryServiceFindByIdMethod).toHaveBeenCalled();
+            expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalled();
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: JumpGroupModificationFailedEvent.EVENT_TYPE,
+                    payload: {
+                        errorMessage: 'expected-error-message',
+                        jumpGroup: jumpGroupEntityToBeCreated,
+                    },
+                }),
+            );
+        });
+
         it('should throw an error and publish an event if the repository service fails', async () => {
             // Arrange
             const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
