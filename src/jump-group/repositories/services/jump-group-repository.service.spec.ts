@@ -1,5 +1,6 @@
-import { DataSource } from 'typeorm';
+import { DataSource, In, LessThan } from 'typeorm';
 import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { JumpGroupEntity } from '../entities';
 import { JumpGroupRepositoryService } from './jump-group-repository.service';
 
 describe('JumpGroupRepositoryService', () => {
@@ -7,6 +8,8 @@ describe('JumpGroupRepositoryService', () => {
     let dataSource: DataSource;
 
     beforeEach(() => {
+        jest.clearAllMocks();
+
         dataSource = {} as DataSource;
         service = new JumpGroupRepositoryService(dataSource);
     });
@@ -25,6 +28,29 @@ describe('JumpGroupRepositoryService', () => {
         });
     });
 
+    describe('createOrUpdateByIds', () => {
+        it('should not call createOrUpdate if entities are empty', async () => {
+            const baseRepositoryCreateOrUpdateMethod = jest.spyOn(BaseRepositoryService.prototype, 'createOrUpdate');
+
+            await service.createOrUpdateByIds([]);
+
+            expect(baseRepositoryCreateOrUpdateMethod).not.toHaveBeenCalled();
+        });
+
+        it('should call createOrUpdate with the correct parameters when entities are provided', async () => {
+            const entities: JumpGroupEntity[] = [
+                { id: 1, name: 'Group 1', lastSyncDate: new Date('2023-01-01') },
+                { id: 2, name: 'Group 2', lastSyncDate: new Date('2023-01-02') },
+            ];
+            const expectedConflictPaths = ['id'];
+            const baseRepositoryCreateOrUpdateMethod = jest.spyOn(BaseRepositoryService.prototype, 'createOrUpdate');
+
+            await service.createOrUpdateByIds(entities);
+
+            expect(baseRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(entities, expectedConflictPaths);
+        });
+    });
+
     describe('findOneById', () => {
         it('should call findOneBy with the correct parameters', async () => {
             const id = 1;
@@ -39,6 +65,47 @@ describe('JumpGroupRepositoryService', () => {
         });
     });
 
+    describe('findByIds', () => {
+        it('should return an empty array if ids are empty and not calling db operation', async () => {
+            const baseRepositoryFindByMethod = jest.spyOn(BaseRepositoryService.prototype, 'findBy');
+
+            const result = await service.findByIds([]);
+
+            expect(result).toEqual([]);
+            expect(baseRepositoryFindByMethod).not.toHaveBeenCalled();
+        });
+
+        it('should call findBy with the correct parameters when ids are provided', async () => {
+            const ids = [1, 2, 3];
+            const baseRepositoryFindByMethod = jest
+                .spyOn(BaseRepositoryService.prototype, 'findBy')
+                .mockReturnValue(Promise.resolve([]));
+
+            await service.findByIds(ids);
+
+            expect(baseRepositoryFindByMethod).toHaveBeenCalledWith({ id: In(ids) }, 1, 3);
+        });
+    });
+
+    describe('findByLastSyncDateBefore', () => {
+        it('should call findBy with the correct parameters', async () => {
+            const date = new Date('2023-01-01');
+            const pageNumber = 1;
+            const pageSize = 10;
+            const baseRepositoryFindByMethod = jest
+                .spyOn(BaseRepositoryService.prototype, 'findBy')
+                .mockReturnValue(Promise.resolve([]));
+
+            await service.findByLastSyncDateBefore(date, pageNumber, pageSize);
+
+            expect(baseRepositoryFindByMethod).toHaveBeenCalledWith(
+                { lastSyncDate: LessThan(date) },
+                pageNumber,
+                pageSize,
+            );
+        });
+    });
+
     describe('deleteById', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const id = 1;
@@ -48,6 +115,26 @@ describe('JumpGroupRepositoryService', () => {
                 .mockReturnValue(Promise.resolve());
 
             await service.deleteById(id);
+
+            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
+        });
+    });
+
+    describe('deleteByIds', () => {
+        it('should not call deleteBy if ids are empty', async () => {
+            const baseRepositoryDeleteByMethod = jest.spyOn(BaseRepositoryService.prototype, 'deleteBy');
+
+            await service.deleteByIds([]);
+
+            expect(baseRepositoryDeleteByMethod).not.toHaveBeenCalled();
+        });
+
+        it('should call deleteBy with the correct parameters when ids are provided', async () => {
+            const ids = [1, 2, 3];
+            const expectedWhere = { id: In(ids) };
+            const baseRepositoryDeleteByMethod = jest.spyOn(BaseRepositoryService.prototype, 'deleteBy');
+
+            await service.deleteByIds(ids);
 
             expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
         });

@@ -85,4 +85,7 @@ export class JumpPolicyCreatedDtoOutput implements JumpPolicy {
 
     @ApiProperty({ type: Boolean, required: false })
     public isRecordingsDisabled?: boolean;
+
+    @ApiProperty({ required: true, type: Date })
+    public lastSyncDate!: Date;
 }

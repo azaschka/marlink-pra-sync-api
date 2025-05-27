@@ -1,4 +1,5 @@
 import { Column, Entity } from 'typeorm';
+import { DateUtility } from '../../../shared/utilities';
 import { AccessPermissionStatusType } from '../../enums';
 import { GroupPolicy } from '../../models';
 
@@ -76,6 +77,9 @@ export class GroupPolicyEntity implements GroupPolicy {
     @Column({ name: 'unassigned_jump_item_role_id', type: 'int', nullable: true })
     public unassignedJumpItemRoleId?: number;
 
+    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
+    public lastSyncDate!: Date;
+
     public static create(
         id: number,
         name: string,
@@ -127,6 +131,7 @@ export class GroupPolicyEntity implements GroupPolicy {
         entity.privateJumpItemRoleId = privateJumpItemRoleId;
         entity.inferiorJumpItemRoleId = inferiorJumpItemRoleId;
         entity.unassignedJumpItemRoleId = unassignedJumpItemRoleId;
+        entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
     }

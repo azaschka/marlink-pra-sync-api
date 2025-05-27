@@ -27,4 +27,14 @@ describe('DateUtility', () => {
             expect(result).toEqual(param.expectedDate);
         });
     });
+
+    describe('getCurrentUtcDate', () => {
+        it('should return as expected)', () => {
+            jest.useFakeTimers().setSystemTime(new Date('2025-10-01T07:00:00+07:00'));
+
+            const result = DateUtility.getCurrentUtcDate();
+
+            expect(result.toISOString()).toEqual('2025-10-01T00:00:00.000Z');
+        });
+    });
 });

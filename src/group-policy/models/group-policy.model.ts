@@ -25,4 +25,5 @@ export interface GroupPolicy {
     privateJumpItemRoleId?: number;
     inferiorJumpItemRoleId?: number;
     unassignedJumpItemRoleId?: number;
+    lastSyncDate: Date;
 }

@@ -3,4 +3,5 @@ export interface JumpGroup {
     name: string;
     codeName?: string;
     comments?: string | null;
+    lastSyncDate: Date;
 }

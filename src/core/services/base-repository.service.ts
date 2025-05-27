@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, FindOptionsWhere } from 'typeorm';
 
 export class BaseRepositoryService<T> {
     constructor(
@@ -25,14 +25,14 @@ export class BaseRepositoryService<T> {
     }
 
     public async createOrUpdate<K extends Extract<keyof T, string>>(
-        entity: Partial<T>,
+        entityOrEntities: Partial<T> | Partial<T>[],
         conflictPaths: K[],
     ): Promise<void> {
         const queryRunner = await this.createQueryRunnerAndConnect();
         await queryRunner.startTransaction();
 
         try {
-            await queryRunner.manager.upsert(this.entity, entity, {
+            await queryRunner.manager.upsert(this.entity, entityOrEntities, {
                 conflictPaths,
             });
             await queryRunner.commitTransaction();
@@ -59,7 +59,7 @@ export class BaseRepositoryService<T> {
     }
 
     public async findBy<K extends Extract<keyof T, string>>(
-        where: Pick<T, K>,
+        where: Pick<T, K> | FindOptionsWhere<T>,
         pageNumber: number,
         pageSize: number,
     ): Promise<T[]> {
@@ -78,7 +78,7 @@ export class BaseRepositoryService<T> {
         }
     }
 
-    public async deleteBy<K extends Extract<keyof T, string>>(where: Pick<T, K>): Promise<void> {
+    public async deleteBy<K extends Extract<keyof T, string>>(where: Pick<T, K> | FindOptionsWhere<T>): Promise<void> {
         const queryRunner = await this.createQueryRunnerAndConnect();
         await queryRunner.startTransaction();
 

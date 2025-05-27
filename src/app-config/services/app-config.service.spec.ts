@@ -253,6 +253,36 @@ describe('AppConfigService', () => {
             });
         });
     });
+
+    describe('sync', () => {
+        it.each([
+            {
+                input: {
+                    maxBatchSize: 100,
+                },
+                expected: {
+                    maxBatchSize: 100,
+                },
+            },
+            {
+                input: {},
+                expected: {
+                    maxBatchSize: 0,
+                },
+            },
+        ])('should return the sync configuration as expected', ({ input, expected }) => {
+            configService.get = jest.fn().mockImplementation((key: string) => {
+                if (key === 'SYNC_MAX_BATCH_SIZE') {
+                    return input.maxBatchSize;
+                }
+                return undefined;
+            });
+
+            expect(service.sync).toEqual({
+                maxBatchSize: expected.maxBatchSize,
+            });
+        });
+    });
 });
 
 function mockConfigService() {

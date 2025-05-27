@@ -74,4 +74,7 @@ export class GroupPolicyModifiedDtoOutput implements GroupPolicy {
 
     @ApiProperty({ required: false, type: Number })
     public unassignedJumpItemRoleId?: number;
+
+    @ApiProperty({ required: true, type: Date })
+    public lastSyncDate!: Date;
 }

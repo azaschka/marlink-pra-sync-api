@@ -32,4 +32,5 @@ export interface JumpPolicy {
     approvalEmailLanguage?: string;
     approvalApproverScopeType?: ApprovalApproverScopeType;
     isRecordingsDisabled?: boolean;
+    lastSyncDate: Date;
 }

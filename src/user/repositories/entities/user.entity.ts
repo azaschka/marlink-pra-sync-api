@@ -1,4 +1,5 @@
 import { Column, Entity } from 'typeorm';
+import { DateUtility } from '../../../shared/utilities';
 import {
     UserAllowedAccessPermissionType,
     UserViewSupportReportsPermissionType,
@@ -173,6 +174,9 @@ export class UserEntity implements User {
     @Column({ name: 'has_endpoint_automation_permission', type: 'boolean', nullable: true })
     public hasEndpointAutomationPermission?: boolean;
 
+    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
+    public lastSyncDate!: Date;
+
     public static create(
         id: number,
         publicDisplayName: string,
@@ -276,6 +280,7 @@ export class UserEntity implements User {
         entity.hasSdStaticPortForExternalToolsPermission = hasSdStaticPortForExternalToolsPermission;
         entity.hasVaultPermission = hasVaultPermission;
         entity.hasEndpointAutomationPermission = hasEndpointAutomationPermission;
+        entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
     }

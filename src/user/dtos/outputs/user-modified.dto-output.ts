@@ -156,4 +156,7 @@ export class UserModifiedDtoOutput implements User {
 
     @ApiProperty({ required: false, type: Boolean })
     public hasEndpointAutomationPermission?: boolean;
+
+    @ApiProperty({ required: true, type: Date })
+    public lastSyncDate!: Date;
 }

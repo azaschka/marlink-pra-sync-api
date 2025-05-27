@@ -5,4 +5,8 @@ export abstract class DateUtility {
 
         return newDate;
     }
+
+    public static getCurrentUtcDate(): Date {
+        return new Date(new Date().toISOString());
+    }
 }

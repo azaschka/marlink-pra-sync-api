@@ -81,4 +81,11 @@ export class AppConfigService {
             autoLoadEntities: true,
         };
     }
+
+    public get sync() {
+        return {
+            maxBatchSize:
+                this.configService.get<number>('SYNC_MAX_BATCH_SIZE') ?? AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+        };
+    }
 }

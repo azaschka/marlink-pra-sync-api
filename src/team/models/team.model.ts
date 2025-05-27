@@ -3,4 +3,5 @@ export interface Team {
     name: string;
     codeName?: string;
     comments?: string | null;
+    lastSyncDate: Date;
 }

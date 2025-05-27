@@ -1,4 +1,5 @@
 import { Column, Entity } from 'typeorm';
+import { DateUtility } from '../../../shared/utilities';
 import { JumpGroup } from '../../models';
 
 @Entity({ name: 'jump_groups' })
@@ -15,12 +16,16 @@ export class JumpGroupEntity implements JumpGroup {
     @Column({ name: 'comments', type: 'varchar', length: 255, nullable: true })
     public comments?: string | null;
 
+    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
+    public lastSyncDate!: Date;
+
     public static create(id: number, name: string, codeName?: string, comments?: string | null): JumpGroupEntity {
         const entity = new JumpGroupEntity();
         entity.id = id;
         entity.name = name;
         entity.codeName = codeName;
         entity.comments = comments;
+        entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
     }

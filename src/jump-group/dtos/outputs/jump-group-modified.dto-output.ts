@@ -13,4 +13,7 @@ export class JumpGroupModifiedDtoOutput implements JumpGroup {
 
     @ApiProperty({ required: false, type: String, nullable: true })
     public comments?: string | null;
+
+    @ApiProperty({ required: true, type: Date })
+    public lastSyncDate!: Date;
 }

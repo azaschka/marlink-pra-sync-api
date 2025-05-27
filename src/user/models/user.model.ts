@@ -55,4 +55,5 @@ export interface User {
     hasSdStaticPortForExternalToolsPermission?: boolean;
     hasVaultPermission?: boolean;
     hasEndpointAutomationPermission?: boolean;
+    lastSyncDate: Date;
 }

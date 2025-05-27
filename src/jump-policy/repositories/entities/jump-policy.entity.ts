@@ -1,4 +1,5 @@
 import { Column, Entity } from 'typeorm';
+import { DateUtility } from '../../../shared/utilities';
 import {
     ApprovalApproverScopeType,
     ApprovalScopeType,
@@ -107,6 +108,9 @@ export class JumpPolicyEntity implements JumpPolicy {
     @Column({ name: 'is_recordings_disabled', type: 'boolean', nullable: true })
     public isRecordingsDisabled?: boolean;
 
+    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
+    public lastSyncDate!: Date;
+
     public static create(
         id: number,
         displayName: string,
@@ -162,6 +166,7 @@ export class JumpPolicyEntity implements JumpPolicy {
         entity.approvalEmailLanguage = approvalEmailLanguage;
         entity.approvalApproverScopeType = approvalApproverScopeType;
         entity.isRecordingsDisabled = isRecordingsDisabled;
+        entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
     }
