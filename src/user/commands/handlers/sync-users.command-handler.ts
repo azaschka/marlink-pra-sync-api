@@ -87,8 +87,13 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
         const usersToBeCreated = this.findAllUsersToBeCreated(btUsers, dbUsers);
         const usersToBeUpdated = this.findAllUsersToBeUpdatedOrUpdateLastSyncDate(btUsers, dbUsers);
 
-        await this.userRepositoryService.createOrUpdateByIds(usersToBeCreated);
-        await this.userRepositoryService.createOrUpdateByIds(usersToBeUpdated);
+        if (usersToBeCreated.length > 0) {
+            await this.userRepositoryService.createOrUpdateByIds(usersToBeCreated);
+        }
+
+        if (usersToBeUpdated.length > 0) {
+            await this.userRepositoryService.createOrUpdateByIds(usersToBeUpdated);
+        }
 
         // Collect created and updated user IDs
         createdUserIds.push(...usersToBeCreated.map((user) => user.id));
@@ -109,7 +114,9 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
         );
         const userIds = dbUsers.map((dbUser) => dbUser.id);
 
-        await this.userRepositoryService.deleteByIds(userIds);
+        if (userIds.length > 0) {
+            await this.userRepositoryService.deleteByIds(userIds);
+        }
 
         // Collect deleted user IDs
         deletedUserIds.push(...userIds);

@@ -92,8 +92,13 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
             dbGroupPolicies,
         );
 
-        await this.groupPolicyRepositoryService.createOrUpdateByIds(groupPoliciesToBeCreated);
-        await this.groupPolicyRepositoryService.createOrUpdateByIds(groupPoliciesToBeUpdated);
+        if (groupPoliciesToBeCreated.length > 0) {
+            await this.groupPolicyRepositoryService.createOrUpdateByIds(groupPoliciesToBeCreated);
+        }
+
+        if (groupPoliciesToBeUpdated.length > 0) {
+            await this.groupPolicyRepositoryService.createOrUpdateByIds(groupPoliciesToBeUpdated);
+        }
 
         // Collect created and updated group policy IDs
         createdGroupPolicyIds.push(...groupPoliciesToBeCreated.map((policy) => policy.id));
@@ -123,7 +128,9 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
         );
         const groupPolicyIds = dbGroupPolicies.map((dbGroupPolicy) => dbGroupPolicy.id);
 
-        await this.groupPolicyRepositoryService.deleteByIds(groupPolicyIds);
+        if (groupPolicyIds.length > 0) {
+            await this.groupPolicyRepositoryService.deleteByIds(groupPolicyIds);
+        }
 
         // Collect deleted group policy IDs
         deletedGroupPolicyIds.push(...groupPolicyIds);

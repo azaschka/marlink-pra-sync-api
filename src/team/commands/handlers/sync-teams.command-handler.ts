@@ -82,8 +82,13 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
         const teamsToBeCreated = this.findAllTeamsToBeCreated(btTeams, dbTeams);
         const teamsToBeUpdated = this.findAllTeamsToBeUpdatedOrUpdateLastSyncDate(btTeams, dbTeams);
 
-        await this.teamRepositoryService.createOrUpdateByIds(teamsToBeCreated);
-        await this.teamRepositoryService.createOrUpdateByIds(teamsToBeUpdated);
+        if (teamsToBeCreated.length > 0) {
+            await this.teamRepositoryService.createOrUpdateByIds(teamsToBeCreated);
+        }
+
+        if (teamsToBeUpdated.length > 0) {
+            await this.teamRepositoryService.createOrUpdateByIds(teamsToBeUpdated);
+        }
 
         // Collect created and updated team IDs
         createdTeamIds.push(...teamsToBeCreated.map((team) => team.id));
@@ -104,7 +109,9 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
         );
         const teamIds = dbTeams.map((dbTeam) => dbTeam.id);
 
-        await this.teamRepositoryService.deleteByIds(teamIds);
+        if (teamIds.length > 0) {
+            await this.teamRepositoryService.deleteByIds(teamIds);
+        }
 
         // Collect deleted team IDs
         deletedTeamIds.push(...teamIds);

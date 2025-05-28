@@ -96,8 +96,13 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
             dbJumpPolicies,
         );
 
-        await this.jumpPolicyRepositoryService.createOrUpdateByIds(jumpPoliciesToBeCreated);
-        await this.jumpPolicyRepositoryService.createOrUpdateByIds(jumpPoliciesToBeUpdated);
+        if (jumpPoliciesToBeCreated.length > 0) {
+            await this.jumpPolicyRepositoryService.createOrUpdateByIds(jumpPoliciesToBeCreated);
+        }
+
+        if (jumpPoliciesToBeUpdated.length > 0) {
+            await this.jumpPolicyRepositoryService.createOrUpdateByIds(jumpPoliciesToBeUpdated);
+        }
 
         // Collect created and updated jump policy IDs
         createdJumpPolicyIds.push(...jumpPoliciesToBeCreated.map((policy) => policy.id));
@@ -127,7 +132,9 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
         );
         const jumpPolicyIds = dbJumpPolicies.map((dbJumpPolicy) => dbJumpPolicy.id);
 
-        await this.jumpPolicyRepositoryService.deleteByIds(jumpPolicyIds);
+        if (jumpPolicyIds.length > 0) {
+            await this.jumpPolicyRepositoryService.deleteByIds(jumpPolicyIds);
+        }
 
         // Collect deleted jump policy IDs
         deletedJumpPolicyIds.push(...jumpPolicyIds);

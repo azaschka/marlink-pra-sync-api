@@ -82,8 +82,13 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
         const jumpGroupsToBeCreated = this.findAllJumpGroupsToBeCreated(btJumpGroups, dbJumpGroups);
         const jumpGroupsToBeUpdated = this.findAllJumpGroupsToBeUpdatedOrUpdateLastSyncDate(btJumpGroups, dbJumpGroups);
 
-        await this.jumpGroupRepositoryService.createOrUpdateByIds(jumpGroupsToBeCreated);
-        await this.jumpGroupRepositoryService.createOrUpdateByIds(jumpGroupsToBeUpdated);
+        if (jumpGroupsToBeCreated.length > 0) {
+            await this.jumpGroupRepositoryService.createOrUpdateByIds(jumpGroupsToBeCreated);
+        }
+
+        if (jumpGroupsToBeUpdated.length > 0) {
+            await this.jumpGroupRepositoryService.createOrUpdateByIds(jumpGroupsToBeUpdated);
+        }
 
         // Collect created and updated jump group IDs
         createdJumpGroupIds.push(...jumpGroupsToBeCreated.map((jumpGroup) => jumpGroup.id));
@@ -108,7 +113,9 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
         );
         const jumpGroupIds = dbJumpGroups.map((dbJumpGroup) => dbJumpGroup.id);
 
-        await this.jumpGroupRepositoryService.deleteByIds(jumpGroupIds);
+        if (jumpGroupIds.length > 0) {
+            await this.jumpGroupRepositoryService.deleteByIds(jumpGroupIds);
+        }
 
         // Collect deleted jump group IDs
         deletedJumpGroupIds.push(...jumpGroupIds);
