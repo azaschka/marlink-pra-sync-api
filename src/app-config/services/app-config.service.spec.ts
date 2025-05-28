@@ -259,15 +259,33 @@ describe('AppConfigService', () => {
             {
                 input: {
                     maxBatchSize: 100,
+                    cronJobTimezone: 'Europe/Berlin',
+                    userCronJobExpression: '0 10 * * *',
+                    teamCronJobExpression: '0 10 * * *',
+                    groupPolicyCronJobExpression: '0 10 * * *',
+                    jumpPolicyCronJobExpression: '0 10 * * *',
+                    jumpGroupCronJobExpression: '0 10 * * *',
                 },
                 expected: {
                     maxBatchSize: 100,
+                    cronJobTimezone: 'Europe/Berlin',
+                    userCronJobExpression: '0 10 * * *',
+                    teamCronJobExpression: '0 10 * * *',
+                    groupPolicyCronJobExpression: '0 10 * * *',
+                    jumpPolicyCronJobExpression: '0 10 * * *',
+                    jumpGroupCronJobExpression: '0 10 * * *',
                 },
             },
             {
                 input: {},
                 expected: {
                     maxBatchSize: 0,
+                    cronJobTimezone: 'Europe/Berlin',
+                    userCronJobExpression: '0 0 * * *',
+                    teamCronJobExpression: '0 0 * * *',
+                    groupPolicyCronJobExpression: '0 0 * * *',
+                    jumpPolicyCronJobExpression: '0 0 * * *',
+                    jumpGroupCronJobExpression: '0 0 * * *',
                 },
             },
         ])('should return the sync configuration as expected', ({ input, expected }) => {
@@ -275,11 +293,35 @@ describe('AppConfigService', () => {
                 if (key === 'SYNC_MAX_BATCH_SIZE') {
                     return input.maxBatchSize;
                 }
+                if (key === 'SYNC_CRON_JOB_TIMEZONE') {
+                    return input.cronJobTimezone;
+                }
+                if (key === 'SYNC_USER_CRON_JOB_EXPRESSION') {
+                    return input.userCronJobExpression;
+                }
+                if (key === 'SYNC_TEAM_CRON_JOB_EXPRESSION') {
+                    return input.teamCronJobExpression;
+                }
+                if (key === 'SYNC_GROUP_POLICY_CRON_JOB_EXPRESSION') {
+                    return input.groupPolicyCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_POLICY_CRON_JOB_EXPRESSION') {
+                    return input.jumpPolicyCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_GROUP_CRON_JOB_EXPRESSION') {
+                    return input.jumpGroupCronJobExpression;
+                }
                 return undefined;
             });
 
             expect(service.sync).toEqual({
                 maxBatchSize: expected.maxBatchSize,
+                cronJobTimezone: expected.cronJobTimezone,
+                userCronJobExpression: expected.userCronJobExpression,
+                teamCronJobExpression: expected.teamCronJobExpression,
+                groupPolicyCronJobExpression: expected.groupPolicyCronJobExpression,
+                jumpPolicyCronJobExpression: expected.jumpPolicyCronJobExpression,
+                jumpGroupCronJobExpression: expected.jumpGroupCronJobExpression,
             });
         });
     });

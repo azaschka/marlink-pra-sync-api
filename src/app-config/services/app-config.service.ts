@@ -7,6 +7,8 @@ export class AppConfigService {
     private static readonly DEFAULT_UNDEFINED_STRING = 'unknown';
     private static readonly DEFAULT_UNDEFINED_NUMBER = 0;
     private static readonly DEFAULT_PORT_NUMBER = 3000;
+    private static readonly DEFAULT_SYNC_CRON_JOB_TIMEZONE = 'Europe/Berlin';
+    private static readonly DEFAULT_SYNC_CRON_JOB_EXPRESSION = '0 0 * * *'; // Every day at midnight
 
     constructor(private readonly configService: ConfigService) {}
 
@@ -86,6 +88,24 @@ export class AppConfigService {
         return {
             maxBatchSize:
                 this.configService.get<number>('SYNC_MAX_BATCH_SIZE') ?? AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+            cronJobTimezone:
+                this.configService.get<string>('SYNC_CRON_JOB_TIMEZONE') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_TIMEZONE,
+            userCronJobExpression:
+                this.configService.get<string>('SYNC_USER_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            teamCronJobExpression:
+                this.configService.get<string>('SYNC_TEAM_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            groupPolicyCronJobExpression:
+                this.configService.get<string>('SYNC_GROUP_POLICY_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            jumpPolicyCronJobExpression:
+                this.configService.get<string>('SYNC_JUMP_POLICY_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            jumpGroupCronJobExpression:
+                this.configService.get<string>('SYNC_JUMP_GROUP_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
         };
     }
 }

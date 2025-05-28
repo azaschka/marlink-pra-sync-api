@@ -47,10 +47,10 @@
 |                | Delete                | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
 |                | Add group policies    | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
 |                | Remove group policies | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
-| Sync (job)     | Users                 | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
-|                | Teams                 | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
-|                | Group policies        | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
-|                | Jump policies         | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
-|                | Jump groups           | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
+| Sync (job)     | Users                 | ✅                  | ✅                  | ✅             | ✅             |                              |
+|                | Teams                 | ✅                  | ✅                  | ✅             | ✅             |                              |
+|                | Group policies        | ✅                  | ✅                  | ✅             | ✅             |                              |
+|                | Jump policies         | ✅                  | ✅                  | ✅             | ✅             |                              |
+|                | Jump groups           | ✅                  | ✅                  | ✅             | ✅             |                              |
 |                | Jump items            | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
 |                | Jumpoints             | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
