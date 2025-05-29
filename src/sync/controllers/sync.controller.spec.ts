@@ -109,6 +109,26 @@ describe('SyncController', () => {
             });
         });
     });
+
+    describe('syncJumpoints', () => {
+        it('should return sync result for jumpoints', async () => {
+            const expectedResult = {
+                createdJumpointIds: ['jumpoint1'],
+                updatedJumpointIds: ['jumpoint2'],
+                deletedJumpointIds: ['jumpoint3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpoints();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdJumpointIds,
+                updatedIds: expectedResult.updatedJumpointIds,
+                deletedIds: expectedResult.deletedJumpointIds,
+            });
+        });
+    });
 });
 
 function mockCommandBus() {

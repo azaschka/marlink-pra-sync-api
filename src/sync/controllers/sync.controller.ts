@@ -7,6 +7,8 @@ import { SyncJumpGroupsCommand } from '../../jump-group/commands';
 import { JumpGroupsSyncResult } from '../../jump-group/models';
 import { SyncJumpPoliciesCommand } from '../../jump-policy/commands';
 import { JumpPoliciesSyncResult } from '../../jump-policy/models';
+import { SyncJumpointsCommand } from '../../jumpoint/commands';
+import { JumpointsSyncResult } from '../../jumpoint/models';
 import { UuidUtility } from '../../shared/utilities';
 import { SyncTeamsCommand } from '../../team/commands';
 import { TeamsSyncResult } from '../../team/models';
@@ -91,6 +93,21 @@ export class SyncController {
             createdIds: result.createdJumpGroupIds,
             updatedIds: result.updatedJumpGroupIds,
             deletedIds: result.deletedJumpGroupIds,
+        };
+    }
+
+    @Post('jumpoints')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpoints(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncJumpointsCommand, JumpointsSyncResult>(
+            new SyncJumpointsCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdJumpointIds,
+            updatedIds: result.updatedJumpointIds,
+            deletedIds: result.deletedJumpointIds,
         };
     }
 }

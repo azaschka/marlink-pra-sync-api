@@ -39,6 +39,11 @@ export class SyncJobController implements OnModuleInit {
                 cronExpression: this.appConfigService.sync.jumpPolicyCronJobExpression,
                 func: this.syncController.syncJumpPolicies.bind(this.syncController),
             },
+            {
+                name: 'syncJumpoints',
+                cronExpression: this.appConfigService.sync.jumpointCronJobExpression,
+                func: this.syncController.syncJumpoints.bind(this.syncController),
+            },
         ];
 
         cronJobMap.forEach(({ name, cronExpression, func }) => {

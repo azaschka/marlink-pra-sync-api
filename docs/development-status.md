@@ -41,10 +41,10 @@
 |                | Copy                  | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
 |                | Add jump groups       | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
 |                | Remove jump groups    | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
-| Jumpoints      | Create                | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
-|                | Retrieve              | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
-|                | Modify                | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
-|                | Delete                | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
+| Jumpoints      | Create                | ⚠️                  | ✅                  | ✅             | ✅             | TODO                         |
+|                | Retrieve              | ⚠️                  | ✅                  | ✅             | ✅             | TODO                         |
+|                | Modify                | ⚠️                  | ✅                  | ✅             | ✅             | TODO                         |
+|                | Delete                | ⚠️                  | ✅                  | ✅             | ✅             | TODO                         |
 |                | Add group policies    | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
 |                | Remove group policies | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
 | Sync (job)     | Users                 | ✅                  | ✅                  | ✅             | ✅             |                              |
@@ -52,5 +52,5 @@
 |                | Group policies        | ✅                  | ✅                  | ✅             | ✅             |                              |
 |                | Jump policies         | ✅                  | ✅                  | ✅             | ✅             |                              |
 |                | Jump groups           | ✅                  | ✅                  | ✅             | ✅             |                              |
-|                | Jump items            | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
-|                | Jumpoints             | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | on progress                  |
+|                | Jump items            | 🛠️                  | 🛠️                  | 🛠️             | 🛠️             | TODO                         |
+|                | Jumpoints             | ✅                  | ✅                  | ✅             | ✅             | on progress                  |

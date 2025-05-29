@@ -8,6 +8,7 @@ import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtr
 import { GroupPolicyModule } from './group-policy/group-policy.module';
 import { JumpGroupModule } from './jump-group/jump-group.module';
 import { JumpPolicyModule } from './jump-policy/jump-policy.module';
+import { JumpointModule } from './jumpoint/jumpoint.module';
 import { SyncModule } from './sync/sync.module';
 import { TeamModule } from './team/team.module';
 import { UserModule } from './user/user.module';
@@ -26,6 +27,7 @@ import { UserModule } from './user/user.module';
         TeamModule,
         JumpGroupModule,
         JumpPolicyModule,
+        JumpointModule,
         SyncModule,
     ],
     controllers: [AppController],

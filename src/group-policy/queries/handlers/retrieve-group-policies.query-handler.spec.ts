@@ -25,7 +25,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
             expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
         });
 
-        it('should call the repo with page size, page number and name; and return value from the repo', async () => {
+        it('should call the repo with correct parameter and return value from the repo', async () => {
             const expectedGroupPolicies = [] as GroupPolicy[];
             const groupPolicyRepositoryServiceFindByMethod = jest
                 .spyOn(groupPolicyRepositoryService, 'findBy')

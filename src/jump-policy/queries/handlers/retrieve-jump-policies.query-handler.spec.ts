@@ -25,7 +25,7 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
             expect(jumpPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
         });
 
-        it('should call the repo with page size, page number and name; and return value from the repo', async () => {
+        it('should call the repo with correct parameter and return value from the repo', async () => {
             const expectedJumpPolicies = [] as JumpPolicy[];
             const jumpPolicyRepositoryServiceFindByMethod = jest
                 .spyOn(jumpPolicyRepositoryService, 'findBy')

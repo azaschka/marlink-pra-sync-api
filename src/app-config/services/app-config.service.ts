@@ -56,6 +56,9 @@ export class AppConfigService {
                     jumpPolicy:
                         this.configService.get<string>('BEYONDTRUST_API_JUMP_POLICY_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    jumpoint:
+                        this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_PATH') ??
+                        AppConfigService.DEFAULT_UNDEFINED_STRING,
                 },
                 communication: {
                     retryAttempts:
@@ -105,6 +108,9 @@ export class AppConfigService {
                 AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
             jumpGroupCronJobExpression:
                 this.configService.get<string>('SYNC_JUMP_GROUP_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            jumpointCronJobExpression:
+                this.configService.get<string>('SYNC_JUMPOINT_CRON_JOB_EXPRESSION') ??
                 AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
         };
     }

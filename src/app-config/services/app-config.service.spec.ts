@@ -64,6 +64,7 @@ describe('AppConfigService', () => {
                             team: 'api-path-team-1',
                             jumpGroup: 'api-path-jump-group-1',
                             jumpPolicy: 'api-path-jump-policy-1',
+                            jumpoint: 'api-path-jumpoint-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -86,6 +87,7 @@ describe('AppConfigService', () => {
                             team: 'api-path-team-1',
                             jumpGroup: 'api-path-jump-group-1',
                             jumpPolicy: 'api-path-jump-policy-1',
+                            jumpoint: 'api-path-jumpoint-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -111,6 +113,7 @@ describe('AppConfigService', () => {
                             team: 'unknown',
                             jumpGroup: 'unknown',
                             jumpPolicy: 'unknown',
+                            jumpoint: 'unknown',
                         },
                         communication: {
                             retryAttempts: 0,
@@ -142,6 +145,8 @@ describe('AppConfigService', () => {
                         return input.api?.path?.jumpGroup;
                     case 'BEYONDTRUST_API_JUMP_POLICY_PATH':
                         return input.api?.path?.jumpPolicy;
+                    case 'BEYONDTRUST_API_JUMPOINT_PATH':
+                        return input.api?.path?.jumpoint;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
                         return input.api?.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
@@ -166,6 +171,7 @@ describe('AppConfigService', () => {
                         team: expected.api.path.team,
                         jumpGroup: expected.api.path.jumpGroup,
                         jumpPolicy: expected.api.path.jumpPolicy,
+                        jumpoint: expected.api.path.jumpoint,
                     },
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,
@@ -265,6 +271,7 @@ describe('AppConfigService', () => {
                     groupPolicyCronJobExpression: '0 10 * * *',
                     jumpPolicyCronJobExpression: '0 10 * * *',
                     jumpGroupCronJobExpression: '0 10 * * *',
+                    jumpointCronJobExpression: '0 10 * * *',
                 },
                 expected: {
                     maxBatchSize: 100,
@@ -274,6 +281,7 @@ describe('AppConfigService', () => {
                     groupPolicyCronJobExpression: '0 10 * * *',
                     jumpPolicyCronJobExpression: '0 10 * * *',
                     jumpGroupCronJobExpression: '0 10 * * *',
+                    jumpointCronJobExpression: '0 10 * * *',
                 },
             },
             {
@@ -286,6 +294,7 @@ describe('AppConfigService', () => {
                     groupPolicyCronJobExpression: '0 0 * * *',
                     jumpPolicyCronJobExpression: '0 0 * * *',
                     jumpGroupCronJobExpression: '0 0 * * *',
+                    jumpointCronJobExpression: '0 0 * * *',
                 },
             },
         ])('should return the sync configuration as expected', ({ input, expected }) => {
@@ -311,6 +320,9 @@ describe('AppConfigService', () => {
                 if (key === 'SYNC_JUMP_GROUP_CRON_JOB_EXPRESSION') {
                     return input.jumpGroupCronJobExpression;
                 }
+                if (key === 'SYNC_JUMPOINT_CRON_JOB_EXPRESSION') {
+                    return input.jumpointCronJobExpression;
+                }
                 return undefined;
             });
 
@@ -322,6 +334,7 @@ describe('AppConfigService', () => {
                 groupPolicyCronJobExpression: expected.groupPolicyCronJobExpression,
                 jumpPolicyCronJobExpression: expected.jumpPolicyCronJobExpression,
                 jumpGroupCronJobExpression: expected.jumpGroupCronJobExpression,
+                jumpointCronJobExpression: expected.jumpointCronJobExpression,
             });
         });
     });

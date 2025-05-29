@@ -25,7 +25,7 @@ describe('RetrieveUsersQueryHandler', () => {
             expect(userRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
         });
 
-        it('should call the repo with page size, page number, security provider id, username and email; and return value from the repo', async () => {
+        it('should call the repo with correct parameter and return value from the repo', async () => {
             const expectedUsers = [] as User[];
             const userRepositoryServiceFindByMethod = jest
                 .spyOn(userRepositoryService, 'findBy')
