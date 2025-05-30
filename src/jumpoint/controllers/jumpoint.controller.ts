@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateJumpointCommand, DeleteJumpointCommand, ModifyJumpointCommand } from '../commands';
 import { CreateJumpointDtoInput, ModifyJumpointDtoInput, RetrieveJumpointsDtoInput } from '../dtos/inputs';
@@ -86,7 +87,7 @@ export class JumpointController {
     @ApiOkResponse({ type: JumpointModifiedDtoOutput })
     public async modifyJumpoint(
         @Param('id') id: number,
-        @Body() dtoInput: ModifyJumpointDtoInput,
+        @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpointDtoInput,
     ): Promise<JumpointModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpointCommand, Jumpoint>(
             new ModifyJumpointCommand(

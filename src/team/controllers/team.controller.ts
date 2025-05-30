@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateTeamCommand, DeleteTeamCommand, ModifyTeamCommand } from '../commands';
 import { CreateTeamDtoInput, ModifyTeamDtoInput, RetrieveTeamsDtoInput } from '../dtos/inputs';
@@ -61,7 +62,7 @@ export class TeamController {
     @ApiOkResponse({ type: TeamModifiedDtoOutput })
     public async modifyTeam(
         @Query('id') id: number,
-        @Body() dtoInput: ModifyTeamDtoInput,
+        @Body(new NonEmptyBodyPipe()) dtoInput: ModifyTeamDtoInput,
     ): Promise<TeamModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyTeamCommand, Team>(
             new ModifyTeamCommand(UuidUtility.generate(), id, dtoInput.name, dtoInput.codeName, dtoInput.comments),

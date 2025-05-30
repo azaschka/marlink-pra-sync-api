@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateJumpGroupCommand, DeleteJumpGroupCommand, ModifyJumpGroupCommand } from '../commands';
 import { CreateJumpGroupDtoInput, ModifyJumpGroupDtoInput, RetrieveJumpGroupsDtoInput } from '../dtos/inputs';
@@ -63,7 +64,7 @@ export class JumpGroupController {
     @ApiOkResponse({ type: JumpGroupModifiedDtoOutput })
     public async modifyJumpGroup(
         @Query('id') id: number,
-        @Body() dtoInput: ModifyJumpGroupDtoInput,
+        @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpGroupDtoInput,
     ): Promise<JumpGroupModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpGroupCommand, JumpGroup>(
             new ModifyJumpGroupCommand(UuidUtility.generate(), id, dtoInput.name, dtoInput.codeName, dtoInput.comments),

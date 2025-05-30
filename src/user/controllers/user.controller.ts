@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateUserCommand, DeleteUserCommand, ModifyUserCommand } from '../commands';
 import { CreateUserDtoInput, ModifyUserDtoInput, RetrieveUsersDtoInput } from '../dtos/inputs';
@@ -75,7 +76,7 @@ export class UserController {
     @ApiOkResponse({ type: UserModifiedDtoOutput })
     public async modifyUser(
         @Param('id') id: number,
-        @Body() dtoInput: ModifyUserDtoInput,
+        @Body(new NonEmptyBodyPipe()) dtoInput: ModifyUserDtoInput,
     ): Promise<UserModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyUserCommand, User>(
             new ModifyUserCommand(

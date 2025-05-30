@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateJumpPolicyCommand, DeleteJumpPolicyCommand, ModifyJumpPolicyCommand } from '../commands';
 import { CreateJumpPolicyDtoInput, ModifyJumpPolicyDtoInput, RetrieveJumpPoliciesDtoInput } from '../dtos/inputs';
@@ -89,7 +90,7 @@ export class JumpPolicyController {
     @ApiOkResponse({ type: JumpPolicyModifiedDtoOutput })
     public async modifyJumpPolicy(
         @Query('id') id: number,
-        @Body() dtoInput: ModifyJumpPolicyDtoInput,
+        @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpPolicyDtoInput,
     ): Promise<JumpPolicyModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpPolicyCommand, JumpPolicy>(
             new ModifyJumpPolicyCommand(

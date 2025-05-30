@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, ModifyGroupPolicyCommand } from '../commands';
 import { CreateGroupPolicyDtoInput, ModifyGroupPolicyDtoInput, RetrieveGroupPoliciesDtoInput } from '../dtos/inputs';
@@ -91,7 +92,7 @@ export class GroupPolicyController {
     @ApiOkResponse({ type: GroupPolicyModifiedDtoOutput })
     public async modifyGroupPolicy(
         @Query('id') id: number,
-        @Body() dtoInput: ModifyGroupPolicyDtoInput,
+        @Body(new NonEmptyBodyPipe()) dtoInput: ModifyGroupPolicyDtoInput,
     ): Promise<GroupPolicyModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyGroupPolicyCommand, GroupPolicy>(
             new ModifyGroupPolicyCommand(
