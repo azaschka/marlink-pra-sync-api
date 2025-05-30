@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { AccessPermissionStatusType } from '../../enums';
 
 export class ModifyGroupPolicyDtoInput {
-    @ApiProperty({ required: true, type: String })
-    @IsNotEmpty()
+    @ApiProperty({ required: false, type: String })
+    @IsOptional()
     @IsString()
-    public name!: string;
+    public name?: string;
 
     @ApiProperty({ required: false, type: Boolean })
     @IsOptional()

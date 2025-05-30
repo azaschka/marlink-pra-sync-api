@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 import {
     ApprovalApproverScopeType,
     ApprovalScopeType,
@@ -9,9 +9,9 @@ import {
 
 export class ModifyJumpPolicyDtoInput {
     @Expose({ name: 'display_name' })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
-    public displayName!: string;
+    public displayName?: string;
 
     @Expose({ name: 'code_name' })
     @IsOptional()
@@ -134,7 +134,7 @@ export class ModifyJumpPolicyDtoInput {
     public recordingsDisabled?: boolean;
 
     public static create(
-        displayName: string,
+        displayName?: string,
         codeName?: string,
         description?: string,
         scheduleEnabled?: boolean,

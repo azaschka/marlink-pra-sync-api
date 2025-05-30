@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class ModifyJumpGroupDtoInput {
-    @ApiProperty({ required: true, type: String })
-    @IsNotEmpty()
+    @ApiProperty({ required: false, type: String })
+    @IsOptional()
     @IsString()
-    public name!: string;
+    public name?: string;
 
     @ApiProperty({ required: false, type: String })
     @IsOptional()

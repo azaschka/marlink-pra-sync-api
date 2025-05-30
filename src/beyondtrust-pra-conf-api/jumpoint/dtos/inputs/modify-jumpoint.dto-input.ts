@@ -1,17 +1,17 @@
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
 
 export class ModifyJumpointDtoInput {
     @Expose({ name: 'name' })
     @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    @IsOptional()
+    public name?: string;
 
     @Expose({ name: 'platform' })
-    @IsNotEmpty()
     @IsEnum(JumpointPlatformType)
-    public platform!: JumpointPlatformType;
+    @IsOptional()
+    public platform?: JumpointPlatformType;
 
     @Expose({ name: 'code_name' })
     @IsString()
@@ -89,8 +89,8 @@ export class ModifyJumpointDtoInput {
     public jzpRestrictedIps?: string[];
 
     public static create(
-        name: string,
-        platform: JumpointPlatformType,
+        name?: string,
+        platform?: JumpointPlatformType,
         codeName?: string,
         comments?: string,
         enabled?: boolean,

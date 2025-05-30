@@ -6,7 +6,7 @@ export class ModifyGroupPolicyCommand {
     constructor(
         public readonly transactionId: string,
         public readonly id: number,
-        public readonly name: string,
+        public readonly name?: string,
         public readonly hasEndpointsAccessPermission?: boolean,
         public readonly accessPermissionStatusType?: AccessPermissionStatusType,
         public readonly hasShareOtherTeamPermission?: boolean,

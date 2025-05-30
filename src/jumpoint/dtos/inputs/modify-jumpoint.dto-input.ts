@@ -1,17 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
 
 export class ModifyJumpointDtoInput {
-    @ApiProperty({ type: String, required: true })
-    @IsNotEmpty()
+    @ApiProperty({ type: String, required: false })
+    @IsOptional()
     @IsString()
-    public name!: string;
+    public name?: string;
 
-    @ApiProperty({ enum: JumpointPlatformType, required: true })
-    @IsNotEmpty()
+    @ApiProperty({ enum: JumpointPlatformType, required: false })
+    @IsOptional()
     @IsEnum(JumpointPlatformType)
-    public platformType!: JumpointPlatformType;
+    public platformType?: JumpointPlatformType;
 
     @ApiProperty({ type: String, required: false })
     @IsOptional()

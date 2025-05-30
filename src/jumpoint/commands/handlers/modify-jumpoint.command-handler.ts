@@ -54,7 +54,7 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
                 command.transactionId,
                 command.id,
                 command.name,
-                mapToBTJumpointPlatformType(command.platformType),
+                command.platformType ? mapToBTJumpointPlatformType(command.platformType) : undefined,
                 command.codeName,
                 command.comments,
                 command.isEnabled,

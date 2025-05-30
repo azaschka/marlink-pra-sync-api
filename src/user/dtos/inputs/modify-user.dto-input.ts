@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class ModifyUserDtoInput {
-    @ApiProperty({ required: true, type: String })
-    @IsNotEmpty()
+    @ApiProperty({ required: false, type: String })
+    @IsOptional()
     @IsString()
-    public publicDisplayName!: string;
+    public publicDisplayName?: string;
 
     @ApiProperty({ required: false, type: String })
     @IsOptional()

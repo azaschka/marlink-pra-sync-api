@@ -11,7 +11,7 @@ export class ModifyJumpPolicyCommand {
     constructor(
         public readonly transactionId: string,
         public readonly id: number,
-        public readonly displayName: string,
+        public readonly displayName?: string,
         public readonly codeName?: string,
         public readonly description?: string,
         public readonly scheduleEnabled?: boolean,

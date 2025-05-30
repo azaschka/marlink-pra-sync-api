@@ -1,10 +1,10 @@
 import { Expose } from 'class-transformer';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class ModifyTeamDtoInput {
     @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    @IsOptional()
+    public name?: string;
 
     @Expose({ name: 'code_name' })
     @IsString()
@@ -15,7 +15,7 @@ export class ModifyTeamDtoInput {
     @IsOptional()
     public comments?: string | null;
 
-    public static create(name: string, codeName?: string, comments?: string | null): ModifyTeamDtoInput {
+    public static create(name?: string, codeName?: string, comments?: string | null): ModifyTeamDtoInput {
         const dto = new ModifyTeamDtoInput();
         dto.name = name;
         dto.codeName = codeName;

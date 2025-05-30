@@ -1,11 +1,11 @@
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsDateString, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class ModifyUserDtoInput {
     @Expose({ name: 'public_display_name' })
     @IsString()
-    @IsNotEmpty()
-    public publicDisplayName!: string;
+    @IsOptional()
+    public publicDisplayName?: string;
 
     @Expose({ name: 'username' })
     @IsString()
@@ -53,7 +53,7 @@ export class ModifyUserDtoInput {
     public passwordResetNextLogin?: boolean;
 
     public static create(
-        publicDisplayName: string,
+        publicDisplayName?: string,
         username?: string,
         password?: string,
         passwordExpiration?: Date | null,

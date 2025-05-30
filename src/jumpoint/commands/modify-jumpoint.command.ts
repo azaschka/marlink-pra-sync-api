@@ -6,8 +6,8 @@ export class ModifyJumpointCommand {
     constructor(
         public readonly transactionId: string,
         public readonly id: number,
-        public readonly name: string,
-        public readonly platformType: JumpointPlatformType,
+        public readonly name?: string,
+        public readonly platformType?: JumpointPlatformType,
         public readonly codeName?: string,
         public readonly comments?: string,
         public readonly isEnabled?: boolean,

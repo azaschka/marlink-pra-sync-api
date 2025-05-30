@@ -1,11 +1,11 @@
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 import { AccessPermissionStatusType } from '../../enums';
 
 export class ModifyGroupPolicyDtoInput {
     @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    @IsOptional()
+    public name?: string;
 
     @Expose({ name: 'perm_access_allowed' })
     @IsOptional()
@@ -117,7 +117,7 @@ export class ModifyGroupPolicyDtoInput {
     public unassignedJumpItemRoleId?: number;
 
     public static create(
-        name: string,
+        name?: string,
         permAccessAllowed?: boolean,
         accessPermStatus?: AccessPermissionStatusType,
         permShareOtherTeam?: boolean,

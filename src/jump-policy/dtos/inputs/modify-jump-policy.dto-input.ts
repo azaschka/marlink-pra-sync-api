@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayUnique, IsArray, IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ArrayUnique, IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import {
     ApprovalApproverScopeType,
     ApprovalScopeType,
@@ -8,10 +8,10 @@ import {
 } from '../../enums';
 
 export class ModifyJumpPolicyDtoInput {
-    @ApiProperty({ type: String, required: true })
-    @IsNotEmpty()
+    @ApiProperty({ type: String, required: false })
+    @IsOptional()
     @IsString()
-    public displayName!: string;
+    public displayName?: string;
 
     @ApiProperty({ type: String, required: false })
     @IsOptional()
