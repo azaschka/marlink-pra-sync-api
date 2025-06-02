@@ -81,8 +81,8 @@ function mockAppConfigService() {
         beyondTrust: {
             api: {
                 baseUrl: 'https://api.example.com',
-                path: {
-                    jumpGroup: 'jump-group',
+                jumpGroup: {
+                    path: 'jump-group',
                 },
             },
         },

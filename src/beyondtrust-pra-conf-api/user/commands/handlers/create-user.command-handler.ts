@@ -16,7 +16,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
     public async execute(command: CreateUserCommand): Promise<UserCreatedDtoOutput> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.user,
+            this.appConfigService.beyondTrust.api.user.path,
         );
 
         return await this.httpClientService.post<UserCreatedDtoOutput, UserCreatedDtoOutput>(

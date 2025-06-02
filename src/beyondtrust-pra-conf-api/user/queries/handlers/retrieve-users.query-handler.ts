@@ -16,7 +16,7 @@ export class RetrieveUsersQueryHandler implements IQueryHandler<RetrieveUsersQue
     public async execute(query: RetrieveUsersQuery): Promise<UserRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.user,
+            this.appConfigService.beyondTrust.api.user.path,
         );
 
         return await this.httpClientService.get<UserRetrievedDtoOutput, UserRetrievedDtoOutput[]>(

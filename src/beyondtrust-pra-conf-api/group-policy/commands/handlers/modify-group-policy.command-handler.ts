@@ -16,7 +16,7 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
     public async execute(command: ModifyGroupPolicyCommand): Promise<GroupPolicyModifiedDtoOutput> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.groupPolicy,
+            this.appConfigService.beyondTrust.api.groupPolicy.path,
             command.id.toString(),
         );
 

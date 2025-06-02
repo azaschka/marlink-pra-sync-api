@@ -57,14 +57,30 @@ describe('AppConfigService', () => {
                     },
                     api: {
                         baseUrl: 'api-base-url-1',
-                        path: {
-                            user: 'api-path-user-1',
-                            jumpClient: 'api-path-jump-client-1',
-                            groupPolicy: 'api-path-group-policy-1',
-                            team: 'api-path-team-1',
-                            jumpGroup: 'api-path-jump-group-1',
-                            jumpPolicy: 'api-path-jump-policy-1',
-                            jumpoint: 'api-path-jumpoint-1',
+                        user: {
+                            path: 'api-path-user-1',
+                            groupPolicies: {
+                                path: 'api-path-user-group-policies-1',
+                                change: 'api-path-user-group-policies-change-1',
+                            },
+                        },
+                        jumpClient: {
+                            path: 'api-path-jump-client-1',
+                        },
+                        groupPolicy: {
+                            path: 'api-path-group-policy-1',
+                        },
+                        team: {
+                            path: 'api-path-team-1',
+                        },
+                        jumpGroup: {
+                            path: 'api-path-jump-group-1',
+                        },
+                        jumpPolicy: {
+                            path: 'api-path-jump-policy-1',
+                        },
+                        jumpoint: {
+                            path: 'api-path-jumpoint-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -80,14 +96,30 @@ describe('AppConfigService', () => {
                     },
                     api: {
                         baseUrl: 'api-base-url-1',
-                        path: {
-                            user: 'api-path-user-1',
-                            jumpClient: 'api-path-jump-client-1',
-                            groupPolicy: 'api-path-group-policy-1',
-                            team: 'api-path-team-1',
-                            jumpGroup: 'api-path-jump-group-1',
-                            jumpPolicy: 'api-path-jump-policy-1',
-                            jumpoint: 'api-path-jumpoint-1',
+                        user: {
+                            path: 'api-path-user-1',
+                            groupPolicies: {
+                                path: 'api-path-user-group-policies-1',
+                                change: 'api-path-user-group-policies-change-1',
+                            },
+                        },
+                        jumpClient: {
+                            path: 'api-path-jump-client-1',
+                        },
+                        groupPolicy: {
+                            path: 'api-path-group-policy-1',
+                        },
+                        team: {
+                            path: 'api-path-team-1',
+                        },
+                        jumpGroup: {
+                            path: 'api-path-jump-group-1',
+                        },
+                        jumpPolicy: {
+                            path: 'api-path-jump-policy-1',
+                        },
+                        jumpoint: {
+                            path: 'api-path-jumpoint-1',
                         },
                         communication: {
                             retryAttempts: 10,
@@ -106,14 +138,30 @@ describe('AppConfigService', () => {
                     },
                     api: {
                         baseUrl: 'unknown',
-                        path: {
-                            user: 'unknown',
-                            jumpClient: 'unknown',
-                            groupPolicy: 'unknown',
-                            team: 'unknown',
-                            jumpGroup: 'unknown',
-                            jumpPolicy: 'unknown',
-                            jumpoint: 'unknown',
+                        user: {
+                            path: 'unknown',
+                            groupPolicies: {
+                                path: 'unknown',
+                                change: 'unknown',
+                            },
+                        },
+                        jumpClient: {
+                            path: 'unknown',
+                        },
+                        groupPolicy: {
+                            path: 'unknown',
+                        },
+                        team: {
+                            path: 'unknown',
+                        },
+                        jumpGroup: {
+                            path: 'unknown',
+                        },
+                        jumpPolicy: {
+                            path: 'unknown',
+                        },
+                        jumpoint: {
+                            path: 'unknown',
                         },
                         communication: {
                             retryAttempts: 0,
@@ -134,19 +182,23 @@ describe('AppConfigService', () => {
                     case 'BEYONDTRUST_API_BASE_URL':
                         return input.api?.baseUrl;
                     case 'BEYONDTRUST_API_USER_PATH':
-                        return input.api?.path?.user;
+                        return input.api?.user.path;
+                    case 'BEYONDTRUST_API_USER_GROUP_POLICIES_PATH':
+                        return input.api?.user.groupPolicies.path;
+                    case 'BEYONDTRUST_API_USER_CHANGE_GROUP_POLICIES':
+                        return input.api?.user.groupPolicies.change;
                     case 'BEYONDTRUST_API_JUMP_CLIENT_PATH':
-                        return input.api?.path?.jumpClient;
+                        return input.api?.jumpClient.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_PATH':
-                        return input.api?.path?.groupPolicy;
+                        return input.api?.groupPolicy.path;
                     case 'BEYONDTRUST_API_TEAM_PATH':
-                        return input.api?.path?.team;
+                        return input.api?.team.path;
                     case 'BEYONDTRUST_API_JUMP_GROUP_PATH':
-                        return input.api?.path?.jumpGroup;
+                        return input.api?.jumpGroup.path;
                     case 'BEYONDTRUST_API_JUMP_POLICY_PATH':
-                        return input.api?.path?.jumpPolicy;
+                        return input.api?.jumpPolicy.path;
                     case 'BEYONDTRUST_API_JUMPOINT_PATH':
-                        return input.api?.path?.jumpoint;
+                        return input.api?.jumpoint.path;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
                         return input.api?.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
@@ -164,14 +216,30 @@ describe('AppConfigService', () => {
                 },
                 api: {
                     baseUrl: expected.api.baseUrl,
-                    path: {
-                        user: expected.api.path.user,
-                        jumpClient: expected.api.path.jumpClient,
-                        groupPolicy: expected.api.path.groupPolicy,
-                        team: expected.api.path.team,
-                        jumpGroup: expected.api.path.jumpGroup,
-                        jumpPolicy: expected.api.path.jumpPolicy,
-                        jumpoint: expected.api.path.jumpoint,
+                    user: {
+                        path: expected.api.user?.path,
+                        groupPolicies: {
+                            path: expected.api.user?.groupPolicies.path,
+                            change: expected.api.user?.groupPolicies.change,
+                        },
+                    },
+                    jumpClient: {
+                        path: expected.api.jumpClient?.path,
+                    },
+                    groupPolicy: {
+                        path: expected.api.groupPolicy?.path,
+                    },
+                    team: {
+                        path: expected.api.team?.path,
+                    },
+                    jumpGroup: {
+                        path: expected.api.jumpGroup?.path,
+                    },
+                    jumpPolicy: {
+                        path: expected.api.jumpPolicy?.path,
+                    },
+                    jumpoint: {
+                        path: expected.api.jumpoint?.path,
                     },
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,

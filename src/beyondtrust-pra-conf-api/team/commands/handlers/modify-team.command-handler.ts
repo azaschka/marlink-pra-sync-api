@@ -16,7 +16,7 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
     public async execute(command: ModifyTeamCommand): Promise<TeamModifiedDtoOutput> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.team,
+            this.appConfigService.beyondTrust.api.team.path,
             command.id.toString(),
         );
 

@@ -14,7 +14,7 @@ export class DeleteTeamCommandHandler implements ICommandHandler<DeleteTeamComma
     public async execute(command: DeleteTeamCommand): Promise<void> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.team,
+            this.appConfigService.beyondTrust.api.team.path,
             command.id.toString(),
         );
 

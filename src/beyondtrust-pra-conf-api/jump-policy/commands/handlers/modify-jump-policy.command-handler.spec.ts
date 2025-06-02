@@ -129,8 +129,8 @@ function mockAppConfigService() {
         beyondTrust: {
             api: {
                 baseUrl: 'https://api.example.com',
-                path: {
-                    jumpPolicy: 'jump-policy',
+                jumpPolicy: {
+                    path: 'jump-policy',
                 },
             },
         },

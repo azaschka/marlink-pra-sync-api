@@ -14,7 +14,7 @@ export class DeleteUserCommandHandler implements ICommandHandler<DeleteUserComma
     public async execute(command: DeleteUserCommand): Promise<void> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.user,
+            this.appConfigService.beyondTrust.api.user.path,
             command.id.toString(),
         );
 

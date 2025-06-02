@@ -16,7 +16,7 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
     public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClientRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpClient,
+            this.appConfigService.beyondTrust.api.jumpClient.path,
         );
 
         return await this.httpClientService.get<JumpClientRetrievedDtoOutput, JumpClientRetrievedDtoOutput[]>(

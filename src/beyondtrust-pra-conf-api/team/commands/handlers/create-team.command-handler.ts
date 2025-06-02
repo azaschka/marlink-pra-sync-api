@@ -16,7 +16,7 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
     public async execute(command: CreateTeamCommand): Promise<TeamCreatedDtoOutput> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.team,
+            this.appConfigService.beyondTrust.api.team.path,
         );
 
         return await this.httpClientService.post<TeamCreatedDtoOutput, TeamCreatedDtoOutput>(

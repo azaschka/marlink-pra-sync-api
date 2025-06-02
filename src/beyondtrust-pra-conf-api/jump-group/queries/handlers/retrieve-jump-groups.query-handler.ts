@@ -16,7 +16,7 @@ export class RetrieveJumpGroupsQueryHandler implements IQueryHandler<RetrieveJum
     public async execute(query: RetrieveJumpGroupsQuery): Promise<JumpGroupRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpGroup,
+            this.appConfigService.beyondTrust.api.jumpGroup.path,
         );
 
         return await this.httpClientService.get<JumpGroupRetrievedDtoOutput, JumpGroupRetrievedDtoOutput[]>(

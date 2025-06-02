@@ -16,7 +16,7 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
     public async execute(command: CreateGroupPolicyCommand): Promise<GroupPolicyCreatedDtoOutput> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.groupPolicy,
+            this.appConfigService.beyondTrust.api.groupPolicy.path,
         );
 
         return await this.httpClientService.post<GroupPolicyCreatedDtoOutput, GroupPolicyCreatedDtoOutput>(

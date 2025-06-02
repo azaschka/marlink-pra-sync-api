@@ -16,7 +16,7 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
     public async execute(command: CreateJumpGroupCommand): Promise<JumpGroupCreatedDtoOutput> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpGroup,
+            this.appConfigService.beyondTrust.api.jumpGroup.path,
         );
 
         return await this.httpClientService.post<JumpGroupCreatedDtoOutput, JumpGroupCreatedDtoOutput>(

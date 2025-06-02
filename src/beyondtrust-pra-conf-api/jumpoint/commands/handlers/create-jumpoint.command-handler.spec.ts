@@ -128,8 +128,8 @@ function mockAppConfigService() {
         beyondTrust: {
             api: {
                 baseUrl: 'https://api.example.com',
-                path: {
-                    jumpoint: 'jumpoint',
+                jumpoint: {
+                    path: 'jumpoint',
                 },
             },
         },

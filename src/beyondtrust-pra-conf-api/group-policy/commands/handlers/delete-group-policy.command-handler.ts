@@ -14,7 +14,7 @@ export class DeleteGroupPolicyCommandHandler implements ICommandHandler<DeleteGr
     public async execute(command: DeleteGroupPolicyCommand): Promise<void> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.groupPolicy,
+            this.appConfigService.beyondTrust.api.groupPolicy.path,
             command.id.toString(),
         );
 

@@ -39,8 +39,8 @@ function mockAppConfigService() {
         beyondTrust: {
             api: {
                 baseUrl: 'https://api.example.com',
-                path: {
-                    groupPolicy: 'group-policy',
+                groupPolicy: {
+                    path: 'group-policy',
                 },
             },
         },

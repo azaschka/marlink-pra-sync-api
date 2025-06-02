@@ -16,7 +16,7 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
     public async execute(query: RetrieveGroupPoliciesQuery): Promise<GroupPolicyRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.groupPolicy,
+            this.appConfigService.beyondTrust.api.groupPolicy.path,
         );
 
         return await this.httpClientService.get<GroupPolicyRetrievedDtoOutput, GroupPolicyRetrievedDtoOutput[]>(

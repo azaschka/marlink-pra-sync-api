@@ -147,8 +147,8 @@ function mockAppConfigService() {
         beyondTrust: {
             api: {
                 baseUrl: 'https://api.example.com',
-                path: {
-                    user: 'user',
+                user: {
+                    path: 'user',
                 },
             },
         },

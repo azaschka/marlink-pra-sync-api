@@ -16,7 +16,7 @@ export class ModifyJumpGroupCommandHandler implements ICommandHandler<ModifyJump
     public async execute(command: ModifyJumpGroupCommand): Promise<JumpGroupModifiedDtoOutput> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpGroup,
+            this.appConfigService.beyondTrust.api.jumpGroup.path,
             command.id.toString(),
         );
 

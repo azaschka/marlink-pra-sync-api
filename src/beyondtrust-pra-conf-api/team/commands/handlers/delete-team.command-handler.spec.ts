@@ -39,8 +39,8 @@ function mockAppConfigService() {
         beyondTrust: {
             api: {
                 baseUrl: 'https://api.example.com',
-                path: {
-                    team: 'team',
+                team: {
+                    path: 'team',
                 },
             },
         },

@@ -16,7 +16,7 @@ export class RetrieveJumpPoliciesQueryHandler implements IQueryHandler<RetrieveJ
     public async execute(query: RetrieveJumpPoliciesQuery): Promise<JumpPolicyRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpPolicy,
+            this.appConfigService.beyondTrust.api.jumpPolicy.path,
         );
 
         return await this.httpClientService.get<JumpPolicyRetrievedDtoOutput, JumpPolicyRetrievedDtoOutput[]>(

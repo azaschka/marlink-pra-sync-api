@@ -16,7 +16,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
     public async execute(query: RetrieveJumpointsQuery): Promise<JumpointRetrievedDtoOutput[]> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpoint,
+            this.appConfigService.beyondTrust.api.jumpoint.path,
         );
 
         return await this.httpClientService.get<JumpointRetrievedDtoOutput, JumpointRetrievedDtoOutput[]>(

@@ -14,7 +14,7 @@ export class DeleteJumpPolicyCommandHandler implements ICommandHandler<DeleteJum
     public async execute(command: DeleteJumpPolicyCommand): Promise<void> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpPolicy,
+            this.appConfigService.beyondTrust.api.jumpPolicy.path,
             command.id.toString(),
         );
 

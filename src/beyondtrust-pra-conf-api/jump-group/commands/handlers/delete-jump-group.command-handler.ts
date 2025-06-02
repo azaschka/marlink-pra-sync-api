@@ -14,7 +14,7 @@ export class DeleteJumpGroupCommandHandler implements ICommandHandler<DeleteJump
     public async execute(command: DeleteJumpGroupCommand): Promise<void> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpGroup,
+            this.appConfigService.beyondTrust.api.jumpGroup.path,
             command.id.toString(),
         );
 

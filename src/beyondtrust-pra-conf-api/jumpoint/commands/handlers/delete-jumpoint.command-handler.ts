@@ -14,7 +14,7 @@ export class DeleteJumpointCommandHandler implements ICommandHandler<DeleteJumpo
     public async execute(command: DeleteJumpointCommand): Promise<void> {
         const url = UrlUtility.join(
             this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.path.jumpoint,
+            this.appConfigService.beyondTrust.api.jumpoint.path,
             command.id.toString(),
         );
 
