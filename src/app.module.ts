@@ -11,6 +11,7 @@ import { JumpPolicyModule } from './jump-policy/jump-policy.module';
 import { JumpointModule } from './jumpoint/jumpoint.module';
 import { SyncModule } from './sync/sync.module';
 import { TeamModule } from './team/team.module';
+import { UserGroupPolicyModule } from './user-group-policy/user-group-policy.module';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -29,6 +30,7 @@ import { UserModule } from './user/user.module';
         JumpPolicyModule,
         JumpointModule,
         SyncModule,
+        UserGroupPolicyModule,
     ],
     controllers: [AppController],
 })

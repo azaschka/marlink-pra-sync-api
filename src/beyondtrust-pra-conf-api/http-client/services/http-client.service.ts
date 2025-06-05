@@ -12,7 +12,6 @@ export class HttpClientService {
         HttpStatusCode.Unauthorized,
         HttpStatusCode.RequestTimeout,
         HttpStatusCode.TooManyRequests,
-        HttpStatusCode.InternalServerError,
         HttpStatusCode.BadGateway,
         HttpStatusCode.ServiceUnavailable,
         HttpStatusCode.GatewayTimeout,

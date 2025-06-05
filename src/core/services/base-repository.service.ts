@@ -60,15 +60,15 @@ export class BaseRepositoryService<T> {
 
     public async findBy<K extends Extract<keyof T, string>>(
         where: Pick<T, K> | FindOptionsWhere<T>,
-        pageNumber: number,
-        pageSize: number,
+        pageNumber: number | undefined,
+        pageSize: number | undefined,
     ): Promise<T[]> {
         const queryRunner = await this.createQueryRunnerAndConnect();
 
         try {
             const entities = await queryRunner.manager.find(this.entity, {
                 where: where,
-                skip: (pageNumber - 1) * pageSize,
+                skip: pageNumber && pageSize ? (pageNumber - 1) * pageSize : undefined,
                 take: pageSize,
             });
 

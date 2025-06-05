@@ -1,0 +1,36 @@
+import { Body, Controller, Param, Patch, UsePipes, ValidationPipe } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
+import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { NonEmptyBodyPipe } from '../../shared/pipes';
+import { UuidUtility } from '../../shared/utilities';
+import { ModifyUserGroupPoliciesCommand } from '../commands';
+import { ModifyUserGroupPoliciesDtoInput } from '../dtos/inputs';
+import { UserGroupPoliciesModifiedDtoOutput } from '../dtos/outputs';
+import { UserGroupPolicies } from '../models';
+
+@ApiBearerAuth()
+@ApiTags('Users')
+@Controller('users')
+@UsePipes(new ValidationPipe({ transform: true }))
+export class UserGroupPoliciesController {
+    constructor(private readonly commandBus: CommandBus) {}
+
+    @Patch(':id/group-policies')
+    @ApiParam({ name: 'id', type: Number, required: true })
+    @ApiOkResponse({ type: UserGroupPoliciesModifiedDtoOutput })
+    public async modifyUserGroupPolicies(
+        @Param('id') id: number,
+        @Body(new NonEmptyBodyPipe()) dtoInput: ModifyUserGroupPoliciesDtoInput,
+    ): Promise<UserGroupPoliciesModifiedDtoOutput> {
+        const result = await this.commandBus.execute<ModifyUserGroupPoliciesCommand, UserGroupPolicies>(
+            new ModifyUserGroupPoliciesCommand(
+                UuidUtility.generate(),
+                id,
+                dtoInput.groupPolicyIdsToAdd,
+                dtoInput.groupPolicyIdsToRemove,
+            ),
+        );
+
+        return result;
+    }
+}

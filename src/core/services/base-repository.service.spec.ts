@@ -181,7 +181,28 @@ describe('BaseRepositoryService', () => {
     });
 
     describe('findBy', () => {
-        it('should connect to db, find the entities and return the value', async () => {
+        it.each([
+            {
+                input: {
+                    pageNumber: 1,
+                    pageSize: 10,
+                },
+                expected: {
+                    skip: 0,
+                    take: 10,
+                },
+            },
+            {
+                input: {
+                    pageNumber: undefined,
+                    pageSize: undefined,
+                },
+                expected: {
+                    skip: undefined,
+                    take: undefined,
+                },
+            },
+        ])('should connect to db, find the entities and return the value', async (param) => {
             const dbEntities = [
                 TestHelper.mockRepositoryEntity('entity-1'),
                 TestHelper.mockRepositoryEntity('entity-2'),
@@ -193,13 +214,13 @@ describe('BaseRepositoryService', () => {
             } = spyDataSource(dataSource);
             dataSourceQueryRunnerManagerFindMethod.mockResolvedValue(dbEntities);
 
-            const result = await service.findBy({ id: 1 }, 1, 10);
+            const result = await service.findBy({ id: 1 }, param.input.pageNumber, param.input.pageSize);
 
             expect(dataSourceQueryRunnerConnectMethod).toHaveBeenCalledTimes(1);
             expect(dataSourceQueryRunnerManagerFindMethod).toHaveBeenCalledWith(MockEntity, {
                 where: { id: 1 },
-                skip: 0,
-                take: 10,
+                skip: param.expected.skip,
+                take: param.expected.take,
             });
             expect(dataSourceQueryRunnerReleaseMethod).toHaveBeenCalledTimes(1);
             expect(result).toBe(dbEntities);

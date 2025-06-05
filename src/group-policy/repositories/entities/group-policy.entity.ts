@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { DateUtility } from '../../../shared/utilities';
+import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
 import { AccessPermissionStatusType } from '../../enums';
 import { GroupPolicy } from '../../models';
 
@@ -79,6 +80,9 @@ export class GroupPolicyEntity implements GroupPolicy {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @OneToMany(() => UserGroupPolicyEntity, (userGroupPolicy) => userGroupPolicy.groupPolicy)
+    public userGroupPolicies!: UserGroupPolicyEntity[];
 
     public static create(
         id: number,
