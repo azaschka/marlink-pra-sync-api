@@ -21,6 +21,7 @@ abstract class TestHelper {
             id,
             publicDisplayName: `user-${id}`,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
+            userGroupPolicies: [],
         }));
     }
 }

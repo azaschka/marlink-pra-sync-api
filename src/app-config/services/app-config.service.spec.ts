@@ -82,6 +82,23 @@ describe('AppConfigService', () => {
                         jumpoint: {
                             path: 'api-path-jumpoint-1',
                         },
+                        jumpItem: {
+                            remoteRdp: {
+                                path: 'api-path-jump-item-remote-rdp-1',
+                            },
+                            shellJump: {
+                                path: 'api-path-jump-item-shell-jump-1',
+                            },
+                            webJump: {
+                                path: 'api-path-jump-item-web-jump-1',
+                            },
+                            remoteVnc: {
+                                path: 'api-path-jump-item-remote-vnc-1',
+                            },
+                            protocolTunnelJump: {
+                                path: 'api-path-jump-item-protocol-tunnel-jump-1',
+                            },
+                        },
                         communication: {
                             retryAttempts: 10,
                             retryDelayInMs: 500,
@@ -120,6 +137,23 @@ describe('AppConfigService', () => {
                         },
                         jumpoint: {
                             path: 'api-path-jumpoint-1',
+                        },
+                        jumpItem: {
+                            remoteRdp: {
+                                path: 'api-path-jump-item-remote-rdp-1',
+                            },
+                            shellJump: {
+                                path: 'api-path-jump-item-shell-jump-1',
+                            },
+                            webJump: {
+                                path: 'api-path-jump-item-web-jump-1',
+                            },
+                            remoteVnc: {
+                                path: 'api-path-jump-item-remote-vnc-1',
+                            },
+                            protocolTunnelJump: {
+                                path: 'api-path-jump-item-protocol-tunnel-jump-1',
+                            },
                         },
                         communication: {
                             retryAttempts: 10,
@@ -163,6 +197,23 @@ describe('AppConfigService', () => {
                         jumpoint: {
                             path: 'unknown',
                         },
+                        jumpItem: {
+                            remoteRdp: {
+                                path: 'unknown',
+                            },
+                            shellJump: {
+                                path: 'unknown',
+                            },
+                            webJump: {
+                                path: 'unknown',
+                            },
+                            remoteVnc: {
+                                path: 'unknown',
+                            },
+                            protocolTunnelJump: {
+                                path: 'unknown',
+                            },
+                        },
                         communication: {
                             retryAttempts: 0,
                             retryDelayInMs: 0,
@@ -199,6 +250,16 @@ describe('AppConfigService', () => {
                         return input.api?.jumpPolicy.path;
                     case 'BEYONDTRUST_API_JUMPOINT_PATH':
                         return input.api?.jumpoint.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH':
+                        return input.api?.jumpItem?.remoteRdp?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH':
+                        return input.api?.jumpItem?.shellJump?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH':
+                        return input.api?.jumpItem?.webJump?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH':
+                        return input.api?.jumpItem?.remoteVnc?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH':
+                        return input.api?.jumpItem?.protocolTunnelJump?.path;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
                         return input.api?.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
@@ -240,6 +301,23 @@ describe('AppConfigService', () => {
                     },
                     jumpoint: {
                         path: expected.api.jumpoint?.path,
+                    },
+                    jumpItem: {
+                        remoteRdp: {
+                            path: expected.api.jumpItem?.remoteRdp?.path,
+                        },
+                        shellJump: {
+                            path: expected.api.jumpItem?.shellJump?.path,
+                        },
+                        webJump: {
+                            path: expected.api.jumpItem?.webJump?.path,
+                        },
+                        remoteVnc: {
+                            path: expected.api.jumpItem?.remoteVnc?.path,
+                        },
+                        protocolTunnelJump: {
+                            path: expected.api.jumpItem?.protocolTunnelJump?.path,
+                        },
                     },
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,

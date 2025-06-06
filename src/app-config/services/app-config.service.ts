@@ -80,6 +80,33 @@ export class AppConfigService {
                         this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
                 },
+                jumpItem: {
+                    remoteRdp: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
+                    shellJump: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
+                    webJump: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
+                    remoteVnc: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
+                    protocolTunnelJump: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
+                },
                 communication: {
                     retryAttempts:
                         this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS') ??
