@@ -1,0 +1,24 @@
+import { JumpGroupType, WebJumpUsernameFormat } from '../enums';
+
+export class CreateWebJumpCommand {
+    public readonly commandType = 'bt-create-web-jump';
+
+    constructor(
+        public readonly transactionId: string,
+        public readonly name: string,
+        public readonly jumpointId: number,
+        public readonly url: string,
+        public readonly jumpGroupId: number,
+        public readonly jumpGroupType?: JumpGroupType,
+        public readonly usernameFormat?: WebJumpUsernameFormat,
+        public readonly verifyCertificate?: boolean,
+        public readonly authenticationTimeout?: number,
+        public readonly tag?: string,
+        public readonly comments?: string,
+        public readonly jumpPolicyId?: number | null,
+        public readonly usernameField?: string | null,
+        public readonly passwordField?: string | null,
+        public readonly submitField?: string | null,
+        public readonly sessionPolicyId?: number | null,
+    ) {}
+}
