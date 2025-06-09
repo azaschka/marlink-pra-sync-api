@@ -30,15 +30,15 @@ describe('CopyRemoteVncCommandHandler', () => {
 
     describe('execute', () => {
         it('should call HttpClientService with correct argument and return the result', async () => {
-            const httpClientServicePatchMethod = jest.spyOn(httpClientService, 'patch');
+            const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
                 new CopyRemoteVncCommand('transaction-1', 1, 2, JumpGroupType.Personal, 'remote-vnc-1'),
             );
 
-            expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
+            expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/remote-vnc/1`,
+                `https://api.example.com/jump-item/remote-vnc/1/copy`,
                 {
                     name: 'remote-vnc-1',
                     jumpGroupId: 2,
@@ -53,7 +53,7 @@ describe('CopyRemoteVncCommandHandler', () => {
 
 function mockHttpClientService() {
     const service = {} as HttpClientService;
-    service.patch = jest.fn().mockResolvedValue(TestHelper.mockedRemoteVncCopiedDtoOutput);
+    service.post = jest.fn().mockResolvedValue(TestHelper.mockedRemoteVncCopiedDtoOutput);
 
     return service;
 }
@@ -66,6 +66,7 @@ function mockAppConfigService() {
                 jumpItem: {
                     remoteVnc: {
                         path: 'jump-item/remote-vnc',
+                        copy: 'copy',
                     },
                 },
             },

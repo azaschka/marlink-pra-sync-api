@@ -18,9 +18,10 @@ export class CopyWebJumpCommandHandler implements ICommandHandler<CopyWebJumpCom
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.jumpItem.webJump.path,
             command.id.toString(),
+            this.appConfigService.beyondTrust.api.jumpItem.webJump.copy,
         );
 
-        return await this.httpClientService.patch<WebJumpCopiedDtoOutput, WebJumpCopiedDtoOutput>(
+        return await this.httpClientService.post<WebJumpCopiedDtoOutput, WebJumpCopiedDtoOutput>(
             WebJumpCopiedDtoOutput,
             url,
             CopyWebJumpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),

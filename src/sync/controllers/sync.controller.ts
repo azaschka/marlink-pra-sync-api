@@ -5,6 +5,8 @@ import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
 import { GroupPoliciesSyncResult } from '../../group-policy/models';
 import { SyncJumpGroupsCommand } from '../../jump-group/commands';
 import { JumpGroupsSyncResult } from '../../jump-group/models';
+import { SyncRemoteRdpsCommand } from '../../jump-item/remote-rdp/commands';
+import { RemoteRdpsSyncResult } from '../../jump-item/remote-rdp/models';
 import { SyncJumpPoliciesCommand } from '../../jump-policy/commands';
 import { JumpPoliciesSyncResult } from '../../jump-policy/models';
 import { SyncJumpointsCommand } from '../../jumpoint/commands';
@@ -108,6 +110,21 @@ export class SyncController {
             createdIds: result.createdJumpointIds,
             updatedIds: result.updatedJumpointIds,
             deletedIds: result.deletedJumpointIds,
+        };
+    }
+
+    @Post('jump-items/remote-rdps')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpItemsRemoteRdps(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncRemoteRdpsCommand, RemoteRdpsSyncResult>(
+            new SyncRemoteRdpsCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdRemoteRdpIds,
+            updatedIds: result.updatedRemoteRdpIds,
+            deletedIds: result.deletedRemoteRdpIds,
         };
     }
 }

@@ -18,9 +18,10 @@ export class CopyShellJumpCommandHandler implements ICommandHandler<CopyShellJum
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.jumpItem.shellJump.path,
             command.id.toString(),
+            this.appConfigService.beyondTrust.api.jumpItem.shellJump.copy,
         );
 
-        return await this.httpClientService.patch<ShellJumpCopiedDtoOutput, ShellJumpCopiedDtoOutput>(
+        return await this.httpClientService.post<ShellJumpCopiedDtoOutput, ShellJumpCopiedDtoOutput>(
             ShellJumpCopiedDtoOutput,
             url,
             CopyShellJumpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),

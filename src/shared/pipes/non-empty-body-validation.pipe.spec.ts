@@ -10,6 +10,7 @@ describe('NonEmptyBodyPipe', () => {
 
     it.each([
         { foo: 'bar' },
+        { foo: null },
         [{ foo: 'bar' }],
         { a: undefined, b: 1 },
         [{ a: undefined, b: 1 }],

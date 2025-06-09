@@ -1,4 +1,4 @@
-import { User } from '../../models';
+import { UserEntity } from '../../repositories/entities';
 import { UserRepositoryService } from '../../repositories/services/user-repository.service';
 import { RetrieveUsersQuery } from '../retrieve-users.query';
 import { RetrieveUsersQueryHandler } from './retrieve-users.query-handler';
@@ -14,7 +14,7 @@ describe('RetrieveUsersQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedUsers = [] as User[];
+            const expectedUsers = [] as UserEntity[];
             const userRepositoryServiceFindByMethod = jest
                 .spyOn(userRepositoryService, 'findBy')
                 .mockResolvedValue(expectedUsers);
@@ -26,7 +26,7 @@ describe('RetrieveUsersQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedUsers = [] as User[];
+            const expectedUsers = [] as UserEntity[];
             const userRepositoryServiceFindByMethod = jest
                 .spyOn(userRepositoryService, 'findBy')
                 .mockResolvedValue(expectedUsers);

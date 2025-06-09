@@ -1,4 +1,4 @@
-import { GroupPolicy } from '../../models';
+import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { RetrieveGroupPoliciesQuery } from '../retrieve-group-policies.query';
 import { RetrieveGroupPoliciesQueryHandler } from './retrieve-group-policies.query-handler';
@@ -14,7 +14,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedGroupPolicies = [] as GroupPolicy[];
+            const expectedGroupPolicies = [] as GroupPolicyEntity[];
             const groupPolicyRepositoryServiceFindByMethod = jest
                 .spyOn(groupPolicyRepositoryService, 'findBy')
                 .mockResolvedValue(expectedGroupPolicies);
@@ -26,7 +26,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedGroupPolicies = [] as GroupPolicy[];
+            const expectedGroupPolicies = [] as GroupPolicyEntity[];
             const groupPolicyRepositoryServiceFindByMethod = jest
                 .spyOn(groupPolicyRepositoryService, 'findBy')
                 .mockResolvedValue(expectedGroupPolicies);

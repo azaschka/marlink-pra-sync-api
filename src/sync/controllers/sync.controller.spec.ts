@@ -129,6 +129,26 @@ describe('SyncController', () => {
             });
         });
     });
+
+    describe('syncJumpItemsRemoteRdps', () => {
+        it('should return sync result for jump items remote rdps', async () => {
+            const expectedResult = {
+                createdRemoteRdpIds: ['remoteRdp1'],
+                updatedRemoteRdpIds: ['remoteRdp2'],
+                deletedRemoteRdpIds: ['remoteRdp3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpItemsRemoteRdps();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdRemoteRdpIds,
+                updatedIds: expectedResult.updatedRemoteRdpIds,
+                deletedIds: expectedResult.deletedRemoteRdpIds,
+            });
+        });
+    });
 });
 
 function mockCommandBus() {

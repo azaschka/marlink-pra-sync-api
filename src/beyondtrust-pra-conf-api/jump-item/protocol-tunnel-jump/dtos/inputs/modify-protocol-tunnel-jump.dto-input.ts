@@ -1,27 +1,27 @@
 import { Expose } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { JumpGroupType, TunnelType } from '../../enums';
 
 export class ModifyProtocolTunnelJumpDtoInput {
     @Expose({ name: 'name' })
     @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    @IsOptional()
+    public name?: string;
 
     @Expose({ name: 'jumpoint_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpointId!: number;
+    @IsOptional()
+    public jumpointId?: number;
 
     @Expose({ name: 'hostname' })
     @IsString()
-    @IsNotEmpty()
-    public hostname!: string;
+    @IsOptional()
+    public hostname?: string;
 
     @Expose({ name: 'jump_group_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpGroupId!: number;
+    @IsOptional()
+    public jumpGroupId?: number;
 
     @Expose({ name: 'jump_group_type' })
     @IsOptional()
@@ -84,10 +84,10 @@ export class ModifyProtocolTunnelJumpDtoInput {
     public caCertificates?: string;
 
     public static create(
-        name: string,
-        jumpointId: number,
-        hostname: string,
-        jumpGroupId: number,
+        name?: string,
+        jumpointId?: number,
+        hostname?: string,
+        jumpGroupId?: number,
         jumpGroupType?: JumpGroupType,
         tag?: string,
         comments?: string,

@@ -30,15 +30,15 @@ describe('CopyWebJumpCommandHandler', () => {
 
     describe('execute', () => {
         it('should call HttpClientService with correct argument and return the result', async () => {
-            const httpClientServicePatchMethod = jest.spyOn(httpClientService, 'patch');
+            const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
                 new CopyWebJumpCommand('transaction-1', 1, 2, JumpGroupType.Personal, 'web-jump-1'),
             );
 
-            expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
+            expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/web-jump/1`,
+                `https://api.example.com/jump-item/web-jump/1/copy`,
                 {
                     name: 'web-jump-1',
                     jumpGroupId: 2,
@@ -53,7 +53,7 @@ describe('CopyWebJumpCommandHandler', () => {
 
 function mockHttpClientService() {
     const service = {} as HttpClientService;
-    service.patch = jest.fn().mockResolvedValue(TestHelper.mockedWebJumpCopiedDtoOutput);
+    service.post = jest.fn().mockResolvedValue(TestHelper.mockedWebJumpCopiedDtoOutput);
 
     return service;
 }
@@ -66,6 +66,7 @@ function mockAppConfigService() {
                 jumpItem: {
                     webJump: {
                         path: 'jump-item/web-jump',
+                        copy: 'copy',
                     },
                 },
             },

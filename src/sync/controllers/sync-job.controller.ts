@@ -44,6 +44,11 @@ export class SyncJobController implements OnModuleInit {
                 cronExpression: this.appConfigService.sync.jumpointCronJobExpression,
                 func: this.syncController.syncJumpoints.bind(this.syncController),
             },
+            {
+                name: 'syncJumpItemsRemoteRdps',
+                cronExpression: this.appConfigService.sync.jumpItem.remoteRdpCronJobExpression,
+                func: this.syncController.syncJumpItemsRemoteRdps.bind(this.syncController),
+            },
         ];
 
         cronJobMap.forEach(({ name, cronExpression, func }) => {

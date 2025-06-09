@@ -85,25 +85,40 @@ export class AppConfigService {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH') ??
                             AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        copy:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_RDP') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
                     },
                     shellJump: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        copy:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_SHELL_JUMP') ??
                             AppConfigService.DEFAULT_UNDEFINED_STRING,
                     },
                     webJump: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH') ??
                             AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        copy:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_WEB_JUMP') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
                     },
                     remoteVnc: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH') ??
                             AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        copy:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_VNC') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
                     },
                     protocolTunnelJump: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        copy:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_PROTOCOL_TUNNEL_JUMP') ??
                             AppConfigService.DEFAULT_UNDEFINED_STRING,
                     },
                 },
@@ -159,6 +174,23 @@ export class AppConfigService {
             jumpointCronJobExpression:
                 this.configService.get<string>('SYNC_JUMPOINT_CRON_JOB_EXPRESSION') ??
                 AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            jumpItem: {
+                remoteRdpCronJobExpression:
+                    this.configService.get<string>('SYNC_JUMP_ITEM_REMOTE_RDP_CRON_JOB_EXPRESSION') ??
+                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+                shellJumpCronJobExpression:
+                    this.configService.get<string>('SYNC_JUMP_ITEM_SHELL_JUMP_CRON_JOB_EXPRESSION') ??
+                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+                webJumpCronJobExpression:
+                    this.configService.get<string>('SYNC_JUMP_ITEM_WEB_JUMP_CRON_JOB_EXPRESSION') ??
+                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+                remoteVncCronJobExpression:
+                    this.configService.get<string>('SYNC_JUMP_ITEM_REMOTE_VNC_CRON_JOB_EXPRESSION') ??
+                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+                protocolTunnelJumpCronJobExpression:
+                    this.configService.get<string>('SYNC_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_CRON_JOB_EXPRESSION') ??
+                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            },
         };
     }
 }

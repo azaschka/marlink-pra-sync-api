@@ -1,27 +1,27 @@
 import { Expose } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { JumpGroupType, ShellJumpProtocolType, ShellJumpTerminalType } from '../../enums';
 
 export class ModifyShellJumpDtoInput {
     @Expose({ name: 'name' })
     @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    @IsOptional()
+    public name?: string;
 
     @Expose({ name: 'jumpoint_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpointId!: number;
+    @IsOptional()
+    public jumpointId?: number;
 
     @Expose({ name: 'hostname' })
     @IsString()
-    @IsNotEmpty()
-    public hostname!: string;
+    @IsOptional()
+    public hostname?: string;
 
     @Expose({ name: 'protocol' })
     @IsEnum(ShellJumpProtocolType)
-    @IsNotEmpty()
-    public protocol!: ShellJumpProtocolType;
+    @IsOptional()
+    public protocol?: ShellJumpProtocolType;
 
     @Expose({ name: 'port' })
     @IsOptional()
@@ -30,8 +30,8 @@ export class ModifyShellJumpDtoInput {
 
     @Expose({ name: 'jump_group_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpGroupId!: number;
+    @IsOptional()
+    public jumpGroupId?: number;
 
     @Expose({ name: 'jump_group_type' })
     @IsOptional()
@@ -74,12 +74,12 @@ export class ModifyShellJumpDtoInput {
     public sessionPolicyId?: number | null;
 
     public static create(
-        name: string,
-        jumpointId: number,
-        hostname: string,
-        protocol: ShellJumpProtocolType,
-        port: number | undefined,
-        jumpGroupId: number,
+        name?: string,
+        jumpointId?: number,
+        hostname?: string,
+        protocol?: ShellJumpProtocolType,
+        port?: number,
+        jumpGroupId?: number,
         jumpGroupType?: JumpGroupType,
         terminal?: ShellJumpTerminalType,
         keepAlive?: number,

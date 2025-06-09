@@ -30,7 +30,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
 
     describe('execute', () => {
         it('should call HttpClientService with correct argument and return the result', async () => {
-            const httpClientServicePatchMethod = jest.spyOn(httpClientService, 'patch');
+            const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
                 new CopyProtocolTunnelJumpCommand(
@@ -42,9 +42,9 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
                 ),
             );
 
-            expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
+            expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/protocol-tunnel-jump/1`,
+                `https://api.example.com/jump-item/protocol-tunnel-jump/1/copy`,
                 {
                     name: 'protocol-tunnel-jump-1',
                     jumpGroupId: 2,
@@ -59,7 +59,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
 
 function mockHttpClientService() {
     const service = {} as HttpClientService;
-    service.patch = jest.fn().mockResolvedValue(TestHelper.mockedProtocolTunnelJumpCopiedDtoOutput);
+    service.post = jest.fn().mockResolvedValue(TestHelper.mockedProtocolTunnelJumpCopiedDtoOutput);
 
     return service;
 }
@@ -72,6 +72,7 @@ function mockAppConfigService() {
                 jumpItem: {
                     protocolTunnelJump: {
                         path: 'jump-item/protocol-tunnel-jump',
+                        copy: 'copy',
                     },
                 },
             },

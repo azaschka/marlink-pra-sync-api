@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtrust-pra-conf-api.module';
 import { GroupPolicyModule } from './group-policy/group-policy.module';
 import { JumpGroupModule } from './jump-group/jump-group.module';
+import { JumpItemModule } from './jump-item/jump-item.module';
 import { JumpPolicyModule } from './jump-policy/jump-policy.module';
 import { JumpointModule } from './jumpoint/jumpoint.module';
 import { SyncModule } from './sync/sync.module';
@@ -29,8 +30,9 @@ import { UserModule } from './user/user.module';
         JumpGroupModule,
         JumpPolicyModule,
         JumpointModule,
-        SyncModule,
         UserGroupPolicyModule,
+        JumpItemModule,
+        SyncModule,
     ],
     controllers: [AppController],
 })

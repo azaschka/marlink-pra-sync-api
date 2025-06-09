@@ -18,9 +18,10 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.jumpItem.remoteRdp.path,
             command.id.toString(),
+            this.appConfigService.beyondTrust.api.jumpItem.remoteRdp.copy,
         );
 
-        return await this.httpClientService.patch<RemoteRdpCopiedDtoOutput, RemoteRdpCopiedDtoOutput>(
+        return await this.httpClientService.post<RemoteRdpCopiedDtoOutput, RemoteRdpCopiedDtoOutput>(
             RemoteRdpCopiedDtoOutput,
             url,
             CopyRemoteRdpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),

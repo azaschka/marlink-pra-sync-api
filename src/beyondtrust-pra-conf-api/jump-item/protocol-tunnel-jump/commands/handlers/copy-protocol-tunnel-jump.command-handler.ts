@@ -18,9 +18,10 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.path,
             command.id.toString(),
+            this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.copy,
         );
 
-        return await this.httpClientService.patch<ProtocolTunnelJumpCopiedDtoOutput, ProtocolTunnelJumpCopiedDtoOutput>(
+        return await this.httpClientService.post<ProtocolTunnelJumpCopiedDtoOutput, ProtocolTunnelJumpCopiedDtoOutput>(
             ProtocolTunnelJumpCopiedDtoOutput,
             url,
             CopyProtocolTunnelJumpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),

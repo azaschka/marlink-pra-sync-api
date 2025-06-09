@@ -30,15 +30,15 @@ describe('CopyRemoteRdpCommandHandler', () => {
 
     describe('execute', () => {
         it('should call HttpClientService with correct argument and return the result', async () => {
-            const httpClientServicePatchMethod = jest.spyOn(httpClientService, 'patch');
+            const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
                 new CopyRemoteRdpCommand('transaction-1', 1, 2, JumpGroupType.Personal, 'remote-rdp-1'),
             );
 
-            expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
+            expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/remote-rdp/1`,
+                `https://api.example.com/jump-item/remote-rdp/1/copy`,
                 {
                     name: 'remote-rdp-1',
                     jumpGroupId: 2,
@@ -53,7 +53,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
 
 function mockHttpClientService() {
     const service = {} as HttpClientService;
-    service.patch = jest.fn().mockResolvedValue(TestHelper.mockedRemoteRdpCopiedDtoOutput);
+    service.post = jest.fn().mockResolvedValue(TestHelper.mockedRemoteRdpCopiedDtoOutput);
 
     return service;
 }
@@ -66,6 +66,7 @@ function mockAppConfigService() {
                 jumpItem: {
                     remoteRdp: {
                         path: 'jump-item/remote-rdp',
+                        copy: 'copy',
                     },
                 },
             },

@@ -18,9 +18,10 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
             this.appConfigService.beyondTrust.api.baseUrl,
             this.appConfigService.beyondTrust.api.jumpItem.remoteVnc.path,
             command.id.toString(),
+            this.appConfigService.beyondTrust.api.jumpItem.remoteVnc.copy,
         );
 
-        return await this.httpClientService.patch<RemoteVncCopiedDtoOutput, RemoteVncCopiedDtoOutput>(
+        return await this.httpClientService.post<RemoteVncCopiedDtoOutput, RemoteVncCopiedDtoOutput>(
             RemoteVncCopiedDtoOutput,
             url,
             CopyRemoteVncDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),

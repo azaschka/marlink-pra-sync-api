@@ -1,27 +1,27 @@
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { JumpGroupType, WebJumpUsernameFormat } from '../../enums';
 
 export class ModifyWebJumpDtoInput {
     @Expose({ name: 'name' })
     @IsString()
-    @IsNotEmpty()
-    public name!: string;
+    @IsOptional()
+    public name?: string;
 
     @Expose({ name: 'jumpoint_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpointId!: number;
+    @IsOptional()
+    public jumpointId?: number;
 
     @Expose({ name: 'url' })
     @IsString()
-    @IsNotEmpty()
-    public url!: string;
+    @IsOptional()
+    public url?: string;
 
     @Expose({ name: 'jump_group_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpGroupId!: number;
+    @IsOptional()
+    public jumpGroupId?: number;
 
     @Expose({ name: 'jump_group_type' })
     @IsOptional()
@@ -79,10 +79,10 @@ export class ModifyWebJumpDtoInput {
     public sessionPolicyId?: number | null;
 
     public static create(
-        name: string,
-        jumpointId: number,
-        url: string,
-        jumpGroupId: number,
+        name?: string,
+        jumpointId?: number,
+        url?: string,
+        jumpGroupId?: number,
         jumpGroupType?: JumpGroupType,
         usernameFormat?: WebJumpUsernameFormat,
         verifyCertificate?: boolean,

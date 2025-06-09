@@ -30,15 +30,15 @@ describe('CopyShellJumpCommandHandler', () => {
 
     describe('execute', () => {
         it('should call HttpClientService with correct argument and return the result', async () => {
-            const httpClientServicePatchMethod = jest.spyOn(httpClientService, 'patch');
+            const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
                 new CopyShellJumpCommand('transaction-1', 1, 2, JumpGroupType.Personal, 'shell-jump-1'),
             );
 
-            expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
+            expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/shell-jump/1`,
+                `https://api.example.com/jump-item/shell-jump/1/copy`,
                 {
                     name: 'shell-jump-1',
                     jumpGroupId: 2,
@@ -53,7 +53,7 @@ describe('CopyShellJumpCommandHandler', () => {
 
 function mockHttpClientService() {
     const service = {} as HttpClientService;
-    service.patch = jest.fn().mockResolvedValue(TestHelper.mockedShellJumpCopiedDtoOutput);
+    service.post = jest.fn().mockResolvedValue(TestHelper.mockedShellJumpCopiedDtoOutput);
 
     return service;
 }
@@ -66,6 +66,7 @@ function mockAppConfigService() {
                 jumpItem: {
                     shellJump: {
                         path: 'jump-item/shell-jump',
+                        copy: 'copy',
                     },
                 },
             },

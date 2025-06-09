@@ -85,18 +85,23 @@ describe('AppConfigService', () => {
                         jumpItem: {
                             remoteRdp: {
                                 path: 'api-path-jump-item-remote-rdp-1',
+                                copy: 'api-path-jump-item-remote-rdp-copy-1',
                             },
                             shellJump: {
                                 path: 'api-path-jump-item-shell-jump-1',
+                                copy: 'api-path-jump-item-shell-jump-copy-1',
                             },
                             webJump: {
                                 path: 'api-path-jump-item-web-jump-1',
+                                copy: 'api-path-jump-item-web-jump-copy-1',
                             },
                             remoteVnc: {
                                 path: 'api-path-jump-item-remote-vnc-1',
+                                copy: 'api-path-jump-item-remote-vnc-copy-1',
                             },
                             protocolTunnelJump: {
                                 path: 'api-path-jump-item-protocol-tunnel-jump-1',
+                                copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
                             },
                         },
                         communication: {
@@ -141,18 +146,23 @@ describe('AppConfigService', () => {
                         jumpItem: {
                             remoteRdp: {
                                 path: 'api-path-jump-item-remote-rdp-1',
+                                copy: 'api-path-jump-item-remote-rdp-copy-1',
                             },
                             shellJump: {
                                 path: 'api-path-jump-item-shell-jump-1',
+                                copy: 'api-path-jump-item-shell-jump-copy-1',
                             },
                             webJump: {
                                 path: 'api-path-jump-item-web-jump-1',
+                                copy: 'api-path-jump-item-web-jump-copy-1',
                             },
                             remoteVnc: {
                                 path: 'api-path-jump-item-remote-vnc-1',
+                                copy: 'api-path-jump-item-remote-vnc-copy-1',
                             },
                             protocolTunnelJump: {
                                 path: 'api-path-jump-item-protocol-tunnel-jump-1',
+                                copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
                             },
                         },
                         communication: {
@@ -200,18 +210,23 @@ describe('AppConfigService', () => {
                         jumpItem: {
                             remoteRdp: {
                                 path: 'unknown',
+                                copy: 'unknown',
                             },
                             shellJump: {
                                 path: 'unknown',
+                                copy: 'unknown',
                             },
                             webJump: {
                                 path: 'unknown',
+                                copy: 'unknown',
                             },
                             remoteVnc: {
                                 path: 'unknown',
+                                copy: 'unknown',
                             },
                             protocolTunnelJump: {
                                 path: 'unknown',
+                                copy: 'unknown',
                             },
                         },
                         communication: {
@@ -252,14 +267,24 @@ describe('AppConfigService', () => {
                         return input.api?.jumpoint.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH':
                         return input.api?.jumpItem?.remoteRdp?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_RDP':
+                        return input.api?.jumpItem?.remoteRdp?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH':
                         return input.api?.jumpItem?.shellJump?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_COPY_SHELL_JUMP':
+                        return input.api?.jumpItem?.shellJump?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH':
                         return input.api?.jumpItem?.webJump?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_COPY_WEB_JUMP':
+                        return input.api?.jumpItem?.webJump?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH':
                         return input.api?.jumpItem?.remoteVnc?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_VNC':
+                        return input.api?.jumpItem?.remoteVnc?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH':
                         return input.api?.jumpItem?.protocolTunnelJump?.path;
+                    case 'BEYONDTRUST_API_JUMP_ITEM_COPY_PROTOCOL_TUNNEL_JUMP':
+                        return input.api?.jumpItem?.protocolTunnelJump?.copy;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
                         return input.api?.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
@@ -305,18 +330,23 @@ describe('AppConfigService', () => {
                     jumpItem: {
                         remoteRdp: {
                             path: expected.api.jumpItem?.remoteRdp?.path,
+                            copy: expected.api.jumpItem?.remoteRdp?.copy,
                         },
                         shellJump: {
                             path: expected.api.jumpItem?.shellJump?.path,
+                            copy: expected.api.jumpItem?.shellJump?.copy,
                         },
                         webJump: {
                             path: expected.api.jumpItem?.webJump?.path,
+                            copy: expected.api.jumpItem?.webJump?.copy,
                         },
                         remoteVnc: {
                             path: expected.api.jumpItem?.remoteVnc?.path,
+                            copy: expected.api.jumpItem?.remoteVnc?.copy,
                         },
                         protocolTunnelJump: {
                             path: expected.api.jumpItem?.protocolTunnelJump?.path,
+                            copy: expected.api.jumpItem?.protocolTunnelJump?.copy,
                         },
                     },
                     communication: {
@@ -418,6 +448,13 @@ describe('AppConfigService', () => {
                     jumpPolicyCronJobExpression: '0 10 * * *',
                     jumpGroupCronJobExpression: '0 10 * * *',
                     jumpointCronJobExpression: '0 10 * * *',
+                    jumpItem: {
+                        remoteRdpCronJobExpression: '0 10 * * *',
+                        shellJumpCronJobExpression: '0 10 * * *',
+                        webJumpCronJobExpression: '0 10 * * *',
+                        remoteVncCronJobExpression: '0 10 * * *',
+                        protocolTunnelJumpCronJobExpression: '0 10 * * *',
+                    },
                 },
                 expected: {
                     maxBatchSize: 100,
@@ -428,6 +465,13 @@ describe('AppConfigService', () => {
                     jumpPolicyCronJobExpression: '0 10 * * *',
                     jumpGroupCronJobExpression: '0 10 * * *',
                     jumpointCronJobExpression: '0 10 * * *',
+                    jumpItem: {
+                        remoteRdpCronJobExpression: '0 10 * * *',
+                        shellJumpCronJobExpression: '0 10 * * *',
+                        webJumpCronJobExpression: '0 10 * * *',
+                        remoteVncCronJobExpression: '0 10 * * *',
+                        protocolTunnelJumpCronJobExpression: '0 10 * * *',
+                    },
                 },
             },
             {
@@ -441,6 +485,13 @@ describe('AppConfigService', () => {
                     jumpPolicyCronJobExpression: '0 0 * * *',
                     jumpGroupCronJobExpression: '0 0 * * *',
                     jumpointCronJobExpression: '0 0 * * *',
+                    jumpItem: {
+                        remoteRdpCronJobExpression: '0 0 * * *',
+                        shellJumpCronJobExpression: '0 0 * * *',
+                        webJumpCronJobExpression: '0 0 * * *',
+                        remoteVncCronJobExpression: '0 0 * * *',
+                        protocolTunnelJumpCronJobExpression: '0 0 * * *',
+                    },
                 },
             },
         ])('should return the sync configuration as expected', ({ input, expected }) => {
@@ -469,6 +520,21 @@ describe('AppConfigService', () => {
                 if (key === 'SYNC_JUMPOINT_CRON_JOB_EXPRESSION') {
                     return input.jumpointCronJobExpression;
                 }
+                if (key === 'SYNC_JUMP_ITEM_REMOTE_RDP_CRON_JOB_EXPRESSION') {
+                    return input.jumpItem?.remoteRdpCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_ITEM_SHELL_JUMP_CRON_JOB_EXPRESSION') {
+                    return input.jumpItem?.shellJumpCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_ITEM_WEB_JUMP_CRON_JOB_EXPRESSION') {
+                    return input.jumpItem?.webJumpCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_ITEM_REMOTE_VNC_CRON_JOB_EXPRESSION') {
+                    return input.jumpItem?.remoteVncCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_CRON_JOB_EXPRESSION') {
+                    return input.jumpItem?.protocolTunnelJumpCronJobExpression;
+                }
                 return undefined;
             });
 
@@ -481,6 +547,13 @@ describe('AppConfigService', () => {
                 jumpPolicyCronJobExpression: expected.jumpPolicyCronJobExpression,
                 jumpGroupCronJobExpression: expected.jumpGroupCronJobExpression,
                 jumpointCronJobExpression: expected.jumpointCronJobExpression,
+                jumpItem: {
+                    remoteRdpCronJobExpression: expected.jumpItem?.remoteRdpCronJobExpression,
+                    shellJumpCronJobExpression: expected.jumpItem?.shellJumpCronJobExpression,
+                    webJumpCronJobExpression: expected.jumpItem?.webJumpCronJobExpression,
+                    remoteVncCronJobExpression: expected.jumpItem?.remoteVncCronJobExpression,
+                    protocolTunnelJumpCronJobExpression: expected.jumpItem?.protocolTunnelJumpCronJobExpression,
+                },
             });
         });
     });
