@@ -157,7 +157,7 @@ export class RemoteRdpController {
     @HttpCode(HttpStatus.OK)
     public async copyRemoteRdp(
         @Param('id') id: number,
-        @Body(new NonEmptyBodyPipe()) dtoInput: CopyRemoteRdpDtoInput,
+        @Body() dtoInput: CopyRemoteRdpDtoInput,
     ): Promise<RemoteRdpCopiedDtoOutput> {
         const result = await this.commandBus.execute<CopyRemoteRdpCommand, RemoteRdp>(
             new CopyRemoteRdpCommand(

@@ -130,6 +130,26 @@ describe('SyncController', () => {
         });
     });
 
+    describe('syncJumpItemsProtocolTunnelJumps', () => {
+        it('should return sync result for jump items protocol tunnel jumps', async () => {
+            const expectedResult = {
+                createdProtocolTunnelJumpIds: ['protocolTunnelJump1'],
+                updatedProtocolTunnelJumpIds: ['protocolTunnelJump2'],
+                deletedProtocolTunnelJumpIds: ['protocolTunnelJump3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpItemsProtocolTunnelJumps();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdProtocolTunnelJumpIds,
+                updatedIds: expectedResult.updatedProtocolTunnelJumpIds,
+                deletedIds: expectedResult.deletedProtocolTunnelJumpIds,
+            });
+        });
+    });
+
     describe('syncJumpItemsRemoteRdps', () => {
         it('should return sync result for jump items remote rdps', async () => {
             const expectedResult = {
@@ -146,6 +166,66 @@ describe('SyncController', () => {
                 createdIds: expectedResult.createdRemoteRdpIds,
                 updatedIds: expectedResult.updatedRemoteRdpIds,
                 deletedIds: expectedResult.deletedRemoteRdpIds,
+            });
+        });
+    });
+
+    describe('syncJumpItemsRemoteVncs', () => {
+        it('should return sync result for jump items remote vncs', async () => {
+            const expectedResult = {
+                createdRemoteVncIds: ['remoteVnc1'],
+                updatedRemoteVncIds: ['remoteVnc2'],
+                deletedRemoteVncIds: ['remoteVnc3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpItemsRemoteVncs();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdRemoteVncIds,
+                updatedIds: expectedResult.updatedRemoteVncIds,
+                deletedIds: expectedResult.deletedRemoteVncIds,
+            });
+        });
+    });
+
+    describe('syncJumpItemsShellJumps', () => {
+        it('should return sync result for jump items shell jumps', async () => {
+            const expectedResult = {
+                createdShellJumpIds: ['shellJump1'],
+                updatedShellJumpIds: ['shellJump2'],
+                deletedShellJumpIds: ['shellJump3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpItemsShellJumps();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdShellJumpIds,
+                updatedIds: expectedResult.updatedShellJumpIds,
+                deletedIds: expectedResult.deletedShellJumpIds,
+            });
+        });
+    });
+
+    describe('syncJumpItemsWebJumps', () => {
+        it('should return sync result for jump items web jumps', async () => {
+            const expectedResult = {
+                createdWebJumpIds: ['webJump1'],
+                updatedWebJumpIds: ['webJump2'],
+                deletedWebJumpIds: ['webJump3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpItemsWebJumps();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdWebJumpIds,
+                updatedIds: expectedResult.updatedWebJumpIds,
+                deletedIds: expectedResult.deletedWebJumpIds,
             });
         });
     });

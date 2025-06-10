@@ -13,22 +13,22 @@ export class UserEntity implements User {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
 
-    @Column({ name: 'public_display_name', type: 'varchar', length: 255 })
+    @Column({ name: 'public_display_name', type: 'varchar' })
     public publicDisplayName!: string;
 
     @Column({ name: 'security_provider_id', type: 'int', nullable: true })
     public securityProviderId?: number;
 
-    @Column({ name: 'username', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'username', type: 'varchar', nullable: true })
     public username?: string;
 
     @Column({ name: 'password_expiration_date', type: 'timestamp', nullable: true })
     public passwordExpirationDate?: Date | null;
 
-    @Column({ name: 'email', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'email', type: 'varchar', nullable: true })
     public email?: string;
 
-    @Column({ name: 'preferred_email_language', type: 'varchar', length: 10, nullable: true })
+    @Column({ name: 'preferred_email_language', type: 'varchar', nullable: true })
     public preferredEmailLanguage?: string;
 
     @Column({ name: 'is_two_factor_auth_required', type: 'boolean', nullable: true })

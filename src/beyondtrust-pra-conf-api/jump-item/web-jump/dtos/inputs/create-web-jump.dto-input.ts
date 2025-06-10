@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { JumpGroupType, WebJumpUsernameFormat } from '../../enums';
+import { JumpGroupType, WebJumpUsernameFormatType } from '../../enums';
 
 export class CreateWebJumpDtoInput {
     @Expose({ name: 'name' })
@@ -30,8 +30,8 @@ export class CreateWebJumpDtoInput {
 
     @Expose({ name: 'username_format' })
     @IsOptional()
-    @IsEnum(WebJumpUsernameFormat)
-    public usernameFormat?: WebJumpUsernameFormat;
+    @IsEnum(WebJumpUsernameFormatType)
+    public usernameFormat?: WebJumpUsernameFormatType;
 
     @Expose({ name: 'verify_certificate' })
     @IsOptional()
@@ -84,7 +84,7 @@ export class CreateWebJumpDtoInput {
         url: string,
         jumpGroupId: number,
         jumpGroupType?: JumpGroupType,
-        usernameFormat?: WebJumpUsernameFormat,
+        usernameFormat?: WebJumpUsernameFormatType,
         verifyCertificate?: boolean,
         authenticationTimeout?: number,
         tag?: string,

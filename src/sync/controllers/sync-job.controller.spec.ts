@@ -22,7 +22,7 @@ describe('SyncJobController', () => {
 
         controller.onModuleInit();
 
-        expect(schedulerRegistryAddCronJob).toHaveBeenCalledTimes(7);
+        expect(schedulerRegistryAddCronJob).toHaveBeenCalledTimes(11);
     });
 });
 
@@ -44,6 +44,10 @@ function mockAppConfigService() {
             jumpointCronJobExpression: '5 * * * *',
             jumpItem: {
                 remoteRdpCronJobExpression: '6 * * * *',
+                remoteVncCronJobExpression: '7 * * * *',
+                protocolTunnelJumpCronJobExpression: '8 * * * *',
+                shellJumpCronJobExpression: '9 * * * *',
+                webJumpCronJobExpression: '10 * * * *',
             },
             cronJobTimezone: 'Europe/Berlin',
         },
@@ -60,7 +64,11 @@ function mockSyncController() {
     syncController.syncJumpGroups = jest.fn();
     syncController.syncJumpPolicies = jest.fn();
     syncController.syncJumpoints = jest.fn();
+    syncController.syncJumpItemsProtocolTunnelJumps = jest.fn();
     syncController.syncJumpItemsRemoteRdps = jest.fn();
+    syncController.syncJumpItemsRemoteVncs = jest.fn();
+    syncController.syncJumpItemsShellJumps = jest.fn();
+    syncController.syncJumpItemsWebJumps = jest.fn();
 
     return syncController;
 }

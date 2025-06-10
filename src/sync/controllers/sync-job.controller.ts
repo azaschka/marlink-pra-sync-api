@@ -45,9 +45,29 @@ export class SyncJobController implements OnModuleInit {
                 func: this.syncController.syncJumpoints.bind(this.syncController),
             },
             {
+                name: 'syncJumpItemsProtocolTunnelJumps',
+                cronExpression: this.appConfigService.sync.jumpItem.protocolTunnelJumpCronJobExpression,
+                func: this.syncController.syncJumpItemsProtocolTunnelJumps.bind(this.syncController),
+            },
+            {
                 name: 'syncJumpItemsRemoteRdps',
                 cronExpression: this.appConfigService.sync.jumpItem.remoteRdpCronJobExpression,
                 func: this.syncController.syncJumpItemsRemoteRdps.bind(this.syncController),
+            },
+            {
+                name: 'syncJumpItemsRemoteVncs',
+                cronExpression: this.appConfigService.sync.jumpItem.remoteVncCronJobExpression,
+                func: this.syncController.syncJumpItemsRemoteVncs.bind(this.syncController),
+            },
+            {
+                name: 'syncJumpItemsShellJumps',
+                cronExpression: this.appConfigService.sync.jumpItem.shellJumpCronJobExpression,
+                func: this.syncController.syncJumpItemsShellJumps.bind(this.syncController),
+            },
+            {
+                name: 'syncJumpItemsWebJumps',
+                cronExpression: this.appConfigService.sync.jumpItem.webJumpCronJobExpression,
+                func: this.syncController.syncJumpItemsWebJumps.bind(this.syncController),
             },
         ];
 

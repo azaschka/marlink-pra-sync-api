@@ -8,16 +8,16 @@ export class JumpointEntity implements Jumpoint {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
 
-    @Column({ name: 'name', type: 'varchar', length: 255 })
+    @Column({ name: 'name', type: 'varchar' })
     public name!: string;
 
     @Column({ name: 'platform_type', type: 'enum', enum: JumpointPlatformType })
     public platformType!: JumpointPlatformType;
 
-    @Column({ name: 'code_name', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'code_name', type: 'varchar', nullable: true })
     public codeName?: string;
 
-    @Column({ name: 'comments', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'comments', type: 'varchar', nullable: true })
     public comments?: string;
 
     @Column({ name: 'is_enabled', type: 'boolean', nullable: true })
@@ -32,7 +32,7 @@ export class JumpointEntity implements Jumpoint {
     @Column({ name: 'is_shell_jump_enabled', type: 'boolean', nullable: true })
     public isShellJumpEnabled?: boolean;
 
-    @Column({ name: 'external_jump_item_network_id', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'external_jump_item_network_id', type: 'varchar', nullable: true })
     public externalJumpItemNetworkId?: string;
 
     @Column({ name: 'is_protocol_tunnel_enabled', type: 'boolean', nullable: true })
@@ -47,7 +47,7 @@ export class JumpointEntity implements Jumpoint {
     @Column({ name: 'is_jzp_enabled', type: 'boolean', nullable: true })
     public isJzpEnabled?: boolean;
 
-    @Column({ name: 'jzp_proxy_hostname', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'jzp_proxy_hostname', type: 'varchar', nullable: true })
     public jzpProxyHostname?: string;
 
     @Column({ name: 'jzp_proxy_port', type: 'int', nullable: true })
@@ -67,7 +67,7 @@ export class JumpointEntity implements Jumpoint {
     @Column({ name: 'jzp_restricted_ips', type: 'simple-array', nullable: true })
     public jzpRestrictedIps?: string[];
 
-    @Column({ name: 'docker_deploy_key', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'docker_deploy_key', type: 'varchar', nullable: true })
     public dockerDeployKey?: string;
 
     @Column({ name: 'key_info', type: 'varchar', nullable: true })

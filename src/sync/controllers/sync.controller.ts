@@ -5,8 +5,16 @@ import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
 import { GroupPoliciesSyncResult } from '../../group-policy/models';
 import { SyncJumpGroupsCommand } from '../../jump-group/commands';
 import { JumpGroupsSyncResult } from '../../jump-group/models';
+import { SyncProtocolTunnelJumpsCommand } from '../../jump-item/protocol-tunnel-jump/commands';
+import { ProtocolTunnelJumpsSyncResult } from '../../jump-item/protocol-tunnel-jump/models';
 import { SyncRemoteRdpsCommand } from '../../jump-item/remote-rdp/commands';
 import { RemoteRdpsSyncResult } from '../../jump-item/remote-rdp/models';
+import { SyncRemoteVncsCommand } from '../../jump-item/remote-vnc/commands';
+import { RemoteVncsSyncResult } from '../../jump-item/remote-vnc/models';
+import { SyncShellJumpsCommand } from '../../jump-item/shell-jump/commands';
+import { ShellJumpsSyncResult } from '../../jump-item/shell-jump/models';
+import { SyncWebJumpsCommand } from '../../jump-item/web-jump/commands';
+import { WebJumpsSyncResult } from '../../jump-item/web-jump/models';
 import { SyncJumpPoliciesCommand } from '../../jump-policy/commands';
 import { JumpPoliciesSyncResult } from '../../jump-policy/models';
 import { SyncJumpointsCommand } from '../../jumpoint/commands';
@@ -113,6 +121,21 @@ export class SyncController {
         };
     }
 
+    @Post('jump-items/protocol-tunnel-jumps')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpItemsProtocolTunnelJumps(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncProtocolTunnelJumpsCommand, ProtocolTunnelJumpsSyncResult>(
+            new SyncProtocolTunnelJumpsCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdProtocolTunnelJumpIds,
+            updatedIds: result.updatedProtocolTunnelJumpIds,
+            deletedIds: result.deletedProtocolTunnelJumpIds,
+        };
+    }
+
     @Post('jump-items/remote-rdps')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
@@ -125,6 +148,51 @@ export class SyncController {
             createdIds: result.createdRemoteRdpIds,
             updatedIds: result.updatedRemoteRdpIds,
             deletedIds: result.deletedRemoteRdpIds,
+        };
+    }
+
+    @Post('jump-items/remote-vncs')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpItemsRemoteVncs(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncRemoteVncsCommand, RemoteVncsSyncResult>(
+            new SyncRemoteVncsCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdRemoteVncIds,
+            updatedIds: result.updatedRemoteVncIds,
+            deletedIds: result.deletedRemoteVncIds,
+        };
+    }
+
+    @Post('jump-items/shell-jumps')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpItemsShellJumps(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncShellJumpsCommand, ShellJumpsSyncResult>(
+            new SyncShellJumpsCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdShellJumpIds,
+            updatedIds: result.updatedShellJumpIds,
+            deletedIds: result.deletedShellJumpIds,
+        };
+    }
+
+    @Post('jump-items/web-jumps')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpItemsWebJumps(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncWebJumpsCommand, WebJumpsSyncResult>(
+            new SyncWebJumpsCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdWebJumpIds,
+            updatedIds: result.updatedWebJumpIds,
+            deletedIds: result.deletedWebJumpIds,
         };
     }
 }

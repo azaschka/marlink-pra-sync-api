@@ -13,13 +13,13 @@ export class JumpPolicyEntity implements JumpPolicy {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
 
-    @Column({ name: 'display_name', type: 'varchar', length: 255 })
+    @Column({ name: 'display_name', type: 'varchar' })
     public displayName!: string;
 
-    @Column({ name: 'code_name', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'code_name', type: 'varchar', nullable: true })
     public codeName?: string;
 
-    @Column({ name: 'description', type: 'varchar', length: 1024, nullable: true })
+    @Column({ name: 'description', type: 'varchar', nullable: true })
     public description?: string;
 
     @Column({ name: 'has_scheduled_access_restriction', type: 'boolean', nullable: true })
@@ -62,10 +62,10 @@ export class JumpPolicyEntity implements JumpPolicy {
     @Column({ name: 'notification_email_addresses', type: 'simple-array', nullable: true })
     public notificationEmailAddresses?: string[];
 
-    @Column({ name: 'notification_display_name', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'notification_display_name', type: 'varchar', nullable: true })
     public notificationDisplayName?: string;
 
-    @Column({ name: 'notification_email_language', type: 'varchar', length: 16, nullable: true })
+    @Column({ name: 'notification_email_language', type: 'varchar', nullable: true })
     public notificationEmailLanguage?: string;
 
     @Column({ name: 'is_approval_required', type: 'boolean', nullable: true })
@@ -91,10 +91,10 @@ export class JumpPolicyEntity implements JumpPolicy {
     @Column({ name: 'approval_team_ids', type: 'simple-array', nullable: true })
     public approvalTeamIds?: string[];
 
-    @Column({ name: 'approval_display_name', type: 'varchar', length: 255, nullable: true })
+    @Column({ name: 'approval_display_name', type: 'varchar', nullable: true })
     public approvalDisplayName?: string;
 
-    @Column({ name: 'approval_email_language', type: 'varchar', length: 16, nullable: true })
+    @Column({ name: 'approval_email_language', type: 'varchar', nullable: true })
     public approvalEmailLanguage?: string;
 
     @Column({

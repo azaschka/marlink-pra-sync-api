@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { JumpGroupType, WebJumpUsernameFormat } from '../../enums';
+import { JumpGroupType, WebJumpUsernameFormatType } from '../../enums';
 
 export class WebJumpCreatedDtoOutput {
     @Expose({ name: 'id' })
@@ -21,7 +21,7 @@ export class WebJumpCreatedDtoOutput {
     public jumpGroupType?: JumpGroupType;
 
     @Expose({ name: 'username_format' })
-    public usernameFormat?: WebJumpUsernameFormat;
+    public usernameFormat?: WebJumpUsernameFormatType;
 
     @Expose({ name: 'verify_certificate' })
     public verifyCertificate?: boolean;

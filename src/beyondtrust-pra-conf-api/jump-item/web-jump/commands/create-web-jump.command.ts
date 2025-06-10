@@ -1,4 +1,4 @@
-import { JumpGroupType, WebJumpUsernameFormat } from '../enums';
+import { JumpGroupType, WebJumpUsernameFormatType } from '../enums';
 
 export class CreateWebJumpCommand {
     public readonly commandType = 'bt-create-web-jump';
@@ -10,7 +10,7 @@ export class CreateWebJumpCommand {
         public readonly url: string,
         public readonly jumpGroupId: number,
         public readonly jumpGroupType?: JumpGroupType,
-        public readonly usernameFormat?: WebJumpUsernameFormat,
+        public readonly usernameFormat?: WebJumpUsernameFormatType,
         public readonly verifyCertificate?: boolean,
         public readonly authenticationTimeout?: number,
         public readonly tag?: string,

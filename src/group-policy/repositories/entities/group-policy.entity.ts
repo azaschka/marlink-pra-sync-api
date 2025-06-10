@@ -9,7 +9,7 @@ export class GroupPolicyEntity implements GroupPolicy {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
 
-    @Column({ name: 'name', type: 'varchar', length: 255 })
+    @Column({ name: 'name', type: 'varchar' })
     public name!: string;
 
     @Column({ name: 'has_endpoints_access_permission', type: 'boolean', nullable: true })

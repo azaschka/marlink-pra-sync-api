@@ -2,7 +2,7 @@ import { AppConfigService } from '../../../../../app-config/services/app-config.
 import { UrlUtility } from '../../../../../shared/utilities';
 import { HttpClientService } from '../../../../http-client/services/http-client.service';
 import { WebJumpCreatedDtoOutput } from '../../dtos/outputs';
-import { JumpGroupType, WebJumpUsernameFormat } from '../../enums';
+import { JumpGroupType, WebJumpUsernameFormatType } from '../../enums';
 import { CreateWebJumpCommand } from '../create-web-jump.command';
 import { CreateWebJumpCommandHandler } from './create-web-jump.command-handler';
 
@@ -40,7 +40,7 @@ describe('CreateWebJumpCommandHandler', () => {
                     'url-1',
                     2,
                     JumpGroupType.Personal,
-                    WebJumpUsernameFormat.Default,
+                    WebJumpUsernameFormatType.Default,
                     true,
                     30,
                     'tag-1',
@@ -57,7 +57,7 @@ describe('CreateWebJumpCommandHandler', () => {
                     url: 'url-1',
                     jumpGroupId: 2,
                     jumpGroupType: JumpGroupType.Personal,
-                    usernameFormat: WebJumpUsernameFormat.Default,
+                    usernameFormat: WebJumpUsernameFormatType.Default,
                     verifyCertificate: true,
                     authenticationTimeout: 30,
                     tag: 'tag-1',
