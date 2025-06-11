@@ -15,8 +15,8 @@
 |                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |
 |                                   | Delete                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |
-|                                   | Add user                          | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
-|                                   | Delete user                       | ❌                  | ❌                  | ❌             | ❌             | TODO                         |
+|                                   | Add user                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |
+|                                   | Delete user                       | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |
 | Group Policies                    | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |
 |                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved |

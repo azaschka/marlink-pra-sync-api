@@ -74,8 +74,8 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
             const userGroupPolicyRepositoryServiceDeleteByUserIdMethod = jest
                 .spyOn(userGroupPolicyRepositoryService, 'deleteByUserId')
                 .mockResolvedValue(Promise.resolve());
-            const userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdsMethod = jest
-                .spyOn(userGroupPolicyRepositoryService, 'createOrUpdateByUserIdAndGroupPolicyIds')
+            const userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod = jest
+                .spyOn(userGroupPolicyRepositoryService, 'createOrUpdateByUserIdAndGroupPolicyId')
                 .mockResolvedValue(Promise.resolve());
 
             // Act
@@ -89,7 +89,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
             );
             expect(userGroupPolicyEntityCreateMethod).toHaveBeenCalledWith(123, [1, 2, 3]);
             expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenCalledWith(123);
-            expect(userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdsMethod).toHaveBeenCalledWith(
+            expect(userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod).toHaveBeenCalledWith(
                 userGroupPolicyEntitiesToBeReplaced,
             );
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -126,8 +126,8 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                 .spyOn(UserGroupPolicyEntity, 'create')
                 .mockReturnValue(userGroupPolicyEntitiesToBeReplaced);
             const expectedError = new Error('Error');
-            const userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdsMethod = jest
-                .spyOn(userGroupPolicyRepositoryService, 'createOrUpdateByUserIdAndGroupPolicyIds')
+            const userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod = jest
+                .spyOn(userGroupPolicyRepositoryService, 'createOrUpdateByUserIdAndGroupPolicyId')
                 .mockRejectedValue(expectedError);
             const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
             const errorProcessorUtilityStringifyMethod = jest
@@ -140,7 +140,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
             expect(userGroupPolicyEntityCreateMethod).toHaveBeenCalled();
-            expect(userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdsMethod).toHaveBeenCalled();
+            expect(userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod).toHaveBeenCalled();
             expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -181,7 +181,7 @@ function mockQueryBus() {
 
 function mockUserGroupPolicyRepositoryService() {
     const userGroupPolicyRepositoryService = {} as UserGroupPolicyRepositoryService;
-    userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyIds = jest.fn();
+    userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId = jest.fn();
     userGroupPolicyRepositoryService.deleteByUserId = jest.fn();
 
     return userGroupPolicyRepositoryService;

@@ -11,6 +11,7 @@ import { JumpItemModule } from './jump-item/jump-item.module';
 import { JumpPolicyModule } from './jump-policy/jump-policy.module';
 import { JumpointModule } from './jumpoint/jumpoint.module';
 import { SyncModule } from './sync/sync.module';
+import { TeamUserModule } from './team-user/team-user.module';
 import { TeamModule } from './team/team.module';
 import { UserGroupPolicyModule } from './user-group-policy/user-group-policy.module';
 import { UserModule } from './user/user.module';
@@ -33,6 +34,7 @@ import { UserModule } from './user/user.module';
         UserGroupPolicyModule,
         JumpItemModule,
         SyncModule,
+        TeamUserModule,
     ],
     controllers: [AppController],
 })

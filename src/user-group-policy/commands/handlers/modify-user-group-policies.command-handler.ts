@@ -79,7 +79,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         await this.userGroupPolicyRepositoryService.deleteByUserId(userId);
 
         // Recreate the user group policies
-        await this.userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyIds(userGroupPolicyEntities);
+        await this.userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId(userGroupPolicyEntities);
 
         return {
             userId: userId,

@@ -37,4 +37,9 @@ describe('mapToBTShellJumpProtocolType', () => {
         const result = mapToBTShellJumpProtocolType(input);
         expect(result).toEqual(expected);
     });
+
+    it('should throw an error for unknown ShellJumpProtocolType', () => {
+        const unknownType = {} as ShellJumpProtocolType;
+        expect(() => mapToBTShellJumpProtocolType(unknownType)).toThrow();
+    });
 });

@@ -9,7 +9,7 @@ export class UserGroupPolicyRepositoryService extends BaseRepositoryService<User
         super(dataSource, UserGroupPolicyEntity);
     }
 
-    public async createOrUpdateByUserIdAndGroupPolicyIds(entities: Partial<UserGroupPolicyEntity>[]): Promise<void> {
+    public async createOrUpdateByUserIdAndGroupPolicyId(entities: Partial<UserGroupPolicyEntity>[]): Promise<void> {
         if (entities.length === 0) {
             return;
         }

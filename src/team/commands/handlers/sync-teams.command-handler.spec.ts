@@ -20,6 +20,7 @@ abstract class TestHelper {
         return ids.map((id) => ({
             id,
             name: `team-${id}`,
+            teamUsers: [],
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
         }));
     }

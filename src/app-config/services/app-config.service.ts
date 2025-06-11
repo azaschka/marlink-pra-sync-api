@@ -64,6 +64,11 @@ export class AppConfigService {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_TEAM_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    user: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_TEAM_USER_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
                 },
                 jumpGroup: {
                     path:

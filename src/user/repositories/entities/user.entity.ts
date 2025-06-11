@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { DateUtility } from '../../../shared/utilities';
+import { TeamUserEntity } from '../../../team-user/repositories/entities';
 import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
 import {
     UserAllowedAccessPermissionType,
@@ -180,6 +181,9 @@ export class UserEntity implements User {
 
     @OneToMany(() => UserGroupPolicyEntity, (userGroupPolicy) => userGroupPolicy.user)
     public userGroupPolicies!: UserGroupPolicyEntity[];
+
+    @OneToMany(() => TeamUserEntity, (teamUser) => teamUser.user)
+    public teamUsers!: TeamUserEntity[];
 
     public static create(
         id: number,

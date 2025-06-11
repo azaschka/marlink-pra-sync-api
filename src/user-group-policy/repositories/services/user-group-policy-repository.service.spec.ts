@@ -16,13 +16,13 @@ describe('UserGroupPolicyRepositoryService', () => {
         service = new UserGroupPolicyRepositoryService(dataSource);
     });
 
-    describe('createOrUpdateByUserIdAndGroupPolicyIds', () => {
+    describe('createOrUpdateByUserIdAndGroupPolicyId', () => {
         it('should not call createOrUpdate if entities are empty', async () => {
             const baseRepositoryCreateOrUpdateMethod = jest
                 .spyOn(BaseRepositoryService.prototype, 'createOrUpdate')
                 .mockResolvedValue(Promise.resolve());
 
-            await service.createOrUpdateByUserIdAndGroupPolicyIds([]);
+            await service.createOrUpdateByUserIdAndGroupPolicyId([]);
 
             expect(baseRepositoryCreateOrUpdateMethod).not.toHaveBeenCalled();
         });
@@ -47,7 +47,7 @@ describe('UserGroupPolicyRepositoryService', () => {
             const expectedConflictPaths = ['userId', 'groupPolicyId'];
             const baseRepositoryCreateOrUpdateMethod = jest.spyOn(BaseRepositoryService.prototype, 'createOrUpdate');
 
-            await service.createOrUpdateByUserIdAndGroupPolicyIds(entities);
+            await service.createOrUpdateByUserIdAndGroupPolicyId(entities);
 
             expect(baseRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(entities, expectedConflictPaths);
         });

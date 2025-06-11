@@ -65,8 +65,8 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
             const userGroupPolicyRepositoryServiceDeleteByUserIdMethod = jest
                 .spyOn(userGroupPolicyRepositoryService, 'deleteByUserId')
                 .mockResolvedValue(Promise.resolve());
-            const userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdsMethod = jest
-                .spyOn(userGroupPolicyRepositoryService, 'createOrUpdateByUserIdAndGroupPolicyIds')
+            const userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod = jest
+                .spyOn(userGroupPolicyRepositoryService, 'createOrUpdateByUserIdAndGroupPolicyId')
                 .mockResolvedValue(Promise.resolve());
 
             // Act
@@ -85,7 +85,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
                 expect(userGroupPolicyEntityCreateMethod).toHaveBeenNthCalledWith(n, n, [1, 2, 3]);
                 expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenNthCalledWith(n, n);
                 expect(
-                    userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdsMethod,
+                    userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod,
                 ).toHaveBeenCalledWith(userGroupPolicyEntitiesToBeReplaced);
                 expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                     n,
@@ -149,7 +149,7 @@ function mockQueryBus() {
 
 function mockUserGroupPolicyRepositoryService() {
     const userGroupPolicyRepositoryService = {} as UserGroupPolicyRepositoryService;
-    userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyIds = jest.fn();
+    userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId = jest.fn();
     userGroupPolicyRepositoryService.deleteByUserId = jest.fn();
     userGroupPolicyRepositoryService.deleteByUserIds = jest.fn();
 

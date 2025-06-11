@@ -1,5 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { DateUtility } from '../../../shared/utilities';
+import { TeamUserEntity } from '../../../team-user/repositories/entities';
 import { Team } from '../../models';
 
 @Entity({ name: 'teams' })
@@ -18,6 +19,9 @@ export class TeamEntity implements Team {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @OneToMany(() => TeamUserEntity, (teamUser) => teamUser.team)
+    public teamUsers!: TeamUserEntity[];
 
     public static create(id: number, name: string, codeName?: string, comments?: string | null): TeamEntity {
         const entity = new TeamEntity();

@@ -23,6 +23,11 @@ describe('ObjectUtility', () => {
                 target: [],
                 expected: false,
             },
+            {
+                source: [],
+                target: [],
+                expected: false,
+            },
         ])('should return $expected when source is $source and target is $target', ({ source, target, expected }) => {
             const result = ObjectUtility.contain(source, target);
             expect(result).toBe(expected);

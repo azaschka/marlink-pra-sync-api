@@ -72,6 +72,9 @@ describe('AppConfigService', () => {
                         },
                         team: {
                             path: 'api-path-team-1',
+                            user: {
+                                path: 'api-path-team-user-1',
+                            },
                         },
                         jumpGroup: {
                             path: 'api-path-jump-group-1',
@@ -133,6 +136,9 @@ describe('AppConfigService', () => {
                         },
                         team: {
                             path: 'api-path-team-1',
+                            user: {
+                                path: 'api-path-team-user-1',
+                            },
                         },
                         jumpGroup: {
                             path: 'api-path-jump-group-1',
@@ -197,6 +203,9 @@ describe('AppConfigService', () => {
                         },
                         team: {
                             path: 'unknown',
+                            user: {
+                                path: 'unknown',
+                            },
                         },
                         jumpGroup: {
                             path: 'unknown',
@@ -259,6 +268,8 @@ describe('AppConfigService', () => {
                         return input.api?.groupPolicy.path;
                     case 'BEYONDTRUST_API_TEAM_PATH':
                         return input.api?.team.path;
+                    case 'BEYONDTRUST_API_TEAM_USER_PATH':
+                        return input.api?.team.user.path;
                     case 'BEYONDTRUST_API_JUMP_GROUP_PATH':
                         return input.api?.jumpGroup.path;
                     case 'BEYONDTRUST_API_JUMP_POLICY_PATH':
@@ -317,6 +328,9 @@ describe('AppConfigService', () => {
                     },
                     team: {
                         path: expected.api.team?.path,
+                        user: {
+                            path: expected.api.team?.user.path,
+                        },
                     },
                     jumpGroup: {
                         path: expected.api.jumpGroup?.path,

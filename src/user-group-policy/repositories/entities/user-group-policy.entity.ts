@@ -3,7 +3,7 @@ import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { UserEntity } from '../../../user/repositories/entities';
 
-@Entity('user_group_policies')
+@Entity({ name: 'user_group_policies' })
 export class UserGroupPolicyEntity {
     @PrimaryColumn({ name: 'user_id', type: 'int' })
     public userId!: number;
