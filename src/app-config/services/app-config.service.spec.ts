@@ -69,6 +69,9 @@ describe('AppConfigService', () => {
                         },
                         groupPolicy: {
                             path: 'api-path-group-policy-1',
+                            jumpoint: {
+                                path: 'api-path-group-policy-jumpoint-1',
+                            },
                         },
                         team: {
                             path: 'api-path-team-1',
@@ -133,6 +136,9 @@ describe('AppConfigService', () => {
                         },
                         groupPolicy: {
                             path: 'api-path-group-policy-1',
+                            jumpoint: {
+                                path: 'api-path-group-policy-jumpoint-1',
+                            },
                         },
                         team: {
                             path: 'api-path-team-1',
@@ -200,6 +206,9 @@ describe('AppConfigService', () => {
                         },
                         groupPolicy: {
                             path: 'unknown',
+                            jumpoint: {
+                                path: 'unknown',
+                            },
                         },
                         team: {
                             path: 'unknown',
@@ -266,6 +275,8 @@ describe('AppConfigService', () => {
                         return input.api?.jumpClient.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_PATH':
                         return input.api?.groupPolicy.path;
+                    case 'BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH':
+                        return input.api?.groupPolicy.jumpoint.path;
                     case 'BEYONDTRUST_API_TEAM_PATH':
                         return input.api?.team.path;
                     case 'BEYONDTRUST_API_TEAM_USER_PATH':
@@ -325,6 +336,9 @@ describe('AppConfigService', () => {
                     },
                     groupPolicy: {
                         path: expected.api.groupPolicy?.path,
+                        jumpoint: {
+                            path: expected.api.groupPolicy?.jumpoint.path,
+                        },
                     },
                     team: {
                         path: expected.api.team?.path,

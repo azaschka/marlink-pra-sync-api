@@ -1,4 +1,5 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
 import { Jumpoint } from '../../models';
@@ -75,6 +76,9 @@ export class JumpointEntity implements Jumpoint {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @OneToMany(() => GroupPolicyJumpointEntity, (groupPolicyJumpoint) => groupPolicyJumpoint.jumpoint)
+    public groupPolicyJumpoints!: GroupPolicyJumpointEntity[];
 
     public static create(
         id: number,

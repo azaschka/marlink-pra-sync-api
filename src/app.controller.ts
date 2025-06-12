@@ -12,15 +12,15 @@ export class AppController {
         private readonly eventBus: EventBus,
     ) {
         this.commandBus.subscribe((command) => {
-            console.log('Command received:', command);
+            console.log(`\x1b[34mCommand received:\n${JSON.stringify(command, null, 2)}\x1b[0m`);
         });
 
         this.queryBus.subscribe((query) => {
-            console.log('Query received:', query);
+            console.log(`\x1b[35mQuery received:\n${JSON.stringify(query, null, 2)}\x1b[0m`);
         });
 
         this.eventBus.subscribe((event) => {
-            console.log('Event received:', event);
+            console.log(`\x1b[32mEvent received:\n${JSON.stringify(event, null, 2)}\x1b[0m`);
         });
     }
 

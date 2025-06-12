@@ -39,8 +39,20 @@ describe('GroupPolicyRepositoryService', () => {
 
         it('should call createOrUpdate with the correct parameters when entities are provided', async () => {
             const entities: GroupPolicyEntity[] = [
-                { id: 1, name: 'Group 1', lastSyncDate: new Date('2023-01-01'), userGroupPolicies: [] },
-                { id: 2, name: 'Group 2', lastSyncDate: new Date('2023-01-02'), userGroupPolicies: [] },
+                {
+                    id: 1,
+                    name: 'Group 1',
+                    lastSyncDate: new Date('2023-01-01'),
+                    userGroupPolicies: [],
+                    groupPolicyJumpoints: [],
+                },
+                {
+                    id: 2,
+                    name: 'Group 2',
+                    lastSyncDate: new Date('2023-01-02'),
+                    userGroupPolicies: [],
+                    groupPolicyJumpoints: [],
+                },
             ];
             const expectedConflictPaths = ['id'];
             const baseRepositoryCreateOrUpdateMethod = jest.spyOn(BaseRepositoryService.prototype, 'createOrUpdate');

@@ -1,4 +1,4 @@
-import { Team } from '../../models';
+import { TeamEntity } from '../../repositories/entities';
 import { TeamRepositoryService } from '../../repositories/services/team-repository.service';
 import { RetrieveTeamsQuery } from '../retrieve-teams.query';
 import { RetrieveTeamsQueryHandler } from './retrieve-teams.query-handler';
@@ -14,7 +14,7 @@ describe('RetrieveTeamsQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedTeams = [] as Team[];
+            const expectedTeams = [] as TeamEntity[];
             const teamRepositoryServiceFindByMethod = jest
                 .spyOn(teamRepositoryService, 'findBy')
                 .mockResolvedValue(expectedTeams);
@@ -26,7 +26,7 @@ describe('RetrieveTeamsQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedTeams = [] as Team[];
+            const expectedTeams = [] as TeamEntity[];
             const teamRepositoryServiceFindByMethod = jest
                 .spyOn(teamRepositoryService, 'findBy')
                 .mockResolvedValue(expectedTeams);

@@ -59,6 +59,11 @@ export class AppConfigService {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    jumpoint: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
                 },
                 team: {
                     path:

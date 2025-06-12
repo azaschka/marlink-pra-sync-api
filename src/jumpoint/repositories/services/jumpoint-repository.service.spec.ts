@@ -45,12 +45,14 @@ describe('JumpointRepositoryService', () => {
                     name: 'Jumpoint 1',
                     platformType: JumpointPlatformType.LinuxX86,
                     lastSyncDate: new Date('2023-01-01'),
+                    groupPolicyJumpoints: [],
                 },
                 {
                     id: 2,
                     name: 'Jumpoint 2',
                     platformType: JumpointPlatformType.WindowsX86,
                     lastSyncDate: new Date('2023-01-02'),
+                    groupPolicyJumpoints: [],
                 },
             ];
             const expectedConflictPaths = ['id'];

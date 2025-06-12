@@ -60,15 +60,7 @@ describe('AddUserToTeamCommandHandler', () => {
                 const teamUserEntityCreateMethod = jest
                     .spyOn(TeamUserEntity, 'create')
                     .mockReturnValue(teamUserEntityToBeCreated);
-
-                const expectedResult = {
-                    teamId: 100,
-                    userId: 101,
-                    roleType: UserTeamRoleType.Manager,
-                } as TeamUserEntity;
-                const teamUserRepositoryServiceCreateMethod = jest
-                    .spyOn(teamUserRepositoryService, 'create')
-                    .mockResolvedValue(expectedResult);
+                const teamUserRepositoryServiceCreateMethod = jest.spyOn(teamUserRepositoryService, 'create');
 
                 // Act
                 const result = await handler.execute(command);
@@ -93,10 +85,10 @@ describe('AddUserToTeamCommandHandler', () => {
                     }),
                 );
                 expect(result).toStrictEqual({
-                    teamId: expectedResult.teamId,
+                    teamId: teamUserEntityToBeCreated.teamId,
                     membership: {
-                        userId: expectedResult.userId,
-                        roleType: expectedResult.roleType,
+                        userId: teamUserEntityToBeCreated.userId,
+                        roleType: teamUserEntityToBeCreated.roleType,
                     },
                 });
             },

@@ -1,0 +1,82 @@
+import { AppConfigService } from '../../../../app-config/services/app-config.service';
+import { UrlUtility } from '../../../../shared/utilities';
+import { HttpClientService } from '../../../http-client/services/http-client.service';
+import { JumpointAddedToGroupPolicyDtoOutput } from '../../dtos/outputs';
+import { AddJumpointToGroupPolicyCommand } from '../add-jumpoint-to-group-policy.command';
+import { AddJumpointToGroupPolicyCommandHandler } from './add-jumpoint-to-group-policy.command-handler';
+
+abstract class TestHelper {
+    public static get mockedJumpointAddedToGroupPolicyDtoOutput(): JumpointAddedToGroupPolicyDtoOutput {
+        return {
+            jumpointId: 2,
+        };
+    }
+}
+
+describe('AddJumpointToGroupPolicyCommandHandler', () => {
+    let appConfigService: AppConfigService;
+    let httpClientService: HttpClientService;
+    let handler: AddJumpointToGroupPolicyCommandHandler;
+
+    beforeEach(() => {
+        mockUrlUtility();
+        appConfigService = mockAppConfigService();
+        httpClientService = mockHttpClientService();
+        handler = new AddJumpointToGroupPolicyCommandHandler(appConfigService, httpClientService);
+    });
+
+    describe('execute', () => {
+        it.each([
+            {
+                command: new AddJumpointToGroupPolicyCommand('transaction-1', 1, 2),
+                expectedHttpClientBody: {
+                    jumpointId: 2,
+                },
+            },
+        ])(
+            'should call HttpClientService with correct argument and return the result',
+            async ({ command, expectedHttpClientBody }) => {
+                const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
+
+                const result = await handler.execute(command);
+
+                expect(httpClientServicePostMethod).toHaveBeenCalledWith(
+                    expect.anything(),
+                    'https://api.example.com/group-policy/1/jumpoint',
+                    expectedHttpClientBody,
+                );
+
+                expect(result).toStrictEqual(TestHelper.mockedJumpointAddedToGroupPolicyDtoOutput);
+            },
+        );
+    });
+});
+
+function mockHttpClientService() {
+    const service = {} as HttpClientService;
+    service.post = jest.fn().mockResolvedValue(TestHelper.mockedJumpointAddedToGroupPolicyDtoOutput);
+
+    return service;
+}
+
+function mockAppConfigService() {
+    const service = {
+        beyondTrust: {
+            api: {
+                baseUrl: 'https://api.example.com',
+                groupPolicy: {
+                    path: 'group-policy',
+                    jumpoint: {
+                        path: 'jumpoint',
+                    },
+                },
+            },
+        },
+    } as AppConfigService;
+
+    return service;
+}
+
+function mockUrlUtility() {
+    UrlUtility.join = jest.fn().mockImplementation((...args: string[]) => args.join('/'));
+}
