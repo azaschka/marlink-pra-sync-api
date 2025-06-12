@@ -1,8 +1,7 @@
 import { CommandHandler, EventBus, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { TeamUserRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
-import { RetrieveTeamUsersQuery as BTRetrieveTeamUsersQuery } from '../../../beyondtrust-pra-conf-api/team/queries';
-import { ErrorProcessorUtility, ObjectUtility } from '../../../shared/utilities';
+import { RetrieveAllTeamUsersQuery as BTRetrieveAllTeamUsersQuery } from '../../../beyondtrust-pra-conf-api/team/queries';
+import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { TeamUsersSyncedEvent, TeamUsersSyncFailedEvent } from '../../events';
 import { mapFromBTUserTeamRoleType } from '../../mappers';
 import { TeamUsers } from '../../models';
@@ -17,7 +16,6 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
     constructor(
         private readonly queryBus: QueryBus,
         private readonly eventBus: EventBus,
-        private readonly appConfigService: AppConfigService,
         private readonly teamUserRepositoryService: TeamUserRepositoryService,
     ) {}
 
@@ -54,35 +52,9 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
     }
 
     private async retrieveAllBTTeamUsers(transactionId: string, teamId: number) {
-        const allTeamUsers: TeamUserRetrievedDtoOutput[] = [];
-        const maxBatchSize = this.appConfigService.sync.maxBatchSize;
-        let pageNumber = 1;
-
-        while (true) {
-            const batch = await this.queryBus.execute<BTRetrieveTeamUsersQuery, TeamUserRetrievedDtoOutput[]>(
-                new BTRetrieveTeamUsersQuery(transactionId, maxBatchSize, pageNumber, teamId),
-            );
-
-            // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
-            if (
-                ObjectUtility.contain(
-                    allTeamUsers.map((teamUser) => teamUser.userId),
-                    batch.map((teamUser) => teamUser.userId),
-                )
-            ) {
-                break;
-            }
-
-            allTeamUsers.push(...batch);
-
-            if (batch.length === 0 || batch.length < maxBatchSize) {
-                break;
-            }
-
-            pageNumber++;
-        }
-
-        return allTeamUsers;
+        return await this.queryBus.execute<BTRetrieveAllTeamUsersQuery, TeamUserRetrievedDtoOutput[]>(
+            new BTRetrieveAllTeamUsersQuery(transactionId, teamId),
+        );
     }
 
     private createTeamUserEntities(btTeamUsers: TeamUserRetrievedDtoOutput[]) {
