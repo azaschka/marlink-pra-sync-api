@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from './app-config/app-config.module';
 import { AppConfigService } from './app-config/services/app-config.service';
@@ -8,6 +7,7 @@ import { AppController } from './app.controller';
 import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtrust-pra-conf-api.module';
 import { GroupPolicyJumpointModule } from './group-policy-jumpoint/group-policy-jumpoint.module';
 import { GroupPolicyModule } from './group-policy/group-policy.module';
+import { HealthModule } from './health/health.module';
 import { JumpGroupModule } from './jump-group/jump-group.module';
 import { JumpItemModule } from './jump-item/jump-item.module';
 import { JumpPolicyModule } from './jump-policy/jump-policy.module';
@@ -20,8 +20,6 @@ import { UserModule } from './user/user.module';
 
 @Module({
     imports: [
-        AppConfigModule,
-        TerminusModule,
         TypeOrmModule.forRootAsync({
             imports: [AppConfigModule],
             useFactory: (config: AppConfigService) => config.database,
@@ -40,6 +38,7 @@ import { UserModule } from './user/user.module';
         SyncModule,
         TeamUserModule,
         GroupPolicyJumpointModule,
+        HealthModule,
     ],
     controllers: [AppController],
 })
