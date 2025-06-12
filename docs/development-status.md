@@ -6,6 +6,7 @@
 
 | Module                            | Endpoint                          | Open API definition | Endpoint validation | BT integration | DB integration | Notes                              |
 | --------------------------------- | --------------------------------- | ------------------- | ------------------- | -------------- | -------------- | ---------------------------------- |
+| Health                            | Retrieve                          | ✅                  |                     |                |                |                                    |
 | Users                             | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
