@@ -20,6 +20,17 @@ export class AppConfigService {
         return this.configService.get<number>('PORT') ?? AppConfigService.DEFAULT_PORT_NUMBER;
     }
 
+    public get health() {
+        return {
+            diskStorageUsageThresholdInPercent:
+                this.configService.get<number>('HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT') ??
+                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+            memoryHeapUsageThresholdInMB:
+                this.configService.get<number>('HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB') ??
+                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+        };
+    }
+
     public get beyondTrust() {
         return {
             auth: {

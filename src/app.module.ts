@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from './app-config/app-config.module';
 import { AppConfigService } from './app-config/services/app-config.service';
@@ -19,6 +20,8 @@ import { UserModule } from './user/user.module';
 
 @Module({
     imports: [
+        AppConfigModule,
+        TerminusModule,
         TypeOrmModule.forRootAsync({
             imports: [AppConfigModule],
             useFactory: (config: AppConfigService) => config.database,

@@ -46,6 +46,44 @@ describe('AppConfigService', () => {
         });
     });
 
+    describe('health', () => {
+        it.each([
+            {
+                input: {
+                    diskStorageUsageThresholdInPercent: 80,
+                    memoryHeapUsageThresholdInMB: 150,
+                },
+                expected: {
+                    diskStorageUsageThresholdInPercent: 80,
+                    memoryHeapUsageThresholdInMB: 150,
+                },
+            },
+            {
+                input: {},
+                expected: {
+                    diskStorageUsageThresholdInPercent: 0,
+                    memoryHeapUsageThresholdInMB: 0,
+                },
+            },
+        ])('should return as expected', ({ input, expected }) => {
+            configService.get = jest.fn().mockImplementation((key: string) => {
+                switch (key) {
+                    case 'HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT':
+                        return input.diskStorageUsageThresholdInPercent;
+                    case 'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB':
+                        return input.memoryHeapUsageThresholdInMB;
+                    default:
+                        return undefined;
+                }
+            });
+
+            expect(service.health).toStrictEqual({
+                diskStorageUsageThresholdInPercent: expected.diskStorageUsageThresholdInPercent,
+                memoryHeapUsageThresholdInMB: expected.memoryHeapUsageThresholdInMB,
+            });
+        });
+    });
+
     describe('beyondTrust', () => {
         it.each([
             {
