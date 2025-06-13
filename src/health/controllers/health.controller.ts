@@ -24,8 +24,8 @@ export class HealthController {
 
     @Get()
     @HealthCheck()
-    public checkHealth(): Promise<HealthCheckResult> {
-        return this.healthCheckService.check([
+    public async checkHealth(): Promise<HealthCheckResult> {
+        return await this.healthCheckService.check([
             async () => this.typeOrmHealthIndicator.pingCheck('database'),
             async () =>
                 this.diskHealthIndicator.checkStorage('storage', {
