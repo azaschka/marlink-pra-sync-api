@@ -122,8 +122,8 @@ export class UserEntity implements User {
     @Column({ name: 'has_edit_external_key_permission', type: 'boolean', nullable: true })
     public hasEditExternalKeyPermission?: boolean;
 
-    @Column({ name: 'has_session_idle_timeout_permission', type: 'int', nullable: true })
-    public hasSessionIdleTimeoutPermission?: number;
+    @Column({ name: 'session_inactivity_timeout_in_seconds', type: 'int', nullable: true })
+    public sessionInactivityTimeoutInSeconds?: number;
 
     @Column({ name: 'has_collaborate_permission', type: 'boolean', nullable: true })
     public hasCollaboratePermission?: boolean;
@@ -218,7 +218,7 @@ export class UserEntity implements User {
         hasInviteExternalUserPermission?: boolean,
         hasExtendedAvailabilityModeAllowedPermission?: boolean,
         hasEditExternalKeyPermission?: boolean,
-        hasSessionIdleTimeoutPermission?: number,
+        sessionInactivityTimeoutInSeconds?: number,
         hasCollaboratePermission?: boolean,
         hasCollaborateControlPermission?: boolean,
         hasJumpClientPermission?: boolean,
@@ -270,7 +270,7 @@ export class UserEntity implements User {
         entity.hasInviteExternalUserPermission = hasInviteExternalUserPermission;
         entity.hasExtendedAvailabilityModeAllowedPermission = hasExtendedAvailabilityModeAllowedPermission;
         entity.hasEditExternalKeyPermission = hasEditExternalKeyPermission;
-        entity.hasSessionIdleTimeoutPermission = hasSessionIdleTimeoutPermission;
+        entity.sessionInactivityTimeoutInSeconds = sessionInactivityTimeoutInSeconds;
         entity.hasCollaboratePermission = hasCollaboratePermission;
         entity.hasCollaborateControlPermission = hasCollaborateControlPermission;
         entity.hasJumpClientPermission = hasJumpClientPermission;

@@ -37,7 +37,7 @@ export interface User {
     hasInviteExternalUserPermission?: boolean;
     hasExtendedAvailabilityModeAllowedPermission?: boolean;
     hasEditExternalKeyPermission?: boolean;
-    hasSessionIdleTimeoutPermission?: number;
+    sessionInactivityTimeoutInSeconds?: number;
     hasCollaboratePermission?: boolean;
     hasCollaborateControlPermission?: boolean;
     hasJumpClientPermission?: boolean;

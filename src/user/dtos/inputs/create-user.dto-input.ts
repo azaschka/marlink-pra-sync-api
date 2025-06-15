@@ -3,53 +3,106 @@ import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserDtoInput {
-    @ApiProperty({ required: true, type: String })
+    @ApiProperty({
+        required: true,
+        type: String,
+        description:
+            "The user's public display name. This attribute is read-only for users who belong to a security provider that synchronizes display names.",
+    })
     @IsNotEmpty()
     @IsString()
     public publicDisplayName!: string;
 
-    @ApiProperty({ required: true, type: String })
+    @ApiProperty({
+        required: true,
+        type: String,
+        description: 'The username the user last used to log in. This attribute is read-only for non-local users.',
+    })
     @IsNotEmpty()
     @IsString()
     public username!: string;
 
-    @ApiProperty({ required: false, type: String })
+    @ApiProperty({
+        required: false,
+        type: String,
+        description:
+            "The local user's password. This attribute is write-only for local users. It cannot be set in non-local user PATCH requests. It is not returned in GET requests.",
+    })
     @IsOptional()
     @IsString()
     public password?: string;
 
-    @ApiProperty({ required: false, type: Date, nullable: true })
+    @ApiProperty({
+        required: false,
+        type: Date,
+        nullable: true,
+        description:
+            "The date and time at which the local user's password will expire as an RFC3339 date-time string. This attribute is only returned for local users and can only be updated on local users. If not set or set to a null or empty value, then the local user's password never expires.",
+    })
     @IsOptional()
     @Type(() => Date)
     public passwordExpirationDate?: Date | null;
 
-    @ApiProperty({ required: false, type: String })
+    @ApiProperty({
+        required: false,
+        type: String,
+        description:
+            "The user's email address. This attribute is read-only for users who belong to a security provider that synchronizes email addresses.",
+    })
     @IsOptional()
     @IsString()
     public email?: string;
 
-    @ApiProperty({ required: false, type: String })
+    @ApiProperty({
+        required: false,
+        type: String,
+        default: 'en-us',
+        description: 'Must be the locale code for one of the locales listed.',
+    })
     @IsOptional()
     @IsString()
-    public preferredEmailLanguage?: string;
+    public preferredEmailLanguage?: string = 'en-us';
 
-    @ApiProperty({ required: false, type: Boolean })
+    @ApiProperty({
+        required: false,
+        type: Boolean,
+        description:
+            'If true, this user must use two factor authentication via a TOTP application. If false, this user may opt-in to using two-factor authentication via a TOTP application. There is no way to prevent a user from opting in to two-factor authentication. This attribute is only available for local and LDAP users.',
+        default: false,
+    })
     @IsOptional()
     @IsBoolean()
-    public isTwoFactorAuthRequired?: boolean;
+    public isTwoFactorAuthRequired?: boolean = false;
 
-    @ApiProperty({ required: false, type: Boolean })
+    @ApiProperty({
+        required: false,
+        type: Boolean,
+        description: 'True if this user is allowed to log in.',
+        default: true,
+    })
     @IsOptional()
     @IsBoolean()
-    public isLoginAllowed?: boolean;
+    public isLoginAllowed?: boolean = true;
 
-    @ApiProperty({ required: false, type: Number })
+    @ApiProperty({
+        required: false,
+        type: Number,
+        description:
+            'The number of times this local user has failed to authenticate. This attribute is only returned for local users and can only be updated on local users. It is always 0 for new local users, so it is ignored in POST requests. You may set it to 0 in PATCH requests to unlock an account that has too many failed logins.',
+        default: 0,
+    })
     @IsOptional()
     @IsInt()
-    public failedLoginAttempts?: number;
+    public failedLoginAttempts?: number = 0;
 
-    @ApiProperty({ required: false, type: Boolean })
+    @ApiProperty({
+        required: false,
+        type: Boolean,
+        description:
+            "If true, this local user's password must be reset on their next login. This attribute is only returned for local users and can only be set on local users.",
+        default: false,
+    })
     @IsOptional()
     @IsBoolean()
-    public mustResetPasswordOnNextLogin?: boolean;
+    public mustResetPasswordOnNextLogin?: boolean = false;
 }
