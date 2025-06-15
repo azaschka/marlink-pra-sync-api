@@ -72,7 +72,7 @@ export class UserController {
     }
 
     @Patch(':id')
-    @ApiParam({ name: 'id', type: Number, required: true })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
     @ApiOkResponse({ type: UserModifiedDtoOutput })
     public async modifyUser(
         @Param('id') id: number,
@@ -99,7 +99,7 @@ export class UserController {
     }
 
     @Delete(':id')
-    @ApiParam({ name: 'id', type: Number, required: true })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
     @HttpCode(HttpStatus.NO_CONTENT)
     public async deleteUser(@Param('id') id: number): Promise<void> {
         await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand(UuidUtility.generate(), id));
