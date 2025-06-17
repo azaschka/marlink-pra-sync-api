@@ -1,6 +1,6 @@
 import { Body, Controller, Param, Patch, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { ModifyUserGroupPoliciesCommand } from '../commands';
@@ -16,8 +16,15 @@ export class UserGroupPoliciesController {
     constructor(private readonly commandBus: CommandBus) {}
 
     @Patch(':id/group-policies')
-    @ApiParam({ name: 'id', type: Number, required: true })
-    @ApiOkResponse({ type: UserGroupPoliciesModifiedDtoOutput })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({
+        type: UserGroupPoliciesModifiedDtoOutput,
+        description: 'Indicates the user was added or removed successfully from the group policies.',
+    })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async modifyUserGroupPolicies(
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyUserGroupPoliciesDtoInput,

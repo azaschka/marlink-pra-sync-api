@@ -13,7 +13,16 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiCreatedResponse,
+    ApiNoContentResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiParam,
+    ApiTags,
+    ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateUserCommand, DeleteUserCommand, ModifyUserCommand } from '../commands';
@@ -50,7 +59,14 @@ export class UserController {
     }
 
     @Post()
-    @ApiCreatedResponse({ type: UserCreatedDtoOutput })
+    @ApiCreatedResponse({
+        type: UserCreatedDtoOutput,
+        description: 'Indicates the user was created successfully and contains the new user instance.',
+    })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async createUser(@Body() dtoInput: CreateUserDtoInput): Promise<UserCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateUserCommand, User>(
             new CreateUserCommand(
@@ -73,7 +89,15 @@ export class UserController {
 
     @Patch(':id')
     @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
-    @ApiOkResponse({ type: UserModifiedDtoOutput })
+    @ApiOkResponse({
+        type: UserModifiedDtoOutput,
+        description: 'Indicates the user was successfully updated and contains an updated user instance.',
+    })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async modifyUser(
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyUserDtoInput,
@@ -101,6 +125,12 @@ export class UserController {
     @Delete(':id')
     @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
     @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiNoContentResponse({ description: 'Indicates the user was successfully deleted.' })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async deleteUser(@Param('id') id: number): Promise<void> {
         await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand(UuidUtility.generate(), id));
     }
