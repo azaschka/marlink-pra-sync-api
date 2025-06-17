@@ -13,7 +13,16 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiCreatedResponse,
+    ApiNoContentResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiParam,
+    ApiTags,
+    ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateTeamCommand, DeleteTeamCommand, ModifyTeamCommand } from '../commands';
@@ -49,7 +58,14 @@ export class TeamController {
     }
 
     @Post()
-    @ApiCreatedResponse({ type: TeamCreatedDtoOutput })
+    @ApiCreatedResponse({
+        type: TeamCreatedDtoOutput,
+        description: 'Indicates the team was created successfully and contains the new team instance.',
+    })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async createTeam(@Body() dtoInput: CreateTeamDtoInput): Promise<TeamCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateTeamCommand, Team>(
             new CreateTeamCommand(UuidUtility.generate(), dtoInput.name, dtoInput.codeName, dtoInput.comments),
@@ -59,9 +75,18 @@ export class TeamController {
     }
 
     @Patch(':id')
-    @ApiOkResponse({ type: TeamModifiedDtoOutput })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({
+        type: TeamModifiedDtoOutput,
+        description: 'Indicates the team was successfully updated and contains the updated team instance.',
+    })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async modifyTeam(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyTeamDtoInput,
     ): Promise<TeamModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyTeamCommand, Team>(
@@ -72,8 +97,14 @@ export class TeamController {
     }
 
     @Delete(':id')
-    @ApiParam({ name: 'id', type: Number, required: true })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
     @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiNoContentResponse({ description: 'Indicates the team was successfully deleted.' })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async deleteTeam(@Param('id') id: number): Promise<void> {
         await this.commandBus.execute<DeleteTeamCommand, void>(new DeleteTeamCommand(UuidUtility.generate(), id));
     }

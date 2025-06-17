@@ -91,7 +91,7 @@ export class GroupPolicyController {
     @Patch(':id')
     @ApiOkResponse({ type: GroupPolicyModifiedDtoOutput })
     public async modifyGroupPolicy(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyGroupPolicyDtoInput,
     ): Promise<GroupPolicyModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyGroupPolicyCommand, GroupPolicy>(

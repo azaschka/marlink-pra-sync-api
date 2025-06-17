@@ -98,7 +98,7 @@ export class ShellJumpController {
     @Patch(':id')
     @ApiOkResponse({ type: ShellJumpModifiedDtoOutput })
     public async modifyShellJump(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyShellJumpDtoInput,
     ): Promise<ShellJumpModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyShellJumpCommand, ShellJump>(

@@ -63,7 +63,7 @@ export class JumpGroupController {
     @Patch(':id')
     @ApiOkResponse({ type: JumpGroupModifiedDtoOutput })
     public async modifyJumpGroup(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpGroupDtoInput,
     ): Promise<JumpGroupModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpGroupCommand, JumpGroup>(

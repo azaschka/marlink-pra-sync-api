@@ -11,7 +11,7 @@
 |                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Modify group policy               | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
+|                                   | Modify group policy               | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 | Teams                             | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |

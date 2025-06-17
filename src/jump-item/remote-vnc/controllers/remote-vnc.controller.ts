@@ -94,7 +94,7 @@ export class RemoteVncController {
     @Patch(':id')
     @ApiOkResponse({ type: RemoteVncModifiedDtoOutput })
     public async modifyRemoteVnc(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyRemoteVncDtoInput,
     ): Promise<RemoteVncModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyRemoteVncCommand, RemoteVnc>(

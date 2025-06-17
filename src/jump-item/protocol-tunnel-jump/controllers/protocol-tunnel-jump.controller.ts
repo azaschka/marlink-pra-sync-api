@@ -102,7 +102,7 @@ export class ProtocolTunnelJumpController {
     @Patch(':id')
     @ApiOkResponse({ type: ProtocolTunnelJumpModifiedDtoOutput })
     public async modifyProtocolTunnelJump(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyProtocolTunnelJumpDtoInput,
     ): Promise<ProtocolTunnelJumpModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyProtocolTunnelJumpCommand, ProtocolTunnelJump>(

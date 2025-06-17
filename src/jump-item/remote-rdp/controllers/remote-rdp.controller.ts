@@ -107,7 +107,7 @@ export class RemoteRdpController {
     @Patch(':id')
     @ApiOkResponse({ type: RemoteRdpModifiedDtoOutput })
     public async modifyRemoteRdp(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyRemoteRdpDtoInput,
     ): Promise<RemoteRdpModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyRemoteRdpCommand, RemoteRdp>(

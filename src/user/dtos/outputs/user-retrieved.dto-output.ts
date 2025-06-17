@@ -57,27 +57,24 @@ export class UserRetrievedDtoOutput implements User {
     @ApiProperty({
         required: false,
         type: String,
-        default: 'en-us',
         description: 'Must be the locale code for one of the locales listed.',
     })
-    public preferredEmailLanguage?: string = 'en-us';
+    public preferredEmailLanguage?: string;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description:
             'If true, this user must use two factor authentication via a TOTP application. If false, this user may opt-in to using two-factor authentication via a TOTP application. There is no way to prevent a user from opting in to two-factor authentication. This attribute is only available for local and LDAP users.',
-        default: false,
     })
-    public isTwoFactorAuthRequired?: boolean = false;
+    public isTwoFactorAuthRequired?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'If true, this user is allowed to log in.',
-        default: true,
     })
-    public isLoginAllowed?: boolean = true;
+    public isLoginAllowed?: boolean;
 
     @ApiProperty({
         required: false,
@@ -91,18 +88,16 @@ export class UserRetrievedDtoOutput implements User {
         type: Number,
         description:
             'The number of times this local user has failed to authenticate. This attribute is only returned for local users and can only be updated on local users. It is always 0 for new local users, so it is ignored in POST requests. You may set it to 0 in PATCH requests to unlock an account that has too many failed logins.',
-        default: 0,
     })
-    public failedLoginAttempts?: number = 0;
+    public failedLoginAttempts?: number;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description:
             "If true, this local user's password must be reset on their next login. This attribute is only returned for local users and can only be set on local users.",
-        default: false,
     })
-    public mustResetPasswordOnNextLogin?: boolean = false;
+    public mustResetPasswordOnNextLogin?: boolean;
 
     @ApiProperty({
         required: false,
@@ -221,161 +216,141 @@ export class UserRetrievedDtoOutput implements User {
         required: false,
         type: Boolean,
         description: 'Allowed to share sessions with teams which they do not belong to.',
-        default: false,
     })
-    public hasShareOtherTeamPermission?: boolean = false;
+    public hasShareOtherTeamPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'If true, the user has permission to invite external users.',
-        default: false,
     })
-    public hasInviteExternalUserPermission?: boolean = false;
+    public hasInviteExternalUserPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to enable extended availability mode.',
-        default: false,
     })
-    public hasExtendedAvailabilityModeAllowedPermission?: boolean = false;
+    public hasExtendedAvailabilityModeAllowedPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'If true, the user has permission to edit external keys.',
-        default: false,
     })
-    public hasEditExternalKeyPermission?: boolean = false;
+    public hasEditExternalKeyPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Number,
         description: `Remove User from the session after they've been inactive for a certain number of seconds. Allowed values are -1, 0, 300, 600, 900, 1800, 3600, 7200, 14400, 28800, 43200, and 86400. -1 means "Use site wide setting". 0 means "No timeout".`,
-        default: -1,
     })
-    public sessionInactivityTimeoutInSeconds?: number = -1;
+    public sessionInactivityTimeoutInSeconds?: number;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to show screen to other Users.',
-        default: false,
     })
-    public hasCollaboratePermission?: boolean = false;
+    public hasCollaboratePermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to give control when showing screen to other Users.',
-        default: false,
     })
-    public hasCollaborateControlPermission?: boolean = false;
+    public hasCollaborateControlPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Jump Clients.',
-        default: false,
     })
-    public hasJumpClientPermission?: boolean = false;
+    public hasJumpClientPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Local Jump (Windows only).',
-        default: false,
     })
-    public hasLocalJumpPermission?: boolean = false;
+    public hasLocalJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Remote Jump.',
-        default: false,
     })
-    public hasRemoteJumpPermission?: boolean = false;
+    public hasRemoteJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Remote VNC.',
-        default: false,
     })
-    public hasRemoteVncPermission?: boolean = false;
+    public hasRemoteVncPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Remote RDP.',
-        default: false,
     })
-    public hasRemoteRdpPermission?: boolean = false;
+    public hasRemoteRdpPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Shell Jump.',
-        default: false,
     })
-    public hasShellJumpPermission?: boolean = false;
+    public hasShellJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Number,
         description: 'Default Jump Item Role.',
-        default: 1,
     })
-    public defaultJumpItemRoleId?: number = 1;
+    public defaultJumpItemRoleId?: number;
 
     @ApiProperty({
         required: false,
         type: Number,
         description: 'Personal Jump Item Role.',
-        default: 1,
     })
-    public privateJumpItemRoleId?: number = 1;
+    public privateJumpItemRoleId?: number;
 
     @ApiProperty({
         required: false,
         type: Number,
         description: 'Teams Jump Item Role.',
-        default: 1,
     })
-    public inferiorJumpItemRoleId?: number = 1;
+    public inferiorJumpItemRoleId?: number;
 
     @ApiProperty({
         required: false,
         type: Number,
         description: 'System Jump Item Role.',
-        default: 1,
     })
-    public unassignedJumpItemRoleId?: number = 1;
+    public unassignedJumpItemRoleId?: number;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Web Jump.',
-        default: false,
     })
-    public hasWebJumpPermission?: boolean = false;
+    public hasWebJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use Protocol Tunnel Jump.',
-        default: false,
     })
-    public hasProtocolTunnelPermission?: boolean = false;
+    public hasProtocolTunnelPermission?: boolean;
 
     @ApiProperty({
         required: false,
         type: Boolean,
         description: 'Allowed to use static port and username for external tool sessions.',
-        default: false,
     })
-    public hasSdStaticPortForExternalToolsPermission?: boolean = false;
+    public hasSdStaticPortForExternalToolsPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -394,7 +369,7 @@ export class UserRetrievedDtoOutput implements User {
     @ApiProperty({
         required: true,
         type: Date,
-        description: 'The date which the user was last synchronized with BeyondTrust Privileged Remote Access.',
+        description: 'The date which the user was last synchronized with BeyondTrust Privileged Remote Access system.',
     })
     public lastSyncDate!: Date;
 }

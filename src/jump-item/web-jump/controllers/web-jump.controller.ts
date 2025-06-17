@@ -92,7 +92,7 @@ export class WebJumpController {
     @Patch(':id')
     @ApiOkResponse({ type: WebJumpModifiedDtoOutput })
     public async modifyWebJump(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyWebJumpDtoInput,
     ): Promise<WebJumpModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyWebJumpCommand, WebJump>(

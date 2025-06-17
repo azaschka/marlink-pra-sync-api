@@ -89,7 +89,7 @@ export class JumpPolicyController {
     @Patch(':id')
     @ApiOkResponse({ type: JumpPolicyModifiedDtoOutput })
     public async modifyJumpPolicy(
-        @Query('id') id: number,
+        @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpPolicyDtoInput,
     ): Promise<JumpPolicyModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpPolicyCommand, JumpPolicy>(
