@@ -6,7 +6,6 @@ import { JumpointModificationFailedEvent, JumpointModifiedEvent } from '../../ev
 import {
     mapFromBTJumpointPlatformType,
     mapFromBTJzpClientAddressRestrictionsType,
-    mapToBTJumpointPlatformType,
     mapToBTJzpClientAddressRestrictionsType,
 } from '../../mappers';
 import { Jumpoint } from '../../models';
@@ -54,11 +53,9 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
                 command.transactionId,
                 command.id,
                 command.name,
-                command.platformType ? mapToBTJumpointPlatformType(command.platformType) : undefined,
                 command.codeName,
                 command.comments,
                 command.isEnabled,
-                command.isClustered,
                 command.isShellJumpEnabled,
                 command.externalJumpItemNetworkId,
                 command.isProtocolTunnelEnabled,

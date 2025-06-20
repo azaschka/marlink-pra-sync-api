@@ -7,17 +7,17 @@
 | Module                            | Endpoint                          | Open API definition | Endpoint validation | BT integration | DB integration | Notes                              |
 | --------------------------------- | --------------------------------- | ------------------- | ------------------- | -------------- | -------------- | ---------------------------------- |
 | Health                            | Retrieve                          | ✅                  |                     |                |                |                                    |
-| Users                             | Create                            | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Modify group policy               | ✅                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-| Teams                             | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Delete                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Add user                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Delete user                       | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
+| Users                             | Create                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Modify group policy               | ✅                  | ✅                  | ✅             | ✅             |                                    |
+| Teams                             | Create                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Add user                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete user                       | ✅                  | ✅                  | ✅             | ✅             |                                    |
 | Group Policies                    | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
@@ -57,10 +57,10 @@
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Delete                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Copy                              | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-| Jumpoints                         | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Delete                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
+| Jumpoints                         | Create                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 | Sync (job)                        | Users                             | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Teams                             | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Group policies                    | ✅                  | ✅                  | ✅             | ✅             |                                    |

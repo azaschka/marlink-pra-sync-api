@@ -1,4 +1,4 @@
-import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../enums';
+import { JzpClientAddressRestrictionsType } from '../enums';
 
 export class ModifyJumpointCommand {
     public readonly commandType = 'bt-modify-jumpoint';
@@ -7,11 +7,9 @@ export class ModifyJumpointCommand {
         public readonly transactionId: string,
         public readonly id: number,
         public readonly name?: string,
-        public readonly platform?: JumpointPlatformType,
         public readonly codeName?: string,
         public readonly comments?: string,
         public readonly enabled?: boolean,
-        public readonly clustered?: boolean,
         public readonly shellJumpEnabled?: boolean,
         public readonly externalJumpItemNetworkId?: string,
         public readonly protocolTunnelEnabled?: boolean,

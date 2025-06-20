@@ -13,7 +13,16 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiCreatedResponse,
+    ApiNoContentResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiParam,
+    ApiTags,
+    ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateJumpointCommand, DeleteJumpointCommand, ModifyJumpointCommand } from '../commands';
@@ -54,7 +63,14 @@ export class JumpointController {
     }
 
     @Post()
-    @ApiCreatedResponse({ type: JumpointCreatedDtoOutput })
+    @ApiCreatedResponse({
+        type: JumpointCreatedDtoOutput,
+        description: 'Indicates the Jumpoint was created successfully and contains the new instance.',
+    })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async createJumpoint(@Body() dtoInput: CreateJumpointDtoInput): Promise<JumpointCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateJumpointCommand, Jumpoint>(
             new CreateJumpointCommand(
@@ -83,8 +99,16 @@ export class JumpointController {
     }
 
     @Patch(':id')
-    @ApiParam({ name: 'id', type: Number, required: true })
-    @ApiOkResponse({ type: JumpointModifiedDtoOutput })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({
+        type: JumpointModifiedDtoOutput,
+        description: 'Indicates the existing Jumpoint was successfully updated and returns the new Jumpoint.',
+    })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async modifyJumpoint(
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpointDtoInput,
@@ -94,11 +118,9 @@ export class JumpointController {
                 UuidUtility.generate(),
                 id,
                 dtoInput.name,
-                dtoInput.platformType,
                 dtoInput.codeName,
                 dtoInput.comments,
                 dtoInput.isEnabled,
-                dtoInput.isClustered,
                 dtoInput.isShellJumpEnabled,
                 dtoInput.externalJumpItemNetworkId,
                 dtoInput.isProtocolTunnelEnabled,
@@ -117,8 +139,14 @@ export class JumpointController {
     }
 
     @Delete(':id')
-    @ApiParam({ name: 'id', type: Number, required: true })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
     @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiNoContentResponse({ description: 'Indicates the jumpoint was successfully deleted.' })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async deleteJumpoint(@Param('id') id: number): Promise<void> {
         await this.commandBus.execute<DeleteJumpointCommand, void>(
             new DeleteJumpointCommand(UuidUtility.generate(), id),

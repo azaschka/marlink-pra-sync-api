@@ -97,11 +97,9 @@ describe('JumpointController', () => {
 
             const result = await controller.modifyJumpoint(1, {
                 name: 'Jumpoint 1',
-                platformType: JumpointPlatformType.LinuxX86,
                 codeName: 'J1',
                 comments: 'Test Jumpoint 1',
                 isEnabled: true,
-                isClustered: false,
                 isShellJumpEnabled: true,
                 externalJumpItemNetworkId: 'ext-1',
                 isProtocolTunnelEnabled: true,
@@ -120,11 +118,9 @@ describe('JumpointController', () => {
                     'uuid-123',
                     1,
                     'Jumpoint 1',
-                    JumpointPlatformType.LinuxX86,
                     'J1',
                     'Test Jumpoint 1',
                     true,
-                    false,
                     true,
                     'ext-1',
                     true,

@@ -4,13 +4,23 @@ import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { JumpGroupType } from '../../enums';
 
 export class RetrieveRemoteRdpsDtoInput {
-    @ApiProperty({ required: false, type: Number, default: 5 })
+    @ApiProperty({
+        required: false,
+        type: Number,
+        default: 100,
+        description: 'The number of items to include in a paginated response.',
+    })
     @Type(() => Number)
     @IsInt()
     @IsOptional()
-    public pageSize: number = 5;
+    public pageSize: number = 100;
 
-    @ApiProperty({ required: false, type: Number, default: 1 })
+    @ApiProperty({
+        required: false,
+        type: Number,
+        default: 1,
+        description: 'The 1-based index of the desired page.',
+    })
     @Type(() => Number)
     @IsInt()
     @IsOptional()

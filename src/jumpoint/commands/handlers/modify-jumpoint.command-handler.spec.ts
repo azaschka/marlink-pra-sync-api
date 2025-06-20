@@ -72,11 +72,9 @@ describe('ModifyJumpointCommandHandler', () => {
                 transactionId: 'transaction-1',
                 id: 123,
                 name: 'Jumpoint 1',
-                platformType: JumpointPlatformType.LinuxX86,
-                codeName: 'J1',
+                codeName: 'code-1',
                 comments: 'Test Jumpoint 1',
                 isEnabled: true,
-                isClustered: false,
                 isShellJumpEnabled: true,
                 externalJumpItemNetworkId: 'ext-1',
                 isProtocolTunnelEnabled: true,
@@ -93,7 +91,7 @@ describe('ModifyJumpointCommandHandler', () => {
                 transactionId: 'transaction-2',
                 id: 456,
                 name: 'Jumpoint 1',
-                platformType: JumpointPlatformType.WindowsX86,
+                codeName: 'code-2',
             },
         ])(
             'should call the command bus and repository service with correct parameters, publish an event and return the result',
@@ -124,11 +122,9 @@ describe('ModifyJumpointCommandHandler', () => {
                         command.transactionId,
                         command.id,
                         command.name,
-                        command.platformType,
                         command.codeName,
                         command.comments,
                         command.isEnabled,
-                        command.isClustered,
                         command.isShellJumpEnabled,
                         command.externalJumpItemNetworkId,
                         command.isProtocolTunnelEnabled,
@@ -191,7 +187,6 @@ describe('ModifyJumpointCommandHandler', () => {
                 handler.execute(<ModifyJumpointCommand>{
                     transactionId: 'transaction-2',
                     name: 'Jumpoint 1',
-                    platformType: JumpointPlatformType.WindowsX86,
                 }),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -225,7 +220,6 @@ describe('ModifyJumpointCommandHandler', () => {
                 handler.execute(<ModifyJumpointCommand>{
                     transactionId: 'transaction-1',
                     name: 'jumpoint-1',
-                    platformType: JumpointPlatformType.WindowsX86,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -270,7 +264,6 @@ describe('ModifyJumpointCommandHandler', () => {
                 handler.execute(<ModifyJumpointCommand>{
                     transactionId: 'transaction-1',
                     name: 'jumpoint-1',
-                    platformType: JumpointPlatformType.WindowsX86,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();

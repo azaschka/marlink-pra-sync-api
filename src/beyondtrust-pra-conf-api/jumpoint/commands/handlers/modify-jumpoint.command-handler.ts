@@ -25,11 +25,11 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
             url,
             ModifyJumpointDtoInput.create(
                 command.name,
-                command.platform,
+                undefined, // cannot be changed once it's created
                 command.codeName,
                 command.comments,
                 command.enabled,
-                command.clustered,
+                undefined, // cannot be changed once it's created
                 command.shellJumpEnabled,
                 command.externalJumpItemNetworkId,
                 command.protocolTunnelEnabled,

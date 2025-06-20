@@ -53,11 +53,9 @@ describe('ModifyJumpointCommandHandler', () => {
                     'transaction-1',
                     1,
                     'Jumpoint 1',
-                    JumpointPlatformType.LinuxX86,
                     'J1',
                     'Test Jumpoint 1',
                     true,
-                    false,
                     true,
                     'ext-1',
                     true,
@@ -72,11 +70,11 @@ describe('ModifyJumpointCommandHandler', () => {
                 ),
                 expectedHttpClientBody: {
                     name: 'Jumpoint 1',
-                    platform: JumpointPlatformType.LinuxX86,
+                    platform: undefined,
                     codeName: 'J1',
                     comments: 'Test Jumpoint 1',
                     enabled: true,
-                    clustered: false,
+                    clustered: undefined,
                     shellJumpEnabled: true,
                     externalJumpItemNetworkId: 'ext-1',
                     protocolTunnelEnabled: true,
@@ -91,10 +89,10 @@ describe('ModifyJumpointCommandHandler', () => {
                 },
             },
             {
-                command: new ModifyJumpointCommand('transaction-2', 2, 'Jumpoint 2', JumpointPlatformType.WindowsX86),
+                command: new ModifyJumpointCommand('transaction-2', 2, 'Jumpoint 2', 'code-2'),
                 expectedHttpClientBody: {
                     name: 'Jumpoint 2',
-                    platform: JumpointPlatformType.WindowsX86,
+                    codeName: 'code-2',
                 },
             },
         ])(
