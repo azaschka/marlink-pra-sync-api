@@ -18,7 +18,13 @@
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
         "test:e2e": "jest --config ./test/jest-e2e.json",
-        "db:start:local": "sh scripts/start-local-docker-db.sh pra-local-db-container mariadb pra rootpasswordpra 3306"
+        "db:start:local": "sh scripts/start-local-docker-db.sh pra-local-db-container mariadb pra rootpasswordpra 3306",
+        "docker:build:api": "docker build --platform='linux/amd64' . -t pra-sync-api",
+        "docker:tag:api": "docker tag pra-sync-api:latest shamrock-nexus.cdn-vas.net/marlink-pra-sync-api:${npm_package_version}",
+        "docker:prepare:api": "npm run docker:build:api && npm run docker:tag:api",
+        "docker:login:marlink": "docker login shamrock-nexus.cdn-vas.net -u shamrock -p marlinkdockerpassword",
+        "docker:push:api": "docker push shamrock-nexus.cdn-vas.net/marlink-pra-sync-api:${npm_package_version}",
+        "publish:api": "npm run docker:prepare:api && npm run docker:login:marlink && npm run docker:push:api"
     },
     "dependencies": {
         "@nestjs/axios": "^4.0.0",
