@@ -25,7 +25,11 @@ export class RetrieveGroupPoliciesDtoInput {
     @IsOptional()
     public pageNumber: number = 1;
 
-    @ApiProperty({ required: false, type: String })
+    @ApiProperty({
+        required: false,
+        type: String,
+        description: 'Filters results to include only policies that match the given name.',
+    })
     @IsString()
     @IsOptional()
     public name?: string;

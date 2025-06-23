@@ -1,6 +1,14 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiNoContentResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiParam,
+    ApiTags,
+    ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
 import { UuidUtility } from '../../shared/utilities';
 import { AddJumpointToGroupPolicyCommand, RemoveJumpointFromGroupPolicyCommand } from '../commands';
 import { AddJumpointToGroupPolicyDtoInput } from '../dtos/inputs';
@@ -15,8 +23,16 @@ export class GroupPolicyJumpointsController {
     constructor(private readonly commandBus: CommandBus) {}
 
     @Post(':id/jumpoints')
-    @ApiParam({ name: 'id', type: Number, required: true })
-    @ApiOkResponse({ type: GroupPolicyJumpointAddedDtoOutput })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({
+        type: GroupPolicyJumpointAddedDtoOutput,
+        description: 'Indicates that the Jumpoint was successfully added.',
+    })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async addJumpointToGroupPolicy(
         @Param('id') id: number,
         @Body() dtoInput: AddJumpointToGroupPolicyDtoInput,
@@ -29,9 +45,11 @@ export class GroupPolicyJumpointsController {
     }
 
     @Delete(':id/jumpoints/:jumpointId')
-    @ApiParam({ name: 'id', type: Number, required: true })
-    @ApiParam({ name: 'jumpointId', type: Number, required: true })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiParam({ name: 'jumpointId', type: Number, required: true, description: 'Unique identifier for the Jumpoint.' })
     @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiNoContentResponse({ description: 'Indicates the Jumpoint was successfully removed.' })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
     public async removeJumpointFromGroupPolicy(
         @Param('id') id: number,
         @Param('jumpointId') jumpointId: number,

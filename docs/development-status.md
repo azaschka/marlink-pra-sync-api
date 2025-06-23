@@ -18,12 +18,12 @@
 |                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Add user                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Delete user                       | ✅                  | ✅                  | ✅             | ✅             |                                    |
-| Group Policies                    | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Delete                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Add jumpoint                      | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Remove jumpoint                   | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
+| Group Policies                    | Create                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Add jumpoint                      | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Remove jumpoint                   | ✅                  | ✅                  | ✅             | ✅             |                                    |
 | Jump Policies                     | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |

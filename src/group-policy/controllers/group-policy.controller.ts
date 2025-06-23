@@ -13,7 +13,16 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiCreatedResponse,
+    ApiNoContentResponse,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiParam,
+    ApiTags,
+    ApiUnprocessableEntityResponse,
+} from '@nestjs/swagger';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, ModifyGroupPolicyCommand } from '../commands';
@@ -54,7 +63,14 @@ export class GroupPolicyController {
     }
 
     @Post()
-    @ApiCreatedResponse({ type: GroupPolicyCreatedDtoOutput })
+    @ApiCreatedResponse({
+        type: GroupPolicyCreatedDtoOutput,
+        description: 'Indicates the group policy was created successfully and contains the new group policy instance.',
+    })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async createGroupPolicy(@Body() dtoInput: CreateGroupPolicyDtoInput): Promise<GroupPolicyCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateGroupPolicyCommand, GroupPolicy>(
             new CreateGroupPolicyCommand(
@@ -89,7 +105,16 @@ export class GroupPolicyController {
     }
 
     @Patch(':id')
-    @ApiOkResponse({ type: GroupPolicyModifiedDtoOutput })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({
+        type: GroupPolicyModifiedDtoOutput,
+        description: 'Indicates the existing group policy was successfully updated and returns the new group policy.',
+    })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async modifyGroupPolicy(
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyGroupPolicyDtoInput,
@@ -128,8 +153,14 @@ export class GroupPolicyController {
     }
 
     @Delete(':id')
-    @ApiParam({ name: 'id', type: Number, required: true })
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
     @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiNoContentResponse({ description: 'Indicates the group policy was successfully deleted.' })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    @ApiUnprocessableEntityResponse({
+        description:
+            'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
+    })
     public async deleteGroupPolicy(@Param('id') id: number): Promise<void> {
         await this.commandBus.execute<DeleteGroupPolicyCommand, void>(
             new DeleteGroupPolicyCommand(UuidUtility.generate(), id),
