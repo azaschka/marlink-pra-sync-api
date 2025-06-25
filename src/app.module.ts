@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from './app-config/app-config.module';
 import { AppConfigService } from './app-config/services/app-config.service';
 import { AppController } from './app.controller';
+import { BeyondtrustInstanceModule } from './beyondtrust-instance/beyondtrust-instance.module';
 import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtrust-pra-conf-api.module';
 import { GroupPolicyJumpointModule } from './group-policy-jumpoint/group-policy-jumpoint.module';
 import { GroupPolicyModule } from './group-policy/group-policy.module';
@@ -28,6 +29,7 @@ import { UserModule } from './user/user.module';
         CqrsModule.forRoot(),
         BeyondtrustPraConfApiModule,
         HealthModule,
+        BeyondtrustInstanceModule,
         UserModule,
         UserGroupPolicyModule,
         TeamModule,
