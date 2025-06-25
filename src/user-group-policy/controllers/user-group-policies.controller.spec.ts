@@ -21,7 +21,7 @@ describe('UserController', () => {
             const expectedResult = {} as UserGroupPolicies;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyUserGroupPolicies(1, {
+            const result = await controller.modifyUserGroupPolicies(undefined, 1, {
                 groupPolicyIdsToAdd: [1, 2],
                 groupPolicyIdsToRemove: [3],
             });

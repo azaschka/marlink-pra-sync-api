@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
-    ApiBearerAuth,
     ApiCreatedResponse,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -23,6 +22,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateJumpointCommand, DeleteJumpointCommand, ModifyJumpointCommand } from '../commands';
@@ -31,7 +31,7 @@ import { JumpointCreatedDtoOutput, JumpointModifiedDtoOutput, JumpointRetrievedD
 import { Jumpoint } from '../models';
 import { RetrieveJumpointsQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Jumpoints')
 @Controller('jumpoints')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -44,11 +44,12 @@ export class JumpointController {
     @Get()
     @ApiOkResponse({ type: JumpointRetrievedDtoOutput, isArray: true })
     public async retrieveJumpoints(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Query() dtoInput: RetrieveJumpointsDtoInput,
     ): Promise<JumpointRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveJumpointsQuery, Jumpoint[]>(
             new RetrieveJumpointsQuery(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
@@ -71,10 +72,13 @@ export class JumpointController {
         description:
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
-    public async createJumpoint(@Body() dtoInput: CreateJumpointDtoInput): Promise<JumpointCreatedDtoOutput> {
+    public async createJumpoint(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Body() dtoInput: CreateJumpointDtoInput,
+    ): Promise<JumpointCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateJumpointCommand, Jumpoint>(
             new CreateJumpointCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.name,
                 dtoInput.platformType,
                 dtoInput.codeName,
@@ -110,12 +114,13 @@ export class JumpointController {
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
     public async modifyJumpoint(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpointDtoInput,
     ): Promise<JumpointModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpointCommand, Jumpoint>(
             new ModifyJumpointCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.name,
                 dtoInput.codeName,
@@ -147,9 +152,10 @@ export class JumpointController {
         description:
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
-    public async deleteJumpoint(@Param('id') id: number): Promise<void> {
-        await this.commandBus.execute<DeleteJumpointCommand, void>(
-            new DeleteJumpointCommand(UuidUtility.generate(), id),
-        );
+    public async deleteJumpoint(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
+        await this.commandBus.execute<DeleteJumpointCommand, void>(new DeleteJumpointCommand(transactionId, id));
     }
 }

@@ -24,10 +24,14 @@ describe('UserController', () => {
             const expectedResult = [] as User[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveUsers({ pageSize: 10, pageNumber: 1, username: 'user-1' });
+            const result = await controller.retrieveUsers('uuid-100', {
+                pageSize: 10,
+                pageNumber: 1,
+                username: 'user-1',
+            });
 
             expect(queryBusExecuteSpy).toHaveBeenCalledWith(
-                new RetrieveUsersQuery('uuid-123', 10, 1, undefined, 'user-1', undefined),
+                new RetrieveUsersQuery('uuid-100', 10, 1, undefined, 'user-1', undefined),
             );
             expect(result).toBe(expectedResult);
         });
@@ -38,7 +42,7 @@ describe('UserController', () => {
             const expectedResult = {} as User;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createUser({
+            const result = await controller.createUser(undefined, {
                 publicDisplayName: 'user-1',
                 username: 'username-1',
                 password: 'password-1',
@@ -75,7 +79,7 @@ describe('UserController', () => {
             const expectedResult = {} as User;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyUser(1, {
+            const result = await controller.modifyUser('uuid-100', 1, {
                 publicDisplayName: 'user-1',
                 username: 'username-1',
                 password: undefined,
@@ -88,7 +92,7 @@ describe('UserController', () => {
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(
                 new ModifyUserCommand(
-                    'uuid-123',
+                    'uuid-100',
                     1,
                     'user-1',
                     'username-1',
@@ -108,7 +112,7 @@ describe('UserController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteUser(1);
+            await controller.deleteUser(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteUserCommand('uuid-123', 1));
         });

@@ -21,7 +21,7 @@ describe('GroupPolicyJumpointsController', () => {
             const expectedResult = {} as GroupPolicyJumpoint;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.addJumpointToGroupPolicy(1, {
+            const result = await controller.addJumpointToGroupPolicy(undefined, 1, {
                 jumpointId: 2,
             });
 
@@ -34,7 +34,7 @@ describe('GroupPolicyJumpointsController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(undefined);
 
-            await controller.removeJumpointFromGroupPolicy(1, 2);
+            await controller.removeJumpointFromGroupPolicy(undefined, 1, 2);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(
                 new RemoveJumpointFromGroupPolicyCommand('uuid-123', 1, 2),

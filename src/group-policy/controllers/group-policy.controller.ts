@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
-    ApiBearerAuth,
     ApiCreatedResponse,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -23,6 +22,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, ModifyGroupPolicyCommand } from '../commands';
@@ -35,7 +35,7 @@ import {
 import { GroupPolicy } from '../models';
 import { RetrieveGroupPoliciesQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Group Policies')
 @Controller('group-policies')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -48,15 +48,11 @@ export class GroupPolicyController {
     @Get()
     @ApiOkResponse({ type: GroupPolicyRetrievedDtoOutput, isArray: true })
     public async retrieveGroupPolicies(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Query() dtoInput: RetrieveGroupPoliciesDtoInput,
     ): Promise<GroupPolicyRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveGroupPoliciesQuery, GroupPolicy[]>(
-            new RetrieveGroupPoliciesQuery(
-                UuidUtility.generate(),
-                dtoInput.pageSize,
-                dtoInput.pageNumber,
-                dtoInput.name,
-            ),
+            new RetrieveGroupPoliciesQuery(transactionId, dtoInput.pageSize, dtoInput.pageNumber, dtoInput.name),
         );
 
         return result;
@@ -71,10 +67,13 @@ export class GroupPolicyController {
         description:
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
-    public async createGroupPolicy(@Body() dtoInput: CreateGroupPolicyDtoInput): Promise<GroupPolicyCreatedDtoOutput> {
+    public async createGroupPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Body() dtoInput: CreateGroupPolicyDtoInput,
+    ): Promise<GroupPolicyCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateGroupPolicyCommand, GroupPolicy>(
             new CreateGroupPolicyCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.name,
                 dtoInput.hasEndpointsAccessPermission,
                 dtoInput.accessPermissionStatusType,
@@ -116,12 +115,13 @@ export class GroupPolicyController {
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
     public async modifyGroupPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyGroupPolicyDtoInput,
     ): Promise<GroupPolicyModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyGroupPolicyCommand, GroupPolicy>(
             new ModifyGroupPolicyCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.name,
                 dtoInput.hasEndpointsAccessPermission,
@@ -161,9 +161,10 @@ export class GroupPolicyController {
         description:
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
-    public async deleteGroupPolicy(@Param('id') id: number): Promise<void> {
-        await this.commandBus.execute<DeleteGroupPolicyCommand, void>(
-            new DeleteGroupPolicyCommand(UuidUtility.generate(), id),
-        );
+    public async deleteGroupPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
+        await this.commandBus.execute<DeleteGroupPolicyCommand, void>(new DeleteGroupPolicyCommand(transactionId, id));
     }
 }

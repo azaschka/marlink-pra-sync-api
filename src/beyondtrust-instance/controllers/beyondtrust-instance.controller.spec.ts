@@ -28,7 +28,7 @@ describe('BeyondtrustInstanceController', () => {
             const expectedResult = [] as BeyondtrustInstance[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveBeyondtrustInstances({
+            const result = await controller.retrieveBeyondtrustInstances(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'beyondtrust-instance-1',
@@ -55,7 +55,7 @@ describe('BeyondtrustInstanceController', () => {
             const expectedResult = {} as BeyondtrustInstance;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createBeyondtrustInstance({
+            const result = await controller.createBeyondtrustInstance(undefined, {
                 name: 'beyondtrust-instance-1',
                 authClientId: 'auth-client-id-1',
                 authClientSecret: 'auth-client-secret-1',
@@ -82,7 +82,7 @@ describe('BeyondtrustInstanceController', () => {
             const expectedResult = {} as BeyondtrustInstance;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyBeyondtrustInstance(1, {
+            const result = await controller.modifyBeyondtrustInstance('uuid-123', 1, {
                 name: 'beyondtrust-instance-1',
                 authClientId: 'auth-client-id-1',
                 authClientSecret: 'auth-client-secret-1',
@@ -109,7 +109,7 @@ describe('BeyondtrustInstanceController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteBeyondtrustInstance(1);
+            await controller.deleteBeyondtrustInstance('uuid-123', 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteBeyondtrustInstanceCommand('uuid-123', 1));
         });

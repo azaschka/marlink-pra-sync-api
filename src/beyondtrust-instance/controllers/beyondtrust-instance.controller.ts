@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
-    ApiBearerAuth,
     ApiCreatedResponse,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -22,6 +21,7 @@ import {
     ApiParam,
     ApiTags,
 } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import {
@@ -42,7 +42,7 @@ import {
 import { BeyondtrustInstance } from '../models';
 import { RetrieveBeyondtrustInstancesQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Beyondtrust Instances')
 @Controller('beyondtrust-instances')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -55,11 +55,12 @@ export class BeyondtrustInstanceController {
     @Get()
     @ApiOkResponse({ type: BeyondtrustInstanceRetrievedDtoOutput, isArray: true })
     public async retrieveBeyondtrustInstances(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Query() dtoInput: RetrieveBeyondtrustInstancesDtoInput,
     ): Promise<BeyondtrustInstanceRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveBeyondtrustInstancesQuery, BeyondtrustInstance[]>(
             new RetrieveBeyondtrustInstancesQuery(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
@@ -78,11 +79,12 @@ export class BeyondtrustInstanceController {
             'Indicates the BeyondTrust instance was created successfully and contains the new BeyondTrust instance.',
     })
     public async createBeyondtrustInstance(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Body() dtoInput: CreateBeyondtrustInstanceDtoInput,
     ): Promise<BeyondtrustInstanceCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateBeyondtrustInstanceCommand, BeyondtrustInstance>(
             new CreateBeyondtrustInstanceCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.name,
                 dtoInput.authClientId,
                 dtoInput.authClientSecret,
@@ -103,12 +105,13 @@ export class BeyondtrustInstanceController {
     })
     @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
     public async modifyBeyondtrustInstance(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyBeyondtrustInstanceDtoInput,
     ): Promise<BeyondtrustInstanceModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyBeyondtrustInstanceCommand, BeyondtrustInstance>(
             new ModifyBeyondtrustInstanceCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.name,
                 dtoInput.authClientId,
@@ -126,9 +129,12 @@ export class BeyondtrustInstanceController {
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiNoContentResponse({ description: 'Indicates the BeyondTrust instance was successfully deleted.' })
     @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
-    public async deleteBeyondtrustInstance(@Param('id') id: number): Promise<void> {
+    public async deleteBeyondtrustInstance(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
         await this.commandBus.execute<DeleteBeyondtrustInstanceCommand, void>(
-            new DeleteBeyondtrustInstanceCommand(UuidUtility.generate(), id),
+            new DeleteBeyondtrustInstanceCommand(transactionId, id),
         );
     }
 }

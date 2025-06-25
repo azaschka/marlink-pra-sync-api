@@ -30,7 +30,7 @@ describe('ShellJumpController', () => {
             const expectedResult = [] as ShellJump[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveShellJumps({
+            const result = await controller.retrieveShellJumps(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'shell-jump-1',
@@ -63,7 +63,7 @@ describe('ShellJumpController', () => {
             const expectedResult = {} as ShellJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createShellJump({
+            const result = await controller.createShellJump(undefined, {
                 name: 'shell-jump-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -91,7 +91,7 @@ describe('ShellJumpController', () => {
             const expectedResult = {} as ShellJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyShellJump(1, {
+            const result = await controller.modifyShellJump(undefined, 1, {
                 name: 'shell-jump-1',
                 jumpointId: 1,
                 hostname: 'hostname-1',
@@ -110,7 +110,7 @@ describe('ShellJumpController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteShellJump(1);
+            await controller.deleteShellJump(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteShellJumpCommand('uuid-123', 1));
         });
@@ -121,7 +121,7 @@ describe('ShellJumpController', () => {
             const expectedResult = {} as ShellJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.copyShellJump(1, {
+            const result = await controller.copyShellJump(undefined, 1, {
                 jumpGroupId: 2,
                 jumpGroupType: JumpGroupType.Personal,
                 name: 'copy-shell-jump-1',

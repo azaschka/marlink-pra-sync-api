@@ -25,7 +25,7 @@ describe('JumpointController', () => {
             const expectedResult = [] as Jumpoint[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveJumpoints({
+            const result = await controller.retrieveJumpoints(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'jumpoint-1',
@@ -44,7 +44,7 @@ describe('JumpointController', () => {
             const expectedResult = {} as Jumpoint;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createJumpoint({
+            const result = await controller.createJumpoint(undefined, {
                 name: 'Jumpoint 1',
                 platformType: JumpointPlatformType.LinuxX86,
                 codeName: 'J1',
@@ -95,7 +95,7 @@ describe('JumpointController', () => {
             const expectedResult = {} as Jumpoint;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyJumpoint(1, {
+            const result = await controller.modifyJumpoint(undefined, 1, {
                 name: 'Jumpoint 1',
                 codeName: 'J1',
                 comments: 'Test Jumpoint 1',
@@ -142,7 +142,7 @@ describe('JumpointController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteJumpoint(1);
+            await controller.deleteJumpoint(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteJumpointCommand('uuid-123', 1));
         });

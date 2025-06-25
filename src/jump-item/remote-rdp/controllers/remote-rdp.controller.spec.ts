@@ -30,7 +30,7 @@ describe('RemoteRdpController', () => {
             const expectedResult = [] as RemoteRdp[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveRemoteRdps({
+            const result = await controller.retrieveRemoteRdps(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'remote-rdp-1',
@@ -65,7 +65,7 @@ describe('RemoteRdpController', () => {
             const expectedResult = {} as RemoteRdp;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createRemoteRdp({
+            const result = await controller.createRemoteRdp(undefined, {
                 name: 'remote-rdp-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -84,7 +84,7 @@ describe('RemoteRdpController', () => {
             const expectedResult = {} as RemoteRdp;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyRemoteRdp(1, {
+            const result = await controller.modifyRemoteRdp(undefined, 1, {
                 name: 'remote-rdp-1',
                 jumpointId: 1,
                 hostname: 'hostname-1',
@@ -102,7 +102,7 @@ describe('RemoteRdpController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteRemoteRdp(1);
+            await controller.deleteRemoteRdp(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteRemoteRdpCommand('uuid-123', 1));
         });
@@ -113,7 +113,7 @@ describe('RemoteRdpController', () => {
             const expectedResult = {} as RemoteRdp;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.copyRemoteRdp(1, {
+            const result = await controller.copyRemoteRdp(undefined, 1, {
                 jumpGroupId: 2,
                 jumpGroupType: JumpGroupType.Personal,
                 name: 'copy-remote-rdp-1',

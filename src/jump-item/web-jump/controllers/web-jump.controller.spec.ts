@@ -25,7 +25,7 @@ describe('WebJumpController', () => {
             const expectedResult = [] as WebJump[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveWebJumps({
+            const result = await controller.retrieveWebJumps(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'web-jump-1',
@@ -58,7 +58,7 @@ describe('WebJumpController', () => {
             const expectedResult = {} as WebJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createWebJump({
+            const result = await controller.createWebJump(undefined, {
                 name: 'web-jump-2',
                 jumpointId: 2,
                 url: 'url-2',
@@ -77,7 +77,7 @@ describe('WebJumpController', () => {
             const expectedResult = {} as WebJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyWebJump(1, {
+            const result = await controller.modifyWebJump(undefined, 1, {
                 name: 'web-jump-1',
                 jumpointId: 1,
                 url: 'url-1',
@@ -95,7 +95,7 @@ describe('WebJumpController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteWebJump(1);
+            await controller.deleteWebJump(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteWebJumpCommand('uuid-123', 1));
         });
@@ -106,7 +106,7 @@ describe('WebJumpController', () => {
             const expectedResult = {} as WebJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.copyWebJump(1, {
+            const result = await controller.copyWebJump(undefined, 1, {
                 jumpGroupId: 2,
                 jumpGroupType: JumpGroupType.Personal,
                 name: 'copy-web-jump-1',

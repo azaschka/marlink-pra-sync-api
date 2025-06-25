@@ -30,7 +30,7 @@ describe('ProtocolTunnelJumpController', () => {
             const expectedResult = [] as ProtocolTunnelJump[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveProtocolTunnelJumps({
+            const result = await controller.retrieveProtocolTunnelJumps(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'protocol-tunnel-jump-1',
@@ -63,7 +63,7 @@ describe('ProtocolTunnelJumpController', () => {
             const expectedResult = {} as ProtocolTunnelJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createProtocolTunnelJump({
+            const result = await controller.createProtocolTunnelJump(undefined, {
                 name: 'protocol-tunnel-jump-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -82,7 +82,7 @@ describe('ProtocolTunnelJumpController', () => {
             const expectedResult = {} as ProtocolTunnelJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyProtocolTunnelJump(1, {
+            const result = await controller.modifyProtocolTunnelJump(undefined, 1, {
                 name: 'protocol-tunnel-jump-1',
                 jumpointId: 1,
                 hostname: 'hostname-1',
@@ -100,7 +100,7 @@ describe('ProtocolTunnelJumpController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteProtocolTunnelJump(1);
+            await controller.deleteProtocolTunnelJump(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteProtocolTunnelJumpCommand('uuid-123', 1));
         });
@@ -111,7 +111,7 @@ describe('ProtocolTunnelJumpController', () => {
             const expectedResult = {} as ProtocolTunnelJump;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.copyProtocolTunnelJump(1, {
+            const result = await controller.copyProtocolTunnelJump(undefined, 1, {
                 jumpGroupId: 2,
                 jumpGroupType: JumpGroupType.Personal,
                 name: 'copy-protocol-tunnel-jump-1',

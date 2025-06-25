@@ -30,7 +30,7 @@ describe('JumpPolicyController', () => {
             const expectedResult = [] as JumpPolicy[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveJumpPolicies({
+            const result = await controller.retrieveJumpPolicies(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 codeName: 'jump-policy-1',
@@ -48,7 +48,7 @@ describe('JumpPolicyController', () => {
             const expectedResult = {} as JumpPolicy;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createJumpPolicy({
+            const result = await controller.createJumpPolicy(undefined, {
                 displayName: 'jump policy 1',
                 codeName: 'jump-policy-1',
                 description: 'A test jump policy',
@@ -115,7 +115,7 @@ describe('JumpPolicyController', () => {
             const expectedResult = {} as JumpPolicy;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyJumpPolicy(1, {
+            const result = await controller.modifyJumpPolicy('uuid-100', 1, {
                 displayName: 'jump policy 1',
                 codeName: 'jump-policy-1',
                 description: 'A test jump policy',
@@ -145,7 +145,7 @@ describe('JumpPolicyController', () => {
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(
                 new ModifyJumpPolicyCommand(
-                    'uuid-123',
+                    'uuid-100',
                     1,
                     'jump policy 1',
                     'jump-policy-1',
@@ -182,7 +182,7 @@ describe('JumpPolicyController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteJumpPolicy(1);
+            await controller.deleteJumpPolicy(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteJumpPolicyCommand('uuid-123', 1));
         });

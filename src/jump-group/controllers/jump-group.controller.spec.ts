@@ -24,7 +24,7 @@ describe('JumpGroupController', () => {
             const expectedResult = [] as JumpGroup[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveJumpGroups({
+            const result = await controller.retrieveJumpGroups(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'jump-group-1',
@@ -43,7 +43,7 @@ describe('JumpGroupController', () => {
             const expectedResult = {} as JumpGroup;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createJumpGroup({
+            const result = await controller.createJumpGroup(undefined, {
                 name: 'jump-group-1',
                 codeName: 'jump-group-code-1',
                 comments: 'jump group comments 1',
@@ -61,7 +61,7 @@ describe('JumpGroupController', () => {
             const expectedResult = {} as JumpGroup;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyJumpGroup(1, {
+            const result = await controller.modifyJumpGroup(undefined, 1, {
                 name: 'jump-group-1',
                 codeName: 'jump-group-code-1',
                 comments: 'jump group comments 1',
@@ -78,9 +78,9 @@ describe('JumpGroupController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteJumpGroup(1);
+            await controller.deleteJumpGroup('uuid-100', 1);
 
-            expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteJumpGroupCommand('uuid-123', 1));
+            expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteJumpGroupCommand('uuid-100', 1));
         });
     });
 });

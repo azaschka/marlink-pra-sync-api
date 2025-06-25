@@ -13,7 +13,8 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateJumpPolicyCommand, DeleteJumpPolicyCommand, ModifyJumpPolicyCommand } from '../commands';
@@ -22,7 +23,7 @@ import { JumpPolicyCreatedDtoOutput, JumpPolicyModifiedDtoOutput, JumpPolicyRetr
 import { JumpPolicy } from '../models';
 import { RetrieveJumpPoliciesQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Jump Policies')
 @Controller('jump-policies')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -35,15 +36,11 @@ export class JumpPolicyController {
     @Get()
     @ApiOkResponse({ type: JumpPolicyRetrievedDtoOutput, isArray: true })
     public async retrieveJumpPolicies(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Query() dtoInput: RetrieveJumpPoliciesDtoInput,
     ): Promise<JumpPolicyRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveJumpPoliciesQuery, JumpPolicy[]>(
-            new RetrieveJumpPoliciesQuery(
-                UuidUtility.generate(),
-                dtoInput.pageSize,
-                dtoInput.pageNumber,
-                dtoInput.codeName,
-            ),
+            new RetrieveJumpPoliciesQuery(transactionId, dtoInput.pageSize, dtoInput.pageNumber, dtoInput.codeName),
         );
 
         return result;
@@ -51,10 +48,13 @@ export class JumpPolicyController {
 
     @Post()
     @ApiCreatedResponse({ type: JumpPolicyCreatedDtoOutput })
-    public async createJumpPolicy(@Body() dtoInput: CreateJumpPolicyDtoInput): Promise<JumpPolicyCreatedDtoOutput> {
+    public async createJumpPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Body() dtoInput: CreateJumpPolicyDtoInput,
+    ): Promise<JumpPolicyCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateJumpPolicyCommand, JumpPolicy>(
             new CreateJumpPolicyCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.displayName,
                 dtoInput.codeName,
                 dtoInput.description,
@@ -89,12 +89,13 @@ export class JumpPolicyController {
     @Patch(':id')
     @ApiOkResponse({ type: JumpPolicyModifiedDtoOutput })
     public async modifyJumpPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpPolicyDtoInput,
     ): Promise<JumpPolicyModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpPolicyCommand, JumpPolicy>(
             new ModifyJumpPolicyCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.displayName,
                 dtoInput.codeName,
@@ -130,9 +131,10 @@ export class JumpPolicyController {
     @Delete(':id')
     @ApiParam({ name: 'id', type: Number, required: true })
     @HttpCode(HttpStatus.NO_CONTENT)
-    public async deleteJumpPolicy(@Param('id') id: number): Promise<void> {
-        await this.commandBus.execute<DeleteJumpPolicyCommand, void>(
-            new DeleteJumpPolicyCommand(UuidUtility.generate(), id),
-        );
+    public async deleteJumpPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
+        await this.commandBus.execute<DeleteJumpPolicyCommand, void>(new DeleteJumpPolicyCommand(transactionId, id));
     }
 }

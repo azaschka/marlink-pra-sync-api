@@ -22,7 +22,7 @@ describe('TeamUsersController', () => {
             const expectedResult = {} as TeamUser;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.addUserToTeam(1, {
+            const result = await controller.addUserToTeam(undefined, 1, {
                 userId: 2,
                 roleType: UserTeamRoleType.Member,
             });
@@ -38,9 +38,9 @@ describe('TeamUsersController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(undefined);
 
-            await controller.removeUserFromTeam(1, 2);
+            await controller.removeUserFromTeam('uuid-100', 1, 2);
 
-            expect(commandBusExecuteSpy).toHaveBeenCalledWith(new RemoveUserFromTeamCommand('uuid-123', 1, 2));
+            expect(commandBusExecuteSpy).toHaveBeenCalledWith(new RemoveUserFromTeamCommand('uuid-100', 1, 2));
         });
     });
 });

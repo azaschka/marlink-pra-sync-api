@@ -13,7 +13,8 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../../core/decorators';
 import { NonEmptyBodyPipe } from '../../../shared/pipes';
 import { UuidUtility } from '../../../shared/utilities';
 import { CopyWebJumpCommand, CreateWebJumpCommand, DeleteWebJumpCommand, ModifyWebJumpCommand } from '../commands';
@@ -32,7 +33,7 @@ import {
 import { WebJump } from '../models';
 import { RetrieveWebJumpsQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Jump Items')
 @Controller('jump-items/web-jumps')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -44,10 +45,13 @@ export class WebJumpController {
 
     @Get()
     @ApiOkResponse({ type: WebJumpRetrievedDtoOutput, isArray: true })
-    public async retrieveWebJumps(@Query() dtoInput: RetrieveWebJumpsDtoInput): Promise<WebJumpRetrievedDtoOutput[]> {
+    public async retrieveWebJumps(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Query() dtoInput: RetrieveWebJumpsDtoInput,
+    ): Promise<WebJumpRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveWebJumpsQuery, WebJump[]>(
             new RetrieveWebJumpsQuery(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
@@ -64,10 +68,13 @@ export class WebJumpController {
 
     @Post()
     @ApiCreatedResponse({ type: WebJumpCreatedDtoOutput })
-    public async createWebJump(@Body() dtoInput: CreateWebJumpDtoInput): Promise<WebJumpCreatedDtoOutput> {
+    public async createWebJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Body() dtoInput: CreateWebJumpDtoInput,
+    ): Promise<WebJumpCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateWebJumpCommand, WebJump>(
             new CreateWebJumpCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.name,
                 dtoInput.jumpointId,
                 dtoInput.url,
@@ -92,12 +99,13 @@ export class WebJumpController {
     @Patch(':id')
     @ApiOkResponse({ type: WebJumpModifiedDtoOutput })
     public async modifyWebJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyWebJumpDtoInput,
     ): Promise<WebJumpModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyWebJumpCommand, WebJump>(
             new ModifyWebJumpCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.name,
                 dtoInput.jumpointId,
@@ -123,8 +131,11 @@ export class WebJumpController {
     @Delete(':id')
     @ApiParam({ name: 'id', type: Number, required: true })
     @HttpCode(HttpStatus.NO_CONTENT)
-    public async deleteWebJump(@Param('id') id: number): Promise<void> {
-        await this.commandBus.execute<DeleteWebJumpCommand, void>(new DeleteWebJumpCommand(UuidUtility.generate(), id));
+    public async deleteWebJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
+        await this.commandBus.execute<DeleteWebJumpCommand, void>(new DeleteWebJumpCommand(transactionId, id));
     }
 
     @Post(':id/copy')
@@ -132,17 +143,12 @@ export class WebJumpController {
     @ApiOkResponse({ type: WebJumpCopiedDtoOutput })
     @HttpCode(HttpStatus.OK)
     public async copyWebJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body() dtoInput: CopyWebJumpDtoInput,
     ): Promise<WebJumpCopiedDtoOutput> {
         const result = await this.commandBus.execute<CopyWebJumpCommand, WebJump>(
-            new CopyWebJumpCommand(
-                UuidUtility.generate(),
-                id,
-                dtoInput.jumpGroupId,
-                dtoInput.jumpGroupType,
-                dtoInput.name,
-            ),
+            new CopyWebJumpCommand(transactionId, id, dtoInput.jumpGroupId, dtoInput.jumpGroupType, dtoInput.name),
         );
 
         return result;

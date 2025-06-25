@@ -13,7 +13,8 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../../core/decorators';
 import { NonEmptyBodyPipe } from '../../../shared/pipes';
 import { UuidUtility } from '../../../shared/utilities';
 import {
@@ -37,7 +38,7 @@ import {
 import { ShellJump } from '../models';
 import { RetrieveShellJumpsQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Jump Items')
 @Controller('jump-items/shell-jumps')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -50,11 +51,12 @@ export class ShellJumpController {
     @Get()
     @ApiOkResponse({ type: ShellJumpRetrievedDtoOutput, isArray: true })
     public async retrieveShellJumps(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Query() dtoInput: RetrieveShellJumpsDtoInput,
     ): Promise<ShellJumpRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveShellJumpsQuery, ShellJump[]>(
             new RetrieveShellJumpsQuery(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
@@ -71,10 +73,13 @@ export class ShellJumpController {
 
     @Post()
     @ApiCreatedResponse({ type: ShellJumpCreatedDtoOutput })
-    public async createShellJump(@Body() dtoInput: CreateShellJumpDtoInput): Promise<ShellJumpCreatedDtoOutput> {
+    public async createShellJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Body() dtoInput: CreateShellJumpDtoInput,
+    ): Promise<ShellJumpCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateShellJumpCommand, ShellJump>(
             new CreateShellJumpCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.name,
                 dtoInput.jumpointId,
                 dtoInput.hostname,
@@ -98,12 +103,13 @@ export class ShellJumpController {
     @Patch(':id')
     @ApiOkResponse({ type: ShellJumpModifiedDtoOutput })
     public async modifyShellJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyShellJumpDtoInput,
     ): Promise<ShellJumpModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyShellJumpCommand, ShellJump>(
             new ModifyShellJumpCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.name,
                 dtoInput.jumpointId,
@@ -128,10 +134,11 @@ export class ShellJumpController {
     @Delete(':id')
     @ApiParam({ name: 'id', type: Number, required: true })
     @HttpCode(HttpStatus.NO_CONTENT)
-    public async deleteShellJump(@Param('id') id: number): Promise<void> {
-        await this.commandBus.execute<DeleteShellJumpCommand, void>(
-            new DeleteShellJumpCommand(UuidUtility.generate(), id),
-        );
+    public async deleteShellJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
+        await this.commandBus.execute<DeleteShellJumpCommand, void>(new DeleteShellJumpCommand(transactionId, id));
     }
 
     @Post(':id/copy')
@@ -139,17 +146,12 @@ export class ShellJumpController {
     @ApiOkResponse({ type: ShellJumpCopiedDtoOutput })
     @HttpCode(HttpStatus.OK)
     public async copyShellJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body() dtoInput: CopyShellJumpDtoInput,
     ): Promise<ShellJumpCopiedDtoOutput> {
         const result = await this.commandBus.execute<CopyShellJumpCommand, ShellJump>(
-            new CopyShellJumpCommand(
-                UuidUtility.generate(),
-                id,
-                dtoInput.jumpGroupId,
-                dtoInput.jumpGroupType,
-                dtoInput.name,
-            ),
+            new CopyShellJumpCommand(transactionId, id, dtoInput.jumpGroupId, dtoInput.jumpGroupType, dtoInput.name),
         );
 
         return result;

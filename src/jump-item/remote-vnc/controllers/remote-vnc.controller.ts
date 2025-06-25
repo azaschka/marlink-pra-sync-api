@@ -13,7 +13,8 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../../core/decorators';
 import { NonEmptyBodyPipe } from '../../../shared/pipes';
 import { UuidUtility } from '../../../shared/utilities';
 import {
@@ -37,7 +38,7 @@ import {
 import { RemoteVnc } from '../models';
 import { RetrieveRemoteVncsQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Jump Items')
 @Controller('jump-items/remote-vncs')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -50,11 +51,12 @@ export class RemoteVncController {
     @Get()
     @ApiOkResponse({ type: RemoteVncRetrievedDtoOutput, isArray: true })
     public async retrieveRemoteVncs(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Query() dtoInput: RetrieveRemoteVncsDtoInput,
     ): Promise<RemoteVncRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveRemoteVncsQuery, RemoteVnc[]>(
             new RetrieveRemoteVncsQuery(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
@@ -71,10 +73,13 @@ export class RemoteVncController {
 
     @Post()
     @ApiCreatedResponse({ type: RemoteVncCreatedDtoOutput })
-    public async createRemoteVnc(@Body() dtoInput: CreateRemoteVncDtoInput): Promise<RemoteVncCreatedDtoOutput> {
+    public async createRemoteVnc(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Body() dtoInput: CreateRemoteVncDtoInput,
+    ): Promise<RemoteVncCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateRemoteVncCommand, RemoteVnc>(
             new CreateRemoteVncCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.name,
                 dtoInput.jumpointId,
                 dtoInput.hostname,
@@ -94,12 +99,13 @@ export class RemoteVncController {
     @Patch(':id')
     @ApiOkResponse({ type: RemoteVncModifiedDtoOutput })
     public async modifyRemoteVnc(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyRemoteVncDtoInput,
     ): Promise<RemoteVncModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyRemoteVncCommand, RemoteVnc>(
             new ModifyRemoteVncCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.name,
                 dtoInput.jumpointId,
@@ -120,10 +126,11 @@ export class RemoteVncController {
     @Delete(':id')
     @ApiParam({ name: 'id', type: Number, required: true })
     @HttpCode(HttpStatus.NO_CONTENT)
-    public async deleteRemoteVnc(@Param('id') id: number): Promise<void> {
-        await this.commandBus.execute<DeleteRemoteVncCommand, void>(
-            new DeleteRemoteVncCommand(UuidUtility.generate(), id),
-        );
+    public async deleteRemoteVnc(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
+        await this.commandBus.execute<DeleteRemoteVncCommand, void>(new DeleteRemoteVncCommand(transactionId, id));
     }
 
     @Post(':id/copy')
@@ -131,17 +138,12 @@ export class RemoteVncController {
     @ApiOkResponse({ type: RemoteVncCopiedDtoOutput })
     @HttpCode(HttpStatus.OK)
     public async copyRemoteVnc(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body() dtoInput: CopyRemoteVncDtoInput,
     ): Promise<RemoteVncCopiedDtoOutput> {
         const result = await this.commandBus.execute<CopyRemoteVncCommand, RemoteVnc>(
-            new CopyRemoteVncCommand(
-                UuidUtility.generate(),
-                id,
-                dtoInput.jumpGroupId,
-                dtoInput.jumpGroupType,
-                dtoInput.name,
-            ),
+            new CopyRemoteVncCommand(transactionId, id, dtoInput.jumpGroupId, dtoInput.jumpGroupType, dtoInput.name),
         );
 
         return result;

@@ -7,6 +7,10 @@
 | Module                            | Endpoint                          | Open API definition | Endpoint validation | BT integration | DB integration | Notes                              |
 | --------------------------------- | --------------------------------- | ------------------- | ------------------- | -------------- | -------------- | ---------------------------------- |
 | Health                            | Retrieve                          | ✅                  |                     |                |                |                                    |
+| BT Instances                      | Create                            | ✅                  | ✅                  |                | ✅             |                                    |
+|                                   | Retrieve                          | ✅                  | ✅                  |                | ✅             |                                    |
+|                                   | Modify                            | ✅                  | ✅                  |                | ✅             |                                    |
+|                                   | Delete                            | ✅                  | ✅                  |                | ✅             |                                    |
 | Users                             | Create                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |

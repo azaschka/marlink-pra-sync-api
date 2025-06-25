@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
-    ApiBearerAuth,
     ApiCreatedResponse,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -23,6 +22,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateUserCommand, DeleteUserCommand, ModifyUserCommand } from '../commands';
@@ -31,7 +31,7 @@ import { UserCreatedDtoOutput, UserModifiedDtoOutput, UserRetrievedDtoOutput } f
 import { User } from '../models';
 import { RetrieveUsersQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Users')
 @Controller('users')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -43,10 +43,13 @@ export class UserController {
 
     @Get()
     @ApiOkResponse({ type: UserRetrievedDtoOutput, isArray: true })
-    public async retrieveUsers(@Query() dtoInput: RetrieveUsersDtoInput): Promise<UserRetrievedDtoOutput[]> {
+    public async retrieveUsers(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Query() dtoInput: RetrieveUsersDtoInput,
+    ): Promise<UserRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveUsersQuery, User[]>(
             new RetrieveUsersQuery(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.securityProviderId,
@@ -67,10 +70,13 @@ export class UserController {
         description:
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
-    public async createUser(@Body() dtoInput: CreateUserDtoInput): Promise<UserCreatedDtoOutput> {
+    public async createUser(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Body() dtoInput: CreateUserDtoInput,
+    ): Promise<UserCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateUserCommand, User>(
             new CreateUserCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.publicDisplayName,
                 dtoInput.username,
                 dtoInput.password,
@@ -99,12 +105,13 @@ export class UserController {
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
     public async modifyUser(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyUserDtoInput,
     ): Promise<UserModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyUserCommand, User>(
             new ModifyUserCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.publicDisplayName,
                 dtoInput.username,
@@ -131,7 +138,10 @@ export class UserController {
         description:
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
-    public async deleteUser(@Param('id') id: number): Promise<void> {
-        await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand(UuidUtility.generate(), id));
+    public async deleteUser(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
+        await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand(transactionId, id));
     }
 }

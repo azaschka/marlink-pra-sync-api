@@ -13,7 +13,8 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../../core/decorators';
 import { NonEmptyBodyPipe } from '../../../shared/pipes';
 import { UuidUtility } from '../../../shared/utilities';
 import {
@@ -37,7 +38,7 @@ import {
 import { ProtocolTunnelJump } from '../models';
 import { RetrieveProtocolTunnelJumpsQuery } from '../queries';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Jump Items')
 @Controller('jump-items/protocol-tunnel-jumps')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -50,11 +51,12 @@ export class ProtocolTunnelJumpController {
     @Get()
     @ApiOkResponse({ type: ProtocolTunnelJumpRetrievedDtoOutput, isArray: true })
     public async retrieveProtocolTunnelJumps(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Query() dtoInput: RetrieveProtocolTunnelJumpsDtoInput,
     ): Promise<ProtocolTunnelJumpRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveProtocolTunnelJumpsQuery, ProtocolTunnelJump[]>(
             new RetrieveProtocolTunnelJumpsQuery(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
@@ -72,11 +74,12 @@ export class ProtocolTunnelJumpController {
     @Post()
     @ApiCreatedResponse({ type: ProtocolTunnelJumpCreatedDtoOutput })
     public async createProtocolTunnelJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Body() dtoInput: CreateProtocolTunnelJumpDtoInput,
     ): Promise<ProtocolTunnelJumpCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateProtocolTunnelJumpCommand, ProtocolTunnelJump>(
             new CreateProtocolTunnelJumpCommand(
-                UuidUtility.generate(),
+                transactionId,
                 dtoInput.name,
                 dtoInput.jumpointId,
                 dtoInput.hostname,
@@ -102,12 +105,13 @@ export class ProtocolTunnelJumpController {
     @Patch(':id')
     @ApiOkResponse({ type: ProtocolTunnelJumpModifiedDtoOutput })
     public async modifyProtocolTunnelJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyProtocolTunnelJumpDtoInput,
     ): Promise<ProtocolTunnelJumpModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyProtocolTunnelJumpCommand, ProtocolTunnelJump>(
             new ModifyProtocolTunnelJumpCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.name,
                 dtoInput.jumpointId,
@@ -134,9 +138,12 @@ export class ProtocolTunnelJumpController {
     @Delete(':id')
     @ApiParam({ name: 'id', type: Number, required: true })
     @HttpCode(HttpStatus.NO_CONTENT)
-    public async deleteProtocolTunnelJump(@Param('id') id: number): Promise<void> {
+    public async deleteProtocolTunnelJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+    ): Promise<void> {
         await this.commandBus.execute<DeleteProtocolTunnelJumpCommand, void>(
-            new DeleteProtocolTunnelJumpCommand(UuidUtility.generate(), id),
+            new DeleteProtocolTunnelJumpCommand(transactionId, id),
         );
     }
 
@@ -145,12 +152,13 @@ export class ProtocolTunnelJumpController {
     @ApiOkResponse({ type: ProtocolTunnelJumpCopiedDtoOutput })
     @HttpCode(HttpStatus.OK)
     public async copyProtocolTunnelJump(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body() dtoInput: CopyProtocolTunnelJumpDtoInput,
     ): Promise<ProtocolTunnelJumpCopiedDtoOutput> {
         const result = await this.commandBus.execute<CopyProtocolTunnelJumpCommand, ProtocolTunnelJump>(
             new CopyProtocolTunnelJumpCommand(
-                UuidUtility.generate(),
+                transactionId,
                 id,
                 dtoInput.jumpGroupId,
                 dtoInput.jumpGroupType,

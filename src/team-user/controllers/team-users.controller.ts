@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import {
-    ApiBearerAuth,
     ApiCreatedResponse,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -9,13 +8,14 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { UuidUtility } from '../../shared/utilities';
 import { AddUserToTeamCommand, RemoveUserFromTeamCommand } from '../commands';
 import { AddUserToTeamDtoInput } from '../dtos/inputs';
 import { TeamUserAddedDtoOutput } from '../dtos/outputs';
 import { TeamUser } from '../models';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Teams')
 @Controller('teams')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -33,11 +33,12 @@ export class TeamUsersController {
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
     public async addUserToTeam(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body() dtoInput: AddUserToTeamDtoInput,
     ): Promise<TeamUserAddedDtoOutput> {
         const result = await this.commandBus.execute<AddUserToTeamCommand, TeamUser>(
-            new AddUserToTeamCommand(UuidUtility.generate(), id, dtoInput.userId, dtoInput.roleType),
+            new AddUserToTeamCommand(transactionId, id, dtoInput.userId, dtoInput.roleType),
         );
 
         return result;
@@ -53,7 +54,11 @@ export class TeamUsersController {
     @ApiNotFoundResponse({
         description: 'The specified resource was not found.',
     })
-    public async removeUserFromTeam(@Param('id') id: number, @Param('userId') userId: number): Promise<void> {
-        await this.commandBus.execute(new RemoveUserFromTeamCommand(UuidUtility.generate(), id, userId));
+    public async removeUserFromTeam(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+        @Param('userId') userId: number,
+    ): Promise<void> {
+        await this.commandBus.execute(new RemoveUserFromTeamCommand(transactionId, id, userId));
     }
 }

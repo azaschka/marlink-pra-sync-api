@@ -24,7 +24,7 @@ describe('TeamController', () => {
             const expectedResult = [] as Team[];
             const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.retrieveTeams({
+            const result = await controller.retrieveTeams(undefined, {
                 pageSize: 10,
                 pageNumber: 1,
                 name: 'team-1',
@@ -43,7 +43,7 @@ describe('TeamController', () => {
             const expectedResult = {} as Team;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.createTeam({
+            const result = await controller.createTeam(undefined, {
                 name: 'team-1',
                 codeName: 'team-code-1',
                 comments: 'team comments 1',
@@ -61,7 +61,7 @@ describe('TeamController', () => {
             const expectedResult = {} as Team;
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await controller.modifyTeam(1, {
+            const result = await controller.modifyTeam(undefined, 1, {
                 name: 'team-1',
                 codeName: 'team-code-1',
                 comments: 'team comments 1',
@@ -78,7 +78,7 @@ describe('TeamController', () => {
         it('should execute the command bus with the correct parameters', async () => {
             const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute');
 
-            await controller.deleteTeam(1);
+            await controller.deleteTeam(undefined, 1);
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(new DeleteTeamCommand('uuid-123', 1));
         });

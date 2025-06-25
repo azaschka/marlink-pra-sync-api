@@ -1,7 +1,6 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import {
-    ApiBearerAuth,
     ApiNoContentResponse,
     ApiNotFoundResponse,
     ApiOkResponse,
@@ -9,13 +8,14 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { UuidUtility } from '../../shared/utilities';
 import { AddJumpointToGroupPolicyCommand, RemoveJumpointFromGroupPolicyCommand } from '../commands';
 import { AddJumpointToGroupPolicyDtoInput } from '../dtos/inputs';
 import { GroupPolicyJumpointAddedDtoOutput } from '../dtos/outputs';
 import { GroupPolicyJumpoint } from '../models';
 
-@ApiBearerAuth()
+@ApiTransactionIdHeader()
 @ApiTags('Group Policies')
 @Controller('group-policies')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -34,11 +34,12 @@ export class GroupPolicyJumpointsController {
             'One or more request parameters are invalid. The body contains a general error message as well as a validation error dictionary.',
     })
     public async addJumpointToGroupPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Body() dtoInput: AddJumpointToGroupPolicyDtoInput,
     ): Promise<GroupPolicyJumpointAddedDtoOutput> {
         const result = await this.commandBus.execute<AddJumpointToGroupPolicyCommand, GroupPolicyJumpoint>(
-            new AddJumpointToGroupPolicyCommand(UuidUtility.generate(), id, dtoInput.jumpointId),
+            new AddJumpointToGroupPolicyCommand(transactionId, id, dtoInput.jumpointId),
         );
 
         return result;
@@ -51,9 +52,10 @@ export class GroupPolicyJumpointsController {
     @ApiNoContentResponse({ description: 'Indicates the Jumpoint was successfully removed.' })
     @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
     public async removeJumpointFromGroupPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @Param('id') id: number,
         @Param('jumpointId') jumpointId: number,
     ): Promise<void> {
-        await this.commandBus.execute(new RemoveJumpointFromGroupPolicyCommand(UuidUtility.generate(), id, jumpointId));
+        await this.commandBus.execute(new RemoveJumpointFromGroupPolicyCommand(transactionId, id, jumpointId));
     }
 }
