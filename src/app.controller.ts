@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 
 @Controller()
@@ -19,5 +19,10 @@ export class AppController {
         this.eventBus.subscribe((event) => {
             console.log(`\x1b[32mEvent received:\n${JSON.stringify(event, null, 2)}\x1b[0m`);
         });
+    }
+
+    @Get('ping')
+    public ping(): void {
+        return;
     }
 }

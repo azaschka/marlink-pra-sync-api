@@ -28,10 +28,10 @@
 |                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Add jumpoint                      | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Remove jumpoint                   | ✅                  | ✅                  | ✅             | ✅             |                                    |
-| Jump Policies                     | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
-|                                   | Delete                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
+| Jump Policies                     | Create                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 | Jump Groups                       | Create                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Retrieve                          | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
 |                                   | Modify                            | ⚠️                  | ✅                  | ✅             | ✅             | OpenAPI still to be improved       |
