@@ -26,7 +26,7 @@ export class ProtocolTunnelJumpEntity implements ProtocolTunnelJump {
     @Column({ name: 'tag', type: 'varchar', nullable: true })
     public tag?: string;
 
-    @Column({ name: 'comments', type: 'varchar', nullable: true })
+    @Column({ name: 'comments', type: 'text', nullable: true })
     public comments?: string;
 
     @Column({ name: 'jump_policy_id', type: 'int', nullable: true })
@@ -38,7 +38,7 @@ export class ProtocolTunnelJumpEntity implements ProtocolTunnelJump {
     @Column({ name: 'tunnel_listen_address', type: 'varchar', nullable: true })
     public tunnelListenAddress?: string;
 
-    @Column({ name: 'tunnel_definitions', type: 'varchar', nullable: true })
+    @Column({ name: 'tunnel_definitions', type: 'text', nullable: true })
     public tunnelDefinitions?: string;
 
     @Column({ name: 'tunnel_type', type: 'enum', enum: TunnelType, nullable: true })
@@ -50,10 +50,10 @@ export class ProtocolTunnelJumpEntity implements ProtocolTunnelJump {
     @Column({ name: 'database', type: 'varchar', nullable: true })
     public database?: string;
 
-    @Column({ name: 'url', type: 'varchar', nullable: true })
+    @Column({ name: 'url', type: 'text', nullable: true })
     public url?: string;
 
-    @Column({ name: 'ca_certificates', type: 'varchar', nullable: true })
+    @Column({ name: 'ca_certificates', type: 'text', nullable: true })
     public caCertificates?: string;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })

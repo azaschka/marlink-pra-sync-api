@@ -19,7 +19,7 @@ export class JumpPolicyEntity implements JumpPolicy {
     @Column({ name: 'code_name', type: 'varchar', nullable: true })
     public codeName?: string;
 
-    @Column({ name: 'description', type: 'varchar', nullable: true })
+    @Column({ name: 'description', type: 'text', nullable: true })
     public description?: string;
 
     @Column({ name: 'has_scheduled_access_restriction', type: 'boolean', nullable: true })

@@ -35,7 +35,7 @@ export class RemoteRdpEntity implements RemoteRdp {
     @Column({ name: 'tag', type: 'varchar', nullable: true })
     public tag?: string;
 
-    @Column({ name: 'comments', type: 'varchar', nullable: true })
+    @Column({ name: 'comments', type: 'text', nullable: true })
     public comments?: string;
 
     @Column({ name: 'rdp_username', type: 'varchar', nullable: true })
@@ -59,16 +59,16 @@ export class RemoteRdpEntity implements RemoteRdp {
     @Column({ name: 'secure_app_type', type: 'enum', enum: SecureAppType, nullable: true })
     public secureAppType?: SecureAppType;
 
-    @Column({ name: 'remote_app_name', type: 'varchar', nullable: true })
+    @Column({ name: 'remote_app_name', type: 'text', nullable: true })
     public remoteAppName?: string;
 
-    @Column({ name: 'remote_app_params', type: 'varchar', nullable: true })
+    @Column({ name: 'remote_app_params', type: 'text', nullable: true })
     public remoteAppParams?: string;
 
-    @Column({ name: 'remote_exe_path', type: 'varchar', nullable: true })
+    @Column({ name: 'remote_exe_path', type: 'text', nullable: true })
     public remoteExePath?: string;
 
-    @Column({ name: 'remote_exe_params', type: 'varchar', nullable: true })
+    @Column({ name: 'remote_exe_params', type: 'text', nullable: true })
     public remoteExeParams?: string;
 
     @Column({ name: 'target_system', type: 'varchar', nullable: true })

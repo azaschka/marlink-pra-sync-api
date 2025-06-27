@@ -25,7 +25,7 @@ export class LogEntity implements Log {
     @Column({ name: 'creation_date', type: 'timestamp' })
     public creationDate!: Date;
 
-    @Column({ name: 'payload', type: 'longtext' })
+    @Column({ name: 'payload', type: 'text' })
     public payload!: string;
 
     public static createWithoutId(

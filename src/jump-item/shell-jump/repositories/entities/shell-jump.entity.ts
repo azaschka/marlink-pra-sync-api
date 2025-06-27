@@ -38,7 +38,7 @@ export class ShellJumpEntity implements ShellJump {
     @Column({ name: 'tag', type: 'varchar', nullable: true })
     public tag?: string;
 
-    @Column({ name: 'comments', type: 'varchar', nullable: true })
+    @Column({ name: 'comments', type: 'text', nullable: true })
     public comments?: string;
 
     @Column({ name: 'jump_policy_id', type: 'int', nullable: true })

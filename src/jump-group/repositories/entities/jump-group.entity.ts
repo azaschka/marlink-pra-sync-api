@@ -13,7 +13,7 @@ export class JumpGroupEntity implements JumpGroup {
     @Column({ name: 'code_name', type: 'varchar', nullable: true })
     public codeName?: string;
 
-    @Column({ name: 'comments', type: 'varchar', nullable: true })
+    @Column({ name: 'comments', type: 'text', nullable: true })
     public comments?: string | null;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
