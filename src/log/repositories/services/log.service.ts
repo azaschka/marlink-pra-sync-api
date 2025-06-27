@@ -4,18 +4,23 @@ import { name as serviceName } from '../../../../package.json';
 import { BaseCommand } from '../../../core/commands';
 import { BaseEvent } from '../../../core/events';
 import { BaseQuery } from '../../../core/queries';
+import { SortOrderType } from '../../../shared/enums';
 import { DateUtility } from '../../../shared/utilities';
 import { LogActionType } from '../../enums';
 import { Log } from '../../models';
 import { LogEntity } from '../entities';
+import { LogFilterService } from './log-filter.service';
 import { LogRepositoryService } from './log-repository.service';
 
 @Injectable()
 export class LogService {
-    constructor(private readonly logRepositoryService: LogRepositoryService) {}
+    constructor(
+        private readonly logRepositoryService: LogRepositoryService,
+        private readonly logFilterService: LogFilterService,
+    ) {}
 
     public async logCommand(command: ICommand): Promise<void> {
-        const commandData = command as BaseCommand;
+        const commandData = this.logFilterService.filterCommand(command as BaseCommand);
 
         await this.logRepositoryService.create(
             LogEntity.createWithoutId(
@@ -67,12 +72,14 @@ export class LogService {
         pageNumber: number,
         creationDateFrom?: Date,
         creationDateTo?: Date,
+        sortOrderType?: SortOrderType,
     ): Promise<Log[]> {
         return await this.logRepositoryService.findByDateBetween(
             pageNumber,
             pageSize,
             creationDateFrom,
             creationDateTo,
+            sortOrderType,
         );
     }
 }

@@ -1,4 +1,4 @@
-import { DataSource, FindOptionsWhere } from 'typeorm';
+import { DataSource, FindOptionsOrder, FindOptionsWhere } from 'typeorm';
 
 export class BaseRepositoryService<T> {
     constructor(
@@ -62,6 +62,7 @@ export class BaseRepositoryService<T> {
         where: Pick<T, K> | FindOptionsWhere<T>,
         pageNumber: number | undefined,
         pageSize: number | undefined,
+        order?: FindOptionsOrder<() => T>,
     ): Promise<T[]> {
         const queryRunner = await this.createQueryRunnerAndConnect();
 
@@ -70,6 +71,7 @@ export class BaseRepositoryService<T> {
                 where: where,
                 skip: pageNumber && pageSize ? (pageNumber - 1) * pageSize : undefined,
                 take: pageSize,
+                order: order,
             });
 
             return entities as T[];

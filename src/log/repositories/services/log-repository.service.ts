@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Between, DataSource, FindOptionsWhere, LessThan, MoreThan } from 'typeorm';
 import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { SortOrderType } from '../../../shared/enums';
 import { LogEntity } from '../entities';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class LogRepositoryService extends BaseRepositoryService<LogEntity> {
         pageSize: number,
         creationDateFrom?: Date,
         creationDateTo?: Date,
+        sortOrderType?: SortOrderType,
     ): Promise<LogEntity[]> {
         const where: FindOptionsWhere<LogEntity> = {};
 
@@ -25,6 +27,15 @@ export class LogRepositoryService extends BaseRepositoryService<LogEntity> {
             where.creationDate = LessThan(creationDateTo);
         }
 
-        return await super.findBy(where, pageNumber, pageSize);
+        return await super.findBy(
+            where,
+            pageNumber,
+            pageSize,
+            sortOrderType
+                ? {
+                      creationDate: sortOrderType,
+                  }
+                : undefined,
+        );
     }
 }

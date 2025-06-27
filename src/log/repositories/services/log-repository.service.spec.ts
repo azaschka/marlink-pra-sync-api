@@ -1,5 +1,6 @@
 import { Between, DataSource, LessThan, MoreThan } from 'typeorm';
 import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { SortOrderType } from '../../../shared/enums';
 import { LogRepositoryService } from './log-repository.service';
 
 describe('LogRepositoryService', () => {
@@ -24,7 +25,13 @@ describe('LogRepositoryService', () => {
                 .spyOn(BaseRepositoryService.prototype, 'findBy')
                 .mockReturnValue(Promise.resolve([]));
 
-            await service.findByDateBetween(pageNumber, pageSize, creationDateFrom, creationDateTo);
+            await service.findByDateBetween(
+                pageNumber,
+                pageSize,
+                creationDateFrom,
+                creationDateTo,
+                SortOrderType.Descending,
+            );
 
             expect(baseRepositoryFindByMethod).toHaveBeenCalledWith(
                 {
@@ -32,6 +39,9 @@ describe('LogRepositoryService', () => {
                 },
                 pageNumber,
                 pageSize,
+                {
+                    creationDate: SortOrderType.Descending,
+                },
             );
         });
 
@@ -51,6 +61,7 @@ describe('LogRepositoryService', () => {
                 },
                 pageNumber,
                 pageSize,
+                undefined,
             );
         });
 
@@ -70,6 +81,7 @@ describe('LogRepositoryService', () => {
                 },
                 pageNumber,
                 pageSize,
+                undefined,
             );
         });
     });

@@ -36,6 +36,7 @@ export class LogController {
             dtoInput.pageNumber,
             dtoInput.creationDateFrom,
             dtoInput.creationDateTo,
+            dtoInput.sortOrderType,
         );
     }
 }

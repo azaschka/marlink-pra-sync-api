@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
+import { SortOrderType } from '../../../shared/enums';
 
 export class RetrieveLogsDtoInput {
     @ApiProperty({
@@ -42,4 +43,12 @@ export class RetrieveLogsDtoInput {
     @Type(() => Date)
     @IsOptional()
     public creationDateTo?: Date;
+
+    @ApiProperty({
+        required: false,
+        enum: SortOrderType,
+        default: SortOrderType.Descending,
+        description: 'The order in which to sort the logs.',
+    })
+    public sortOrderType?: SortOrderType = SortOrderType.Descending;
 }

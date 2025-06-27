@@ -1,4 +1,5 @@
 import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
+import { SortOrderType } from '../../shared/enums';
 import { Log } from '../models';
 import { LogService } from '../repositories/services/log.service';
 import { LogController } from './log.controller';
@@ -30,6 +31,7 @@ describe('LogController', () => {
                 pageNumber: 1,
                 creationDateFrom: new Date('2023-01-01T00:00:00Z'),
                 creationDateTo: new Date('2023-01-31T23:59:59Z'),
+                sortOrderType: SortOrderType.Descending,
             });
 
             expect(logServiceRetrieveLogsMethod).toHaveBeenCalledWith(
@@ -37,6 +39,7 @@ describe('LogController', () => {
                 1,
                 new Date('2023-01-01T00:00:00Z'),
                 new Date('2023-01-31T23:59:59Z'),
+                SortOrderType.Descending,
             );
             expect(result).toBe(expectedResult);
         });

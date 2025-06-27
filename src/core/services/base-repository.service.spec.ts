@@ -196,10 +196,16 @@ describe('BaseRepositoryService', () => {
                 input: {
                     pageNumber: undefined,
                     pageSize: undefined,
+                    order: {
+                        id: 'ASC',
+                    },
                 },
                 expected: {
                     skip: undefined,
                     take: undefined,
+                    order: {
+                        id: 'ASC',
+                    },
                 },
             },
         ])('should connect to db, find the entities and return the value', async (param) => {
@@ -214,13 +220,19 @@ describe('BaseRepositoryService', () => {
             } = spyDataSource(dataSource);
             dataSourceQueryRunnerManagerFindMethod.mockResolvedValue(dbEntities);
 
-            const result = await service.findBy({ id: 1 }, param.input.pageNumber, param.input.pageSize);
+            const result = await service.findBy(
+                { id: 1 },
+                param.input.pageNumber,
+                param.input.pageSize,
+                param.input.order,
+            );
 
             expect(dataSourceQueryRunnerConnectMethod).toHaveBeenCalledTimes(1);
             expect(dataSourceQueryRunnerManagerFindMethod).toHaveBeenCalledWith(MockEntity, {
                 where: { id: 1 },
                 skip: param.expected.skip,
                 take: param.expected.take,
+                order: param.expected.order,
             });
             expect(dataSourceQueryRunnerReleaseMethod).toHaveBeenCalledTimes(1);
             expect(result).toBe(dbEntities);
