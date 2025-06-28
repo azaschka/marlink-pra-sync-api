@@ -1,13 +1,12 @@
-import { Expose, Type } from 'class-transformer';
-import { ValidateNested } from 'class-validator';
+import { Expose } from 'class-transformer';
 import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
 import { JumpClientInstallerKeyInfoRetrievedDtoOutput } from './jump-client-installer-key-info-retrieved.dto-output';
 
 export class JumpClientInstallerRetrievedDtoOutput {
-    public id?: number;
+    public id!: number;
 
     @Expose({ name: 'jump_group_id' })
-    public jumpGroupId?: number;
+    public jumpGroupId!: number;
 
     @Expose({ name: 'jump_group_type' })
     public jumpGroupType?: JumpClientGroupType;
@@ -61,8 +60,6 @@ export class JumpClientInstallerRetrievedDtoOutput {
     public installerId?: string;
 
     @Expose({ name: 'key_info' })
-    @ValidateNested()
-    @Type(() => JumpClientInstallerKeyInfoRetrievedDtoOutput)
     public keyInfo?: JumpClientInstallerKeyInfoRetrievedDtoOutput;
 
     @Expose({ name: 'jumpoint_proxy' })

@@ -104,6 +104,10 @@ describe('AppConfigService', () => {
                         },
                         jumpClient: {
                             path: 'api-path-jump-client-1',
+                            copy: 'api-path-jump-client-copy-1',
+                            installer: {
+                                path: 'api-path-jump-client-installer-1',
+                            },
                         },
                         groupPolicy: {
                             path: 'api-path-group-policy-1',
@@ -171,6 +175,10 @@ describe('AppConfigService', () => {
                         },
                         jumpClient: {
                             path: 'api-path-jump-client-1',
+                            copy: 'api-path-jump-client-copy-1',
+                            installer: {
+                                path: 'api-path-jump-client-installer-1',
+                            },
                         },
                         groupPolicy: {
                             path: 'api-path-group-policy-1',
@@ -241,6 +249,10 @@ describe('AppConfigService', () => {
                         },
                         jumpClient: {
                             path: 'unknown',
+                            copy: 'unknown',
+                            installer: {
+                                path: 'unknown',
+                            },
                         },
                         groupPolicy: {
                             path: 'unknown',
@@ -311,6 +323,10 @@ describe('AppConfigService', () => {
                         return input.api?.user.groupPolicies.change;
                     case 'BEYONDTRUST_API_JUMP_CLIENT_PATH':
                         return input.api?.jumpClient.path;
+                    case 'BEYONDTRUST_API_COPY_JUMP_CLIENT':
+                        return input.api?.jumpClient.copy;
+                    case 'BEYONDTRUST_API_JUMP_CLIENT_INSTALLER_PATH':
+                        return input.api?.jumpClient.installer.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_PATH':
                         return input.api?.groupPolicy.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH':
@@ -371,6 +387,10 @@ describe('AppConfigService', () => {
                     },
                     jumpClient: {
                         path: expected.api.jumpClient?.path,
+                        copy: expected.api.jumpClient?.copy,
+                        installer: {
+                            path: expected.api.jumpClient?.installer.path,
+                        },
                     },
                     groupPolicy: {
                         path: expected.api.groupPolicy?.path,

@@ -1,14 +1,15 @@
 import { Expose } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { JumpClientEndpointAgreementPolicyType, JumpClientGroupType } from '../../enums';
 
 export class ModifyJumpClientDtoInput {
     @Expose({ name: 'jump_group_id' })
     @IsInt()
-    @IsNotEmpty()
-    public jumpGroupId!: number;
+    @IsOptional()
+    public jumpGroupId?: number;
 
     @Expose({ name: 'jump_group_type' })
+    @IsEnum(JumpClientGroupType)
     @IsOptional()
     public jumpGroupType?: JumpClientGroupType;
 
@@ -40,6 +41,32 @@ export class ModifyJumpClientDtoInput {
     public maxOfflineMinutes?: number;
 
     @Expose({ name: 'endpoint_agreement_policy' })
+    @IsEnum(JumpClientEndpointAgreementPolicyType)
     @IsOptional()
     public endpointAgreementPolicy?: JumpClientEndpointAgreementPolicyType;
+
+    public static create(
+        jumpGroupId?: number,
+        jumpGroupType?: JumpClientGroupType,
+        name?: string,
+        tag?: string,
+        comments?: string,
+        jumpPolicyId?: number | null,
+        sessionPolicyId?: number | null,
+        maxOfflineMinutes?: number,
+        endpointAgreementPolicy?: JumpClientEndpointAgreementPolicyType,
+    ): ModifyJumpClientDtoInput {
+        const dto = new ModifyJumpClientDtoInput();
+        dto.jumpGroupId = jumpGroupId;
+        dto.jumpGroupType = jumpGroupType;
+        dto.name = name;
+        dto.tag = tag;
+        dto.comments = comments;
+        dto.jumpPolicyId = jumpPolicyId;
+        dto.sessionPolicyId = sessionPolicyId;
+        dto.maxOfflineMinutes = maxOfflineMinutes;
+        dto.endpointAgreementPolicy = endpointAgreementPolicy;
+
+        return dto;
+    }
 }

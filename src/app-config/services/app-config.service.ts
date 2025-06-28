@@ -65,6 +65,14 @@ export class AppConfigService {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    copy:
+                        this.configService.get<string>('BEYONDTRUST_API_COPY_JUMP_CLIENT') ??
+                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    installer: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_INSTALLER_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
                 },
                 groupPolicy: {
                     path:

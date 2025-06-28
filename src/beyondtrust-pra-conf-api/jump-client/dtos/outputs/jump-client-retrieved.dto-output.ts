@@ -8,10 +8,10 @@ import {
 } from '../../enums';
 
 export class JumpClientRetrievedDtoOutput {
+    public id!: number;
+
     @Expose({ name: 'jump_group_id' })
     public jumpGroupId!: number;
-
-    public id?: number;
 
     @Expose({ name: 'jump_group_type' })
     public jumpGroupType?: JumpClientGroupType;

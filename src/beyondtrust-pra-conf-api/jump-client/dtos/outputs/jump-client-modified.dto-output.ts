@@ -8,10 +8,10 @@ import {
 } from '../../enums';
 
 export class JumpClientModifiedDtoOutput {
+    public id!: number;
+
     @Expose({ name: 'jump_group_id' })
     public jumpGroupId!: number;
-
-    public id?: number;
 
     @Expose({ name: 'jump_group_type' })
     public jumpGroupType?: JumpClientGroupType;
@@ -76,4 +76,7 @@ export class JumpClientModifiedDtoOutput {
 
     @Expose({ name: 'endpoint_agreement_policy' })
     public endpointAgreementPolicy?: JumpClientEndpointAgreementPolicyType;
+
+    @Expose({ name: 'jumpoint_proxy' })
+    public jumpointProxy?: string | null;
 }

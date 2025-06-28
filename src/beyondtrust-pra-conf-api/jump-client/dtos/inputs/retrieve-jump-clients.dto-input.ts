@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { PaginationDtoInput } from '../../../../shared/dtos/inputs';
 import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
 
@@ -26,6 +26,7 @@ export class RetrieveJumpClientsDtoInput extends PaginationDtoInput {
     public jumpGroupId?: number;
 
     @Expose({ name: 'jump_group_type' })
+    @IsEnum(JumpClientGroupType)
     @IsOptional()
     public jumpGroupType?: JumpClientGroupType;
 
@@ -45,6 +46,7 @@ export class RetrieveJumpClientsDtoInput extends PaginationDtoInput {
     public privateIp?: string;
 
     @Expose({ name: 'connection_type' })
+    @IsEnum(JumpClientConnectionType)
     @IsOptional()
     public connectionType?: JumpClientConnectionType;
 
