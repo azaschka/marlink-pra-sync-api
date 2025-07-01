@@ -37,6 +37,7 @@ export class RetrieveProtocolTunnelJumpsDtoInput {
     public hostname?: string;
 
     @ApiProperty({ required: false, type: Number })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpGroupId?: number;
@@ -47,6 +48,7 @@ export class RetrieveProtocolTunnelJumpsDtoInput {
     public jumpGroupType?: JumpGroupType;
 
     @ApiProperty({ required: false, type: Number })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpointId?: number;

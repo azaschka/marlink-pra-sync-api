@@ -37,6 +37,7 @@ export class RetrieveShellJumpsDtoInput {
     public hostname?: string;
 
     @ApiProperty({ required: false, type: Number })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpGroupId?: number;
@@ -47,6 +48,7 @@ export class RetrieveShellJumpsDtoInput {
     public jumpGroupType?: JumpGroupType;
 
     @ApiProperty({ required: false, type: Number })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpointId?: number;

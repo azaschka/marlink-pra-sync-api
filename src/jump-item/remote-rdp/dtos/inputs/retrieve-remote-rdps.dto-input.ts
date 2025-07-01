@@ -37,6 +37,7 @@ export class RetrieveRemoteRdpsDtoInput {
     public hostname?: string;
 
     @ApiProperty({ required: false, type: Number })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpGroupId?: number;
@@ -47,11 +48,13 @@ export class RetrieveRemoteRdpsDtoInput {
     public jumpGroupType?: JumpGroupType;
 
     @ApiProperty({ required: false, type: Number })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpointId?: number;
 
     @ApiProperty({ required: false, type: Number })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public endpointId?: number;

@@ -55,6 +55,7 @@ export class RetrieveJumpClientsDtoInput {
     public tag?: string;
 
     @ApiProperty({ required: false, type: Number, description: 'Filters Jump Clients by the given jump group id.' })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpGroupId?: number;

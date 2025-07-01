@@ -59,6 +59,7 @@ export class RetrieveJumpClientInstallersDtoInput {
         type: Number,
         description: 'Filters Jump Clients installers by the given jump group id.',
     })
+    @Type(() => Number)
     @IsInt()
     @IsOptional()
     public jumpGroupId?: number;
