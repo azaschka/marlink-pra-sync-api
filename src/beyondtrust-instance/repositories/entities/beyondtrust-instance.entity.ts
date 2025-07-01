@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { BeyondtrustInstance } from '../../models';
 
 @Entity({ name: 'beyondtrust_instances' })
@@ -20,6 +20,12 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
 
     @Column({ name: 'api_base_url', type: 'varchar' })
     public apiBaseUrl!: string;
+
+    @CreateDateColumn({ name: 'creation_date', type: 'timestamp' })
+    public creationDate!: Date;
+
+    @UpdateDateColumn({ name: 'last_modification_date', type: 'timestamp', nullable: true })
+    public lastModificationDate?: Date;
 
     public static create(
         id: number,

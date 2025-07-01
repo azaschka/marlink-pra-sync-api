@@ -5,4 +5,6 @@ export interface BeyondtrustInstance {
     authClientSecret: string;
     oauth2TokenUrl: string;
     apiBaseUrl: string;
+    creationDate: Date;
+    lastModificationDate?: Date;
 }

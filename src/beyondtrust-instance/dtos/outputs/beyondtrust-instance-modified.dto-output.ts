@@ -50,4 +50,18 @@ export class BeyondtrustInstanceModifiedDtoOutput implements BeyondtrustInstance
     @IsNotEmpty()
     @IsString()
     public apiBaseUrl!: string;
+
+    @ApiProperty({
+        required: true,
+        type: Date,
+        description: 'The date and time when this BeyondTrust instance was created.',
+    })
+    public creationDate!: Date;
+
+    @ApiProperty({
+        required: false,
+        type: Date,
+        description: 'The date and time when this BeyondTrust instance was last modified.',
+    })
+    public lastModificationDate?: Date;
 }

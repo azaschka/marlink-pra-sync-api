@@ -23,6 +23,13 @@
 |                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Add user                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Delete user                       | ✅                  | ✅                  | ✅             | ✅             |                                    |
+| Jump Client                       | Copy                              | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Create installer                  | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Delete installer                  | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Retrieve installer                | ✅                  | ✅                  | ✅             | ✅             |                                    |
 | Group Policies                    | Create                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Retrieve                          | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Modify                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
@@ -68,6 +75,8 @@
 |                                   | Delete                            | ✅                  | ✅                  | ✅             | ✅             |                                    |
 | Sync (job)                        | Users                             | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Teams                             | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Jump client                       | ✅                  | ✅                  | ✅             | ✅             |                                    |
+|                                   | Jump client installer             | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Group policies                    | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Jump policies                     | ✅                  | ✅                  | ✅             | ✅             |                                    |
 |                                   | Jump groups                       | ✅                  | ✅                  | ✅             | ✅             |                                    |
