@@ -1,9 +1,10 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AxiosError, HttpStatusCode } from 'axios';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
 import { catchError, defer, firstValueFrom, map, retry, switchMap, timer } from 'rxjs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { ErrorProcessorUtility } from '../../../shared/utilities/error-processor.utility';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
 
 @Injectable()
@@ -64,7 +65,7 @@ export class HttpClientService {
                 map((response) => plainToInstance(cls, response.data)),
                 catchError((error) => {
                     // Rethrow the error as a nestjs HttpException
-                    throw this.composeError(error);
+                    throw ErrorProcessorUtility.composeError(error);
                 }),
             ),
         );
@@ -110,7 +111,7 @@ export class HttpClientService {
                 map((response) => plainToInstance(cls, response.data)),
                 catchError((error) => {
                     // Rethrow the error as a nestjs HttpException
-                    throw this.composeError(error);
+                    throw ErrorProcessorUtility.composeError(error);
                 }),
             ),
         );
@@ -156,7 +157,7 @@ export class HttpClientService {
                 map((response) => plainToInstance(cls, response.data)),
                 catchError((error) => {
                     // Rethrow the error as a nestjs HttpException
-                    throw this.composeError(error);
+                    throw ErrorProcessorUtility.composeError(error);
                 }),
             ),
         );
@@ -204,7 +205,7 @@ export class HttpClientService {
                 }),
                 catchError((error) => {
                     // Rethrow the error as a nestjs HttpException
-                    throw this.composeError(error);
+                    throw ErrorProcessorUtility.composeError(error);
                 }),
             ),
         );
@@ -214,16 +215,5 @@ export class HttpClientService {
         const authToken = await this.authTokenService.getAuthToken();
 
         return `Bearer ${authToken.accessToken}`;
-    }
-
-    private composeError(error: unknown) {
-        if (error instanceof AxiosError) {
-            return new HttpException(
-                error.response?.data ? (error.response?.data as Record<string, unknown>) : error.message,
-                error.response?.status || HttpStatusCode.InternalServerError,
-            );
-        }
-
-        return new HttpException(JSON.stringify(error), HttpStatusCode.InternalServerError);
     }
 }
