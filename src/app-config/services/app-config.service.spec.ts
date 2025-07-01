@@ -61,8 +61,8 @@ describe('AppConfigService', () => {
             {
                 input: {},
                 expected: {
-                    diskStorageUsageThresholdInPercent: 0,
-                    memoryHeapUsageThresholdInMB: 0,
+                    diskStorageUsageThresholdInPercent: 80,
+                    memoryHeapUsageThresholdInMB: 256,
                 },
             },
         ])('should return as expected', ({ input, expected }) => {

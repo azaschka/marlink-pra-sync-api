@@ -7,6 +7,8 @@ export class AppConfigService {
     private static readonly DEFAULT_UNDEFINED_STRING = 'unknown';
     private static readonly DEFAULT_UNDEFINED_NUMBER = 0;
     private static readonly DEFAULT_PORT_NUMBER = 3000;
+    private static readonly DEFAULT_HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT = 80;
+    private static readonly DEFAULT_HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 256;
     private static readonly DEFAULT_SYNC_CRON_JOB_TIMEZONE = 'Europe/Berlin';
     private static readonly DEFAULT_SYNC_CRON_JOB_EXPRESSION = '0 0 * * *'; // Every day at midnight
 
@@ -24,10 +26,10 @@ export class AppConfigService {
         return {
             diskStorageUsageThresholdInPercent:
                 this.configService.get<number>('HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT') ??
-                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+                AppConfigService.DEFAULT_HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT,
             memoryHeapUsageThresholdInMB:
                 this.configService.get<number>('HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB') ??
-                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+                AppConfigService.DEFAULT_HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB,
         };
     }
 
