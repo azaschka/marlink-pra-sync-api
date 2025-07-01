@@ -50,6 +50,46 @@ describe('SyncController', () => {
         });
     });
 
+    describe('syncJumpClients', () => {
+        it('should return sync result for jump clients', async () => {
+            const expectedResult = {
+                createdJumpClientIds: ['jumpClient1'],
+                updatedJumpClientIds: ['jumpClient2'],
+                deletedJumpClientIds: ['jumpClient3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpClients();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdJumpClientIds,
+                updatedIds: expectedResult.updatedJumpClientIds,
+                deletedIds: expectedResult.deletedJumpClientIds,
+            });
+        });
+    });
+
+    describe('syncJumpClientInstallers', () => {
+        it('should return sync result for jump client installers', async () => {
+            const expectedResult = {
+                createdJumpClientInstallerIds: ['installer1'],
+                updatedJumpClientInstallerIds: ['installer2'],
+                deletedJumpClientInstallerIds: ['installer3'],
+            };
+
+            commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
+
+            const result = await controller.syncJumpClientInstallers();
+
+            expect(result).toEqual({
+                createdIds: expectedResult.createdJumpClientInstallerIds,
+                updatedIds: expectedResult.updatedJumpClientInstallerIds,
+                deletedIds: expectedResult.deletedJumpClientInstallerIds,
+            });
+        });
+    });
+
     describe('syncGroupPolicies', () => {
         it('should return sync result for group policies', async () => {
             const expectedResult = {

@@ -22,7 +22,7 @@ describe('SyncJobController', () => {
 
         controller.onModuleInit();
 
-        expect(schedulerRegistryAddCronJob).toHaveBeenCalledTimes(11);
+        expect(schedulerRegistryAddCronJob).toHaveBeenCalledTimes(13);
     });
 });
 
@@ -38,6 +38,8 @@ function mockAppConfigService() {
         sync: {
             userCronJobExpression: '0 * * * *',
             teamCronJobExpression: '1 * * * *',
+            jumpClientCronJobExpression: '2 * * * *',
+            jumpClientInstallerCronJobExpression: '1 * * * *',
             groupPolicyCronJobExpression: '2 * * * *',
             jumpGroupCronJobExpression: '3 * * * *',
             jumpPolicyCronJobExpression: '4 * * * *',
@@ -60,6 +62,8 @@ function mockSyncController() {
     const syncController = {} as SyncController;
     syncController.syncUsers = jest.fn();
     syncController.syncTeams = jest.fn();
+    syncController.syncJumpClients = jest.fn();
+    syncController.syncJumpClientInstallers = jest.fn();
     syncController.syncGroupPolicies = jest.fn();
     syncController.syncJumpGroups = jest.fn();
     syncController.syncJumpPolicies = jest.fn();

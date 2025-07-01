@@ -3,6 +3,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
 import { GroupPoliciesSyncResult } from '../../group-policy/models';
+import { SyncJumpClientInstallersCommand, SyncJumpClientsCommand } from '../../jump-client/commands';
+import { JumpClientInstallersSyncResult, JumpClientsSyncResult } from '../../jump-client/models';
 import { SyncJumpGroupsCommand } from '../../jump-group/commands';
 import { JumpGroupsSyncResult } from '../../jump-group/models';
 import { SyncProtocolTunnelJumpsCommand } from '../../jump-item/protocol-tunnel-jump/commands';
@@ -58,6 +60,36 @@ export class SyncController {
             createdIds: result.createdTeamIds,
             updatedIds: result.updatedTeamIds,
             deletedIds: result.deletedTeamIds,
+        };
+    }
+
+    @Post('jump-clients')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpClients(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncJumpClientsCommand, JumpClientsSyncResult>(
+            new SyncJumpClientsCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdJumpClientIds,
+            updatedIds: result.updatedJumpClientIds,
+            deletedIds: result.deletedJumpClientIds,
+        };
+    }
+
+    @Post('jump-clients/installers')
+    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @HttpCode(HttpStatus.OK)
+    public async syncJumpClientInstallers(): Promise<SyncResultDtoOutput> {
+        const result = await this.commandBus.execute<SyncJumpClientInstallersCommand, JumpClientInstallersSyncResult>(
+            new SyncJumpClientInstallersCommand(UuidUtility.generate()),
+        );
+
+        return {
+            createdIds: result.createdJumpClientInstallerIds,
+            updatedIds: result.updatedJumpClientInstallerIds,
+            deletedIds: result.deletedJumpClientInstallerIds,
         };
     }
 

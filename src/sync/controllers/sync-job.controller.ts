@@ -25,6 +25,16 @@ export class SyncJobController implements OnModuleInit {
                 func: this.syncController.syncTeams.bind(this.syncController),
             },
             {
+                name: 'syncJumpClients',
+                cronExpression: this.appConfigService.sync.jumpClientCronJobExpression,
+                func: this.syncController.syncJumpClients.bind(this.syncController),
+            },
+            {
+                name: 'syncJumpClientInstallers',
+                cronExpression: this.appConfigService.sync.jumpClientInstallerCronJobExpression,
+                func: this.syncController.syncJumpClientInstallers.bind(this.syncController),
+            },
+            {
                 name: 'syncGroupPolicies',
                 cronExpression: this.appConfigService.sync.groupPolicyCronJobExpression,
                 func: this.syncController.syncGroupPolicies.bind(this.syncController),

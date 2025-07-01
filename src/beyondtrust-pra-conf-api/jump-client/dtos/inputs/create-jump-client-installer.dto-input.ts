@@ -91,7 +91,7 @@ export class CreateJumpClientInstallerDtoInput {
     @IsOptional()
     @IsString()
     @Expose({ name: 'jumpoint_proxy' })
-    public jumpointProxy?: string;
+    public jumpointProxy?: string | null;
 
     public static create(
         jumpGroupId: number,
@@ -111,7 +111,7 @@ export class CreateJumpClientInstallerDtoInput {
         allowOverrideTag?: boolean,
         allowOverrideComments?: boolean,
         allowOverrideSessionPolicy?: boolean,
-        jumpointProxy?: string,
+        jumpointProxy?: string | null,
     ) {
         const dto = new CreateJumpClientInstallerDtoInput();
         dto.jumpGroupId = jumpGroupId;

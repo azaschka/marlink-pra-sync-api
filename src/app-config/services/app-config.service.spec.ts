@@ -530,6 +530,8 @@ describe('AppConfigService', () => {
                     cronJobTimezone: 'Europe/Berlin',
                     userCronJobExpression: '0 10 * * *',
                     teamCronJobExpression: '0 10 * * *',
+                    jumpClientCronJobExpression: '0 10 * * *',
+                    jumpClientInstallerCronJobExpression: '0 10 * * *',
                     groupPolicyCronJobExpression: '0 10 * * *',
                     jumpPolicyCronJobExpression: '0 10 * * *',
                     jumpGroupCronJobExpression: '0 10 * * *',
@@ -547,6 +549,8 @@ describe('AppConfigService', () => {
                     cronJobTimezone: 'Europe/Berlin',
                     userCronJobExpression: '0 10 * * *',
                     teamCronJobExpression: '0 10 * * *',
+                    jumpClientCronJobExpression: '0 10 * * *',
+                    jumpClientInstallerCronJobExpression: '0 10 * * *',
                     groupPolicyCronJobExpression: '0 10 * * *',
                     jumpPolicyCronJobExpression: '0 10 * * *',
                     jumpGroupCronJobExpression: '0 10 * * *',
@@ -567,6 +571,8 @@ describe('AppConfigService', () => {
                     cronJobTimezone: 'Europe/Berlin',
                     userCronJobExpression: '0 0 * * *',
                     teamCronJobExpression: '0 0 * * *',
+                    jumpClientCronJobExpression: '0 0 * * *',
+                    jumpClientInstallerCronJobExpression: '0 0 * * *',
                     groupPolicyCronJobExpression: '0 0 * * *',
                     jumpPolicyCronJobExpression: '0 0 * * *',
                     jumpGroupCronJobExpression: '0 0 * * *',
@@ -593,6 +599,12 @@ describe('AppConfigService', () => {
                 }
                 if (key === 'SYNC_TEAM_CRON_JOB_EXPRESSION') {
                     return input.teamCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_CLIENT_CRON_JOB_EXPRESSION') {
+                    return input.jumpClientCronJobExpression;
+                }
+                if (key === 'SYNC_JUMP_CLIENT_INSTALLER_CRON_JOB_EXPRESSION') {
+                    return input.jumpClientInstallerCronJobExpression;
                 }
                 if (key === 'SYNC_GROUP_POLICY_CRON_JOB_EXPRESSION') {
                     return input.groupPolicyCronJobExpression;
@@ -629,6 +641,8 @@ describe('AppConfigService', () => {
                 cronJobTimezone: expected.cronJobTimezone,
                 userCronJobExpression: expected.userCronJobExpression,
                 teamCronJobExpression: expected.teamCronJobExpression,
+                jumpClientCronJobExpression: expected.jumpClientCronJobExpression,
+                jumpClientInstallerCronJobExpression: expected.jumpClientInstallerCronJobExpression,
                 groupPolicyCronJobExpression: expected.groupPolicyCronJobExpression,
                 jumpPolicyCronJobExpression: expected.jumpPolicyCronJobExpression,
                 jumpGroupCronJobExpression: expected.jumpGroupCronJobExpression,

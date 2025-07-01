@@ -22,6 +22,6 @@ export class CreateJumpClientInstallerCommand {
         public readonly allowOverrideTag?: boolean,
         public readonly allowOverrideComments?: boolean,
         public readonly allowOverrideSessionPolicy?: boolean,
-        public readonly jumpointProxy?: string,
+        public readonly jumpointProxy?: string | null,
     ) {}
 }

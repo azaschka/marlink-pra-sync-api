@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
-import { JumpClientInstallerKeyInfoRetrievedDtoOutput } from './jump-client-installer-key-info-retrieved.dto-output';
+import { JumpClientInstallerKeyInfoDtoOutput } from './jump-client-installer-key-info.dto-output';
 
 export class JumpClientInstallerCreatedDtoOutput {
     public id!: number;
@@ -60,8 +60,8 @@ export class JumpClientInstallerCreatedDtoOutput {
     public installerId?: string;
 
     @Expose({ name: 'key_info' })
-    public keyInfo?: JumpClientInstallerKeyInfoRetrievedDtoOutput;
+    public keyInfo?: JumpClientInstallerKeyInfoDtoOutput;
 
     @Expose({ name: 'jumpoint_proxy' })
-    public jumpointProxy?: string;
+    public jumpointProxy?: string | null;
 }

@@ -1,5 +1,12 @@
+import { Expose } from 'class-transformer';
+
 export class JumpClientCopiedDtoOutput {
-    public action?: string;
-    public success?: string;
-    public destId?: number;
+    @Expose({ name: 'action' })
+    public action!: string;
+
+    @Expose({ name: 'success' })
+    public success!: string;
+
+    @Expose({ name: 'destId' })
+    public destId!: number;
 }

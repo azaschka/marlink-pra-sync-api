@@ -191,6 +191,12 @@ export class AppConfigService {
             teamCronJobExpression:
                 this.configService.get<string>('SYNC_TEAM_CRON_JOB_EXPRESSION') ??
                 AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            jumpClientCronJobExpression:
+                this.configService.get<string>('SYNC_JUMP_CLIENT_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+            jumpClientInstallerCronJobExpression:
+                this.configService.get<string>('SYNC_JUMP_CLIENT_INSTALLER_CRON_JOB_EXPRESSION') ??
+                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
             groupPolicyCronJobExpression:
                 this.configService.get<string>('SYNC_GROUP_POLICY_CRON_JOB_EXPRESSION') ??
                 AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
