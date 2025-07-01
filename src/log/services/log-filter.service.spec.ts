@@ -22,12 +22,12 @@ describe('LogFilterService', () => {
             new BTModifyUserCommand('transaction-4', 123, 'display-name', 'username', 'password123'),
         ])('should return as expected', (command) => {
             const expectedResult = { transactionId: 'transaction-123' } as BaseCommand;
-            jest.spyOn(ObjectUtility, 'stripProperty').mockReturnValue(expectedResult);
+            jest.spyOn(ObjectUtility, 'stripProperties').mockReturnValue(expectedResult);
 
             const filteredCommand = logFilterService.filterCommand(command);
 
             expect(filteredCommand).toBe(expectedResult);
-            expect(ObjectUtility.stripProperty).toHaveBeenCalledWith(command, 'password');
+            expect(ObjectUtility.stripProperties).toHaveBeenCalledWith(command, 'password');
         });
     });
 });

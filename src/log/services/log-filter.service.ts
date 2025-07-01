@@ -16,7 +16,7 @@ export class LogFilterService {
             command instanceof ModifyUserCommand ||
             command instanceof BTModifyUserCommand
         ) {
-            return ObjectUtility.stripProperty(command, 'password');
+            return ObjectUtility.stripProperties(command, 'password');
         }
 
         return command;
