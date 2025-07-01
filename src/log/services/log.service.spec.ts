@@ -1,16 +1,16 @@
-import { BaseCommand } from '../../../core/commands';
-import { BaseEvent } from '../../../core/events';
-import { BaseQuery } from '../../../core/queries';
-import { SortOrderType } from '../../../shared/enums';
-import { DateUtility } from '../../../shared/utilities';
-import { LogActionType } from '../../enums';
-import { LogEntity } from '../entities';
-import { LogFilterService } from './log-filter.service';
-import { LogRepositoryService } from './log-repository.service';
+import { BaseCommand } from '../../core/commands';
+import { BaseEvent } from '../../core/events';
+import { BaseQuery } from '../../core/queries';
+import { SortOrderType } from '../../shared/enums';
+import { DateUtility } from '../../shared/utilities';
+import { LogActionType } from '../enums';
+import { LogEntity } from '../repositories/entities';
+import { LogRepositoryService } from '../repositories/services/log-repository.service';
+import { LogFilterService } from '../services/log-filter.service';
 import { LogService } from './log.service';
 
 const mockServiceName = 'test-service';
-jest.mock('../../../../package.json', () => ({
+jest.mock('../../../package.json', () => ({
     name: 'test-service',
 }));
 

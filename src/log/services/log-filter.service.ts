@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import {
     CreateUserCommand as BTCreateUserCommand,
     ModifyUserCommand as BTModifyUserCommand,
-} from '../../../beyondtrust-pra-conf-api/user/commands';
-import { BaseCommand } from '../../../core/commands';
-import { ObjectUtility } from '../../../shared/utilities';
-import { CreateUserCommand, ModifyUserCommand } from '../../../user/commands';
+} from '../../beyondtrust-pra-conf-api/user/commands';
+import { BaseCommand } from '../../core/commands';
+import { ObjectUtility } from '../../shared/utilities';
+import { CreateUserCommand, ModifyUserCommand } from '../../user/commands';
 
 @Injectable()
 export class LogFilterService {
