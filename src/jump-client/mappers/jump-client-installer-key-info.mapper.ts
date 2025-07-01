@@ -10,10 +10,11 @@ export function mapFromBTJumpClientInstallerKeyInfo(
     const btKeyInfoPlatformTypes = Object.keys(btKeyInfo) as (keyof JumpClientInstallerKeyInfoDtoOutput)[];
 
     for (const btKeyInfoPlatformType of btKeyInfoPlatformTypes) {
-        if (
-            btKeyInfo[btKeyInfoPlatformType] &&
-            Object.values(JumpClientInstallerPlatformType).includes(btKeyInfoPlatformType)
-        ) {
+        if (!Object.values(JumpClientInstallerPlatformType).includes(btKeyInfoPlatformType)) {
+            throw new Error(`Unknown BTJumpClientInstallerPlatformType: ${btKeyInfoPlatformType}`);
+        }
+
+        if (btKeyInfo[btKeyInfoPlatformType]) {
             keyInfo.push({
                 platformType: btKeyInfoPlatformType,
                 encodedInfo: btKeyInfo[btKeyInfoPlatformType].encodedInfo,

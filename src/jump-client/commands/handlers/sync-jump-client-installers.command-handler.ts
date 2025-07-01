@@ -1,7 +1,10 @@
 import { CommandHandler, EventBus, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { JumpClientInstallerRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
-import { RetrieveJumpClientInstallersQuery } from '../../../beyondtrust-pra-conf-api/jump-client/queries';
+import {
+    RetrieveJumpClientInstallerByIdQuery,
+    RetrieveJumpClientInstallersQuery,
+} from '../../../beyondtrust-pra-conf-api/jump-client/queries';
 import { DateUtility, ErrorProcessorUtility, ObjectUtility } from '../../../shared/utilities';
 import { JumpClientInstallersSyncedEvent, JumpClientInstallersSyncFailedEvent } from '../../events';
 import {
@@ -74,6 +77,16 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
             RetrieveJumpClientInstallersQuery,
             JumpClientInstallerRetrievedDtoOutput[]
         >(new RetrieveJumpClientInstallersQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber));
+
+        // Populate keyInfo for each jump client installer since the previous query does not include it.
+        for (const btJumpClientInstaller of btJumpClientInstallers) {
+            const moreDetailedBTJumpClientInstaller = await this.queryBus.execute<
+                RetrieveJumpClientInstallerByIdQuery,
+                JumpClientInstallerRetrievedDtoOutput
+            >(new RetrieveJumpClientInstallerByIdQuery(transactionId, btJumpClientInstaller.id));
+
+            btJumpClientInstaller.keyInfo = moreDetailedBTJumpClientInstaller.keyInfo;
+        }
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
         if (

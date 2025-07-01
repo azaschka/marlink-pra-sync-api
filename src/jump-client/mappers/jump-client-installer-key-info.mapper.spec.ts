@@ -51,11 +51,6 @@ describe('mapFromBTJumpClientInstallerKeyInfo', () => {
                 filename: 'windows-64-filename',
                 installerPath: '/path/to/windows-64-installer',
             },
-            unknown: {
-                encodedInfo: 'unknown-encoded-info',
-                filename: 'unknown-filename',
-                installerPath: '/path/to/unknown-installer',
-            },
         } as JumpClientInstallerKeyInfoDtoOutput);
 
         expect(result).toStrictEqual([
@@ -114,5 +109,17 @@ describe('mapFromBTJumpClientInstallerKeyInfo', () => {
                 installerPath: '/path/to/windows-64-installer',
             },
         ]);
+    });
+
+    it('should throw an error for unknown platform type', () => {
+        expect(() =>
+            mapFromBTJumpClientInstallerKeyInfo({
+                unknown: {
+                    encodedInfo: 'unknown-encoded-info',
+                    filename: 'unknown-filename',
+                    installerPath: '/path/to/unknown-installer',
+                },
+            } as JumpClientInstallerKeyInfoDtoOutput),
+        ).toThrow('Unknown BTJumpClientInstallerPlatformType: unknown');
     });
 });
