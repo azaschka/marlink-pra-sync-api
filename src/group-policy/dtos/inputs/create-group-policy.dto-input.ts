@@ -20,7 +20,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasEndpointsAccessPermission: boolean = false;
+    public hasEndpointsAccessPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -30,7 +30,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsEnum(AccessPermissionStatusType)
-    public accessPermissionStatusType: AccessPermissionStatusType = AccessPermissionStatusType.NotDefined;
+    public accessPermissionStatusType?: AccessPermissionStatusType;
 
     @ApiProperty({
         required: false,
@@ -40,7 +40,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasShareOtherTeamPermission: boolean = false;
+    public hasShareOtherTeamPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -50,7 +50,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasInviteExternalUserPermission: boolean = false;
+    public hasInviteExternalUserPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -60,7 +60,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsNumber()
-    public userSessionIdleTimeoutInSeconds: number = -1;
+    public userSessionIdleTimeoutInSeconds?: number;
 
     @ApiProperty({
         required: false,
@@ -70,7 +70,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasEnableExtendedAvailabilityModePermission: boolean = false;
+    public hasEnableExtendedAvailabilityModePermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -80,7 +80,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasEditExternalKeyPermission: boolean = false;
+    public hasEditExternalKeyPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -90,7 +90,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasCollaboratePermission: boolean = false;
+    public hasCollaboratePermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -100,7 +100,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasCollaborateControlPermission: boolean = false;
+    public hasCollaborateControlPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -110,7 +110,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasJumpClientPermission: boolean = false;
+    public hasJumpClientPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -120,7 +120,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasLocalJumpPermission: boolean = false;
+    public hasLocalJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -130,7 +130,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasRemoteJumpPermission: boolean = false;
+    public hasRemoteJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -140,7 +140,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasRemoteVncPermission: boolean = false;
+    public hasRemoteVncPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -150,7 +150,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasRemoteRdpPermission: boolean = false;
+    public hasRemoteRdpPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -160,7 +160,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasShellJumpPermission: boolean = false;
+    public hasShellJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -170,7 +170,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasWebJumpPermission: boolean = false;
+    public hasWebJumpPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -180,7 +180,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasProtocolTunnelPermission: boolean = false;
+    public hasProtocolTunnelPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -190,7 +190,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasSdStaticPortForExternalToolsPermission: boolean = false;
+    public hasSdStaticPortForExternalToolsPermission?: boolean;
 
     @ApiProperty({
         required: false,
@@ -200,7 +200,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsNumber()
-    public defaultJumpItemRoleId: number = 1;
+    public defaultJumpItemRoleId?: number;
 
     @ApiProperty({
         required: false,
@@ -210,7 +210,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsNumber()
-    public privateJumpItemRoleId: number = 1;
+    public privateJumpItemRoleId?: number;
 
     @ApiProperty({
         required: false,
@@ -220,7 +220,7 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsNumber()
-    public inferiorJumpItemRoleId: number = 1;
+    public inferiorJumpItemRoleId?: number;
 
     @ApiProperty({
         required: false,
@@ -230,5 +230,5 @@ export class CreateGroupPolicyDtoInput {
     })
     @IsOptional()
     @IsNumber()
-    public unassignedJumpItemRoleId: number = 1;
+    public unassignedJumpItemRoleId?: number;
 }
