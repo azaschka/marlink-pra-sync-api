@@ -1,6 +1,9 @@
 import { JumpClientConnectionType as BTJumpClientConnectionType } from '../../beyondtrust-pra-conf-api/jump-client/enums';
 import { JumpClientConnectionType } from '../enums';
-import { mapFromBTJumpClientConnectionType } from './jump-client-connection-type.mapper';
+import {
+    mapFromBTJumpClientConnectionType,
+    mapToBTJumpClientConnectionType,
+} from './jump-client-connection-type.mapper';
 
 describe('mapFromBTJumpClientConnectionType', () => {
     it('should have same enum sizes', () => {
@@ -36,12 +39,12 @@ describe('mapToBTJumpClientConnectionType', () => {
         [JumpClientConnectionType.Passive, BTJumpClientConnectionType.Passive],
         [JumpClientConnectionType.Uninstalled, BTJumpClientConnectionType.Uninstalled],
     ])('should map %s to %s', (input: JumpClientConnectionType, expected: BTJumpClientConnectionType) => {
-        const result = mapFromBTJumpClientConnectionType(input);
+        const result = mapToBTJumpClientConnectionType(input);
         expect(result).toEqual(expected);
     });
 
     it('should throw an error for unknown JumpClientConnectionType', () => {
         const unknownType = {} as JumpClientConnectionType;
-        expect(() => mapFromBTJumpClientConnectionType(unknownType)).toThrow();
+        expect(() => mapToBTJumpClientConnectionType(unknownType)).toThrow();
     });
 });
