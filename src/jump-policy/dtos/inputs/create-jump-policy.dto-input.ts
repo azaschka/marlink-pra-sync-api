@@ -44,7 +44,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public hasScheduledAccessRestriction?: boolean = true;
+    public hasScheduledAccessRestriction?: boolean;
 
     @ApiProperty({
         enum: SimultaneousJumpsType,
@@ -55,7 +55,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsEnum(SimultaneousJumpsType)
-    public simultaneousJumpsType?: SimultaneousJumpsType = SimultaneousJumpsType.Global;
+    public simultaneousJumpsType?: SimultaneousJumpsType;
 
     @ApiProperty({
         type: Boolean,
@@ -66,7 +66,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public doesSimultaneousJumpBehaviorApplyToCopies?: boolean = false;
+    public doesSimultaneousJumpBehaviorApplyToCopies?: boolean;
 
     @ApiProperty({
         enum: SimultaneousJumpsRdpType,
@@ -77,7 +77,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsEnum(SimultaneousJumpsRdpType)
-    public simultaneousJumpsRdpType?: SimultaneousJumpsRdpType = SimultaneousJumpsRdpType.Global;
+    public simultaneousJumpsRdpType?: SimultaneousJumpsRdpType;
 
     @ApiProperty({
         type: Boolean,
@@ -88,7 +88,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public shouldForceRemoveUsersWhenScheduleDisallows?: boolean = false;
+    public shouldForceRemoveUsersWhenScheduleDisallows?: boolean;
 
     @ApiProperty({
         type: Boolean,
@@ -99,7 +99,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isTicketIdRequired?: boolean = false;
+    public isTicketIdRequired?: boolean;
 
     @ApiProperty({
         type: Boolean,
@@ -110,7 +110,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isTwoFactorChallengeRequired?: boolean = false;
+    public isTwoFactorChallengeRequired?: boolean;
 
     @ApiProperty({
         type: Boolean,
@@ -120,7 +120,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isSessionStartNotificationEnabled?: boolean = false;
+    public isSessionStartNotificationEnabled?: boolean;
 
     @ApiProperty({
         type: Boolean,
@@ -130,7 +130,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isSessionEndNotificationEnabled?: boolean = false;
+    public isSessionEndNotificationEnabled?: boolean;
 
     @ApiProperty({
         type: [String],
@@ -143,7 +143,7 @@ export class CreateJumpPolicyDtoInput {
     @IsArray()
     @IsString({ each: true })
     @ArrayUnique()
-    public notificationEmailAddresses?: string[] = [];
+    public notificationEmailAddresses?: string[];
 
     @ApiProperty({
         type: String,
@@ -164,7 +164,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsString()
-    public notificationEmailLanguage?: string = 'en-us';
+    public notificationEmailLanguage?: string;
 
     @ApiProperty({
         type: Boolean,
@@ -175,7 +175,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isApprovalRequired?: boolean = false;
+    public isApprovalRequired?: boolean;
 
     @ApiProperty({
         type: Number,
@@ -186,7 +186,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsNumber()
-    public approvalMaxDurationInMinutes?: number = 480;
+    public approvalMaxDurationInMinutes?: number;
 
     @ApiProperty({
         enum: ApprovalScopeType,
@@ -197,7 +197,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsEnum(ApprovalScopeType)
-    public approvalScopeType?: ApprovalScopeType = ApprovalScopeType.Requestor;
+    public approvalScopeType?: ApprovalScopeType;
 
     @ApiProperty({
         type: [String],
@@ -210,7 +210,7 @@ export class CreateJumpPolicyDtoInput {
     @IsArray()
     @IsString({ each: true })
     @ArrayUnique()
-    public approvalEmailAddresses?: string[] = [];
+    public approvalEmailAddresses?: string[];
 
     @ApiProperty({
         type: [String],
@@ -223,7 +223,7 @@ export class CreateJumpPolicyDtoInput {
     @IsArray()
     @IsString({ each: true })
     @ArrayUnique()
-    public approvalUserIds?: string[] = [];
+    public approvalUserIds?: string[];
 
     @ApiProperty({
         type: [String],
@@ -236,7 +236,7 @@ export class CreateJumpPolicyDtoInput {
     @IsArray()
     @IsString({ each: true })
     @ArrayUnique()
-    public approvalTeamIds?: string[] = [];
+    public approvalTeamIds?: string[];
 
     @ApiProperty({
         type: String,
@@ -257,7 +257,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsString()
-    public approvalEmailLanguage?: string = 'en-us';
+    public approvalEmailLanguage?: string;
 
     @ApiProperty({
         enum: ApprovalApproverScopeType,
@@ -268,7 +268,7 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsEnum(ApprovalApproverScopeType)
-    public approvalApproverScopeType?: ApprovalApproverScopeType = ApprovalApproverScopeType.NotRequestor;
+    public approvalApproverScopeType?: ApprovalApproverScopeType;
 
     @ApiProperty({
         type: Boolean,
@@ -279,5 +279,5 @@ export class CreateJumpPolicyDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isRecordingsDisabled?: boolean = false;
+    public isRecordingsDisabled?: boolean;
 }

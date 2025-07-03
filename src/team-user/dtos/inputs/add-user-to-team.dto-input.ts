@@ -15,5 +15,5 @@ export class AddUserToTeamDtoInput {
     @ApiProperty({ required: false, enum: UserTeamRoleType, default: UserTeamRoleType.Member })
     @IsOptional()
     @IsEnum(UserTeamRoleType)
-    public roleType?: UserTeamRoleType = UserTeamRoleType.Member;
+    public roleType?: UserTeamRoleType;
 }

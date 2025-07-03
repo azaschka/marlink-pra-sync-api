@@ -61,7 +61,7 @@ export class CreateUserDtoInput {
     })
     @IsOptional()
     @IsString()
-    public preferredEmailLanguage?: string = 'en-us';
+    public preferredEmailLanguage?: string;
 
     @ApiProperty({
         required: false,
@@ -72,7 +72,7 @@ export class CreateUserDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isTwoFactorAuthRequired?: boolean = false;
+    public isTwoFactorAuthRequired?: boolean;
 
     @ApiProperty({
         required: false,
@@ -82,7 +82,7 @@ export class CreateUserDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isLoginAllowed?: boolean = true;
+    public isLoginAllowed?: boolean;
 
     @ApiProperty({
         required: false,
@@ -93,7 +93,7 @@ export class CreateUserDtoInput {
     })
     @IsOptional()
     @IsInt()
-    public failedLoginAttempts?: number = 0;
+    public failedLoginAttempts?: number;
 
     @ApiProperty({
         required: false,
@@ -104,5 +104,5 @@ export class CreateUserDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public mustResetPasswordOnNextLogin?: boolean = false;
+    public mustResetPasswordOnNextLogin?: boolean;
 }

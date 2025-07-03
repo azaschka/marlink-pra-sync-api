@@ -48,7 +48,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isEnabled?: boolean = true;
+    public isEnabled?: boolean;
 
     @ApiProperty({
         type: Boolean,
@@ -59,7 +59,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isClustered?: boolean = false;
+    public isClustered?: boolean;
 
     @ApiProperty({
         type: Boolean,
@@ -69,7 +69,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isShellJumpEnabled?: boolean = false;
+    public isShellJumpEnabled?: boolean;
 
     @ApiProperty({
         type: String,
@@ -89,7 +89,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isProtocolTunnelEnabled?: boolean = true;
+    public isProtocolTunnelEnabled?: boolean;
 
     @ApiProperty({
         type: Number,
@@ -101,7 +101,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsInt()
-    public rdpServiceAccountId?: number | null = null;
+    public rdpServiceAccountId?: number | null;
 
     @ApiProperty({
         type: [String],
@@ -113,7 +113,7 @@ export class CreateJumpointDtoInput {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    public managedIpRanges?: string[] = [];
+    public managedIpRanges?: string[];
 
     @ApiProperty({
         type: Boolean,
@@ -124,7 +124,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isJzpEnabled?: boolean = false;
+    public isJzpEnabled?: boolean;
 
     @ApiProperty({
         type: String,
@@ -135,7 +135,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsString()
-    public jzpProxyHostname?: string = '';
+    public jzpProxyHostname?: string;
 
     @ApiProperty({
         type: Number,
@@ -146,7 +146,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsInt()
-    public jzpProxyPort?: number = 9555;
+    public jzpProxyPort?: number;
 
     @ApiProperty({
         type: Boolean,
@@ -157,7 +157,7 @@ export class CreateJumpointDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public isJzpHttpGetAllowed?: boolean = false;
+    public isJzpHttpGetAllowed?: boolean;
 
     @ApiProperty({
         enum: JzpClientAddressRestrictionsType,
@@ -181,5 +181,5 @@ export class CreateJumpointDtoInput {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    public jzpRestrictedIps?: string[] = [];
+    public jzpRestrictedIps?: string[];
 }

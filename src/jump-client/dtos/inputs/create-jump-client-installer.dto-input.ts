@@ -30,7 +30,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsEnum(JumpClientGroupType)
     @IsOptional()
-    public jumpGroupType?: JumpClientGroupType = JumpClientGroupType.Shared;
+    public jumpGroupType?: JumpClientGroupType;
 
     @ApiProperty({
         required: false,
@@ -58,7 +58,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsEnum(JumpClientConnectionType)
     @IsOptional()
-    public connectionType?: JumpClientConnectionType = JumpClientConnectionType.Active;
+    public connectionType?: JumpClientConnectionType;
 
     @ApiProperty({
         required: false,
@@ -78,7 +78,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsString()
-    public comments?: string = '';
+    public comments?: string;
 
     @ApiProperty({
         required: false,
@@ -89,7 +89,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsInt()
-    public validDurationInMinutes?: number = 1440;
+    public validDurationInMinutes?: number;
 
     @ApiProperty({
         required: false,
@@ -99,7 +99,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public shouldElevateInstall?: boolean = true;
+    public shouldElevateInstall?: boolean;
 
     @ApiProperty({
         required: false,
@@ -110,7 +110,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public shouldElevatePrompt?: boolean = true;
+    public shouldElevatePrompt?: boolean;
 
     @ApiProperty({
         required: false,
@@ -121,7 +121,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public canOverrideJumpGroup?: boolean = false;
+    public canOverrideJumpGroup?: boolean;
 
     @ApiProperty({
         required: false,
@@ -132,7 +132,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public canOverrideJumpPolicy?: boolean = false;
+    public canOverrideJumpPolicy?: boolean;
 
     @ApiProperty({
         required: false,
@@ -143,7 +143,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public canOverrideName?: boolean = false;
+    public canOverrideName?: boolean;
 
     @ApiProperty({
         required: false,
@@ -154,7 +154,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public canOverrideTag?: boolean = false;
+    public canOverrideTag?: boolean;
 
     @ApiProperty({
         required: false,
@@ -165,7 +165,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public canOverrideComments?: boolean = false;
+    public canOverrideComments?: boolean;
 
     @ApiProperty({
         required: false,
@@ -176,7 +176,7 @@ export class CreateJumpClientInstallerDtoInput {
     })
     @IsOptional()
     @IsBoolean()
-    public canOverrideSessionPolicy?: boolean = false;
+    public canOverrideSessionPolicy?: boolean;
 
     @ApiProperty({
         required: false,
