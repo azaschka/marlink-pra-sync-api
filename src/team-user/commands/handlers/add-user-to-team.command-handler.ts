@@ -35,13 +35,7 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
             this.eventBus.publish(
                 new TeamUserAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
-                    teamUser: {
-                        teamId: teamUserEntity.teamId,
-                        membership: {
-                            userId: teamUserEntity.userId,
-                            roleType: teamUserEntity.roleType,
-                        },
-                    },
+                    teamUser: teamUserEntity,
                 }),
             );
 
@@ -64,10 +58,8 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
 
         return {
             teamId: teamUserEntity.teamId,
-            membership: {
-                userId: teamUserEntity.userId,
-                roleType: teamUserEntity.roleType,
-            },
+            userId: teamUserEntity.userId,
+            roleType: teamUserEntity.roleType,
         };
     }
 }

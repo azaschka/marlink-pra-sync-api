@@ -6,6 +6,7 @@ import { AppConfigService } from './app-config/services/app-config.service';
 import { AppController } from './app.controller';
 import { BeyondtrustInstanceModule } from './beyondtrust-instance/beyondtrust-instance.module';
 import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtrust-pra-conf-api.module';
+import { GroupPolicyJumpGroupModule } from './group-policy-jump-group/group-policy-jump-group.module';
 import { GroupPolicyJumpointModule } from './group-policy-jumpoint/group-policy-jumpoint.module';
 import { GroupPolicyModule } from './group-policy/group-policy.module';
 import { HealthModule } from './health/health.module';
@@ -39,6 +40,7 @@ import { UserModule } from './user/user.module';
         TeamUserModule,
         GroupPolicyModule,
         GroupPolicyJumpointModule,
+        GroupPolicyJumpGroupModule,
         JumpointModule,
         JumpGroupModule,
         JumpPolicyModule,

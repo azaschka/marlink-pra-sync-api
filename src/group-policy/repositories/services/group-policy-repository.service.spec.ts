@@ -45,6 +45,7 @@ describe('GroupPolicyRepositoryService', () => {
                     lastSyncDate: new Date('2023-01-01'),
                     userGroupPolicies: [],
                     groupPolicyJumpoints: [],
+                    groupPolicyJumpGroups: [],
                 },
                 {
                     id: 2,
@@ -52,6 +53,7 @@ describe('GroupPolicyRepositoryService', () => {
                     lastSyncDate: new Date('2023-01-02'),
                     userGroupPolicies: [],
                     groupPolicyJumpoints: [],
+                    groupPolicyJumpGroups: [],
                 },
             ];
             const expectedConflictPaths = ['id'];

@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import {
+    ApiCreatedResponse,
     ApiNoContentResponse,
     ApiNotFoundResponse,
-    ApiOkResponse,
     ApiParam,
     ApiTags,
     ApiUnprocessableEntityResponse,
@@ -24,7 +24,7 @@ export class GroupPolicyJumpointsController {
 
     @Post(':id/jumpoints')
     @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         type: GroupPolicyJumpointAddedDtoOutput,
         description: 'Indicates that the Jumpoint was successfully added.',
     })

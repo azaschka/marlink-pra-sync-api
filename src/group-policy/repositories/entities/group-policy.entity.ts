@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany } from 'typeorm';
+import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
 import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
@@ -87,6 +88,9 @@ export class GroupPolicyEntity implements GroupPolicy {
 
     @OneToMany(() => GroupPolicyJumpointEntity, (groupPolicyJumpoint) => groupPolicyJumpoint.groupPolicy)
     public groupPolicyJumpoints!: GroupPolicyJumpointEntity[];
+
+    @OneToMany(() => GroupPolicyJumpGroupEntity, (groupPolicyJumpGroup) => groupPolicyJumpGroup.groupPolicy)
+    public groupPolicyJumpGroups!: GroupPolicyJumpGroupEntity[];
 
     public static create(
         id: number,

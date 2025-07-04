@@ -114,6 +114,15 @@ describe('AppConfigService', () => {
                             jumpoint: {
                                 path: 'api-path-group-policy-jumpoint-1',
                             },
+                            jumpGroup: {
+                                path: 'api-path-group-policy-jump-group-1',
+                            },
+                            member: {
+                                path: 'api-path-group-policy-member-1',
+                            },
+                            team: {
+                                path: 'api-path-group-policy-team-1',
+                            },
                         },
                         team: {
                             path: 'api-path-team-1',
@@ -184,6 +193,15 @@ describe('AppConfigService', () => {
                             path: 'api-path-group-policy-1',
                             jumpoint: {
                                 path: 'api-path-group-policy-jumpoint-1',
+                            },
+                            jumpGroup: {
+                                path: 'api-path-group-policy-jump-group-1',
+                            },
+                            member: {
+                                path: 'api-path-group-policy-member-1',
+                            },
+                            team: {
+                                path: 'api-path-group-policy-team-1',
                             },
                         },
                         team: {
@@ -259,6 +277,15 @@ describe('AppConfigService', () => {
                             jumpoint: {
                                 path: 'unknown',
                             },
+                            jumpGroup: {
+                                path: 'unknown',
+                            },
+                            member: {
+                                path: 'unknown',
+                            },
+                            team: {
+                                path: 'unknown',
+                            },
                         },
                         team: {
                             path: 'unknown',
@@ -331,6 +358,12 @@ describe('AppConfigService', () => {
                         return input.api?.groupPolicy.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH':
                         return input.api?.groupPolicy.jumpoint.path;
+                    case 'BEYONDTRUST_API_GROUP_POLICY_JUMP_GROUP_PATH':
+                        return input.api?.groupPolicy.jumpGroup.path;
+                    case 'BEYONDTRUST_API_GROUP_POLICY_MEMBER_PATH':
+                        return input.api?.groupPolicy.member.path;
+                    case 'BEYONDTRUST_API_GROUP_POLICY_TEAM_PATH':
+                        return input.api?.groupPolicy.team.path;
                     case 'BEYONDTRUST_API_TEAM_PATH':
                         return input.api?.team.path;
                     case 'BEYONDTRUST_API_TEAM_USER_PATH':
@@ -396,6 +429,15 @@ describe('AppConfigService', () => {
                         path: expected.api.groupPolicy?.path,
                         jumpoint: {
                             path: expected.api.groupPolicy?.jumpoint.path,
+                        },
+                        jumpGroup: {
+                            path: expected.api.groupPolicy?.jumpGroup.path,
+                        },
+                        member: {
+                            path: expected.api.groupPolicy?.member.path,
+                        },
+                        team: {
+                            path: expected.api.groupPolicy?.team.path,
                         },
                     },
                     team: {

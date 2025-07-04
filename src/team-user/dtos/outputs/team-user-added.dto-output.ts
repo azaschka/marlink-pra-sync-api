@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TeamMembership, TeamUser } from '../../models';
-import { TeamMembershipDtoOutput } from './team-membership.dto-output';
+import { UserTeamRoleType } from '../../enums';
+import { TeamUser } from '../../models';
 
 export class TeamUserAddedDtoOutput implements TeamUser {
     @ApiProperty({
@@ -10,6 +10,13 @@ export class TeamUserAddedDtoOutput implements TeamUser {
     })
     public teamId!: number;
 
-    @ApiProperty({ required: true, type: TeamMembershipDtoOutput })
-    public membership!: TeamMembership;
+    @ApiProperty({
+        required: true,
+        type: Number,
+        description: 'The unique identifier of the user who has access to the team.',
+    })
+    public userId!: number;
+
+    @ApiProperty({ required: true, enum: UserTeamRoleType })
+    public roleType!: UserTeamRoleType;
 }

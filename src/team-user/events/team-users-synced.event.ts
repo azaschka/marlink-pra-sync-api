@@ -1,8 +1,8 @@
 import { BaseEvent } from '../../core/events';
-import { TeamUsers } from '../models';
+import { TeamUser } from '../models';
 
 export interface TeamUsersSyncedEventPayload {
-    teamUsers: TeamUsers;
+    teamUsers: TeamUser[];
 }
 
 export class TeamUsersSyncedEvent extends BaseEvent {

@@ -99,10 +99,11 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyJumpointsSyncedEvent.EVENT_TYPE,
                     payload: {
-                        groupPolicyJumpoints: {
-                            groupPolicyId: 1,
-                            jumpointIds: [1, 2, 3],
-                        },
+                        groupPolicyJumpoints: [
+                            { groupPolicyId: 1, jumpointId: 1 },
+                            { groupPolicyId: 1, jumpointId: 2 },
+                            { groupPolicyId: 1, jumpointId: 3 },
+                        ],
                     },
                 }),
             );
@@ -112,10 +113,10 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyJumpointsSyncedEvent.EVENT_TYPE,
                     payload: {
-                        groupPolicyJumpoints: {
-                            groupPolicyId: 2,
-                            jumpointIds: [4, 5],
-                        },
+                        groupPolicyJumpoints: [
+                            { groupPolicyId: 2, jumpointId: 4 },
+                            { groupPolicyId: 2, jumpointId: 5 },
+                        ],
                     },
                 }),
             );
@@ -125,10 +126,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyJumpointsSyncedEvent.EVENT_TYPE,
                     payload: {
-                        groupPolicyJumpoints: {
-                            groupPolicyId: 3,
-                            jumpointIds: [],
-                        },
+                        groupPolicyJumpoints: [],
                     },
                 }),
             );
@@ -138,10 +136,12 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyJumpointsSyncedEvent.EVENT_TYPE,
                     payload: {
-                        groupPolicyJumpoints: {
-                            groupPolicyId: 4,
-                            jumpointIds: [6],
-                        },
+                        groupPolicyJumpoints: [
+                            {
+                                groupPolicyId: 4,
+                                jumpointId: 6,
+                            },
+                        ],
                     },
                 }),
             );

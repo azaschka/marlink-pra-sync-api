@@ -1,6 +1,7 @@
-import { TeamMembership } from './team-membership.model';
+import { UserTeamRoleType } from '../enums';
 
 export interface TeamUser {
     teamId: number;
-    membership: TeamMembership;
+    userId: number;
+    roleType: UserTeamRoleType;
 }

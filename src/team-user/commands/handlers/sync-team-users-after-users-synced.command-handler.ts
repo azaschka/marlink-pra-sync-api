@@ -4,7 +4,7 @@ import { RetrieveAllTeamUsersQuery as BTRetrieveAllTeamUsersQuery } from '../../
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { TeamUsersSyncedEvent, TeamUsersSyncFailedEvent } from '../../events';
 import { mapFromBTUserTeamRoleType } from '../../mappers';
-import { TeamUsers } from '../../models';
+import { TeamUser } from '../../models';
 import { TeamUserEntity } from '../../repositories/entities';
 import { TeamUserRepositoryService } from '../../repositories/services/team-user-repository.service';
 import { SyncTeamUsersAfterTeamsSyncedCommand } from '../sync-team-users-after-teams-synced.command';
@@ -63,19 +63,17 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
         );
     }
 
-    private async replaceTeamUsers(teamId: number, teamUserEntities: TeamUserEntity[]): Promise<TeamUsers> {
+    private async replaceTeamUsers(teamId: number, teamUserEntities: TeamUserEntity[]): Promise<TeamUser[]> {
         // Delete all existing team users
         await this.teamUserRepositoryService.deleteByTeamId(teamId);
 
         // Recreate the team users
         await this.teamUserRepositoryService.createOrUpdateByTeamIdAndUserId(teamUserEntities);
 
-        return {
+        return teamUserEntities.map((entity) => ({
             teamId: teamId,
-            memberships: teamUserEntities.map((entity) => ({
-                userId: entity.userId,
-                roleType: entity.roleType,
-            })),
-        };
+            userId: entity.userId,
+            roleType: entity.roleType,
+        }));
     }
 }

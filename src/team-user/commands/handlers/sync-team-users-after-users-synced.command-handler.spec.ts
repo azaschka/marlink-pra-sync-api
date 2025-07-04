@@ -94,14 +94,23 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                     transactionId: 'transaction-1',
                     eventType: TeamUsersSyncedEvent.EVENT_TYPE,
                     payload: {
-                        teamUsers: {
-                            teamId: 1,
-                            memberships: [
-                                { userId: 1, roleType: UserTeamRoleType.Manager },
-                                { userId: 2, roleType: UserTeamRoleType.Lead },
-                                { userId: 3, roleType: UserTeamRoleType.Member },
-                            ],
-                        },
+                        teamUsers: [
+                            {
+                                teamId: 1,
+                                userId: 1,
+                                roleType: UserTeamRoleType.Manager,
+                            },
+                            {
+                                teamId: 1,
+                                userId: 2,
+                                roleType: UserTeamRoleType.Lead,
+                            },
+                            {
+                                teamId: 1,
+                                userId: 3,
+                                roleType: UserTeamRoleType.Member,
+                            },
+                        ],
                     },
                 }),
             );
@@ -111,13 +120,18 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                     transactionId: 'transaction-1',
                     eventType: TeamUsersSyncedEvent.EVENT_TYPE,
                     payload: {
-                        teamUsers: {
-                            teamId: 2,
-                            memberships: [
-                                { userId: 4, roleType: UserTeamRoleType.Manager },
-                                { userId: 5, roleType: UserTeamRoleType.Lead },
-                            ],
-                        },
+                        teamUsers: [
+                            {
+                                teamId: 2,
+                                userId: 4,
+                                roleType: UserTeamRoleType.Manager,
+                            },
+                            {
+                                teamId: 2,
+                                userId: 5,
+                                roleType: UserTeamRoleType.Lead,
+                            },
+                        ],
                     },
                 }),
             );
@@ -127,10 +141,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                     transactionId: 'transaction-1',
                     eventType: TeamUsersSyncedEvent.EVENT_TYPE,
                     payload: {
-                        teamUsers: {
-                            teamId: 3,
-                            memberships: [],
-                        },
+                        teamUsers: [],
                     },
                 }),
             );
@@ -140,10 +151,13 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                     transactionId: 'transaction-1',
                     eventType: TeamUsersSyncedEvent.EVENT_TYPE,
                     payload: {
-                        teamUsers: {
-                            teamId: 4,
-                            memberships: [{ userId: 6, roleType: UserTeamRoleType.Member }],
-                        },
+                        teamUsers: [
+                            {
+                                teamId: 4,
+                                userId: 6,
+                                roleType: UserTeamRoleType.Member,
+                            },
+                        ],
                     },
                 }),
             );

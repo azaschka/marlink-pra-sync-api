@@ -39,8 +39,8 @@ describe('JumpGroupRepositoryService', () => {
 
         it('should call createOrUpdate with the correct parameters when entities are provided', async () => {
             const entities: JumpGroupEntity[] = [
-                { id: 1, name: 'Group 1', lastSyncDate: new Date('2023-01-01') },
-                { id: 2, name: 'Group 2', lastSyncDate: new Date('2023-01-02') },
+                { id: 1, name: 'Group 1', lastSyncDate: new Date('2023-01-01'), groupPolicyJumpGroups: [] },
+                { id: 2, name: 'Group 2', lastSyncDate: new Date('2023-01-02'), groupPolicyJumpGroups: [] },
             ];
             const expectedConflictPaths = ['id'];
             const baseRepositoryCreateOrUpdateMethod = jest.spyOn(BaseRepositoryService.prototype, 'createOrUpdate');

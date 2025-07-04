@@ -1,8 +1,8 @@
 import { BaseEvent } from '../../core/events';
-import { GroupPolicyJumpoints } from '../models';
+import { GroupPolicyJumpoint } from '../models';
 
 export interface GroupPolicyJumpointsSyncedEventPayload {
-    groupPolicyJumpoints: GroupPolicyJumpoints;
+    groupPolicyJumpoints: GroupPolicyJumpoint[];
 }
 
 export class GroupPolicyJumpointsSyncedEvent extends BaseEvent {

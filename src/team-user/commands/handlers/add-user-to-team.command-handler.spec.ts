@@ -86,10 +86,8 @@ describe('AddUserToTeamCommandHandler', () => {
                 );
                 expect(result).toStrictEqual({
                     teamId: teamUserEntityToBeCreated.teamId,
-                    membership: {
-                        userId: teamUserEntityToBeCreated.userId,
-                        roleType: teamUserEntityToBeCreated.roleType,
-                    },
+                    userId: teamUserEntityToBeCreated.userId,
+                    roleType: teamUserEntityToBeCreated.roleType,
                 });
             },
         );
@@ -149,10 +147,8 @@ describe('AddUserToTeamCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         teamUser: {
                             teamId: teamUserEntityToBeCreated.teamId,
-                            membership: {
-                                userId: teamUserEntityToBeCreated.userId,
-                                roleType: UserTeamRoleType.Manager,
-                            },
+                            userId: teamUserEntityToBeCreated.userId,
+                            roleType: UserTeamRoleType.Manager,
                         },
                     },
                 }),

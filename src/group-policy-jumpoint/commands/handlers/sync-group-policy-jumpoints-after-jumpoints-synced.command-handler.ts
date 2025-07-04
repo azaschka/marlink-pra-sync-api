@@ -3,7 +3,7 @@ import { GroupPolicyJumpointRetrievedDtoOutput } from '../../../beyondtrust-pra-
 import { RetrieveAllGroupPolicyJumpointsQuery as BTRetrieveAllGroupPolicyJumpointsQuery } from '../../../beyondtrust-pra-conf-api/group-policy/queries';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { GroupPolicyJumpointsSyncedEvent, GroupPolicyJumpointsSyncFailedEvent } from '../../events';
-import { GroupPolicyJumpoints } from '../../models';
+import { GroupPolicyJumpoint } from '../../models';
 import { GroupPolicyJumpointEntity } from '../../repositories/entities';
 import { GroupPolicyJumpointRepositoryService } from '../../repositories/services/group-policy-jumpoint-repository.service';
 import { SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommand } from '../sync-group-policy-jumpoints-after-group-policies-synced.command';
@@ -78,7 +78,7 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
     private async replaceGroupPolicyJumpoints(
         groupPolicyId: number,
         groupPolicyJumpointEntities: GroupPolicyJumpointEntity[],
-    ): Promise<GroupPolicyJumpoints> {
+    ): Promise<GroupPolicyJumpoint[]> {
         // Delete all existing group policy jumpoints
         await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyId(groupPolicyId);
 
@@ -87,11 +87,11 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
             groupPolicyJumpointEntities,
         );
 
-        return {
-            groupPolicyId: groupPolicyId,
-            jumpointIds: groupPolicyJumpointEntities.map(
-                (groupPolicyJumpointEntity) => groupPolicyJumpointEntity.jumpointId,
-            ),
-        };
+        return groupPolicyJumpointEntities.map((entity) => {
+            return {
+                groupPolicyId: entity.groupPolicyId,
+                jumpointId: entity.jumpointId,
+            };
+        });
     }
 }

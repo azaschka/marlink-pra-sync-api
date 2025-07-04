@@ -1,4 +1,5 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpGroup } from '../../models';
 
@@ -18,6 +19,9 @@ export class JumpGroupEntity implements JumpGroup {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @OneToMany(() => GroupPolicyJumpGroupEntity, (groupPolicyJumpGroup) => groupPolicyJumpGroup.jumpGroup)
+    public groupPolicyJumpGroups!: GroupPolicyJumpGroupEntity[];
 
     public static create(id: number, name: string, codeName?: string, comments?: string | null): JumpGroupEntity {
         const entity = new JumpGroupEntity();
