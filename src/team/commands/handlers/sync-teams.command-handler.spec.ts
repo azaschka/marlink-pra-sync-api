@@ -21,6 +21,7 @@ abstract class TestHelper {
             id,
             name: `team-${id}`,
             teamUsers: [],
+            groupPolicyTeams: [],
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
         }));
     }

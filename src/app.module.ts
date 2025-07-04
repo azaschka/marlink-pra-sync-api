@@ -9,6 +9,7 @@ import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtr
 import { GroupPolicyJumpGroupModule } from './group-policy-jump-group/group-policy-jump-group.module';
 import { GroupPolicyJumpointModule } from './group-policy-jumpoint/group-policy-jumpoint.module';
 import { GroupPolicyMemberModule } from './group-policy-member/group-policy-member.module';
+import { GroupPolicyTeamModule } from './group-policy-team/group-policy-team.module';
 import { GroupPolicyModule } from './group-policy/group-policy.module';
 import { HealthModule } from './health/health.module';
 import { JumpClientModule } from './jump-client/jump-client.module';
@@ -43,6 +44,7 @@ import { UserModule } from './user/user.module';
         GroupPolicyJumpointModule,
         GroupPolicyJumpGroupModule,
         GroupPolicyMemberModule,
+        GroupPolicyTeamModule,
         JumpointModule,
         JumpGroupModule,
         JumpPolicyModule,

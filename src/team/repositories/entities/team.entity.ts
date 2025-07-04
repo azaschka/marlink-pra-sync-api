@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany } from 'typeorm';
+import { GroupPolicyTeamEntity } from '../../../group-policy-team/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { TeamUserEntity } from '../../../team-user/repositories/entities';
 import { Team } from '../../models';
@@ -22,6 +23,9 @@ export class TeamEntity implements Team {
 
     @OneToMany(() => TeamUserEntity, (teamUser) => teamUser.team)
     public teamUsers!: TeamUserEntity[];
+
+    @OneToMany(() => GroupPolicyTeamEntity, (groupPolicyTeam) => groupPolicyTeam.team)
+    public groupPolicyTeams!: GroupPolicyTeamEntity[];
 
     public static create(id: number, name: string, codeName?: string, comments?: string | null): TeamEntity {
         const entity = new TeamEntity();

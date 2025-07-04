@@ -2,6 +2,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
 import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
 import { GroupPolicyMemberEntity } from '../../../group-policy-member/repositories/entities';
+import { GroupPolicyTeamEntity } from '../../../group-policy-team/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
 import { AccessPermissionStatusType } from '../../enums';
@@ -95,6 +96,9 @@ export class GroupPolicyEntity implements GroupPolicy {
 
     @OneToMany(() => GroupPolicyMemberEntity, (groupPolicyMember) => groupPolicyMember.groupPolicy)
     public groupPolicyMembers!: GroupPolicyMemberEntity[];
+
+    @OneToMany(() => GroupPolicyTeamEntity, (groupPolicyTeam) => groupPolicyTeam.groupPolicy)
+    public groupPolicyTeams!: GroupPolicyTeamEntity[];
 
     public static create(
         id: number,

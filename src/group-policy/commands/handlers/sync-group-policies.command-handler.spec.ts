@@ -25,6 +25,7 @@ abstract class TestHelper {
             groupPolicyJumpoints: [],
             groupPolicyJumpGroups: [],
             groupPolicyMembers: [],
+            groupPolicyTeams: [],
         }));
     }
 }
