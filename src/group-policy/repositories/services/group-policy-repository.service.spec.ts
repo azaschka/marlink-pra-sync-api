@@ -46,6 +46,7 @@ describe('GroupPolicyRepositoryService', () => {
                     userGroupPolicies: [],
                     groupPolicyJumpoints: [],
                     groupPolicyJumpGroups: [],
+                    groupPolicyMembers: [],
                 },
                 {
                     id: 2,
@@ -54,6 +55,7 @@ describe('GroupPolicyRepositoryService', () => {
                     userGroupPolicies: [],
                     groupPolicyJumpoints: [],
                     groupPolicyJumpGroups: [],
+                    groupPolicyMembers: [],
                 },
             ];
             const expectedConflictPaths = ['id'];

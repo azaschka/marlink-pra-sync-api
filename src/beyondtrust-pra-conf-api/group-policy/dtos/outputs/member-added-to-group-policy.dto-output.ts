@@ -1,6 +1,9 @@
 import { Expose } from 'class-transformer';
 
 export class MemberAddedToGroupPolicyDtoOutput {
+    @Expose({ name: 'id' })
+    public id!: number;
+
     @Expose({ name: 'user_id' })
     public userId!: number;
 

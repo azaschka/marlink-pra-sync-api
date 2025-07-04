@@ -8,6 +8,7 @@ import { AddMemberToGroupPolicyCommandHandler } from './add-member-to-group-poli
 abstract class TestHelper {
     public static get mockedMemberAddedToGroupPolicyDtoOutput(): MemberAddedToGroupPolicyDtoOutput {
         return {
+            id: 1,
             userId: 2,
             securityProviderId: 3,
         };

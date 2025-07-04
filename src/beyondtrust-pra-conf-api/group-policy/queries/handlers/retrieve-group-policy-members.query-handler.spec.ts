@@ -9,10 +9,12 @@ abstract class TestHelper {
     public static get mockedGroupPolicyMemberRetrievedDtoOutputs(): GroupPolicyMemberRetrievedDtoOutput[] {
         return [
             {
+                id: 1,
                 userId: 1,
                 securityProviderId: 100,
             },
             {
+                id: 2,
                 userId: 2,
                 securityProviderId: 101,
             },

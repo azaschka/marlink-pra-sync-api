@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany } from 'typeorm';
+import { GroupPolicyMemberEntity } from '../../../group-policy-member/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { TeamUserEntity } from '../../../team-user/repositories/entities';
 import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
@@ -184,6 +185,9 @@ export class UserEntity implements User {
 
     @OneToMany(() => TeamUserEntity, (teamUser) => teamUser.user)
     public teamUsers!: TeamUserEntity[];
+
+    @OneToMany(() => GroupPolicyMemberEntity, (groupPolicyMember) => groupPolicyMember.user)
+    public groupPolicyMembers!: GroupPolicyMemberEntity[];
 
     public static create(
         id: number,
