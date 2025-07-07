@@ -1,4 +1,4 @@
-import { Controller, OnModuleInit } from '@nestjs/common';
+import { Controller, Logger, OnModuleInit } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { AppConfigService } from '../../app-config/services/app-config.service';
@@ -6,6 +6,8 @@ import { SyncController } from './sync.controller';
 
 @Controller('sync-job')
 export class SyncJobController implements OnModuleInit {
+    private readonly logger = new Logger(SyncJobController.name);
+
     constructor(
         private readonly schedulerRegistry: SchedulerRegistry,
         private readonly appConfigService: AppConfigService,
@@ -85,7 +87,14 @@ export class SyncJobController implements OnModuleInit {
             const job = new CronJob(
                 cronExpression,
                 async () => {
-                    await func();
+                    this.logger.log(`[${name}] started`);
+                    try {
+                        await func();
+                        this.logger.log(`[${name}] finished`);
+                    } catch (err) {
+                        // IMPORTANT: Do not throw the error, otherwise it will kill the process
+                        this.logger.error(`[${name}] failed: ${(err as Error).message}`, err as Error);
+                    }
                 },
                 null,
                 undefined,
