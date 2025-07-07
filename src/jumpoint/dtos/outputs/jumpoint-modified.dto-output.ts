@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
-import { Jumpoint } from '../../models';
+import { Jumpoint, JumpointIpRange } from '../../models';
+import { JumpointIpRangeDtoOutput } from './jumpoint-ip-range.dto-output';
 
 export class JumpointModifiedDtoOutput implements Jumpoint {
     @ApiProperty({
@@ -93,12 +94,12 @@ export class JumpointModifiedDtoOutput implements Jumpoint {
     public rdpServiceAccountId?: number | null;
 
     @ApiProperty({
-        type: [String],
+        type: [JumpointIpRangeDtoOutput],
         required: false,
         description:
             'An array of dotted-decimal IPv4 address ranges that should be managed by the network tunnel service on this Jumpoint. If the Network Tunnel feature will be used on one or more networks which do not provide a DHCP service, provide ranges from which allocations can be made for access sessions. An IP address for each network that the filter rules of a Protocol Tunnel Jump Shortcut allows will be allocated to a user while participating in a session. Take care to provide ranges that do not contain IP addresses which could be used by other systems on that network.',
     })
-    public managedIpRanges?: string[];
+    public managedIpRanges?: JumpointIpRange[];
 
     @ApiProperty({
         type: Boolean,

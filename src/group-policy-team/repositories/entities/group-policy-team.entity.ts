@@ -20,7 +20,7 @@ export class GroupPolicyTeamEntity implements GroupPolicyTeam {
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => TeamEntity, (team) => team.groupPolicyTeams)
+    @ManyToOne(() => TeamEntity, (team) => team.groupPolicyTeams, { eager: true })
     @JoinColumn({ name: 'team_id' })
     public team!: TeamEntity;
 

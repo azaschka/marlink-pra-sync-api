@@ -22,7 +22,7 @@ abstract class TestHelper {
                 externalJumpItemNetworkId: 'ext-1',
                 protocolTunnelEnabled: true,
                 rdpServiceAccountId: 1,
-                managedIpRanges: ['192.168.1.0/24'],
+                managedIpRanges: [{ start: '192.168.1.0/24', end: '192.168.1.255' }],
                 jzpEnabled: true,
                 jzpProxyHostname: 'proxy.example.com',
                 jzpProxyPort: 8080,

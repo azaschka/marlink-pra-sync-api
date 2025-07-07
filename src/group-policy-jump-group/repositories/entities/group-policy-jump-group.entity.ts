@@ -22,7 +22,7 @@ export class GroupPolicyJumpGroupEntity implements GroupPolicyJumpGroup {
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.groupPolicyJumpGroups)
+    @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.groupPolicyJumpGroups, { eager: true })
     @JoinColumn({ name: 'jump_group_id' })
     public jumpGroup!: JumpGroupEntity;
 

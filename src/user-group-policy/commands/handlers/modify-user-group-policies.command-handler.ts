@@ -7,7 +7,7 @@ import {
 import { RetrieveUserGroupPoliciesQuery } from '../../../beyondtrust-pra-conf-api/user/queries';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { UserGroupPoliciesModificationFailedEvent, UserGroupPoliciesModifiedEvent } from '../../events';
-import { UserGroupPolicies } from '../../models';
+import { UserGroupPolicy } from '../../models';
 import { UserGroupPolicyEntity } from '../../repositories/entities';
 import { UserGroupPolicyRepositoryService } from '../../repositories/services/user-group-policy-repository.service';
 import { ModifyUserGroupPoliciesCommand } from '../modify-user-group-policies.command';
@@ -21,7 +21,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         private readonly userGroupPolicyRepositoryService: UserGroupPolicyRepositoryService,
     ) {}
 
-    public async execute(command: ModifyUserGroupPoliciesCommand): Promise<UserGroupPolicies> {
+    public async execute(command: ModifyUserGroupPoliciesCommand): Promise<UserGroupPolicy[]> {
         const btUserGroupPolicies = await this.modifyBTUserGroupPolicies(command);
         const userGroupPolicyEntities = this.createUserGroupPolicyEntities(command.userId, btUserGroupPolicies);
 
@@ -74,16 +74,16 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
     private async replaceUserGroupPolicies(
         userId: number,
         userGroupPolicyEntities: UserGroupPolicyEntity[],
-    ): Promise<UserGroupPolicies> {
+    ): Promise<UserGroupPolicy[]> {
         // Delete all existing user group policies
         await this.userGroupPolicyRepositoryService.deleteByUserId(userId);
 
         // Recreate the user group policies
         await this.userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId(userGroupPolicyEntities);
 
-        return {
+        return userGroupPolicyEntities.map((entity) => ({
             userId: userId,
-            groupPolicyIds: userGroupPolicyEntities.map((policy) => policy.groupPolicyId),
-        };
+            groupPolicyId: entity.groupPolicyId,
+        }));
     }
 }

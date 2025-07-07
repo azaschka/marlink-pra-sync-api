@@ -93,10 +93,20 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
                         transactionId: 'transaction-1',
                         eventType: UserGroupPoliciesSyncedEvent.EVENT_TYPE,
                         payload: {
-                            userGroupPolicies: {
-                                userId: n,
-                                groupPolicyIds: [1, 2, 3],
-                            },
+                            userGroupPolicies: [
+                                {
+                                    userId: n,
+                                    groupPolicyId: 1,
+                                },
+                                {
+                                    userId: n,
+                                    groupPolicyId: 2,
+                                },
+                                {
+                                    userId: n,
+                                    groupPolicyId: 3,
+                                },
+                            ],
                         },
                     }),
                 );

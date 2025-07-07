@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { JzpClientAddressRestrictionsType } from '../../enums';
+import { JumpointIpRangeDtoInput } from './jumpoint-ip-range.dto-input';
 
 export class ModifyJumpointDtoInput {
     @ApiProperty({
@@ -80,15 +82,17 @@ export class ModifyJumpointDtoInput {
     public rdpServiceAccountId?: number | null;
 
     @ApiProperty({
-        type: [String],
+        type: [JumpointIpRangeDtoInput],
         required: false,
         description:
             'An array of dotted-decimal IPv4 address ranges that should be managed by the network tunnel service on this Jumpoint. If the Network Tunnel feature will be used on one or more networks which do not provide a DHCP service, provide ranges from which allocations can be made for access sessions. An IP address for each network that the filter rules of a Protocol Tunnel Jump Shortcut allows will be allocated to a user while participating in a session. Take care to provide ranges that do not contain IP addresses which could be used by other systems on that network.',
+        default: [],
     })
     @IsOptional()
     @IsArray()
-    @IsString({ each: true })
-    public managedIpRanges?: string[];
+    @ValidateNested({ each: true })
+    @Type(() => JumpointIpRangeDtoInput)
+    public managedIpRanges?: JumpointIpRangeDtoInput[];
 
     @ApiProperty({
         type: Boolean,

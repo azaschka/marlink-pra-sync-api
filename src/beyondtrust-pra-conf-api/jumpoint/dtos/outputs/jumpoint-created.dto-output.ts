@@ -1,5 +1,6 @@
 import { Expose } from 'class-transformer';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
+import { JumpointIpRange } from '../../models';
 
 export class JumpointCreatedDtoOutput {
     public id!: number;
@@ -38,7 +39,7 @@ export class JumpointCreatedDtoOutput {
     public rdpServiceAccountId?: number | null;
 
     @Expose({ name: 'managed_ip_ranges' })
-    public managedIpRanges?: string[];
+    public managedIpRanges?: JumpointIpRange[];
 
     @Expose({ name: 'jzp_enabled' })
     public jzpEnabled?: boolean;

@@ -1,4 +1,4 @@
-import { JumpGroup } from '../../models';
+import { JumpGroupEntity } from '../../repositories/entities';
 import { JumpGroupRepositoryService } from '../../repositories/services/jump-group-repository.service';
 import { RetrieveJumpGroupsQuery } from '../retrieve-jump-groups.query';
 import { RetrieveJumpGroupsQueryHandler } from './retrieve-jump-groups.query-handler';
@@ -14,7 +14,7 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedJumpGroups = [] as JumpGroup[];
+            const expectedJumpGroups = [] as JumpGroupEntity[];
             const jumpGroupRepositoryServiceFindByMethod = jest
                 .spyOn(jumpGroupRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpGroups);
@@ -26,7 +26,7 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedJumpGroups = [] as JumpGroup[];
+            const expectedJumpGroups = [] as JumpGroupEntity[];
             const jumpGroupRepositoryServiceFindByMethod = jest
                 .spyOn(jumpGroupRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpGroups);

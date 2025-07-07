@@ -2,9 +2,10 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { UserEntity } from '../../../user/repositories/entities';
+import { UserGroupPolicy } from '../../models';
 
 @Entity({ name: 'user_group_policies' })
-export class UserGroupPolicyEntity {
+export class UserGroupPolicyEntity implements UserGroupPolicy {
     @PrimaryColumn({ name: 'user_id', type: 'int' })
     public userId!: number;
 
@@ -15,7 +16,7 @@ export class UserGroupPolicyEntity {
     @JoinColumn({ name: 'user_id' })
     public user!: UserEntity;
 
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.userGroupPolicies)
+    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.userGroupPolicies, { eager: true })
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 

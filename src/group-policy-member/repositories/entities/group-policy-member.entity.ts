@@ -28,7 +28,7 @@ export class GroupPolicyMemberEntity implements GroupPolicyMember {
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => UserEntity, (user) => user.groupPolicyMembers)
+    @ManyToOne(() => UserEntity, (user) => user.groupPolicyMembers, { eager: true })
     @JoinColumn({ name: 'user_id' })
     public user!: UserEntity;
 

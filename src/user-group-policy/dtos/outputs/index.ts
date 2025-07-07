@@ -1,1 +1,2 @@
-export * from './user-group-policies-modified.dto-output';
+export * from './user-group-policy-modified.dto-output';
+export * from './user-group-policy-retrieved.dto-output';

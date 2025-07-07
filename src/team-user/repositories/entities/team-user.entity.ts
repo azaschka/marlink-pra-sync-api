@@ -3,9 +3,10 @@ import { DateUtility } from '../../../shared/utilities';
 import { TeamEntity } from '../../../team/repositories/entities';
 import { UserEntity } from '../../../user/repositories/entities';
 import { UserTeamRoleType } from '../../enums';
+import { TeamUser } from '../../models';
 
 @Entity({ name: 'team_users' })
-export class TeamUserEntity {
+export class TeamUserEntity implements TeamUser {
     @PrimaryColumn({ name: 'team_id', type: 'int' })
     public teamId!: number;
 
@@ -23,7 +24,7 @@ export class TeamUserEntity {
     @JoinColumn({ name: 'team_id' })
     public team!: TeamEntity;
 
-    @ManyToOne(() => UserEntity, (user) => user.teamUsers)
+    @ManyToOne(() => UserEntity, (user) => user.teamUsers, { eager: true })
     @JoinColumn({ name: 'user_id' })
     public user!: UserEntity;
 

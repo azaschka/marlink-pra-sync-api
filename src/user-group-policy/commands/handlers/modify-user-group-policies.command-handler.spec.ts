@@ -101,10 +101,20 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                     },
                 }),
             );
-            expect(result).toStrictEqual({
-                userId: 123,
-                groupPolicyIds: [1, 2, 3],
-            });
+            expect(result).toStrictEqual([
+                {
+                    userId: 123,
+                    groupPolicyId: 1,
+                },
+                {
+                    userId: 123,
+                    groupPolicyId: 2,
+                },
+                {
+                    userId: 123,
+                    groupPolicyId: 3,
+                },
+            ]);
         });
 
         it('should throw an error if the command bus fails', async () => {

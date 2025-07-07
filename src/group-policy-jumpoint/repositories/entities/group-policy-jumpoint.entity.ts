@@ -16,7 +16,7 @@ export class GroupPolicyJumpointEntity implements GroupPolicyJumpoint {
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.groupPolicyJumpoints)
+    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.groupPolicyJumpoints, { eager: true })
     @JoinColumn({ name: 'jumpoint_id' })
     public jumpoint!: JumpointEntity;
 

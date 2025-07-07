@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
-import { Jumpoint } from '../../models';
+import { Jumpoint, JumpointIpRange } from '../../models';
 
 @Entity({ name: 'jumpoints' })
 export class JumpointEntity implements Jumpoint {
@@ -42,8 +42,8 @@ export class JumpointEntity implements Jumpoint {
     @Column({ name: 'rdp_service_account_id', type: 'int', nullable: true })
     public rdpServiceAccountId?: number | null;
 
-    @Column({ name: 'managed_ip_ranges', type: 'simple-array', nullable: true })
-    public managedIpRanges?: string[];
+    @Column({ name: 'managed_ip_ranges', type: 'json', nullable: true })
+    public managedIpRanges?: JumpointIpRange[];
 
     @Column({ name: 'is_jzp_enabled', type: 'boolean', nullable: true })
     public isJzpEnabled?: boolean;
@@ -93,7 +93,7 @@ export class JumpointEntity implements Jumpoint {
         externalJumpItemNetworkId?: string,
         isProtocolTunnelEnabled?: boolean,
         rdpServiceAccountId?: number | null,
-        managedIpRanges?: string[],
+        managedIpRanges?: JumpointIpRange[],
         isJzpEnabled?: boolean,
         jzpProxyHostname?: string,
         jzpProxyPort?: number,

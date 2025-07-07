@@ -1,4 +1,5 @@
 import { JzpClientAddressRestrictionsType } from '../enums';
+import { JumpointIpRange } from '../models';
 
 export class ModifyJumpointCommand {
     public readonly commandType = 'bt-modify-jumpoint';
@@ -14,7 +15,7 @@ export class ModifyJumpointCommand {
         public readonly externalJumpItemNetworkId?: string,
         public readonly protocolTunnelEnabled?: boolean,
         public readonly rdpServiceAccountId?: number | null,
-        public readonly managedIpRanges?: string[],
+        public readonly managedIpRanges?: JumpointIpRange[],
         public readonly jzpEnabled?: boolean,
         public readonly jzpProxyHostname?: string,
         public readonly jzpProxyPort?: number,

@@ -1,4 +1,5 @@
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../enums';
+import { JumpointIpRange } from '../models';
 
 export class CreateJumpointCommand {
     public readonly commandType = 'create-jumpoint';
@@ -15,7 +16,7 @@ export class CreateJumpointCommand {
         public readonly externalJumpItemNetworkId?: string,
         public readonly isProtocolTunnelEnabled?: boolean,
         public readonly rdpServiceAccountId?: number | null,
-        public readonly managedIpRanges?: string[],
+        public readonly managedIpRanges?: JumpointIpRange[],
         public readonly isJzpEnabled?: boolean,
         public readonly jzpProxyHostname?: string,
         public readonly jzpProxyPort?: number,

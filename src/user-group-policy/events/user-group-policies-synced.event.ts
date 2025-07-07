@@ -1,8 +1,8 @@
 import { BaseEvent } from '../../core/events';
-import { UserGroupPolicies } from '../models';
+import { UserGroupPolicy } from '../models';
 
 export interface UserGroupPoliciesSyncedEventPayload {
-    userGroupPolicies: UserGroupPolicies;
+    userGroupPolicies: UserGroupPolicy[];
 }
 
 export class UserGroupPoliciesSyncedEvent extends BaseEvent {

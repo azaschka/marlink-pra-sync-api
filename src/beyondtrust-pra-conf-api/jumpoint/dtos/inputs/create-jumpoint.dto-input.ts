@@ -1,6 +1,7 @@
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
+import { JumpointIpRange } from '../../models';
 
 export class CreateJumpointDtoInput {
     @Expose({ name: 'name' })
@@ -54,9 +55,9 @@ export class CreateJumpointDtoInput {
     public rdpServiceAccountId?: number | null;
 
     @Expose({ name: 'managed_ip_ranges' })
-    @IsString({ each: true })
+    @IsArray({ each: true })
     @IsOptional()
-    public managedIpRanges?: string[];
+    public managedIpRanges?: JumpointIpRange[];
 
     @Expose({ name: 'jzp_enabled' })
     @IsBoolean()
@@ -99,7 +100,7 @@ export class CreateJumpointDtoInput {
         externalJumpItemNetworkId?: string,
         protocolTunnelEnabled?: boolean,
         rdpServiceAccountId?: number | null,
-        managedIpRanges?: string[],
+        managedIpRanges?: JumpointIpRange[],
         jzpEnabled?: boolean,
         jzpProxyHostname?: string,
         jzpProxyPort?: number,

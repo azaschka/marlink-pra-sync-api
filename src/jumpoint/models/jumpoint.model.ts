@@ -1,4 +1,5 @@
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../enums';
+import { JumpointIpRange } from './jumpoint-ip-range.model';
 
 export interface Jumpoint {
     id: number;
@@ -13,7 +14,7 @@ export interface Jumpoint {
     externalJumpItemNetworkId?: string;
     isProtocolTunnelEnabled?: boolean;
     rdpServiceAccountId?: number | null;
-    managedIpRanges?: string[];
+    managedIpRanges?: JumpointIpRange[];
     isJzpEnabled?: boolean;
     jzpProxyHostname?: string;
     jzpProxyPort?: number;

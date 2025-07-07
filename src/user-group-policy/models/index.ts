@@ -1,1 +1,1 @@
-export * from './user-group-policies.model';
+export * from './user-group-policy.model';
