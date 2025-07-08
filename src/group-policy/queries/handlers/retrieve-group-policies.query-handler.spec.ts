@@ -1,3 +1,4 @@
+import { Like } from 'typeorm';
 import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { RetrieveGroupPoliciesQuery } from '../retrieve-group-policies.query';
@@ -25,19 +26,29 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
             expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
         });
 
-        it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedGroupPolicies = [] as GroupPolicyEntity[];
-            const groupPolicyRepositoryServiceFindByMethod = jest
-                .spyOn(groupPolicyRepositoryService, 'findBy')
-                .mockResolvedValue(expectedGroupPolicies);
+        it.each([
+            {
+                query: new RetrieveGroupPoliciesQuery('transaction-2', 10, 1, 'group-policy-1'),
+                expectedFindByQuery: { name: 'group-policy-1' },
+            },
+            {
+                query: new RetrieveGroupPoliciesQuery('transaction-2', 10, 1, undefined, 'group-policy%'),
+                expectedFindByQuery: { name: Like('group-policy%') },
+            },
+        ])(
+            'should call the repo with correct parameter and return value from the repo',
+            async ({ query, expectedFindByQuery }) => {
+                const expectedGroupPolicies = [] as GroupPolicyEntity[];
+                const groupPolicyRepositoryServiceFindByMethod = jest
+                    .spyOn(groupPolicyRepositoryService, 'findBy')
+                    .mockResolvedValue(expectedGroupPolicies);
 
-            const result = await handler.execute(
-                new RetrieveGroupPoliciesQuery('transaction-2', 10, 1, 'group-policy-1'),
-            );
+                const result = await handler.execute(query);
 
-            expect(result).toBe(expectedGroupPolicies);
-            expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith({ name: 'group-policy-1' }, 1, 10);
-        });
+                expect(result).toBe(expectedGroupPolicies);
+                expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(expectedFindByQuery, 1, 10);
+            },
+        );
     });
 });
 
