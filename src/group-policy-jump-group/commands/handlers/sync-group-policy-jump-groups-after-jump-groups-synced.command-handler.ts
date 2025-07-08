@@ -98,6 +98,7 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
                 jumpGroupId: entity.jumpGroupId,
                 jumpItemRoleId: entity.jumpItemRoleId,
                 jumpPolicyId: entity.jumpPolicyId,
+                lastSyncDate: entity.lastSyncDate,
             };
         });
     }

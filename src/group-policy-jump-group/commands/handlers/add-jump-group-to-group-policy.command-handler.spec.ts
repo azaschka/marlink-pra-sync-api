@@ -57,6 +57,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                 const groupPolicyJumpGroupEntityToBeCreated = {
                     groupPolicyId: 100,
                     jumpGroupId: 101,
+                    lastSyncDate: new Date('2025-01-01T00:00:00Z'),
                 } as GroupPolicyJumpGroupEntity;
                 const groupPolicyJumpGroupEntityCreateMethod = jest
                     .spyOn(GroupPolicyJumpGroupEntity, 'create')
@@ -96,6 +97,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                     jumpGroupId: groupPolicyJumpGroupEntityToBeCreated.jumpGroupId,
                     jumpItemRoleId: groupPolicyJumpGroupEntityToBeCreated.jumpItemRoleId,
                     jumpPolicyId: groupPolicyJumpGroupEntityToBeCreated.jumpPolicyId,
+                    lastSyncDate: groupPolicyJumpGroupEntityToBeCreated.lastSyncDate,
                 });
             },
         );

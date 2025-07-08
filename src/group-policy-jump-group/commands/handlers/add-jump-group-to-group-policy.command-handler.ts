@@ -76,6 +76,7 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
             jumpGroupId: groupPolicyJumpGroupEntity.jumpGroupId,
             jumpItemRoleId: groupPolicyJumpGroupEntity.jumpItemRoleId,
             jumpPolicyId: groupPolicyJumpGroupEntity.jumpPolicyId,
+            lastSyncDate: groupPolicyJumpGroupEntity.lastSyncDate,
         };
     }
 }
