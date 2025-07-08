@@ -101,6 +101,7 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
                 securityProviderId: entity.securityProviderId,
                 distinguishedName: entity.distinguishedName,
                 groupName: entity.groupName,
+                lastSyncDate: entity.lastSyncDate,
             };
         });
     }

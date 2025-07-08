@@ -79,6 +79,7 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
             securityProviderId: groupPolicyMemberEntity.securityProviderId,
             distinguishedName: groupPolicyMemberEntity.distinguishedName,
             groupName: groupPolicyMemberEntity.groupName,
+            lastSyncDate: groupPolicyMemberEntity.lastSyncDate,
         };
     }
 }

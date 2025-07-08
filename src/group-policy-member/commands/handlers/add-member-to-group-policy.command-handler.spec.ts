@@ -56,6 +56,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                     groupPolicyId: 100,
                     userId: 101,
                     memberId: 102,
+                    lastSyncDate: new Date('2025-10-01T00:00:00Z'),
                 } as GroupPolicyMemberEntity;
                 const groupPolicyMemberEntityCreateMethod = jest
                     .spyOn(GroupPolicyMemberEntity, 'create')
@@ -106,6 +107,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                     securityProviderId: groupPolicyMemberEntityToBeCreated.securityProviderId,
                     distinguishedName: groupPolicyMemberEntityToBeCreated.distinguishedName,
                     groupName: groupPolicyMemberEntityToBeCreated.groupName,
+                    lastSyncDate: groupPolicyMemberEntityToBeCreated.lastSyncDate,
                 });
             },
         );
