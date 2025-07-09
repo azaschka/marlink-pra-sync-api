@@ -7,6 +7,8 @@ export class AppConfigService {
     private static readonly DEFAULT_UNDEFINED_STRING = 'unknown';
     private static readonly DEFAULT_UNDEFINED_NUMBER = 0;
     private static readonly DEFAULT_PORT_NUMBER = 3000;
+    private static readonly DEFAULT_MARLINK_HTTP_PROXY = 'http://10.10.105.19:3128';
+    private static readonly DEFAULT_MARLINK_HTTPS_PROXY = 'https://10.10.105.19:3128';
     private static readonly DEFAULT_HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT = 80;
     private static readonly DEFAULT_HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 256;
     private static readonly DEFAULT_SYNC_CRON_JOB_TIMEZONE = 'Europe/Berlin';
@@ -20,6 +22,13 @@ export class AppConfigService {
 
     public get port(): number {
         return this.configService.get<number>('PORT') ?? AppConfigService.DEFAULT_PORT_NUMBER;
+    }
+
+    public get proxies() {
+        return {
+            http: this.configService.get<string>('HTTP_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTP_PROXY,
+            https: this.configService.get<string>('HTTPS_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTPS_PROXY,
+        };
     }
 
     public get health() {
