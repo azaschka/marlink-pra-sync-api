@@ -15,12 +15,14 @@ import { HttpClientService } from './services/http-client.service';
         HttpModule.registerAsync({
             imports: [AppConfigModule],
             inject: [AppConfigService],
-            useFactory: (config: AppConfigService) => ({
+            useFactory: (appConfigService: AppConfigService) => ({
                 timeout: 10000,
                 maxRedirects: 5,
                 proxy: false,
-                httpAgent: config.proxies.http ? new HttpProxyAgent(config.proxies.http) : undefined,
-                httpsAgent: config.proxies.https ? new HttpsProxyAgent(config.proxies.https) : undefined,
+                httpAgent: appConfigService.proxy.http ? new HttpProxyAgent(appConfigService.proxy.http) : undefined,
+                httpsAgent: appConfigService.proxy.https
+                    ? new HttpsProxyAgent(appConfigService.proxy.https)
+                    : undefined,
             }),
         }),
         AuthModule,

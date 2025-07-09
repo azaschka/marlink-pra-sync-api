@@ -46,6 +46,44 @@ describe('AppConfigService', () => {
         });
     });
 
+    describe('proxy', () => {
+        it.each([
+            {
+                input: {
+                    http: 'http://proxy.example.com:8080',
+                    https: 'https://proxy.example.com:8443',
+                },
+                expected: {
+                    http: 'http://proxy.example.com:8080',
+                    https: 'https://proxy.example.com:8443',
+                },
+            },
+            {
+                input: {},
+                expected: {
+                    http: 'http://10.10.105.19:3128',
+                    https: 'https://10.10.105.19:3128',
+                },
+            },
+        ])('should return the proxy configuration as expected', ({ input, expected }) => {
+            configService.get = jest.fn().mockImplementation((key: string) => {
+                switch (key) {
+                    case 'HTTP_PROXY':
+                        return input.http;
+                    case 'HTTPS_PROXY':
+                        return input.https;
+                    default:
+                        return undefined;
+                }
+            });
+
+            expect(service.proxy).toEqual({
+                http: expected.http,
+                https: expected.https,
+            });
+        });
+    });
+
     describe('health', () => {
         it.each([
             {

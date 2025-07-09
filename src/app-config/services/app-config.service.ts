@@ -24,7 +24,7 @@ export class AppConfigService {
         return this.configService.get<number>('PORT') ?? AppConfigService.DEFAULT_PORT_NUMBER;
     }
 
-    public get proxies() {
+    public get proxy() {
         return {
             http: this.configService.get<string>('HTTP_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTP_PROXY,
             https: this.configService.get<string>('HTTPS_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTPS_PROXY,
