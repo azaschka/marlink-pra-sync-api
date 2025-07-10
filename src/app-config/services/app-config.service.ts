@@ -16,6 +16,10 @@ export class AppConfigService {
 
     constructor(private readonly configService: ConfigService) {}
 
+    public get isProduction(): boolean {
+        return this.env.toLowerCase() === 'production' || this.env.toLowerCase() === 'prod';
+    }
+
     public get env(): string {
         return this.configService.get<string>('ENV') ?? AppConfigService.DEFAULT_UNDEFINED_STRING;
     }
@@ -25,9 +29,16 @@ export class AppConfigService {
     }
 
     public get proxy() {
+        if (this.isProduction) {
+            return {
+                http: this.configService.get<string>('HTTP_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTP_PROXY,
+                https: this.configService.get<string>('HTTPS_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTPS_PROXY,
+            };
+        }
+
         return {
-            http: this.configService.get<string>('HTTP_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTP_PROXY,
-            https: this.configService.get<string>('HTTPS_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTPS_PROXY,
+            http: this.configService.get<string>('HTTP_PROXY'),
+            https: this.configService.get<string>('HTTPS_PROXY'),
         };
     }
 
@@ -198,8 +209,8 @@ export class AppConfigService {
             password: this.configService.get<string>('DB_PASSWORD') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
             database: this.configService.get<string>('DB_NAME') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: this.env !== 'production',
-            logging: this.env !== 'production',
+            synchronize: !this.isProduction,
+            logging: !this.isProduction,
             autoLoadEntities: true,
         };
     }

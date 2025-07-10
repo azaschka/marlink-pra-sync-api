@@ -10,6 +10,28 @@ describe('AppConfigService', () => {
         service = new AppConfigService(configService);
     });
 
+    describe('isProduction', () => {
+        it.each([
+            {
+                input: 'production',
+                expected: true,
+            },
+            {
+                input: 'prod',
+                expected: true,
+            },
+            {
+                input: 'development',
+                expected: false,
+            },
+        ])('should return the correct production status', ({ input, expected }) => {
+            const configServiceGetMethod = jest.spyOn(configService, 'get').mockReturnValue(input);
+
+            expect(service.isProduction).toBe(expected);
+            expect(configServiceGetMethod).toHaveBeenCalledWith('ENV');
+        });
+    });
+
     describe('env', () => {
         it.each([
             {
@@ -50,6 +72,7 @@ describe('AppConfigService', () => {
         it.each([
             {
                 input: {
+                    env: 'production',
                     http: 'http://proxy.example.com:8080',
                     https: 'https://proxy.example.com:8443',
                 },
@@ -59,15 +82,39 @@ describe('AppConfigService', () => {
                 },
             },
             {
-                input: {},
+                input: {
+                    env: 'production',
+                },
                 expected: {
                     http: 'http://10.10.105.19:3128',
                     https: 'https://10.10.105.19:3128',
                 },
             },
+            {
+                input: {
+                    env: 'development',
+                    http: 'http://proxy.example.com:8080',
+                    https: 'https://proxy.example.com:8443',
+                },
+                expected: {
+                    http: 'http://proxy.example.com:8080',
+                    https: 'https://proxy.example.com:8443',
+                },
+            },
+            {
+                input: {
+                    env: 'development',
+                },
+                expected: {
+                    http: undefined,
+                    https: undefined,
+                },
+            },
         ])('should return the proxy configuration as expected', ({ input, expected }) => {
             configService.get = jest.fn().mockImplementation((key: string) => {
                 switch (key) {
+                    case 'ENV':
+                        return input.env;
                     case 'HTTP_PROXY':
                         return input.http;
                     case 'HTTPS_PROXY':
