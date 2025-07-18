@@ -18,11 +18,16 @@ export class GroupPolicyJumpGroupEntity implements GroupPolicyJumpGroup {
     @Column({ name: 'jump_policy_id', type: 'int', nullable: true })
     public jumpPolicyId?: number;
 
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyJumpGroups)
+    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyJumpGroups, {
+        onDelete: 'CASCADE',
+    })
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.groupPolicyJumpGroups, { eager: true })
+    @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.groupPolicyJumpGroups, {
+        eager: true,
+        onDelete: 'CASCADE',
+    })
     @JoinColumn({ name: 'jump_group_id' })
     public jumpGroup!: JumpGroupEntity;
 

@@ -20,11 +20,11 @@ export class TeamUserEntity implements TeamUser {
     })
     public roleType!: UserTeamRoleType;
 
-    @ManyToOne(() => TeamEntity, (team) => team.teamUsers)
+    @ManyToOne(() => TeamEntity, (team) => team.teamUsers, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'team_id' })
     public team!: TeamEntity;
 
-    @ManyToOne(() => UserEntity, (user) => user.teamUsers, { eager: true })
+    @ManyToOne(() => UserEntity, (user) => user.teamUsers, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     public user!: UserEntity;
 

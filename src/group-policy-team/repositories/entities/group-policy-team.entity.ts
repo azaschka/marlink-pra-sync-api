@@ -16,11 +16,11 @@ export class GroupPolicyTeamEntity implements GroupPolicyTeam {
     @Column({ name: 'role_type', type: 'enum', enum: GroupPolicyTeamRoleType, nullable: true })
     public roleType?: GroupPolicyTeamRoleType;
 
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyTeams)
+    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyTeams, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => TeamEntity, (team) => team.groupPolicyTeams, { eager: true })
+    @ManyToOne(() => TeamEntity, (team) => team.groupPolicyTeams, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'team_id' })
     public team!: TeamEntity;
 

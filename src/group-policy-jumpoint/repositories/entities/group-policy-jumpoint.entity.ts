@@ -12,11 +12,11 @@ export class GroupPolicyJumpointEntity implements GroupPolicyJumpoint {
     @PrimaryColumn({ name: 'jumpoint_id', type: 'int' })
     public jumpointId!: number;
 
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyJumpoints)
+    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyJumpoints, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.groupPolicyJumpoints, { eager: true })
+    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.groupPolicyJumpoints, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'jumpoint_id' })
     public jumpoint!: JumpointEntity;
 

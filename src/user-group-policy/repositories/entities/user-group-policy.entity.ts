@@ -12,11 +12,14 @@ export class UserGroupPolicyEntity implements UserGroupPolicy {
     @PrimaryColumn({ name: 'group_policy_id', type: 'int' })
     public groupPolicyId!: number;
 
-    @ManyToOne(() => UserEntity, (user) => user.userGroupPolicies)
+    @ManyToOne(() => UserEntity, (user) => user.userGroupPolicies, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     public user!: UserEntity;
 
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.userGroupPolicies, { eager: true })
+    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.userGroupPolicies, {
+        eager: true,
+        onDelete: 'CASCADE',
+    })
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 

@@ -24,11 +24,11 @@ export class GroupPolicyMemberEntity implements GroupPolicyMember {
     @Column({ name: 'group_name', type: 'varchar', nullable: true })
     public groupName?: string;
 
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyMembers)
+    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyMembers, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy!: GroupPolicyEntity;
 
-    @ManyToOne(() => UserEntity, (user) => user.groupPolicyMembers, { eager: true })
+    @ManyToOne(() => UserEntity, (user) => user.groupPolicyMembers, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
     public user!: UserEntity;
 
