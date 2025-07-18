@@ -222,47 +222,15 @@ export class AppConfigService {
             cronJobTimezone:
                 this.configService.get<string>('SYNC_CRON_JOB_TIMEZONE') ??
                 AppConfigService.DEFAULT_SYNC_CRON_JOB_TIMEZONE,
-            userCronJobExpression:
-                this.configService.get<string>('SYNC_USER_CRON_JOB_EXPRESSION') ??
+            cronJobExpressions:
+                this.configService.get<string>('SYNC_CRON_JOB_EXPRESSIONS') ??
                 AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            teamCronJobExpression:
-                this.configService.get<string>('SYNC_TEAM_CRON_JOB_EXPRESSION') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            jumpClientCronJobExpression:
-                this.configService.get<string>('SYNC_JUMP_CLIENT_CRON_JOB_EXPRESSION') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            jumpClientInstallerCronJobExpression:
-                this.configService.get<string>('SYNC_JUMP_CLIENT_INSTALLER_CRON_JOB_EXPRESSION') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            groupPolicyCronJobExpression:
-                this.configService.get<string>('SYNC_GROUP_POLICY_CRON_JOB_EXPRESSION') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            jumpPolicyCronJobExpression:
-                this.configService.get<string>('SYNC_JUMP_POLICY_CRON_JOB_EXPRESSION') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            jumpGroupCronJobExpression:
-                this.configService.get<string>('SYNC_JUMP_GROUP_CRON_JOB_EXPRESSION') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            jumpointCronJobExpression:
-                this.configService.get<string>('SYNC_JUMPOINT_CRON_JOB_EXPRESSION') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            jumpItem: {
-                remoteRdpCronJobExpression:
-                    this.configService.get<string>('SYNC_JUMP_ITEM_REMOTE_RDP_CRON_JOB_EXPRESSION') ??
-                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-                shellJumpCronJobExpression:
-                    this.configService.get<string>('SYNC_JUMP_ITEM_SHELL_JUMP_CRON_JOB_EXPRESSION') ??
-                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-                webJumpCronJobExpression:
-                    this.configService.get<string>('SYNC_JUMP_ITEM_WEB_JUMP_CRON_JOB_EXPRESSION') ??
-                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-                remoteVncCronJobExpression:
-                    this.configService.get<string>('SYNC_JUMP_ITEM_REMOTE_VNC_CRON_JOB_EXPRESSION') ??
-                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-                protocolTunnelJumpCronJobExpression:
-                    this.configService.get<string>('SYNC_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_CRON_JOB_EXPRESSION') ??
-                    AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
-            },
+            cronJobRetryAttempts:
+                this.configService.get<number>('SYNC_CRON_JOB_RETRY_ATTEMPTS') ??
+                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+            cronJobRetryDelayInMs:
+                this.configService.get<number>('SYNC_CRON_JOB_RETRY_DELAY_IN_MS') ??
+                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
         };
     }
 }

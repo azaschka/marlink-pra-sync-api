@@ -1,6 +1,7 @@
 import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { AppConfigService } from '../../app-config/services/app-config.service';
 import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
 import { GroupPoliciesSyncResult } from '../../group-policy/models';
 import { SyncJumpClientInstallersCommand, SyncJumpClientsCommand } from '../../jump-client/commands';
@@ -31,7 +32,56 @@ import { SyncResultDtoOutput } from '../dtos/outputs';
 @ApiTags('Sync')
 @Controller('sync')
 export class SyncController {
-    constructor(private readonly commandBus: CommandBus) {}
+    constructor(
+        private readonly commandBus: CommandBus,
+        private readonly appConfigService: AppConfigService,
+    ) {}
+
+    @Post()
+    @ApiOkResponse()
+    @HttpCode(HttpStatus.OK)
+    public async syncAll(): Promise<unknown> {
+        const syncOrders = [
+            { name: 'protocol-tunnel-jumps', func: () => this.syncJumpItemsProtocolTunnelJumps() },
+            { name: 'remote-rdps', func: () => this.syncJumpItemsRemoteRdps() },
+            { name: 'remote-vncs', func: () => this.syncJumpItemsRemoteVncs() },
+            { name: 'shell-jumps', func: () => this.syncJumpItemsShellJumps() },
+            { name: 'web-jumps', func: () => this.syncJumpItemsWebJumps() },
+            { name: 'jump-clients', func: () => this.syncJumpClients() },
+            { name: 'jump-client-installers', func: () => this.syncJumpClientInstallers() },
+            { name: 'jump-policies', func: () => this.syncJumpPolicies() },
+            { name: 'jump-groups', func: () => this.syncJumpGroups() },
+            { name: 'jumpoints', func: () => this.syncJumpoints() },
+            { name: 'users', func: () => this.syncUsers() }, // Automatically trigger sync for relational data with group policies
+            { name: 'teams', func: () => this.syncTeams() }, // Automatically trigger sync for relational data with users
+            { name: 'group-policies', func: () => this.syncGroupPolicies() }, // Automatically trigger sync for relational data with jump groups, jumpoints, users, teams
+        ];
+
+        const syncResults = [];
+
+        for (const sync of syncOrders) {
+            for (let attempt = 1; attempt <= this.appConfigService.sync.cronJobRetryAttempts; attempt++) {
+                try {
+                    console.log(`Starting sync for ${sync.name}, attempt ${attempt}`);
+
+                    const syncResult = await sync.func();
+                    syncResults.push({ name: sync.name, ...syncResult });
+
+                    break; // success, move to next function
+                } catch (error) {
+                    console.error(`Sync failed on attempt ${attempt} for ${sync.name}:`, error);
+
+                    if (attempt === this.appConfigService.sync.cronJobRetryAttempts) {
+                        console.error(`All sync attempts failed for ${sync.name}.`);
+                    }
+
+                    await new Promise((r) => setTimeout(r, this.appConfigService.sync.cronJobRetryDelayInMs));
+                }
+            }
+        }
+
+        return syncResults;
+    }
 
     @Post('users')
     @ApiOkResponse({ type: SyncResultDtoOutput })

@@ -655,40 +655,16 @@ describe('AppConfigService', () => {
                 input: {
                     maxBatchSize: 100,
                     cronJobTimezone: 'Europe/Berlin',
-                    userCronJobExpression: '0 10 * * *',
-                    teamCronJobExpression: '0 10 * * *',
-                    jumpClientCronJobExpression: '0 10 * * *',
-                    jumpClientInstallerCronJobExpression: '0 10 * * *',
-                    groupPolicyCronJobExpression: '0 10 * * *',
-                    jumpPolicyCronJobExpression: '0 10 * * *',
-                    jumpGroupCronJobExpression: '0 10 * * *',
-                    jumpointCronJobExpression: '0 10 * * *',
-                    jumpItem: {
-                        remoteRdpCronJobExpression: '0 10 * * *',
-                        shellJumpCronJobExpression: '0 10 * * *',
-                        webJumpCronJobExpression: '0 10 * * *',
-                        remoteVncCronJobExpression: '0 10 * * *',
-                        protocolTunnelJumpCronJobExpression: '0 10 * * *',
-                    },
+                    cronJobExpressions: '0 10 * * *',
+                    cronJobRetryAttempts: 5,
+                    cronJobRetryDelayInMs: 10000,
                 },
                 expected: {
                     maxBatchSize: 100,
                     cronJobTimezone: 'Europe/Berlin',
-                    userCronJobExpression: '0 10 * * *',
-                    teamCronJobExpression: '0 10 * * *',
-                    jumpClientCronJobExpression: '0 10 * * *',
-                    jumpClientInstallerCronJobExpression: '0 10 * * *',
-                    groupPolicyCronJobExpression: '0 10 * * *',
-                    jumpPolicyCronJobExpression: '0 10 * * *',
-                    jumpGroupCronJobExpression: '0 10 * * *',
-                    jumpointCronJobExpression: '0 10 * * *',
-                    jumpItem: {
-                        remoteRdpCronJobExpression: '0 10 * * *',
-                        shellJumpCronJobExpression: '0 10 * * *',
-                        webJumpCronJobExpression: '0 10 * * *',
-                        remoteVncCronJobExpression: '0 10 * * *',
-                        protocolTunnelJumpCronJobExpression: '0 10 * * *',
-                    },
+                    cronJobExpressions: '0 10 * * *',
+                    cronJobRetryAttempts: 5,
+                    cronJobRetryDelayInMs: 10000,
                 },
             },
             {
@@ -696,21 +672,9 @@ describe('AppConfigService', () => {
                 expected: {
                     maxBatchSize: 0,
                     cronJobTimezone: 'Europe/Berlin',
-                    userCronJobExpression: '0 0 * * *',
-                    teamCronJobExpression: '0 0 * * *',
-                    jumpClientCronJobExpression: '0 0 * * *',
-                    jumpClientInstallerCronJobExpression: '0 0 * * *',
-                    groupPolicyCronJobExpression: '0 0 * * *',
-                    jumpPolicyCronJobExpression: '0 0 * * *',
-                    jumpGroupCronJobExpression: '0 0 * * *',
-                    jumpointCronJobExpression: '0 0 * * *',
-                    jumpItem: {
-                        remoteRdpCronJobExpression: '0 0 * * *',
-                        shellJumpCronJobExpression: '0 0 * * *',
-                        webJumpCronJobExpression: '0 0 * * *',
-                        remoteVncCronJobExpression: '0 0 * * *',
-                        protocolTunnelJumpCronJobExpression: '0 0 * * *',
-                    },
+                    cronJobExpressions: '0 0 * * *',
+                    cronJobRetryAttempts: 0,
+                    cronJobRetryDelayInMs: 0,
                 },
             },
         ])('should return the sync configuration as expected', ({ input, expected }) => {
@@ -721,66 +685,25 @@ describe('AppConfigService', () => {
                 if (key === 'SYNC_CRON_JOB_TIMEZONE') {
                     return input.cronJobTimezone;
                 }
-                if (key === 'SYNC_USER_CRON_JOB_EXPRESSION') {
-                    return input.userCronJobExpression;
+                if (key === 'SYNC_CRON_JOB_EXPRESSIONS') {
+                    return input.cronJobExpressions;
                 }
-                if (key === 'SYNC_TEAM_CRON_JOB_EXPRESSION') {
-                    return input.teamCronJobExpression;
+                if (key === 'SYNC_CRON_JOB_RETRY_ATTEMPTS') {
+                    return input.cronJobRetryAttempts;
                 }
-                if (key === 'SYNC_JUMP_CLIENT_CRON_JOB_EXPRESSION') {
-                    return input.jumpClientCronJobExpression;
+                if (key === 'SYNC_CRON_JOB_RETRY_DELAY_IN_MS') {
+                    return input.cronJobRetryDelayInMs;
                 }
-                if (key === 'SYNC_JUMP_CLIENT_INSTALLER_CRON_JOB_EXPRESSION') {
-                    return input.jumpClientInstallerCronJobExpression;
-                }
-                if (key === 'SYNC_GROUP_POLICY_CRON_JOB_EXPRESSION') {
-                    return input.groupPolicyCronJobExpression;
-                }
-                if (key === 'SYNC_JUMP_POLICY_CRON_JOB_EXPRESSION') {
-                    return input.jumpPolicyCronJobExpression;
-                }
-                if (key === 'SYNC_JUMP_GROUP_CRON_JOB_EXPRESSION') {
-                    return input.jumpGroupCronJobExpression;
-                }
-                if (key === 'SYNC_JUMPOINT_CRON_JOB_EXPRESSION') {
-                    return input.jumpointCronJobExpression;
-                }
-                if (key === 'SYNC_JUMP_ITEM_REMOTE_RDP_CRON_JOB_EXPRESSION') {
-                    return input.jumpItem?.remoteRdpCronJobExpression;
-                }
-                if (key === 'SYNC_JUMP_ITEM_SHELL_JUMP_CRON_JOB_EXPRESSION') {
-                    return input.jumpItem?.shellJumpCronJobExpression;
-                }
-                if (key === 'SYNC_JUMP_ITEM_WEB_JUMP_CRON_JOB_EXPRESSION') {
-                    return input.jumpItem?.webJumpCronJobExpression;
-                }
-                if (key === 'SYNC_JUMP_ITEM_REMOTE_VNC_CRON_JOB_EXPRESSION') {
-                    return input.jumpItem?.remoteVncCronJobExpression;
-                }
-                if (key === 'SYNC_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_CRON_JOB_EXPRESSION') {
-                    return input.jumpItem?.protocolTunnelJumpCronJobExpression;
-                }
+
                 return undefined;
             });
 
             expect(service.sync).toEqual({
                 maxBatchSize: expected.maxBatchSize,
                 cronJobTimezone: expected.cronJobTimezone,
-                userCronJobExpression: expected.userCronJobExpression,
-                teamCronJobExpression: expected.teamCronJobExpression,
-                jumpClientCronJobExpression: expected.jumpClientCronJobExpression,
-                jumpClientInstallerCronJobExpression: expected.jumpClientInstallerCronJobExpression,
-                groupPolicyCronJobExpression: expected.groupPolicyCronJobExpression,
-                jumpPolicyCronJobExpression: expected.jumpPolicyCronJobExpression,
-                jumpGroupCronJobExpression: expected.jumpGroupCronJobExpression,
-                jumpointCronJobExpression: expected.jumpointCronJobExpression,
-                jumpItem: {
-                    remoteRdpCronJobExpression: expected.jumpItem?.remoteRdpCronJobExpression,
-                    shellJumpCronJobExpression: expected.jumpItem?.shellJumpCronJobExpression,
-                    webJumpCronJobExpression: expected.jumpItem?.webJumpCronJobExpression,
-                    remoteVncCronJobExpression: expected.jumpItem?.remoteVncCronJobExpression,
-                    protocolTunnelJumpCronJobExpression: expected.jumpItem?.protocolTunnelJumpCronJobExpression,
-                },
+                cronJobExpressions: expected.cronJobExpressions,
+                cronJobRetryAttempts: expected.cronJobRetryAttempts,
+                cronJobRetryDelayInMs: expected.cronJobRetryDelayInMs,
             });
         });
     });

@@ -1,13 +1,71 @@
 import { CommandBus } from '@nestjs/cqrs';
+import { AppConfigService } from '../../app-config/services/app-config.service';
 import { SyncController } from './sync.controller';
 
 describe('SyncController', () => {
+    let appConfigService: AppConfigService;
     let commandBus: CommandBus;
     let controller: SyncController;
 
     beforeEach(() => {
+        // Mock console.log to prevent cluttering the test output
+        jest.spyOn(console, 'log').mockImplementation(() => {});
+        appConfigService = mockAppConfigService();
         commandBus = mockCommandBus();
-        controller = new SyncController(commandBus);
+        controller = new SyncController(commandBus, appConfigService);
+    });
+
+    describe('syncAll', () => {
+        it('should call all sync methods and return the aggregated result', async () => {
+            const expectedResult = {
+                createdIds: [],
+                updatedIds: [],
+                deletedIds: [],
+            };
+            const syncUsersMethod = jest.spyOn(controller, 'syncUsers').mockResolvedValue(expectedResult);
+            const syncTeamsMethod = jest.spyOn(controller, 'syncTeams').mockResolvedValue(expectedResult);
+            const syncJumpClientsMethod = jest.spyOn(controller, 'syncJumpClients').mockResolvedValue(expectedResult);
+            const syncJumpClientInstallersMethod = jest
+                .spyOn(controller, 'syncJumpClientInstallers')
+                .mockResolvedValue(expectedResult);
+            const syncGroupPoliciesMethod = jest
+                .spyOn(controller, 'syncGroupPolicies')
+                .mockResolvedValue(expectedResult);
+            const syncJumpPoliciesMethod = jest.spyOn(controller, 'syncJumpPolicies').mockResolvedValue(expectedResult);
+            const syncJumpGroupsMethod = jest.spyOn(controller, 'syncJumpGroups').mockResolvedValue(expectedResult);
+            const syncJumpointsMethod = jest.spyOn(controller, 'syncJumpoints').mockResolvedValue(expectedResult);
+            const syncJumpItemsProtocolTunnelJumpsMethod = jest
+                .spyOn(controller, 'syncJumpItemsProtocolTunnelJumps')
+                .mockResolvedValue(expectedResult);
+            const syncJumpItemsRemoteRdpsMethod = jest
+                .spyOn(controller, 'syncJumpItemsRemoteRdps')
+                .mockResolvedValue(expectedResult);
+            const syncJumpItemsRemoteVncsMethod = jest
+                .spyOn(controller, 'syncJumpItemsRemoteVncs')
+                .mockResolvedValue(expectedResult);
+            const syncJumpItemsShellJumpsMethod = jest
+                .spyOn(controller, 'syncJumpItemsShellJumps')
+                .mockResolvedValue(expectedResult);
+            const syncJumpItemsWebJumpsMethod = jest
+                .spyOn(controller, 'syncJumpItemsWebJumps')
+                .mockResolvedValue(expectedResult);
+
+            await controller.syncAll();
+
+            expect(syncUsersMethod).toHaveBeenCalledTimes(1);
+            expect(syncTeamsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpClientsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpClientInstallersMethod).toHaveBeenCalledTimes(1);
+            expect(syncGroupPoliciesMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpPoliciesMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpGroupsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpointsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpItemsProtocolTunnelJumpsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpItemsRemoteRdpsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpItemsRemoteVncsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpItemsShellJumpsMethod).toHaveBeenCalledTimes(1);
+            expect(syncJumpItemsWebJumpsMethod).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe('syncUsers', () => {
@@ -270,6 +328,15 @@ describe('SyncController', () => {
         });
     });
 });
+
+function mockAppConfigService() {
+    return {
+        sync: {
+            cronJobRetryAttempts: 3,
+            cronJobRetryDelayInMs: 1000,
+        },
+    } as AppConfigService;
+}
 
 function mockCommandBus() {
     const commandBus = {} as CommandBus;
