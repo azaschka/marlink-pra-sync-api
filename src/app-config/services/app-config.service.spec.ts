@@ -607,7 +607,7 @@ describe('AppConfigService', () => {
                     password: 'unknown',
                     database: 'unknown',
                     synchronize: true,
-                    logging: true,
+                    logging: false,
                     autoLoadEntities: true,
                 },
             },

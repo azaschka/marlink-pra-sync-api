@@ -6,7 +6,7 @@ import { DateUtility } from '../../shared/utilities';
 import { LogActionType } from '../enums';
 import { LogEntity } from '../repositories/entities';
 import { LogRepositoryService } from '../repositories/services/log-repository.service';
-import { LogFilterService } from '../services/log-filter.service';
+import { LogFilterService } from './log-filter.service';
 import { LogService } from './log.service';
 
 const mockServiceName = 'test-service';
@@ -134,12 +134,40 @@ describe('LogService', () => {
         );
         expect(result).toBe(expectedResults);
     });
+
+    it('should count logs', async () => {
+        const expectedCount = 5;
+        const logRepositoryServiceCountByDateBetweenMethod = jest
+            .spyOn(logRepositoryService, 'countByDateBetween')
+            .mockResolvedValue(expectedCount);
+
+        const result = await logService.countLogs(new Date('2024-01-01'), new Date('2024-01-02'));
+        expect(logRepositoryServiceCountByDateBetweenMethod).toHaveBeenCalledWith(
+            new Date('2024-01-01'),
+            new Date('2024-01-02'),
+        );
+        expect(result).toBe(expectedCount);
+    });
+
+    it('should clear logs', async () => {
+        const logRepositoryServiceDeleteByDateBetweenMethod = jest
+            .spyOn(logRepositoryService, 'deleteByDateBetween')
+            .mockResolvedValue();
+
+        await logService.clearLogs(new Date('2024-01-01'), new Date('2024-01-02'));
+        expect(logRepositoryServiceDeleteByDateBetweenMethod).toHaveBeenCalledWith(
+            new Date('2024-01-01'),
+            new Date('2024-01-02'),
+        );
+    });
 });
 
 function mockLogRepositoryService() {
     const logRepositoryService = {} as LogRepositoryService;
     logRepositoryService.create = jest.fn();
     logRepositoryService.findByDateBetween = jest.fn();
+    logRepositoryService.countByDateBetween = jest.fn();
+    logRepositoryService.deleteByDateBetween = jest.fn();
 
     return logRepositoryService;
 }

@@ -210,7 +210,7 @@ export class AppConfigService {
             database: this.configService.get<string>('DB_NAME') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: !this.isProduction,
-            logging: !this.isProduction,
+            logging: false,
             autoLoadEntities: true,
         };
     }
