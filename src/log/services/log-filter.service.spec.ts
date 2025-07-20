@@ -1,3 +1,5 @@
+import { CreateBeyondtrustInstanceBackupCommand } from '../../beyondtrust-instance-backup/commands';
+import { CreateBackupCommand as BTCreateBackupCommand } from '../../beyondtrust-pra-conf-api/backup/commands';
 import {
     CreateUserCommand as BTCreateUserCommand,
     ModifyUserCommand as BTModifyUserCommand,
@@ -20,6 +22,8 @@ describe('LogFilterService', () => {
             new BTCreateUserCommand('transaction-2', 'display-name', 'username', 'password123'),
             new ModifyUserCommand('transaction-3', 123, 'display-name', 'username', 'password123'),
             new BTModifyUserCommand('transaction-4', 123, 'display-name', 'username', 'password123'),
+            new CreateBeyondtrustInstanceBackupCommand('transaction-5', 123, 'password123'),
+            new BTCreateBackupCommand('transaction-6', 'password123'),
         ])('should return as expected', (command) => {
             const expectedResult = { transactionId: 'transaction-123' } as BaseCommand;
             jest.spyOn(ObjectUtility, 'stripProperties').mockReturnValue(expectedResult);

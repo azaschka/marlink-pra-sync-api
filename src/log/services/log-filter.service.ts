@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { CreateBeyondtrustInstanceBackupCommand } from '../../beyondtrust-instance-backup/commands';
+import { CreateBackupCommand as BTCreateBackupCommand } from '../../beyondtrust-pra-conf-api/backup/commands';
 import {
     CreateUserCommand as BTCreateUserCommand,
     ModifyUserCommand as BTModifyUserCommand,
@@ -14,7 +16,9 @@ export class LogFilterService {
             command instanceof CreateUserCommand ||
             command instanceof BTCreateUserCommand ||
             command instanceof ModifyUserCommand ||
-            command instanceof BTModifyUserCommand
+            command instanceof BTModifyUserCommand ||
+            command instanceof CreateBeyondtrustInstanceBackupCommand ||
+            command instanceof BTCreateBackupCommand
         ) {
             return ObjectUtility.stripProperties(command, 'password');
         }

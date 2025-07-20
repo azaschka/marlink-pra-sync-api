@@ -27,6 +27,7 @@ export class ModifyBeyondtrustInstanceCommandHandler implements ICommandHandler<
             command.authClientSecret ?? beyondTrustInstanceEntity.authClientSecret,
             command.oauth2TokenUrl ?? beyondTrustInstanceEntity.oauth2TokenUrl,
             command.apiBaseUrl ?? beyondTrustInstanceEntity.apiBaseUrl,
+            command.backupApiUrl ?? beyondTrustInstanceEntity.backupApiUrl,
         );
 
         await this.beyondtrustInstanceRepositoryService.createOrUpdateById(modifiedBeyondTrustInstanceEntity);

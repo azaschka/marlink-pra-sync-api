@@ -19,6 +19,7 @@ export class CreateBeyondtrustInstanceCommandHandler implements ICommandHandler<
             command.authClientSecret,
             command.oauth2TokenUrl,
             command.apiBaseUrl,
+            command.backupApiUrl,
         );
         const createdBeyondtrustInstance =
             await this.beyondtrustInstanceRepositoryService.create(beyondTrustInstanceEntity);

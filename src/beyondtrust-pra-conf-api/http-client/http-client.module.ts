@@ -16,7 +16,7 @@ import { HttpClientService } from './services/http-client.service';
             imports: [AppConfigModule],
             inject: [AppConfigService],
             useFactory: (appConfigService: AppConfigService) => ({
-                timeout: 10000,
+                timeout: 3 * 60 * 1000, // 3 minutes
                 maxRedirects: 5,
                 proxy: false,
                 httpAgent: appConfigService.proxy.http ? new HttpProxyAgent(appConfigService.proxy.http) : undefined,

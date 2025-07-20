@@ -79,6 +79,7 @@ describe('ModifyBeyondtrustInstanceCommandHandler', () => {
                     'auth-client-secret-2',
                     'https://oauth2.example2.com/token',
                     'https://api.example2.com',
+                    'https://backup-api.example2.com',
                 ),
             );
 
@@ -91,6 +92,7 @@ describe('ModifyBeyondtrustInstanceCommandHandler', () => {
                 'auth-client-secret-2',
                 'https://oauth2.example2.com/token',
                 'https://api.example2.com',
+                'https://backup-api.example2.com',
             );
             expect(beyondtrustInstanceRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
                 beyondtrustInstanceEntityToBeCreated,

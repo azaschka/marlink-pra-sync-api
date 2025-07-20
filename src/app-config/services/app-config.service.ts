@@ -197,6 +197,11 @@ export class AppConfigService {
                         AppConfigService.DEFAULT_UNDEFINED_NUMBER,
                 },
             },
+            backup: {
+                apiUrl:
+                    this.configService.get<string>('BEYONDTRUST_BACKUP_API_URL') ??
+                    AppConfigService.DEFAULT_UNDEFINED_STRING,
+            },
         };
     }
 
@@ -212,6 +217,15 @@ export class AppConfigService {
             synchronize: !this.isProduction,
             logging: false,
             autoLoadEntities: true,
+        };
+    }
+
+    public get storage() {
+        return {
+            rootPath: this.configService.get<string>('STORAGE_ROOT_PATH') ?? AppConfigService.DEFAULT_UNDEFINED_STRING,
+            beyondTrustBackupPath:
+                this.configService.get<string>('STORAGE_BEYONDTRUST_BACKUP_PATH') ??
+                AppConfigService.DEFAULT_UNDEFINED_STRING,
         };
     }
 

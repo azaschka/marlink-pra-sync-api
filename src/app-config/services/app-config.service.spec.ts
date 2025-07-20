@@ -251,6 +251,9 @@ describe('AppConfigService', () => {
                             retryDelayInMs: 500,
                         },
                     },
+                    backup: {
+                        apiUrl: 'backup-api-url-1',
+                    },
                 },
                 expected: {
                     auth: {
@@ -330,6 +333,9 @@ describe('AppConfigService', () => {
                             retryAttempts: 10,
                             retryDelayInMs: 500,
                         },
+                    },
+                    backup: {
+                        apiUrl: 'backup-api-url-1',
                     },
                 },
             },
@@ -414,6 +420,9 @@ describe('AppConfigService', () => {
                             retryDelayInMs: 0,
                         },
                     },
+                    backup: {
+                        apiUrl: 'unknown',
+                    },
                 },
             },
         ])('should return the beyondTrust configuration as expected', ({ input, expected }) => {
@@ -483,6 +492,8 @@ describe('AppConfigService', () => {
                         return input.api?.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
                         return input.api?.communication?.retryDelayInMs;
+                    case 'BEYONDTRUST_BACKUP_API_URL':
+                        return input.backup?.apiUrl;
                     default:
                         return undefined;
                 }
@@ -567,6 +578,9 @@ describe('AppConfigService', () => {
                         retryDelayInMs: expected.api.communication.retryDelayInMs,
                     },
                 },
+                backup: {
+                    apiUrl: expected.backup.apiUrl,
+                },
             });
         });
     });
@@ -645,6 +659,37 @@ describe('AppConfigService', () => {
                 synchronize: expected.synchronize,
                 logging: expected.logging,
                 autoLoadEntities: expected.autoLoadEntities,
+            });
+        });
+    });
+
+    describe('storage', () => {
+        it.each([
+            {
+                input: {
+                    rootPath: 'root/path',
+                    beyondTrustBackupPath: 'https://backup.api.url',
+                },
+                expected: {
+                    rootPath: 'root/path',
+                    beyondTrustBackupPath: 'https://backup.api.url',
+                },
+            },
+        ])('should return the storage configuration as expected', ({ input, expected }) => {
+            configService.get = jest.fn().mockImplementation((key: string) => {
+                if (key === 'STORAGE_ROOT_PATH') {
+                    return input.rootPath;
+                }
+                if (key === 'STORAGE_BEYONDTRUST_BACKUP_PATH') {
+                    return input.beyondTrustBackupPath;
+                }
+
+                return undefined;
+            });
+
+            expect(service.storage).toEqual({
+                rootPath: expected.rootPath,
+                beyondTrustBackupPath: expected.beyondTrustBackupPath,
             });
         });
     });
