@@ -3,7 +3,11 @@ import { Response } from 'express';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateBeyondtrustInstanceBackupCommand } from '../commands';
 import { BeyondtrustInstanceBackup, BeyondtrustInstanceBackupContent } from '../models';
-import { RetrieveBeyondtrustInstanceBackupContentQuery, RetrieveBeyondtrustInstanceBackupsQuery } from '../queries';
+import {
+    RetrieveBeyondtrustInstanceBackupByIdQuery,
+    RetrieveBeyondtrustInstanceBackupContentQuery,
+    RetrieveBeyondtrustInstanceBackupsQuery,
+} from '../queries';
 import { BeyondtrustInstanceBackupController } from './beyondtrust-instance-backup.controller';
 
 describe('BeyondtrustInstanceBackupController', () => {
@@ -48,6 +52,20 @@ describe('BeyondtrustInstanceBackupController', () => {
 
             expect(commandBusExecuteSpy).toHaveBeenCalledWith(
                 new CreateBeyondtrustInstanceBackupCommand('uuid-123', 123, 'password-1'),
+            );
+            expect(result).toBe(expectedResult);
+        });
+    });
+
+    describe('retrieveBeyondtrustInstanceBackup', () => {
+        it('should execute the query bus with the correct parameters and return the backup', async () => {
+            const expectedResult = { id: 456 } as BeyondtrustInstanceBackup;
+            const queryBusExecuteSpy = jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
+
+            const result = await controller.retrieveBeyondtrustInstanceBackup(undefined, 123, 456);
+
+            expect(queryBusExecuteSpy).toHaveBeenCalledWith(
+                new RetrieveBeyondtrustInstanceBackupByIdQuery('uuid-123', 123, 456),
             );
             expect(result).toBe(expectedResult);
         });

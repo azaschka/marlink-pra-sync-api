@@ -11,7 +11,11 @@ import {
     BeyondtrustInstanceBackupRetrievedDtoOutput,
 } from '../dtos/outputs';
 import { BeyondtrustInstanceBackup, BeyondtrustInstanceBackupContent } from '../models';
-import { RetrieveBeyondtrustInstanceBackupContentQuery, RetrieveBeyondtrustInstanceBackupsQuery } from '../queries';
+import {
+    RetrieveBeyondtrustInstanceBackupByIdQuery,
+    RetrieveBeyondtrustInstanceBackupContentQuery,
+    RetrieveBeyondtrustInstanceBackupsQuery,
+} from '../queries';
 
 @ApiTransactionIdHeader()
 @ApiTags('Beyondtrust Instances')
@@ -56,6 +60,26 @@ export class BeyondtrustInstanceBackupController {
         const result = await this.commandBus.execute<CreateBeyondtrustInstanceBackupCommand, BeyondtrustInstanceBackup>(
             new CreateBeyondtrustInstanceBackupCommand(transactionId, id, dtoInput.password),
         );
+
+        return result;
+    }
+
+    @Get(':id/backups/:backupId')
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiParam({ name: 'backupId', type: Number, required: true, description: 'Unique identifier for the backup.' })
+    @ApiOkResponse({ type: BeyondtrustInstanceBackupRetrievedDtoOutput, isArray: true })
+    @ApiNotFoundResponse({
+        description: 'Indicates either the resource or the backup was not found.',
+    })
+    public async retrieveBeyondtrustInstanceBackup(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @Param('id') id: number,
+        @Param('backupId') backupId: number,
+    ): Promise<BeyondtrustInstanceBackupRetrievedDtoOutput> {
+        const result = await this.queryBus.execute<
+            RetrieveBeyondtrustInstanceBackupByIdQuery,
+            BeyondtrustInstanceBackup
+        >(new RetrieveBeyondtrustInstanceBackupByIdQuery(transactionId, id, backupId));
 
         return result;
     }

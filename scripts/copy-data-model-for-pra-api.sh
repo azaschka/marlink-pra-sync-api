@@ -7,6 +7,7 @@ BASE_DIR="$PWD"
 # List of source directories
 SOURCES=(
     "$BASE_DIR/src/beyondtrust-instance"
+    "$BASE_DIR/src/beyondtrust-instance-backup"
     "$BASE_DIR/src/group-policy"
     "$BASE_DIR/src/group-policy-jump-group"
     "$BASE_DIR/src/group-policy-jumpoint"
@@ -17,6 +18,7 @@ SOURCES=(
     "$BASE_DIR/src/jump-item"
     "$BASE_DIR/src/jump-policy"
     "$BASE_DIR/src/jumpoint"
+    "$BASE_DIR/src/log"
     "$BASE_DIR/src/team"
     "$BASE_DIR/src/team-user"
     "$BASE_DIR/src/user"
