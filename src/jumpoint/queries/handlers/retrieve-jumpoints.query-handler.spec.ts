@@ -1,4 +1,5 @@
 import { QueryBus } from '@nestjs/cqrs';
+import { Like } from 'typeorm';
 import { JumpointRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/jumpoint/dtos/outputs';
 import { JumpointPlatformType as BTJumpointPlatformType } from '../../../beyondtrust-pra-conf-api/jumpoint/enums';
 import { RetrieveJumpointsQuery as BTRetrieveJumpointsQuery } from '../../../beyondtrust-pra-conf-api/jumpoint/queries';
@@ -87,15 +88,9 @@ describe('RetrieveJumpointsQueryHandler', () => {
             expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
         });
 
-        it('should call the repo with correct parameter and return its value', async () => {
-            const expectedJumpoints = [] as JumpointEntity[];
-            const jumpointRepositoryServiceFindByMethod = jest
-                .spyOn(jumpointRepositoryService, 'findBy')
-                .mockResolvedValue(expectedJumpoints);
-            const queryBusExecuteMethod = jest.spyOn(queryBus, 'execute');
-
-            const result = await handler.execute(
-                new RetrieveJumpointsQuery(
+        it.each([
+            {
+                query: new RetrieveJumpointsQuery(
                     'transaction-2',
                     10,
                     1,
@@ -105,22 +100,38 @@ describe('RetrieveJumpointsQueryHandler', () => {
                     undefined,
                     'code-name-1',
                 ),
-            );
+                expectedFindByQuery: { name: 'Jumpoint 1', codeName: 'code-name-1' },
+            },
+            {
+                query: new RetrieveJumpointsQuery(
+                    'transaction-2',
+                    10,
+                    1,
+                    'Jumpoint 1',
+                    undefined,
+                    undefined,
+                    undefined,
+                    'code-name-1',
+                    'jumpoint%',
+                ),
+                expectedFindByQuery: { codeName: 'code-name-1', name: Like('jumpoint%') },
+            },
+        ])(
+            'should call the repo with correct parameter and return its value',
+            async ({ query, expectedFindByQuery }) => {
+                const expectedJumpoints = [] as JumpointEntity[];
+                const jumpointRepositoryServiceFindByMethod = jest
+                    .spyOn(jumpointRepositoryService, 'findBy')
+                    .mockResolvedValue(expectedJumpoints);
+                const queryBusExecuteMethod = jest.spyOn(queryBus, 'execute');
 
-            expect(result).toStrictEqual(expectedJumpoints);
-            expect(queryBusExecuteMethod).not.toHaveBeenCalled();
-            expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(
-                {
-                    name: 'Jumpoint 1',
-                    publicIp: undefined,
-                    privateIp: undefined,
-                    hostname: undefined,
-                    codeName: 'code-name-1',
-                },
-                1,
-                10,
-            );
-        });
+                const result = await handler.execute(query);
+
+                expect(result).toStrictEqual(expectedJumpoints);
+                expect(queryBusExecuteMethod).not.toHaveBeenCalled();
+                expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(expectedFindByQuery, 1, 10);
+            },
+        );
     });
 });
 

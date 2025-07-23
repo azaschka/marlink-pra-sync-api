@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, Like } from 'typeorm';
 import { JumpointRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/jumpoint/dtos/outputs';
 import { RetrieveJumpointsQuery as BTRetrieveJumpointsQuery } from '../../../beyondtrust-pra-conf-api/jumpoint/queries';
 import { mapFromBTJumpointPlatformType, mapFromBTJzpClientAddressRestrictionsType } from '../../mappers';
@@ -32,7 +33,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
             return btJumpoints.map((btJumpoint) => this.createJumpointEntity(btJumpoint));
         }
 
-        const jumpointFindByQuery = <Jumpoint>{};
+        const jumpointFindByQuery = <FindOptionsWhere<Jumpoint>>{};
 
         if (query.name !== undefined) {
             jumpointFindByQuery.name = query.name;
@@ -40,6 +41,10 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
 
         if (query.codeName !== undefined) {
             jumpointFindByQuery.codeName = query.codeName;
+        }
+
+        if (query.namePattern !== undefined) {
+            jumpointFindByQuery.name = Like(query.namePattern);
         }
 
         const jumpoints = await this.jumpointRepositoryService.findBy(
