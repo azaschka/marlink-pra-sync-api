@@ -1,8 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { AxiosError, HttpStatusCode } from 'axios';
+import { AxiosError, AxiosResponse, HttpStatusCode } from 'axios';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
-import { catchError, defer, firstValueFrom, map, retry, switchMap, timer } from 'rxjs';
+import { catchError, defer, firstValueFrom, map, retry, switchMap, throwError, timer } from 'rxjs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { ErrorProcessorUtility } from '../../../shared/utilities/error-processor.utility';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
@@ -208,6 +208,32 @@ export class HttpClientService {
                     throw ErrorProcessorUtility.composeError(error);
                 }),
             ),
+        );
+    }
+
+    public async stream(url: string, params?: unknown): Promise<AxiosResponse<NodeJS.ReadableStream>> {
+        return firstValueFrom(
+            this.httpService
+                .get<NodeJS.ReadableStream>(url, {
+                    headers: {
+                        Authorization: await this.getAuthHeader(),
+                    },
+                    params: params ? instanceToPlain(params) : undefined,
+                    responseType: 'stream',
+                })
+                .pipe(
+                    catchError((error) => {
+                        if (error instanceof AxiosError) {
+                            console.error(
+                                `Axios error status code: ${error.response?.status}. Message: ${error.message}`,
+                            );
+                        } else {
+                            console.error(`Unknown error:`, error);
+                        }
+
+                        return throwError(() => ErrorProcessorUtility.composeError(error));
+                    }),
+                ),
         );
     }
 

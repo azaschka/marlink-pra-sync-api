@@ -1,3 +1,4 @@
+import { AxiosResponse } from 'axios';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { UrlUtility } from '../../../../shared/utilities';
 import { HttpClientService } from '../../../http-client/services/http-client.service';
@@ -19,18 +20,19 @@ describe('RetrieveJumpClientInstallerPlatformQueryHandler', () => {
 
     describe('execute', () => {
         it('should call HttpClientService with correct parameters and get the result', async () => {
-            const expectedResult = Buffer.from('mocked installer data');
-            const httpClientServiceGetMethod = jest.spyOn(httpClientService, 'get').mockResolvedValue(expectedResult);
+            const expectedResult = {} as AxiosResponse<NodeJS.ReadableStream>;
+            const httpClientServiceStreamMethod = jest
+                .spyOn(httpClientService, 'stream')
+                .mockResolvedValue(expectedResult);
 
             const result = await handler.execute(<RetrieveJumpClientInstallerPlatformQuery>{
                 transactionId: 'transaction-1',
-                installerId: 1,
+                installerId: 'installer-1',
                 platform: JumpClientInstallerPlatformType.Windows64,
             });
 
-            expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
-                expect.anything(),
-                `https://api.example.com/jump-client/installer/1/${JumpClientInstallerPlatformType.Windows64}`,
+            expect(httpClientServiceStreamMethod).toHaveBeenCalledWith(
+                `https://api.example.com/jump-client/installer/installer-1/${JumpClientInstallerPlatformType.Windows64}`,
             );
 
             expect(result).toBe(expectedResult);
@@ -40,7 +42,7 @@ describe('RetrieveJumpClientInstallerPlatformQueryHandler', () => {
 
 function mockHttpClientService() {
     const service = {} as HttpClientService;
-    service.get = jest.fn();
+    service.stream = jest.fn();
 
     return service;
 }

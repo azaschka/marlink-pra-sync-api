@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { BeyondtrustInstanceDeletedEvent } from '../../events';
-import { BeyondtrustInstance } from '../../models';
+import { BeyondtrustInstanceEntity } from '../../repositories/entities';
 import { BeyondtrustInstanceRepositoryService } from '../../repositories/services/beyondtrust-instance-repository.service';
 import { DeleteBeyondtrustInstanceCommand } from '../delete-beyondtrust-instance.command';
 import { DeleteBeyondtrustInstanceCommandHandler } from './delete-beyondtrust-instance.command-handler';
@@ -31,7 +31,7 @@ describe('DeleteBeyondtrustInstanceCommandHandler', () => {
         );
         const beyondtrustInstanceRepositoryServiceFindOneByIdMethod = jest
             .spyOn(beyondtrustInstanceRepositoryService, 'findOneById')
-            .mockResolvedValue({ id: 123 } as BeyondtrustInstance);
+            .mockResolvedValue({ id: 123 } as BeyondtrustInstanceEntity);
 
         await handler.execute(new DeleteBeyondtrustInstanceCommand('transaction-1', 123));
 
