@@ -1,9 +1,10 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, TunnelType } from '../../enums';
 import { ProtocolTunnelJump } from '../../models';
 
-@Entity({ name: 'jump_item_protocol_tunnel_jump' })
+@Entity({ name: 'jump_item_protocol_tunnel_jumps' })
 export class ProtocolTunnelJumpEntity implements ProtocolTunnelJump {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
@@ -58,6 +59,12 @@ export class ProtocolTunnelJumpEntity implements ProtocolTunnelJump {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.protocolTunnelJumps, {
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'jumpoint_id' })
+    public jumpoint!: JumpointEntity;
 
     public static create(
         id: number,

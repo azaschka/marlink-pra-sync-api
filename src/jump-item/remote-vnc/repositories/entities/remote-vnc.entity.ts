@@ -1,9 +1,10 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType } from '../../enums';
 import { RemoteVnc } from '../../models';
 
-@Entity({ name: 'jump_item_remote_vnc' })
+@Entity({ name: 'jump_item_remote_vncs' })
 export class RemoteVncEntity implements RemoteVnc {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
@@ -40,6 +41,12 @@ export class RemoteVncEntity implements RemoteVnc {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.remoteVncs, {
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'jumpoint_id' })
+    public jumpoint!: JumpointEntity;
 
     public static create(
         id: number,

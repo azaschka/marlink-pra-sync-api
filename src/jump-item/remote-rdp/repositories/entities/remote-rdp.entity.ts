@@ -1,9 +1,10 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, RdpQualityMode, SecureAppType } from '../../enums';
 import { RemoteRdp } from '../../models';
 
-@Entity({ name: 'jump_item_remote_rdp' })
+@Entity({ name: 'jump_item_remote_rdps' })
 export class RemoteRdpEntity implements RemoteRdp {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
@@ -79,6 +80,12 @@ export class RemoteRdpEntity implements RemoteRdp {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.remoteRdps, {
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'jumpoint_id' })
+    public jumpoint!: JumpointEntity;
 
     public static create(
         id: number,

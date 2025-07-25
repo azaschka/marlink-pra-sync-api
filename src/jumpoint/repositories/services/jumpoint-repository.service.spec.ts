@@ -46,6 +46,11 @@ describe('JumpointRepositoryService', () => {
                     platformType: JumpointPlatformType.LinuxX86,
                     lastSyncDate: new Date('2023-01-01'),
                     groupPolicyJumpoints: [],
+                    protocolTunnelJumps: [],
+                    remoteRdps: [],
+                    remoteVncs: [],
+                    shellJumps: [],
+                    webJumps: [],
                 },
                 {
                     id: 2,
@@ -53,6 +58,11 @@ describe('JumpointRepositoryService', () => {
                     platformType: JumpointPlatformType.WindowsX86,
                     lastSyncDate: new Date('2023-01-02'),
                     groupPolicyJumpoints: [],
+                    protocolTunnelJumps: [],
+                    remoteRdps: [],
+                    remoteVncs: [],
+                    shellJumps: [],
+                    webJumps: [],
                 },
             ];
             const expectedConflictPaths = ['id'];
