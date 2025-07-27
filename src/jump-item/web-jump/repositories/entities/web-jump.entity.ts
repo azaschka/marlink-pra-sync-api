@@ -1,9 +1,10 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, WebJumpUsernameFormatType } from '../../enums';
 import { WebJump } from '../../models';
 
-@Entity({ name: 'jump_item_web_jump' })
+@Entity({ name: 'jump_item_web_jumps' })
 export class WebJumpEntity implements WebJump {
     @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
@@ -55,6 +56,12 @@ export class WebJumpEntity implements WebJump {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.webJumps, {
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'jumpoint_id' })
+    public jumpoint!: JumpointEntity;
 
     public static create(
         id: number,

@@ -1,6 +1,7 @@
 import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { ProtocolTunnelJumpRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/dtos/outputs';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { ProtocolTunnelJumpsSyncedEvent, ProtocolTunnelJumpsSyncFailedEvent } from '../../events';
 import { ProtocolTunnelJumpEntity } from '../../repositories/entities';
@@ -29,6 +30,7 @@ abstract class TestHelper {
             jumpGroupId: id,
             jumpointId: id,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
+            jumpoint: {} as JumpointEntity,
         }));
     }
 }

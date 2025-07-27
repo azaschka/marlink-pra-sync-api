@@ -1,6 +1,7 @@
 import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { RemoteRdpRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/dtos/outputs';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { RemoteRdpsSyncedEvent, RemoteRdpsSyncFailedEvent } from '../../events';
 import { RemoteRdpEntity } from '../../repositories/entities';
@@ -27,6 +28,7 @@ abstract class TestHelper {
             jumpGroupId: id,
             jumpointId: id,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
+            jumpoint: {} as JumpointEntity,
         }));
     }
 }

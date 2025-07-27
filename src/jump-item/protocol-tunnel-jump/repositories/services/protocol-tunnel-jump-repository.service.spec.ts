@@ -1,5 +1,6 @@
 import { DataSource, In, LessThan } from 'typeorm';
 import { BaseRepositoryService } from '../../../../core/services/base-repository.service';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ProtocolTunnelJumpEntity } from '../entities';
 import { ProtocolTunnelJumpRepositoryService } from './protocol-tunnel-jump-repository.service';
 
@@ -52,6 +53,7 @@ describe('ProtocolTunnelJumpRepositoryService', () => {
                     hostname: 'host-1',
                     jumpGroupId: 1,
                     lastSyncDate: new Date('2023-01-01'),
+                    jumpoint: {} as JumpointEntity,
                 },
                 {
                     id: 2,
@@ -60,6 +62,7 @@ describe('ProtocolTunnelJumpRepositoryService', () => {
                     hostname: 'host-2',
                     jumpGroupId: 2,
                     lastSyncDate: new Date('2023-01-02'),
+                    jumpoint: {} as JumpointEntity,
                 },
             ];
             const expectedConflictPaths = ['id'];

@@ -26,6 +26,11 @@ abstract class TestHelper {
             platformType: JumpointPlatformType.LinuxX86,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
             groupPolicyJumpoints: [],
+            protocolTunnelJumps: [],
+            remoteRdps: [],
+            remoteVncs: [],
+            shellJumps: [],
+            webJumps: [],
         }));
     }
 }

@@ -2,6 +2,7 @@ import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { ShellJumpRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/dtos/outputs';
 import { ShellJumpProtocolType as BTShellJumpProtocolType } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/enums';
+import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { ShellJumpProtocolType } from '../../enums';
 import { ShellJumpsSyncedEvent, ShellJumpsSyncFailedEvent } from '../../events';
@@ -31,6 +32,7 @@ abstract class TestHelper {
             jumpointId: id,
             protocolType: ShellJumpProtocolType.SSH,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
+            jumpoint: {} as JumpointEntity,
         }));
     }
 }

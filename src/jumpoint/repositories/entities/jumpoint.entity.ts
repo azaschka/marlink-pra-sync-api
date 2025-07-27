@@ -1,5 +1,10 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
+import { ProtocolTunnelJumpEntity } from '../../../jump-item/protocol-tunnel-jump/repositories/entities';
+import { RemoteRdpEntity } from '../../../jump-item/remote-rdp/repositories/entities';
+import { RemoteVncEntity } from '../../../jump-item/remote-vnc/repositories/entities';
+import { ShellJumpEntity } from '../../../jump-item/shell-jump/repositories/entities';
+import { WebJumpEntity } from '../../../jump-item/web-jump/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
 import { Jumpoint, JumpointIpRange } from '../../models';
@@ -79,6 +84,21 @@ export class JumpointEntity implements Jumpoint {
 
     @OneToMany(() => GroupPolicyJumpointEntity, (groupPolicyJumpoint) => groupPolicyJumpoint.jumpoint)
     public groupPolicyJumpoints!: GroupPolicyJumpointEntity[];
+
+    @OneToMany(() => ProtocolTunnelJumpEntity, (protocolTunnelJumpEntity) => protocolTunnelJumpEntity.jumpoint)
+    public protocolTunnelJumps!: ProtocolTunnelJumpEntity[];
+
+    @OneToMany(() => RemoteRdpEntity, (remoteRdpEntity) => remoteRdpEntity.jumpoint)
+    public remoteRdps!: RemoteRdpEntity[];
+
+    @OneToMany(() => RemoteVncEntity, (remoteVncEntity) => remoteVncEntity.jumpoint)
+    public remoteVncs!: RemoteVncEntity[];
+
+    @OneToMany(() => ShellJumpEntity, (shellJumpEntity) => shellJumpEntity.jumpoint)
+    public shellJumps!: ShellJumpEntity[];
+
+    @OneToMany(() => WebJumpEntity, (webJumpEntity) => webJumpEntity.jumpoint)
+    public webJumps!: WebJumpEntity[];
 
     public static create(
         id: number,
