@@ -1,5 +1,5 @@
 import { JumpGroupType } from '../../enums';
-import { RemoteVnc } from '../../models';
+import { RemoteVncEntity } from '../../repositories/entities';
 import { RemoteVncRepositoryService } from '../../repositories/services/remote-vnc-repository.service';
 import { RetrieveRemoteVncsQuery } from '../retrieve-remote-vncs.query';
 import { RetrieveRemoteVncsQueryHandler } from './retrieve-remote-vncs.query-handler';
@@ -15,7 +15,7 @@ describe('RetrieveRemoteVncsQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedRemoteVncs = [] as RemoteVnc[];
+            const expectedRemoteVncs = [] as RemoteVncEntity[];
             const remoteVncRepositoryServiceFindByMethod = jest
                 .spyOn(remoteVncRepositoryService, 'findBy')
                 .mockResolvedValue(expectedRemoteVncs);
@@ -27,7 +27,7 @@ describe('RetrieveRemoteVncsQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedRemoteVncs = [] as RemoteVnc[];
+            const expectedRemoteVncs = [] as RemoteVncEntity[];
             const remoteVncRepositoryServiceFindByMethod = jest
                 .spyOn(remoteVncRepositoryService, 'findBy')
                 .mockResolvedValue(expectedRemoteVncs);

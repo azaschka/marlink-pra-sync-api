@@ -1,5 +1,5 @@
 import { JumpGroupType } from '../../enums';
-import { WebJump } from '../../models';
+import { WebJumpEntity } from '../../repositories/entities';
 import { WebJumpRepositoryService } from '../../repositories/services/web-jump-repository.service';
 import { RetrieveWebJumpsQuery } from '../retrieve-web-jumps.query';
 import { RetrieveWebJumpsQueryHandler } from './retrieve-web-jumps.query-handler';
@@ -15,7 +15,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedWebJumps = [] as WebJump[];
+            const expectedWebJumps = [] as WebJumpEntity[];
             const webJumpRepositoryServiceFindByMethod = jest
                 .spyOn(webJumpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedWebJumps);
@@ -27,7 +27,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedWebJumps = [] as WebJump[];
+            const expectedWebJumps = [] as WebJumpEntity[];
             const webJumpRepositoryServiceFindByMethod = jest
                 .spyOn(webJumpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedWebJumps);

@@ -4,7 +4,7 @@ import { GroupPolicyMembersSyncedEvent, GroupPolicyMembersSyncFailedEvent } from
 import { GroupPolicyMemberEntity } from '../../repositories/entities';
 import { GroupPolicyMemberRepositoryService } from '../../repositories/services/group-policy-member-repository.service';
 import { SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommand } from '../sync-group-policy-members-after-group-policies-synced.command';
-import { SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler } from './sync-group-policy-members-after-members-synced.command-handler';
+import { SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler } from './sync-group-policy-members-after-group-policies-synced.command-handler';
 
 describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
     let eventBus: EventBus;

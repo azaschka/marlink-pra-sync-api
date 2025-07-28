@@ -1,5 +1,5 @@
 import { JumpGroupType } from '../../enums';
-import { RemoteRdp } from '../../models';
+import { RemoteRdpEntity } from '../../repositories/entities';
 import { RemoteRdpRepositoryService } from '../../repositories/services/remote-rdp-repository.service';
 import { RetrieveRemoteRdpsQuery } from '../retrieve-remote-rdps.query';
 import { RetrieveRemoteRdpsQueryHandler } from './retrieve-remote-rdps.query-handler';
@@ -15,7 +15,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedRemoteRdps = [] as RemoteRdp[];
+            const expectedRemoteRdps = [] as RemoteRdpEntity[];
             const remoteRdpRepositoryServiceFindByMethod = jest
                 .spyOn(remoteRdpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedRemoteRdps);
@@ -27,7 +27,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedRemoteRdps = [] as RemoteRdp[];
+            const expectedRemoteRdps = [] as RemoteRdpEntity[];
             const remoteRdpRepositoryServiceFindByMethod = jest
                 .spyOn(remoteRdpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedRemoteRdps);

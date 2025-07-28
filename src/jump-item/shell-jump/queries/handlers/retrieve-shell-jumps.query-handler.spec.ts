@@ -1,5 +1,5 @@
 import { JumpGroupType } from '../../enums';
-import { ShellJump } from '../../models';
+import { ShellJumpEntity } from '../../repositories/entities';
 import { ShellJumpRepositoryService } from '../../repositories/services/shell-jump-repository.service';
 import { RetrieveShellJumpsQuery } from '../retrieve-shell-jumps.query';
 import { RetrieveShellJumpsQueryHandler } from './retrieve-shell-jumps.query-handler';
@@ -15,7 +15,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedShellJumps = [] as ShellJump[];
+            const expectedShellJumps = [] as ShellJumpEntity[];
             const shellJumpRepositoryServiceFindByMethod = jest
                 .spyOn(shellJumpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedShellJumps);
@@ -27,7 +27,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedShellJumps = [] as ShellJump[];
+            const expectedShellJumps = [] as ShellJumpEntity[];
             const shellJumpRepositoryServiceFindByMethod = jest
                 .spyOn(shellJumpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedShellJumps);
