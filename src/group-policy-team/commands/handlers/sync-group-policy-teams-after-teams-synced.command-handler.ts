@@ -28,6 +28,10 @@ export class SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler
                 const groupPolicyTeamEntities = this.createGroupPolicyTeamEntities(groupPolicyId, btGroupPolicyTeams);
                 const groupPolicyTeams = await this.replaceGroupPolicyTeams(groupPolicyId, groupPolicyTeamEntities);
 
+                if (groupPolicyTeams.length === 0) {
+                    continue;
+                }
+
                 this.eventBus.publish(
                     new GroupPolicyTeamsSyncedEvent(command.transactionId, {
                         groupPolicyTeams: groupPolicyTeams,
@@ -36,7 +40,7 @@ export class SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler
             } catch (error) {
                 this.eventBus.publish(
                     new GroupPolicyTeamsSyncFailedEvent(command.transactionId, {
-                        errorMessage: ErrorProcessorUtility.stringify(error),
+                        errorMessage: `Failed to sync for group policy "${groupPolicyId}": ${ErrorProcessorUtility.stringify(error)}`,
                     }),
                 );
             }

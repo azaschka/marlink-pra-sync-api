@@ -26,6 +26,10 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
                 const teamUserEntities = this.createTeamUserEntities(btTeamUsers);
                 const teamUsers = await this.replaceTeamUsers(teamId, teamUserEntities);
 
+                if (teamUsers.length === 0) {
+                    continue;
+                }
+
                 this.eventBus.publish(
                     new TeamUsersSyncedEvent(command.transactionId, {
                         teamUsers: teamUsers,
@@ -34,7 +38,7 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
             } catch (error) {
                 this.eventBus.publish(
                     new TeamUsersSyncFailedEvent(command.transactionId, {
-                        errorMessage: ErrorProcessorUtility.stringify(error),
+                        errorMessage: `Failed to sync for team "${teamId}": ${ErrorProcessorUtility.stringify(error)}`,
                     }),
                 );
             }

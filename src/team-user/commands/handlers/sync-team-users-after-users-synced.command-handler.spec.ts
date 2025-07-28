@@ -87,7 +87,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
             expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(4, [
                 { teamId: 4, userId: 6, roleType: UserTeamRoleType.Member },
             ]);
-            expect(eventBusPublishMethod).toHaveBeenCalledTimes(4);
+            expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
                 expect.objectContaining(<TeamUsersSyncedEvent>{
@@ -137,16 +137,6 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
             );
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 3,
-                expect.objectContaining(<TeamUsersSyncedEvent>{
-                    transactionId: 'transaction-1',
-                    eventType: TeamUsersSyncedEvent.EVENT_TYPE,
-                    payload: {
-                        teamUsers: [],
-                    },
-                }),
-            );
-            expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
-                4,
                 expect.objectContaining(<TeamUsersSyncedEvent>{
                     transactionId: 'transaction-1',
                     eventType: TeamUsersSyncedEvent.EVENT_TYPE,

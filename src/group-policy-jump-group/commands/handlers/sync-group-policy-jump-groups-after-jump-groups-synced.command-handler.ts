@@ -34,6 +34,10 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
                     groupPolicyJumpGroupEntities,
                 );
 
+                if (groupPolicyJumpGroups.length === 0) {
+                    continue;
+                }
+
                 this.eventBus.publish(
                     new GroupPolicyJumpGroupsSyncedEvent(command.transactionId, {
                         groupPolicyJumpGroups: groupPolicyJumpGroups,
@@ -42,7 +46,7 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
             } catch (error) {
                 this.eventBus.publish(
                     new GroupPolicyJumpGroupsSyncFailedEvent(command.transactionId, {
-                        errorMessage: ErrorProcessorUtility.stringify(error),
+                        errorMessage: `Failed to sync for group policy "${groupPolicyId}": ${ErrorProcessorUtility.stringify(error)}`,
                     }),
                 );
             }

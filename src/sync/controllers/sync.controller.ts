@@ -42,7 +42,7 @@ export class SyncController {
     @HttpCode(HttpStatus.OK)
     public async syncAll(): Promise<unknown> {
         const syncOrders = [
-            { name: 'jumpoints', func: () => this.syncJumpoints() }, // Relational data with jump items
+            { name: 'jumpoints', func: () => this.syncJumpoints() }, // Required dependency for jump items
             { name: 'protocol-tunnel-jumps', func: () => this.syncJumpItemsProtocolTunnelJumps() },
             { name: 'remote-rdps', func: () => this.syncJumpItemsRemoteRdps() },
             { name: 'remote-vncs', func: () => this.syncJumpItemsRemoteVncs() },
@@ -52,7 +52,7 @@ export class SyncController {
             { name: 'jump-client-installers', func: () => this.syncJumpClientInstallers() },
             { name: 'jump-policies', func: () => this.syncJumpPolicies() },
             { name: 'jump-groups', func: () => this.syncJumpGroups() },
-            { name: 'users', func: () => this.syncUsers() }, // Automatically trigger sync for relational data with group policies
+            { name: 'users', func: () => this.syncUsers() }, // Automatically trigger sync for relational data with group policies after group policies are synced
             { name: 'teams', func: () => this.syncTeams() }, // Automatically trigger sync for relational data with users
             { name: 'group-policies', func: () => this.syncGroupPolicies() }, // Automatically trigger sync for relational data with jump groups, jumpoints, users, teams
         ];

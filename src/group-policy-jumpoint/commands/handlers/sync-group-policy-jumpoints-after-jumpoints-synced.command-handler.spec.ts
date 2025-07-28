@@ -92,7 +92,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
             expect(
                 groupPolicyJumpointRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpointIdMethod,
             ).toHaveBeenNthCalledWith(4, [{ groupPolicyId: 4, jumpointId: 6 }]);
-            expect(eventBusPublishMethod).toHaveBeenCalledTimes(4);
+            expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
                 expect.objectContaining(<GroupPolicyJumpointsSyncedEvent>{
@@ -122,16 +122,6 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
             );
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 3,
-                expect.objectContaining(<GroupPolicyJumpointsSyncedEvent>{
-                    transactionId: 'transaction-1',
-                    eventType: GroupPolicyJumpointsSyncedEvent.EVENT_TYPE,
-                    payload: {
-                        groupPolicyJumpoints: [],
-                    },
-                }),
-            );
-            expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
-                4,
                 expect.objectContaining(<GroupPolicyJumpointsSyncedEvent>{
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyJumpointsSyncedEvent.EVENT_TYPE,

@@ -34,6 +34,10 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
                     groupPolicyMemberEntities,
                 );
 
+                if (groupPolicyMembers.length === 0) {
+                    continue;
+                }
+
                 this.eventBus.publish(
                     new GroupPolicyMembersSyncedEvent(command.transactionId, {
                         groupPolicyMembers: groupPolicyMembers,
@@ -42,7 +46,7 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
             } catch (error) {
                 this.eventBus.publish(
                     new GroupPolicyMembersSyncFailedEvent(command.transactionId, {
-                        errorMessage: ErrorProcessorUtility.stringify(error),
+                        errorMessage: `Failed to sync for group policy "${groupPolicyId}": ${ErrorProcessorUtility.stringify(error)}`,
                     }),
                 );
             }
@@ -69,16 +73,18 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
         groupPolicyId: number,
         btGroupPolicyMembers: GroupPolicyMemberRetrievedDtoOutput[],
     ) {
-        return btGroupPolicyMembers.map((groupPolicyMember) =>
-            GroupPolicyMemberEntity.create(
-                groupPolicyId,
-                groupPolicyMember.id,
-                groupPolicyMember.userId,
-                groupPolicyMember.securityProviderId,
-                groupPolicyMember.distinguishedName,
-                groupPolicyMember.groupName,
-            ),
-        );
+        return btGroupPolicyMembers
+            .filter((groupPolicyMember) => !!groupPolicyMember.userId) // Ensure userId is present cause some members might not have it
+            .map((groupPolicyMember) =>
+                GroupPolicyMemberEntity.create(
+                    groupPolicyId,
+                    groupPolicyMember.id,
+                    groupPolicyMember.userId,
+                    groupPolicyMember.securityProviderId,
+                    groupPolicyMember.distinguishedName,
+                    groupPolicyMember.groupName,
+                ),
+            );
     }
 
     private async replaceGroupPolicyMembers(

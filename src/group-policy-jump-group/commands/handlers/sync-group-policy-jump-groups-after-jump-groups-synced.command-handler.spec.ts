@@ -92,7 +92,7 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
             expect(
                 groupPolicyJumpGroupRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpGroupIdMethod,
             ).toHaveBeenNthCalledWith(4, [{ groupPolicyId: 4, jumpGroupId: 6 }]);
-            expect(eventBusPublishMethod).toHaveBeenCalledTimes(4);
+            expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
                 expect.objectContaining(<GroupPolicyJumpGroupsSyncedEvent>{
@@ -137,16 +137,6 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
             );
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 3,
-                expect.objectContaining(<GroupPolicyJumpGroupsSyncedEvent>{
-                    transactionId: 'transaction-1',
-                    eventType: GroupPolicyJumpGroupsSyncedEvent.EVENT_TYPE,
-                    payload: {
-                        groupPolicyJumpGroups: [],
-                    },
-                }),
-            );
-            expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
-                4,
                 expect.objectContaining(<GroupPolicyJumpGroupsSyncedEvent>{
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyJumpGroupsSyncedEvent.EVENT_TYPE,

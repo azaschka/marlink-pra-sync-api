@@ -18,16 +18,21 @@ function configureOpenApi(app: INestApplication<unknown>) {
 }
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
-    app.use(json({ limit: '1mb' }));
+    try {
+        const app = await NestFactory.create(AppModule);
+        app.use(json({ limit: '1mb' }));
 
-    configureOpenApi(app);
+        configureOpenApi(app);
 
-    await app.startAllMicroservices();
+        await app.startAllMicroservices();
 
-    const listeningPort = process.env.PORT || 3000;
-    await app.listen(listeningPort);
-    console.log(`Listening on PORT: ${listeningPort}`);
+        const listeningPort = process.env.PORT || 3000;
+        await app.listen(listeningPort);
+        console.log(`Listening on PORT: ${listeningPort}`);
+    } catch (error) {
+        console.error('Error during application bootstrap:', error);
+        process.exit(1);
+    }
 }
 
 void bootstrap();

@@ -23,8 +23,11 @@ export class SyncUserGroupPoliciesAfterUsersSyncedCommandHandler
             try {
                 const btUserGroupPolicies = await this.retrieveBTUserGroupPolicies(command.transactionId, userId);
                 const userGroupPolicyEntities = this.createUserGroupPolicyEntities(userId, btUserGroupPolicies);
-
                 const userGroupPolicies = await this.replaceUserGroupPolicies(userId, userGroupPolicyEntities);
+
+                if (userGroupPolicies.length === 0) {
+                    continue;
+                }
 
                 this.eventBus.publish(
                     new UserGroupPoliciesSyncedEvent(command.transactionId, {
@@ -34,7 +37,7 @@ export class SyncUserGroupPoliciesAfterUsersSyncedCommandHandler
             } catch (error) {
                 this.eventBus.publish(
                     new UserGroupPoliciesSyncFailedEvent(command.transactionId, {
-                        errorMessage: ErrorProcessorUtility.stringify(error),
+                        errorMessage: `Failed to sync for user "${userId}": ${ErrorProcessorUtility.stringify(error)}`,
                     }),
                 );
             }

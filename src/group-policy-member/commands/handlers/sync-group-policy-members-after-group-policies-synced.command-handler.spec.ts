@@ -147,7 +147,7 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
             expect(
                 groupPolicyMemberRepositoryServiceCreateOrUpdateByGroupPolicyIdAndMemberIdMethod,
             ).toHaveBeenNthCalledWith(4, [{ groupPolicyId: 4, memberId: 6 }]);
-            expect(eventBusPublishMethod).toHaveBeenCalledTimes(4);
+            expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
                 expect.objectContaining(<GroupPolicyMembersSyncedEvent>{
@@ -192,16 +192,6 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
             );
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 3,
-                expect.objectContaining(<GroupPolicyMembersSyncedEvent>{
-                    transactionId: 'transaction-1',
-                    eventType: GroupPolicyMembersSyncedEvent.EVENT_TYPE,
-                    payload: {
-                        groupPolicyMembers: [],
-                    },
-                }),
-            );
-            expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
-                4,
                 expect.objectContaining(<GroupPolicyMembersSyncedEvent>{
                     transactionId: 'transaction-1',
                     eventType: GroupPolicyMembersSyncedEvent.EVENT_TYPE,
