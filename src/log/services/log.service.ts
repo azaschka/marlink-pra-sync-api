@@ -67,6 +67,25 @@ export class LogService {
         );
     }
 
+    public async log(
+        actionName: string,
+        transactionId: string,
+        initiatedBy: string | undefined,
+        payload: string,
+    ): Promise<void> {
+        await this.logRepositoryService.create(
+            LogEntity.createWithoutId(
+                serviceName,
+                LogActionType.System,
+                actionName,
+                transactionId,
+                initiatedBy,
+                DateUtility.getCurrentUtcDate(),
+                payload,
+            ),
+        );
+    }
+
     public async retrieveLogs(
         pageSize: number,
         pageNumber: number,
