@@ -8,6 +8,7 @@ import { WebJumpEntity } from '../../../jump-item/web-jump/repositories/entities
 import { DateUtility } from '../../../shared/utilities';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
 import { Jumpoint, JumpointIpRange } from '../../models';
+import { JumpointNodeEntity } from './jumpoint-node.entity';
 
 @Entity({ name: 'jumpoints' })
 export class JumpointEntity implements Jumpoint {
@@ -99,6 +100,9 @@ export class JumpointEntity implements Jumpoint {
 
     @OneToMany(() => WebJumpEntity, (webJumpEntity) => webJumpEntity.jumpoint)
     public webJumps!: WebJumpEntity[];
+
+    @OneToMany(() => JumpointNodeEntity, (jumpointNode) => jumpointNode.jumpoint)
+    public jumpointNodes?: JumpointNodeEntity[];
 
     public static create(
         id: number,

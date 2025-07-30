@@ -148,6 +148,16 @@ export class AppConfigService {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_PATH') ??
                         AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    node: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_NODE_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
+                    installer: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_INSTALLER_PATH') ??
+                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                    },
                 },
                 jumpItem: {
                     remoteRdp: {

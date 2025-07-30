@@ -223,6 +223,12 @@ describe('AppConfigService', () => {
                         },
                         jumpoint: {
                             path: 'api-path-jumpoint-1',
+                            node: {
+                                path: 'api-path-jumpoint-node-1',
+                            },
+                            installer: {
+                                path: 'api-path-jumpoint-installer-1',
+                            },
                         },
                         jumpItem: {
                             remoteRdp: {
@@ -306,6 +312,12 @@ describe('AppConfigService', () => {
                         },
                         jumpoint: {
                             path: 'api-path-jumpoint-1',
+                            node: {
+                                path: 'api-path-jumpoint-node-1',
+                            },
+                            installer: {
+                                path: 'api-path-jumpoint-installer-1',
+                            },
                         },
                         jumpItem: {
                             remoteRdp: {
@@ -392,6 +404,12 @@ describe('AppConfigService', () => {
                         },
                         jumpoint: {
                             path: 'unknown',
+                            node: {
+                                path: 'unknown',
+                            },
+                            installer: {
+                                path: 'unknown',
+                            },
                         },
                         jumpItem: {
                             remoteRdp: {
@@ -468,6 +486,10 @@ describe('AppConfigService', () => {
                         return input.api?.jumpPolicy.path;
                     case 'BEYONDTRUST_API_JUMPOINT_PATH':
                         return input.api?.jumpoint.path;
+                    case 'BEYONDTRUST_API_JUMPOINT_NODE_PATH':
+                        return input.api?.jumpoint.node.path;
+                    case 'BEYONDTRUST_API_JUMPOINT_INSTALLER_PATH':
+                        return input.api?.jumpoint.installer.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH':
                         return input.api?.jumpItem?.remoteRdp?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_RDP':
@@ -550,6 +572,12 @@ describe('AppConfigService', () => {
                     },
                     jumpoint: {
                         path: expected.api.jumpoint?.path,
+                        node: {
+                            path: expected.api.jumpoint?.node?.path,
+                        },
+                        installer: {
+                            path: expected.api.jumpoint?.installer?.path,
+                        },
                     },
                     jumpItem: {
                         remoteRdp: {
