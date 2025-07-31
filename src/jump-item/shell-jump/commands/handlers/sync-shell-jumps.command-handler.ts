@@ -83,17 +83,12 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
         const shellJumpsToBeCreated = this.findAllShellJumpsToBeCreated(btShellJumps, dbShellJumps);
         const shellJumpsToBeUpdated = this.findAllShellJumpsToBeUpdatedOrUpdateLastSyncDate(btShellJumps, dbShellJumps);
 
-        if (shellJumpsToBeCreated.length > 0) {
-            await this.shellJumpRepositoryService.createOrUpdateByIds(shellJumpsToBeCreated);
-        }
-
-        if (shellJumpsToBeUpdated.length > 0) {
-            await this.shellJumpRepositoryService.createOrUpdateByIds(shellJumpsToBeUpdated);
-        }
+        const createdShellJumps = await this.createOrUpdateByIds(transactionId, shellJumpsToBeCreated);
+        const updatedShellJumps = await this.createOrUpdateByIds(transactionId, shellJumpsToBeUpdated);
 
         // Collect created and updated shell jump IDs
-        createdShellJumpIds.push(...shellJumpsToBeCreated.map((shellJump) => shellJump.id));
-        updatedShellJumpIds.push(...shellJumpsToBeUpdated.map((shellJump) => shellJump.id));
+        createdShellJumpIds.push(...createdShellJumps.map((shellJump) => shellJump.id));
+        updatedShellJumpIds.push(...updatedShellJumps.map((shellJump) => shellJump.id));
 
         if (btShellJumps.length < this.appConfigService.sync.maxBatchSize) {
             return;
@@ -161,5 +156,31 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
             btShellJump.username,
             btShellJump.sessionPolicyId,
         );
+    }
+
+    private async createOrUpdateByIds(
+        transactionId: string,
+        shellJumps: ShellJumpEntity[],
+    ): Promise<ShellJumpEntity[]> {
+        const createdOrUpdatedEntities: ShellJumpEntity[] = [];
+
+        if (shellJumps.length === 0) {
+            return createdOrUpdatedEntities;
+        }
+
+        for (const shellJump of shellJumps) {
+            try {
+                await this.shellJumpRepositoryService.createOrUpdateById(shellJump);
+                createdOrUpdatedEntities.push(shellJump);
+            } catch (error) {
+                this.eventBus.publish(
+                    new ShellJumpsSyncFailedEvent(transactionId, {
+                        errorMessage: `Error syncing shell jump with id ${shellJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                    }),
+                );
+            }
+        }
+
+        return createdOrUpdatedEntities;
     }
 }

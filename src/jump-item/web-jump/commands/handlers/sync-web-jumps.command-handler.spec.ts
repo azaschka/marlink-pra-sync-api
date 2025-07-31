@@ -1,6 +1,7 @@
 import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { WebJumpRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/web-jump/dtos/outputs';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { WebJumpsSyncedEvent, WebJumpsSyncFailedEvent } from '../../events';
@@ -29,6 +30,7 @@ abstract class TestHelper {
             jumpointId: id,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
             jumpoint: {} as JumpointEntity,
+            jumpGroup: {} as JumpGroupEntity,
         }));
     }
 }
@@ -95,22 +97,22 @@ describe('SyncWebJumpsCommandHandler', () => {
                         ids: [3, 4],
                     },
                 ],
-                expectedWebJumpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedWebJumpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedWebJumpEntities([2]),
+                        entity: TestHelper.generateMockedWebJumpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedWebJumpEntities([1]),
+                        entity: TestHelper.generateMockedWebJumpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedWebJumpEntities([4]),
+                        entity: TestHelper.generateMockedWebJumpEntities([4])[0],
                     },
                     {
                         iter: 4,
-                        entity: TestHelper.generateMockedWebJumpEntities([3]),
+                        entity: TestHelper.generateMockedWebJumpEntities([3])[0],
                     },
                 ],
                 expectedWebJumpRepositoryServiceDeleteByIdsCall: [
@@ -151,18 +153,18 @@ describe('SyncWebJumpsCommandHandler', () => {
                         ids: [3],
                     },
                 ],
-                expectedWebJumpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedWebJumpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedWebJumpEntities([2]),
+                        entity: TestHelper.generateMockedWebJumpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedWebJumpEntities([1]),
+                        entity: TestHelper.generateMockedWebJumpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedWebJumpEntities([3]),
+                        entity: TestHelper.generateMockedWebJumpEntities([3])[0],
                     },
                 ],
                 expectedWebJumpRepositoryServiceDeleteByIdsCall: [
@@ -188,7 +190,7 @@ describe('SyncWebJumpsCommandHandler', () => {
                 webJumpRepositoryFindByLastSyncDateBeforeResolvedValue,
                 webJumpRepositoryServiceFindByIdsResolvedValue,
                 expectedWebJumpRepositoryServiceFindByIdsCall,
-                expectedWebJumpRepositoryServiceCreateOrUpdateByIdsCall,
+                expectedWebJumpRepositoryServiceCreateOrUpdateByIdCall,
                 expectedWebJumpRepositoryServiceDeleteByIdsCall,
                 expectedResult,
             }) => {
@@ -198,9 +200,9 @@ describe('SyncWebJumpsCommandHandler', () => {
                 const webJumpRepositoryServiceFindByIds = jest
                     .spyOn(webJumpRepositoryService, 'findByIds')
                     .mockImplementation(webJumpRepositoryServiceFindByIdsResolvedValue);
-                const webJumpRepositoryServiceCreateOrUpdateByIds = jest.spyOn(
+                const webJumpRepositoryServiceCreateOrUpdateById = jest.spyOn(
                     webJumpRepositoryService,
-                    'createOrUpdateByIds',
+                    'createOrUpdateById',
                 );
                 const webJumpRepositoryServiceDeleteByIds = jest.spyOn(webJumpRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
@@ -214,11 +216,11 @@ describe('SyncWebJumpsCommandHandler', () => {
                     expect(webJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
                 }
 
-                expect(webJumpRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
-                    expectedWebJumpRepositoryServiceCreateOrUpdateByIdsCall.length,
+                expect(webJumpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
+                    expectedWebJumpRepositoryServiceCreateOrUpdateByIdCall.length,
                 );
-                for (const item of expectedWebJumpRepositoryServiceCreateOrUpdateByIdsCall) {
-                    expect(webJumpRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(item.iter, item.entity);
+                for (const item of expectedWebJumpRepositoryServiceCreateOrUpdateByIdCall) {
+                    expect(webJumpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(item.iter, item.entity);
                 }
 
                 expect(webJumpRepositoryServiceDeleteByIds).toHaveBeenCalledTimes(
@@ -279,8 +281,7 @@ function mockEventBus(): EventBus {
 function mockWebJumpRepositoryService(): WebJumpRepositoryService {
     const service = {} as WebJumpRepositoryService;
     service.findByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
+    service.createOrUpdateById = jest.fn();
     service.findByLastSyncDateBefore = jest.fn();
     service.deleteByIds = jest.fn();
 

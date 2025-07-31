@@ -1,6 +1,7 @@
 import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { JumpClientRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
+import { JumpGroupEntity } from '../../../jump-group/repositories/entities';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { JumpClientsSyncedEvent, JumpClientsSyncFailedEvent } from '../../events';
 import { JumpClientEntity } from '../../repositories/entities';
@@ -23,6 +24,7 @@ abstract class TestHelper {
             jumpGroupId: id,
             name: `jump-client-${id}`,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
+            jumpGroup: {} as JumpGroupEntity,
         }));
     }
 }
@@ -89,22 +91,22 @@ describe('SyncJumpClientsCommandHandler', () => {
                         ids: [3, 4],
                     },
                 ],
-                expectedJumpClientRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedJumpClientRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedJumpClientEntities([2]),
+                        entity: TestHelper.generateMockedJumpClientEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedJumpClientEntities([1]),
+                        entity: TestHelper.generateMockedJumpClientEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedJumpClientEntities([4]),
+                        entity: TestHelper.generateMockedJumpClientEntities([4])[0],
                     },
                     {
                         iter: 4,
-                        entity: TestHelper.generateMockedJumpClientEntities([3]),
+                        entity: TestHelper.generateMockedJumpClientEntities([3])[0],
                     },
                 ],
                 expectedJumpClientRepositoryServiceDeleteByIdsCall: [
@@ -145,18 +147,18 @@ describe('SyncJumpClientsCommandHandler', () => {
                         ids: [3],
                     },
                 ],
-                expectedJumpClientRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedJumpClientRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedJumpClientEntities([2]),
+                        entity: TestHelper.generateMockedJumpClientEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedJumpClientEntities([1]),
+                        entity: TestHelper.generateMockedJumpClientEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedJumpClientEntities([3]),
+                        entity: TestHelper.generateMockedJumpClientEntities([3])[0],
                     },
                 ],
                 expectedJumpClientRepositoryServiceDeleteByIdsCall: [
@@ -182,7 +184,7 @@ describe('SyncJumpClientsCommandHandler', () => {
                 jumpClientRepositoryFindByLastSyncDateBeforeResolvedValue,
                 jumpClientRepositoryServiceFindByIdsResolvedValue,
                 expectedJumpClientRepositoryServiceFindByIdsCall,
-                expectedJumpClientRepositoryServiceCreateOrUpdateByIdsCall,
+                expectedJumpClientRepositoryServiceCreateOrUpdateByIdCall,
                 expectedJumpClientRepositoryServiceDeleteByIdsCall,
                 expectedResult,
             }) => {
@@ -192,9 +194,9 @@ describe('SyncJumpClientsCommandHandler', () => {
                 const jumpClientRepositoryServiceFindByIds = jest
                     .spyOn(jumpClientRepositoryService, 'findByIds')
                     .mockImplementation(jumpClientRepositoryServiceFindByIdsResolvedValue);
-                const jumpClientRepositoryServiceCreateOrUpdateByIds = jest.spyOn(
+                const jumpClientRepositoryServiceCreateOrUpdateById = jest.spyOn(
                     jumpClientRepositoryService,
-                    'createOrUpdateByIds',
+                    'createOrUpdateById',
                 );
                 const jumpClientRepositoryServiceDeleteByIds = jest.spyOn(jumpClientRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
@@ -208,11 +210,11 @@ describe('SyncJumpClientsCommandHandler', () => {
                     expect(jumpClientRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
                 }
 
-                expect(jumpClientRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
-                    expectedJumpClientRepositoryServiceCreateOrUpdateByIdsCall.length,
+                expect(jumpClientRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
+                    expectedJumpClientRepositoryServiceCreateOrUpdateByIdCall.length,
                 );
-                for (const item of expectedJumpClientRepositoryServiceCreateOrUpdateByIdsCall) {
-                    expect(jumpClientRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
+                for (const item of expectedJumpClientRepositoryServiceCreateOrUpdateByIdCall) {
+                    expect(jumpClientRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
                         item.entity,
                     );
@@ -276,7 +278,7 @@ function mockEventBus(): EventBus {
 function mockJumpClientRepositoryService(): JumpClientRepositoryService {
     const service = {} as JumpClientRepositoryService;
     service.findByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
+    service.createOrUpdateById = jest.fn();
     service.findByLastSyncDateBefore = jest.fn();
     service.deleteByIds = jest.fn();
 

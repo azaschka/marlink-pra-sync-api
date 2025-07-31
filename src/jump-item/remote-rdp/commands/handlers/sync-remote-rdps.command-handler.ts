@@ -83,17 +83,12 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
         const remoteRdpsToBeCreated = this.findAllRemoteRdpsToBeCreated(btRemoteRdps, dbRemoteRdps);
         const remoteRdpsToBeUpdated = this.findAllRemoteRdpsToBeUpdatedOrUpdateLastSyncDate(btRemoteRdps, dbRemoteRdps);
 
-        if (remoteRdpsToBeCreated.length > 0) {
-            await this.remoteRdpRepositoryService.createOrUpdateByIds(remoteRdpsToBeCreated);
-        }
-
-        if (remoteRdpsToBeUpdated.length > 0) {
-            await this.remoteRdpRepositoryService.createOrUpdateByIds(remoteRdpsToBeUpdated);
-        }
+        const createdRemoteRdps = await this.createOrUpdateByIds(transactionId, remoteRdpsToBeCreated);
+        const updatedRemoteRdps = await this.createOrUpdateByIds(transactionId, remoteRdpsToBeUpdated);
 
         // Collect created and updated remote rdp IDs
-        createdRemoteRdpIds.push(...remoteRdpsToBeCreated.map((remoteRdp) => remoteRdp.id));
-        updatedRemoteRdpIds.push(...remoteRdpsToBeUpdated.map((remoteRdp) => remoteRdp.id));
+        createdRemoteRdpIds.push(...createdRemoteRdps.map((remoteRdp) => remoteRdp.id));
+        updatedRemoteRdpIds.push(...updatedRemoteRdps.map((remoteRdp) => remoteRdp.id));
 
         if (btRemoteRdps.length < this.appConfigService.sync.maxBatchSize) {
             return;
@@ -170,5 +165,31 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
             btRemoteRdp.targetSystem,
             btRemoteRdp.credentialType,
         );
+    }
+
+    private async createOrUpdateByIds(
+        transactionId: string,
+        remoteRdps: RemoteRdpEntity[],
+    ): Promise<RemoteRdpEntity[]> {
+        const createdOrUpdatedEntities: RemoteRdpEntity[] = [];
+
+        if (remoteRdps.length === 0) {
+            return createdOrUpdatedEntities;
+        }
+
+        for (const remoteRdp of remoteRdps) {
+            try {
+                await this.remoteRdpRepositoryService.createOrUpdateById(remoteRdp);
+                createdOrUpdatedEntities.push(remoteRdp);
+            } catch (error) {
+                this.eventBus.publish(
+                    new RemoteRdpsSyncFailedEvent(transactionId, {
+                        errorMessage: `Error syncing remote RDP with id ${remoteRdp.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                    }),
+                );
+            }
+        }
+
+        return createdOrUpdatedEntities;
     }
 }

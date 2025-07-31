@@ -83,17 +83,12 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
         const remoteVncsToBeCreated = this.findAllRemoteVncsToBeCreated(btRemoteVncs, dbRemoteVncs);
         const remoteVncsToBeUpdated = this.findAllRemoteVncsToBeUpdatedOrUpdateLastSyncDate(btRemoteVncs, dbRemoteVncs);
 
-        if (remoteVncsToBeCreated.length > 0) {
-            await this.remoteVncRepositoryService.createOrUpdateByIds(remoteVncsToBeCreated);
-        }
-
-        if (remoteVncsToBeUpdated.length > 0) {
-            await this.remoteVncRepositoryService.createOrUpdateByIds(remoteVncsToBeUpdated);
-        }
+        const createdRemoteVncs = await this.createOrUpdateByIds(transactionId, remoteVncsToBeCreated);
+        const updatedRemoteVncs = await this.createOrUpdateByIds(transactionId, remoteVncsToBeUpdated);
 
         // Collect created and updated remote vnc IDs
-        createdRemoteVncIds.push(...remoteVncsToBeCreated.map((remoteVnc) => remoteVnc.id));
-        updatedRemoteVncIds.push(...remoteVncsToBeUpdated.map((remoteVnc) => remoteVnc.id));
+        createdRemoteVncIds.push(...createdRemoteVncs.map((remoteVnc) => remoteVnc.id));
+        updatedRemoteVncIds.push(...updatedRemoteVncs.map((remoteVnc) => remoteVnc.id));
 
         if (btRemoteVncs.length < this.appConfigService.sync.maxBatchSize) {
             return;
@@ -157,5 +152,31 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
             btRemoteVnc.jumpPolicyId,
             btRemoteVnc.sessionPolicyId,
         );
+    }
+
+    private async createOrUpdateByIds(
+        transactionId: string,
+        remoteVncs: RemoteVncEntity[],
+    ): Promise<RemoteVncEntity[]> {
+        const createdOrUpdatedEntities: RemoteVncEntity[] = [];
+
+        if (remoteVncs.length === 0) {
+            return createdOrUpdatedEntities;
+        }
+
+        for (const remoteVnc of remoteVncs) {
+            try {
+                await this.remoteVncRepositoryService.createOrUpdateById(remoteVnc);
+                createdOrUpdatedEntities.push(remoteVnc);
+            } catch (error) {
+                this.eventBus.publish(
+                    new RemoteVncsSyncFailedEvent(transactionId, {
+                        errorMessage: `Error syncing remote VNC with id ${remoteVnc.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                    }),
+                );
+            }
+        }
+
+        return createdOrUpdatedEntities;
     }
 }

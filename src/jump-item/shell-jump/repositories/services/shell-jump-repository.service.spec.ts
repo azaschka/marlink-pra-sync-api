@@ -1,5 +1,6 @@
 import { DataSource, In, LessThan } from 'typeorm';
 import { BaseRepositoryService } from '../../../../core/services/base-repository.service';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ShellJumpProtocolType } from '../../enums';
 import { ShellJumpEntity } from '../entities';
@@ -50,6 +51,7 @@ describe('ShellJumpRepositoryService', () => {
                     protocolType: ShellJumpProtocolType.SSH,
                     lastSyncDate: new Date('2023-01-01'),
                     jumpoint: {} as JumpointEntity,
+                    jumpGroup: {} as JumpGroupEntity,
                 },
                 {
                     id: 2,
@@ -60,6 +62,7 @@ describe('ShellJumpRepositoryService', () => {
                     protocolType: ShellJumpProtocolType.TELNET,
                     lastSyncDate: new Date('2023-01-02'),
                     jumpoint: {} as JumpointEntity,
+                    jumpGroup: {} as JumpGroupEntity,
                 },
             ];
             const expectedConflictPaths = ['id'];

@@ -1,5 +1,6 @@
 import { DataSource, In, LessThan } from 'typeorm';
 import { BaseRepositoryService } from '../../../../core/services/base-repository.service';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { WebJumpEntity } from '../entities';
 import { WebJumpRepositoryService } from './web-jump-repository.service';
@@ -48,6 +49,7 @@ describe('WebJumpRepositoryService', () => {
                     jumpGroupId: 1,
                     lastSyncDate: new Date('2023-01-01'),
                     jumpoint: {} as JumpointEntity,
+                    jumpGroup: {} as JumpGroupEntity,
                 },
                 {
                     id: 2,
@@ -57,6 +59,7 @@ describe('WebJumpRepositoryService', () => {
                     jumpGroupId: 2,
                     lastSyncDate: new Date('2023-01-02'),
                     jumpoint: {} as JumpointEntity,
+                    jumpGroup: {} as JumpGroupEntity,
                 },
             ];
             const expectedConflictPaths = ['id'];

@@ -21,6 +21,12 @@ abstract class TestHelper {
             id,
             displayName: `jump-policy-${id}`,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
+            remoteRdps: [],
+            remoteVncs: [],
+            protocolTunnelJumps: [],
+            shellJumps: [],
+            webJumps: [],
+            jumpClients: [],
         }));
     }
 }

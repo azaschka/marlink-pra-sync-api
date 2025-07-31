@@ -1,5 +1,11 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
+import { JumpClientEntity } from '../../../jump-client/repositories/entities';
+import { ProtocolTunnelJumpEntity } from '../../../jump-item/protocol-tunnel-jump/repositories/entities';
+import { RemoteRdpEntity } from '../../../jump-item/remote-rdp/repositories/entities';
+import { RemoteVncEntity } from '../../../jump-item/remote-vnc/repositories/entities';
+import { ShellJumpEntity } from '../../../jump-item/shell-jump/repositories/entities';
+import { WebJumpEntity } from '../../../jump-item/web-jump/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpGroup } from '../../models';
 
@@ -22,6 +28,24 @@ export class JumpGroupEntity implements JumpGroup {
 
     @OneToMany(() => GroupPolicyJumpGroupEntity, (groupPolicyJumpGroup) => groupPolicyJumpGroup.jumpGroup)
     public groupPolicyJumpGroups!: GroupPolicyJumpGroupEntity[];
+
+    @OneToMany(() => ProtocolTunnelJumpEntity, (protocolTunnelJumpEntity) => protocolTunnelJumpEntity.jumpGroup)
+    public protocolTunnelJumps!: ProtocolTunnelJumpEntity[];
+
+    @OneToMany(() => RemoteRdpEntity, (remoteRdpEntity) => remoteRdpEntity.jumpGroup)
+    public remoteRdps!: RemoteRdpEntity[];
+
+    @OneToMany(() => RemoteVncEntity, (remoteVncEntity) => remoteVncEntity.jumpGroup)
+    public remoteVncs!: RemoteVncEntity[];
+
+    @OneToMany(() => ShellJumpEntity, (shellJumpEntity) => shellJumpEntity.jumpGroup)
+    public shellJumps!: ShellJumpEntity[];
+
+    @OneToMany(() => WebJumpEntity, (webJumpEntity) => webJumpEntity.jumpGroup)
+    public webJumps!: WebJumpEntity[];
+
+    @OneToMany(() => JumpClientEntity, (jumpClientEntity) => jumpClientEntity.jumpGroup)
+    public jumpClients!: JumpClientEntity[];
 
     public static create(id: number, name: string, codeName?: string, comments?: string | null): JumpGroupEntity {
         const entity = new JumpGroupEntity();

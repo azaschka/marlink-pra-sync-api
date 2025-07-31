@@ -1,4 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
+import { JumpPolicyEntity } from '../../../../jump-policy/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, WebJumpUsernameFormatType } from '../../enums';
@@ -59,9 +61,24 @@ export class WebJumpEntity implements WebJump {
 
     @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.webJumps, {
         onDelete: 'CASCADE',
+        eager: true,
     })
     @JoinColumn({ name: 'jumpoint_id' })
     public jumpoint!: JumpointEntity;
+
+    @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.webJumps, {
+        onDelete: 'CASCADE',
+        eager: true,
+    })
+    @JoinColumn({ name: 'jump_group_id' })
+    public jumpGroup!: JumpGroupEntity;
+
+    @ManyToOne(() => JumpPolicyEntity, (jumpPolicy) => jumpPolicy.webJumps, {
+        onDelete: 'SET NULL',
+        eager: true,
+    })
+    @JoinColumn({ name: 'jump_policy_id' })
+    public jumpPolicy?: JumpPolicyEntity;
 
     public static create(
         id: number,

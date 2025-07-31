@@ -1,5 +1,6 @@
 import { DataSource, In, LessThan } from 'typeorm';
 import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { JumpGroupEntity } from '../../../jump-group/repositories/entities';
 import { JumpClientEntity } from '../entities';
 import { JumpClientRepositoryService } from './jump-client-repository.service';
 
@@ -43,11 +44,13 @@ describe('JumpClientRepositoryService', () => {
                     id: 1,
                     jumpGroupId: 1,
                     lastSyncDate: new Date('2023-01-01'),
+                    jumpGroup: {} as JumpGroupEntity,
                 },
                 {
                     id: 2,
                     jumpGroupId: 2,
                     lastSyncDate: new Date('2023-01-02'),
+                    jumpGroup: {} as JumpGroupEntity,
                 },
             ];
             const expectedConflictPaths = ['id'];
