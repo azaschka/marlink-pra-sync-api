@@ -95,20 +95,21 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
             dbProtocolTunnelJumps,
         );
 
-        if (protocolTunnelJumpsToBeCreated.length > 0) {
-            await this.protocolTunnelJumpRepositoryService.createOrUpdateByIds(protocolTunnelJumpsToBeCreated);
-        }
-
-        if (protocolTunnelJumpsToBeUpdated.length > 0) {
-            await this.protocolTunnelJumpRepositoryService.createOrUpdateByIds(protocolTunnelJumpsToBeUpdated);
-        }
+        const createdProtocolTunnelJumps = await this.createOrUpdateByIds(
+            transactionId,
+            protocolTunnelJumpsToBeCreated,
+        );
+        const updatedProtocolTunnelJumps = await this.createOrUpdateByIds(
+            transactionId,
+            protocolTunnelJumpsToBeUpdated,
+        );
 
         // Collect created and updated protocol tunnel jump IDs
         createdProtocolTunnelJumpIds.push(
-            ...protocolTunnelJumpsToBeCreated.map((protocolTunnelJump) => protocolTunnelJump.id),
+            ...createdProtocolTunnelJumps.map((protocolTunnelJump) => protocolTunnelJump.id),
         );
         updatedProtocolTunnelJumpIds.push(
-            ...protocolTunnelJumpsToBeUpdated.map((protocolTunnelJump) => protocolTunnelJump.id),
+            ...updatedProtocolTunnelJumps.map((protocolTunnelJump) => protocolTunnelJump.id),
         );
 
         if (btProtocolTunnelJumps.length < this.appConfigService.sync.maxBatchSize) {
@@ -200,5 +201,31 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
             btProtocolTunnelJump.url,
             btProtocolTunnelJump.caCertificates,
         );
+    }
+
+    private async createOrUpdateByIds(
+        transactionId: string,
+        protocolTunnelJumps: ProtocolTunnelJumpEntity[],
+    ): Promise<ProtocolTunnelJumpEntity[]> {
+        const createdOrUpdatedEntities: ProtocolTunnelJumpEntity[] = [];
+
+        if (protocolTunnelJumps.length === 0) {
+            return createdOrUpdatedEntities;
+        }
+
+        for (const protocolTunnelJump of protocolTunnelJumps) {
+            try {
+                await this.protocolTunnelJumpRepositoryService.createOrUpdateById(protocolTunnelJump);
+                createdOrUpdatedEntities.push(protocolTunnelJump);
+            } catch (error) {
+                this.eventBus.publish(
+                    new ProtocolTunnelJumpsSyncFailedEvent(transactionId, {
+                        errorMessage: `Error syncing protocol tunnel jump with id ${protocolTunnelJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                    }),
+                );
+            }
+        }
+
+        return createdOrUpdatedEntities;
     }
 }

@@ -97,17 +97,12 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
             dbJumpClients,
         );
 
-        if (jumpClientsToBeCreated.length > 0) {
-            await this.jumpClientRepositoryService.createOrUpdateByIds(jumpClientsToBeCreated);
-        }
-
-        if (jumpClientsToBeUpdated.length > 0) {
-            await this.jumpClientRepositoryService.createOrUpdateByIds(jumpClientsToBeUpdated);
-        }
+        const createdJumpClients = await this.createOrUpdateByIds(transactionId, jumpClientsToBeCreated);
+        const updatedJumpClients = await this.createOrUpdateByIds(transactionId, jumpClientsToBeUpdated);
 
         // Collect created and updated jump client IDs
-        createdJumpClientIds.push(...jumpClientsToBeCreated.map((jumpClient) => jumpClient.id));
-        updatedJumpClientIds.push(...jumpClientsToBeUpdated.map((jumpClient) => jumpClient.id));
+        createdJumpClientIds.push(...createdJumpClients.map((jumpClient) => jumpClient.id));
+        updatedJumpClientIds.push(...updatedJumpClients.map((jumpClient) => jumpClient.id));
 
         if (btJumpClients.length < this.appConfigService.sync.maxBatchSize) {
             return;
@@ -198,5 +193,31 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
                 : undefined,
             btJumpClient.jumpointProxy,
         );
+    }
+
+    private async createOrUpdateByIds(
+        transactionId: string,
+        jumpClients: JumpClientEntity[],
+    ): Promise<JumpClientEntity[]> {
+        const createdOrUpdatedEntities: JumpClientEntity[] = [];
+
+        if (jumpClients.length === 0) {
+            return createdOrUpdatedEntities;
+        }
+
+        for (const jumpClient of jumpClients) {
+            try {
+                await this.jumpClientRepositoryService.createOrUpdateById(jumpClient);
+                createdOrUpdatedEntities.push(jumpClient);
+            } catch (error) {
+                this.eventBus.publish(
+                    new JumpClientsSyncFailedEvent(transactionId, {
+                        errorMessage: `Error syncing jump client with id ${jumpClient.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                    }),
+                );
+            }
+        }
+
+        return createdOrUpdatedEntities;
     }
 }

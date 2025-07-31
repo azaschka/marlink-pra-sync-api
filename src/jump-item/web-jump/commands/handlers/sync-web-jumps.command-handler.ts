@@ -83,17 +83,12 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
         const webJumpsToBeCreated = this.findAllWebJumpsToBeCreated(btWebJumps, dbWebJumps);
         const webJumpsToBeUpdated = this.findAllWebJumpsToBeUpdatedOrUpdateLastSyncDate(btWebJumps, dbWebJumps);
 
-        if (webJumpsToBeCreated.length > 0) {
-            await this.webJumpRepositoryService.createOrUpdateByIds(webJumpsToBeCreated);
-        }
-
-        if (webJumpsToBeUpdated.length > 0) {
-            await this.webJumpRepositoryService.createOrUpdateByIds(webJumpsToBeUpdated);
-        }
+        const createdWebJumps = await this.createOrUpdateByIds(transactionId, webJumpsToBeCreated);
+        const updatedWebJumps = await this.createOrUpdateByIds(transactionId, webJumpsToBeUpdated);
 
         // Collect created and updated web jump IDs
-        createdWebJumpIds.push(...webJumpsToBeCreated.map((webJump) => webJump.id));
-        updatedWebJumpIds.push(...webJumpsToBeUpdated.map((webJump) => webJump.id));
+        createdWebJumpIds.push(...createdWebJumps.map((webJump) => webJump.id));
+        updatedWebJumpIds.push(...updatedWebJumps.map((webJump) => webJump.id));
 
         if (btWebJumps.length < this.appConfigService.sync.maxBatchSize) {
             return;
@@ -162,5 +157,28 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
             btWebJump.submitField,
             btWebJump.sessionPolicyId,
         );
+    }
+
+    private async createOrUpdateByIds(transactionId: string, webJumps: WebJumpEntity[]): Promise<WebJumpEntity[]> {
+        const createdOrUpdatedEntities: WebJumpEntity[] = [];
+
+        if (webJumps.length === 0) {
+            return createdOrUpdatedEntities;
+        }
+
+        for (const webJump of webJumps) {
+            try {
+                await this.webJumpRepositoryService.createOrUpdateById(webJump);
+                createdOrUpdatedEntities.push(webJump);
+            } catch (error) {
+                this.eventBus.publish(
+                    new WebJumpsSyncFailedEvent(transactionId, {
+                        errorMessage: `Error syncing web jump with id ${webJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                    }),
+                );
+            }
+        }
+
+        return createdOrUpdatedEntities;
     }
 }

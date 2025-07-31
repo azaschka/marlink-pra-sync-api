@@ -2,6 +2,7 @@ import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { ShellJumpRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/dtos/outputs';
 import { ShellJumpProtocolType as BTShellJumpProtocolType } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/enums';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { ShellJumpProtocolType } from '../../enums';
@@ -33,6 +34,7 @@ abstract class TestHelper {
             protocolType: ShellJumpProtocolType.SSH,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
             jumpoint: {} as JumpointEntity,
+            jumpGroup: {} as JumpGroupEntity,
         }));
     }
 }
@@ -99,22 +101,22 @@ describe('SyncShellJumpsCommandHandler', () => {
                         ids: [3, 4],
                     },
                 ],
-                expectedShellJumpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedShellJumpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedShellJumpEntities([2]),
+                        entity: TestHelper.generateMockedShellJumpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedShellJumpEntities([1]),
+                        entity: TestHelper.generateMockedShellJumpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedShellJumpEntities([4]),
+                        entity: TestHelper.generateMockedShellJumpEntities([4])[0],
                     },
                     {
                         iter: 4,
-                        entity: TestHelper.generateMockedShellJumpEntities([3]),
+                        entity: TestHelper.generateMockedShellJumpEntities([3])[0],
                     },
                 ],
                 expectedShellJumpRepositoryServiceDeleteByIdsCall: [
@@ -155,18 +157,18 @@ describe('SyncShellJumpsCommandHandler', () => {
                         ids: [3],
                     },
                 ],
-                expectedShellJumpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedShellJumpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedShellJumpEntities([2]),
+                        entity: TestHelper.generateMockedShellJumpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedShellJumpEntities([1]),
+                        entity: TestHelper.generateMockedShellJumpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedShellJumpEntities([3]),
+                        entity: TestHelper.generateMockedShellJumpEntities([3])[0],
                     },
                 ],
                 expectedShellJumpRepositoryServiceDeleteByIdsCall: [
@@ -192,7 +194,7 @@ describe('SyncShellJumpsCommandHandler', () => {
                 shellJumpRepositoryFindByLastSyncDateBeforeResolvedValue,
                 shellJumpRepositoryServiceFindByIdsResolvedValue,
                 expectedShellJumpRepositoryServiceFindByIdsCall,
-                expectedShellJumpRepositoryServiceCreateOrUpdateByIdsCall,
+                expectedShellJumpRepositoryServiceCreateOrUpdateByIdCall,
                 expectedShellJumpRepositoryServiceDeleteByIdsCall,
                 expectedResult,
             }) => {
@@ -202,9 +204,9 @@ describe('SyncShellJumpsCommandHandler', () => {
                 const shellJumpRepositoryServiceFindByIds = jest
                     .spyOn(shellJumpRepositoryService, 'findByIds')
                     .mockImplementation(shellJumpRepositoryServiceFindByIdsResolvedValue);
-                const shellJumpRepositoryServiceCreateOrUpdateByIds = jest.spyOn(
+                const shellJumpRepositoryServiceCreateOrUpdateById = jest.spyOn(
                     shellJumpRepositoryService,
-                    'createOrUpdateByIds',
+                    'createOrUpdateById',
                 );
                 const shellJumpRepositoryServiceDeleteByIds = jest.spyOn(shellJumpRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
@@ -218,11 +220,11 @@ describe('SyncShellJumpsCommandHandler', () => {
                     expect(shellJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
                 }
 
-                expect(shellJumpRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
-                    expectedShellJumpRepositoryServiceCreateOrUpdateByIdsCall.length,
+                expect(shellJumpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
+                    expectedShellJumpRepositoryServiceCreateOrUpdateByIdCall.length,
                 );
-                for (const item of expectedShellJumpRepositoryServiceCreateOrUpdateByIdsCall) {
-                    expect(shellJumpRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
+                for (const item of expectedShellJumpRepositoryServiceCreateOrUpdateByIdCall) {
+                    expect(shellJumpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
                         item.entity,
                     );
@@ -286,8 +288,7 @@ function mockEventBus(): EventBus {
 function mockShellJumpRepositoryService(): ShellJumpRepositoryService {
     const service = {} as ShellJumpRepositoryService;
     service.findByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
+    service.createOrUpdateById = jest.fn();
     service.findByLastSyncDateBefore = jest.fn();
     service.deleteByIds = jest.fn();
 

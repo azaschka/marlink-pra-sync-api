@@ -1,6 +1,7 @@
 import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { ProtocolTunnelJumpRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/dtos/outputs';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { ProtocolTunnelJumpsSyncedEvent, ProtocolTunnelJumpsSyncFailedEvent } from '../../events';
@@ -31,6 +32,7 @@ abstract class TestHelper {
             jumpointId: id,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
             jumpoint: {} as JumpointEntity,
+            jumpGroup: {} as JumpGroupEntity,
         }));
     }
 }
@@ -102,22 +104,22 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                         ids: [3, 4],
                     },
                 ],
-                expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([2]),
+                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([1]),
+                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([4]),
+                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([4])[0],
                     },
                     {
                         iter: 4,
-                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([3]),
+                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([3])[0],
                     },
                 ],
                 expectedProtocolTunnelJumpRepositoryServiceDeleteByIdsCall: [
@@ -158,18 +160,18 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                         ids: [3],
                     },
                 ],
-                expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([2]),
+                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([1]),
+                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([3]),
+                        entity: TestHelper.generateMockedProtocolTunnelJumpEntities([3])[0],
                     },
                 ],
                 expectedProtocolTunnelJumpRepositoryServiceDeleteByIdsCall: [
@@ -195,7 +197,7 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                 protocolTunnelJumpRepositoryFindByLastSyncDateBeforeResolvedValue,
                 protocolTunnelJumpRepositoryServiceFindByIdsResolvedValue,
                 expectedProtocolTunnelJumpRepositoryServiceFindByIdsCall,
-                expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdsCall,
+                expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdCall,
                 expectedProtocolTunnelJumpRepositoryServiceDeleteByIdsCall,
                 expectedResult,
             }) => {
@@ -205,9 +207,9 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                 const protocolTunnelJumpRepositoryServiceFindByIds = jest
                     .spyOn(protocolTunnelJumpRepositoryService, 'findByIds')
                     .mockImplementation(protocolTunnelJumpRepositoryServiceFindByIdsResolvedValue);
-                const protocolTunnelJumpRepositoryServiceCreateOrUpdateByIds = jest.spyOn(
+                const protocolTunnelJumpRepositoryServiceCreateOrUpdateById = jest.spyOn(
                     protocolTunnelJumpRepositoryService,
-                    'createOrUpdateByIds',
+                    'createOrUpdateById',
                 );
                 const protocolTunnelJumpRepositoryServiceDeleteByIds = jest.spyOn(
                     protocolTunnelJumpRepositoryService,
@@ -224,11 +226,11 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                     expect(protocolTunnelJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
                 }
 
-                expect(protocolTunnelJumpRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
-                    expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdsCall.length,
+                expect(protocolTunnelJumpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
+                    expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdCall.length,
                 );
-                for (const item of expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdsCall) {
-                    expect(protocolTunnelJumpRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
+                for (const item of expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdCall) {
+                    expect(protocolTunnelJumpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
                         item.entity,
                     );
@@ -292,8 +294,7 @@ function mockEventBus(): EventBus {
 function mockProtocolTunnelJumpRepositoryService(): ProtocolTunnelJumpRepositoryService {
     const service = {} as ProtocolTunnelJumpRepositoryService;
     service.findByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
+    service.createOrUpdateById = jest.fn();
     service.findByLastSyncDateBefore = jest.fn();
     service.deleteByIds = jest.fn();
 

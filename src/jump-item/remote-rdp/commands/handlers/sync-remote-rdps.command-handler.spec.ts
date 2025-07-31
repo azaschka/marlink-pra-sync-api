@@ -1,6 +1,7 @@
 import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { RemoteRdpRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/dtos/outputs';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { RemoteRdpsSyncedEvent, RemoteRdpsSyncFailedEvent } from '../../events';
@@ -29,6 +30,7 @@ abstract class TestHelper {
             jumpointId: id,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
             jumpoint: {} as JumpointEntity,
+            jumpGroup: {} as JumpGroupEntity,
         }));
     }
 }
@@ -95,22 +97,22 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                         ids: [3, 4],
                     },
                 ],
-                expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedRemoteRdpEntities([2]),
+                        entity: TestHelper.generateMockedRemoteRdpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedRemoteRdpEntities([1]),
+                        entity: TestHelper.generateMockedRemoteRdpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedRemoteRdpEntities([4]),
+                        entity: TestHelper.generateMockedRemoteRdpEntities([4])[0],
                     },
                     {
                         iter: 4,
-                        entity: TestHelper.generateMockedRemoteRdpEntities([3]),
+                        entity: TestHelper.generateMockedRemoteRdpEntities([3])[0],
                     },
                 ],
                 expectedRemoteRdpRepositoryServiceDeleteByIdsCall: [
@@ -151,18 +153,18 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                         ids: [3],
                     },
                 ],
-                expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedRemoteRdpEntities([2]),
+                        entity: TestHelper.generateMockedRemoteRdpEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedRemoteRdpEntities([1]),
+                        entity: TestHelper.generateMockedRemoteRdpEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedRemoteRdpEntities([3]),
+                        entity: TestHelper.generateMockedRemoteRdpEntities([3])[0],
                     },
                 ],
                 expectedRemoteRdpRepositoryServiceDeleteByIdsCall: [
@@ -188,7 +190,7 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                 remoteRdpRepositoryFindByLastSyncDateBeforeResolvedValue,
                 remoteRdpRepositoryServiceFindByIdsResolvedValue,
                 expectedRemoteRdpRepositoryServiceFindByIdsCall,
-                expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdsCall,
+                expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdCall,
                 expectedRemoteRdpRepositoryServiceDeleteByIdsCall,
                 expectedResult,
             }) => {
@@ -198,9 +200,9 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                 const remoteRdpRepositoryServiceFindByIds = jest
                     .spyOn(remoteRdpRepositoryService, 'findByIds')
                     .mockImplementation(remoteRdpRepositoryServiceFindByIdsResolvedValue);
-                const remoteRdpRepositoryServiceCreateOrUpdateByIds = jest.spyOn(
+                const remoteRdpRepositoryServiceCreateOrUpdateById = jest.spyOn(
                     remoteRdpRepositoryService,
-                    'createOrUpdateByIds',
+                    'createOrUpdateById',
                 );
                 const remoteRdpRepositoryServiceDeleteByIds = jest.spyOn(remoteRdpRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
@@ -214,11 +216,11 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                     expect(remoteRdpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
                 }
 
-                expect(remoteRdpRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
-                    expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdsCall.length,
+                expect(remoteRdpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
+                    expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdCall.length,
                 );
-                for (const item of expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdsCall) {
-                    expect(remoteRdpRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
+                for (const item of expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdCall) {
+                    expect(remoteRdpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
                         item.entity,
                     );
@@ -282,8 +284,7 @@ function mockEventBus(): EventBus {
 function mockRemoteRdpRepositoryService(): RemoteRdpRepositoryService {
     const service = {} as RemoteRdpRepositoryService;
     service.findByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
+    service.createOrUpdateById = jest.fn();
     service.findByLastSyncDateBefore = jest.fn();
     service.deleteByIds = jest.fn();
 

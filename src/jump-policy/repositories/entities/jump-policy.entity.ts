@@ -1,4 +1,10 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { JumpClientEntity } from '../../../jump-client/repositories/entities';
+import { ProtocolTunnelJumpEntity } from '../../../jump-item/protocol-tunnel-jump/repositories/entities';
+import { RemoteRdpEntity } from '../../../jump-item/remote-rdp/repositories/entities';
+import { RemoteVncEntity } from '../../../jump-item/remote-vnc/repositories/entities';
+import { ShellJumpEntity } from '../../../jump-item/shell-jump/repositories/entities';
+import { WebJumpEntity } from '../../../jump-item/web-jump/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import {
     ApprovalApproverScopeType,
@@ -110,6 +116,24 @@ export class JumpPolicyEntity implements JumpPolicy {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @OneToMany(() => ProtocolTunnelJumpEntity, (protocolTunnelJumpEntity) => protocolTunnelJumpEntity.jumpPolicy)
+    public protocolTunnelJumps!: ProtocolTunnelJumpEntity[];
+
+    @OneToMany(() => RemoteRdpEntity, (remoteRdpEntity) => remoteRdpEntity.jumpPolicy)
+    public remoteRdps!: RemoteRdpEntity[];
+
+    @OneToMany(() => RemoteVncEntity, (remoteVncEntity) => remoteVncEntity.jumpPolicy)
+    public remoteVncs!: RemoteVncEntity[];
+
+    @OneToMany(() => ShellJumpEntity, (shellJumpEntity) => shellJumpEntity.jumpPolicy)
+    public shellJumps!: ShellJumpEntity[];
+
+    @OneToMany(() => WebJumpEntity, (webJumpEntity) => webJumpEntity.jumpPolicy)
+    public webJumps!: WebJumpEntity[];
+
+    @OneToMany(() => JumpClientEntity, (jumpClientEntity) => jumpClientEntity.jumpPolicy)
+    public jumpClients!: JumpClientEntity[];
 
     public static create(
         id: number,

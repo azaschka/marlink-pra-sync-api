@@ -1,6 +1,7 @@
 import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../../app-config/services/app-config.service';
 import { RemoteVncRetrievedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/dtos/outputs';
+import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { RemoteVncsSyncedEvent, RemoteVncsSyncFailedEvent } from '../../events';
@@ -29,6 +30,7 @@ abstract class TestHelper {
             jumpointId: id,
             lastSyncDate: new Date('2025-01-01T00:00:00Z'),
             jumpoint: {} as JumpointEntity,
+            jumpGroup: {} as JumpGroupEntity,
         }));
     }
 }
@@ -95,22 +97,22 @@ describe('SyncRemoteVncsCommandHandler', () => {
                         ids: [3, 4],
                     },
                 ],
-                expectedRemoteVncRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedRemoteVncRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedRemoteVncEntities([2]),
+                        entity: TestHelper.generateMockedRemoteVncEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedRemoteVncEntities([1]),
+                        entity: TestHelper.generateMockedRemoteVncEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedRemoteVncEntities([4]),
+                        entity: TestHelper.generateMockedRemoteVncEntities([4])[0],
                     },
                     {
                         iter: 4,
-                        entity: TestHelper.generateMockedRemoteVncEntities([3]),
+                        entity: TestHelper.generateMockedRemoteVncEntities([3])[0],
                     },
                 ],
                 expectedRemoteVncRepositoryServiceDeleteByIdsCall: [
@@ -151,18 +153,18 @@ describe('SyncRemoteVncsCommandHandler', () => {
                         ids: [3],
                     },
                 ],
-                expectedRemoteVncRepositoryServiceCreateOrUpdateByIdsCall: [
+                expectedRemoteVncRepositoryServiceCreateOrUpdateByIdCall: [
                     {
                         iter: 1,
-                        entity: TestHelper.generateMockedRemoteVncEntities([2]),
+                        entity: TestHelper.generateMockedRemoteVncEntities([2])[0],
                     },
                     {
                         iter: 2,
-                        entity: TestHelper.generateMockedRemoteVncEntities([1]),
+                        entity: TestHelper.generateMockedRemoteVncEntities([1])[0],
                     },
                     {
                         iter: 3,
-                        entity: TestHelper.generateMockedRemoteVncEntities([3]),
+                        entity: TestHelper.generateMockedRemoteVncEntities([3])[0],
                     },
                 ],
                 expectedRemoteVncRepositoryServiceDeleteByIdsCall: [
@@ -188,7 +190,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
                 remoteVncRepositoryFindByLastSyncDateBeforeResolvedValue,
                 remoteVncRepositoryServiceFindByIdsResolvedValue,
                 expectedRemoteVncRepositoryServiceFindByIdsCall,
-                expectedRemoteVncRepositoryServiceCreateOrUpdateByIdsCall,
+                expectedRemoteVncRepositoryServiceCreateOrUpdateByIdCall,
                 expectedRemoteVncRepositoryServiceDeleteByIdsCall,
                 expectedResult,
             }) => {
@@ -198,9 +200,9 @@ describe('SyncRemoteVncsCommandHandler', () => {
                 const remoteVncRepositoryServiceFindByIds = jest
                     .spyOn(remoteVncRepositoryService, 'findByIds')
                     .mockImplementation(remoteVncRepositoryServiceFindByIdsResolvedValue);
-                const remoteVncRepositoryServiceCreateOrUpdateByIds = jest.spyOn(
+                const remoteVncRepositoryServiceCreateOrUpdateById = jest.spyOn(
                     remoteVncRepositoryService,
-                    'createOrUpdateByIds',
+                    'createOrUpdateById',
                 );
                 const remoteVncRepositoryServiceDeleteByIds = jest.spyOn(remoteVncRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
@@ -214,11 +216,11 @@ describe('SyncRemoteVncsCommandHandler', () => {
                     expect(remoteVncRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
                 }
 
-                expect(remoteVncRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
-                    expectedRemoteVncRepositoryServiceCreateOrUpdateByIdsCall.length,
+                expect(remoteVncRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
+                    expectedRemoteVncRepositoryServiceCreateOrUpdateByIdCall.length,
                 );
-                for (const item of expectedRemoteVncRepositoryServiceCreateOrUpdateByIdsCall) {
-                    expect(remoteVncRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
+                for (const item of expectedRemoteVncRepositoryServiceCreateOrUpdateByIdCall) {
+                    expect(remoteVncRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
                         item.entity,
                     );
@@ -282,8 +284,7 @@ function mockEventBus(): EventBus {
 function mockRemoteVncRepositoryService(): RemoteVncRepositoryService {
     const service = {} as RemoteVncRepositoryService;
     service.findByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
-    service.createOrUpdateByIds = jest.fn();
+    service.createOrUpdateById = jest.fn();
     service.findByLastSyncDateBefore = jest.fn();
     service.deleteByIds = jest.fn();
 

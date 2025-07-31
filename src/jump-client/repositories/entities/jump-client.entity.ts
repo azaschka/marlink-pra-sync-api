@@ -1,4 +1,6 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { JumpGroupEntity } from '../../../jump-group/repositories/entities';
+import { JumpPolicyEntity } from '../../../jump-policy/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import {
     JumpClientConnectionType,
@@ -96,6 +98,20 @@ export class JumpClientEntity implements JumpClient {
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
+
+    @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.jumpClients, {
+        onDelete: 'CASCADE',
+        eager: true,
+    })
+    @JoinColumn({ name: 'jump_group_id' })
+    public jumpGroup!: JumpGroupEntity;
+
+    @ManyToOne(() => JumpPolicyEntity, (jumpPolicy) => jumpPolicy.jumpClients, {
+        onDelete: 'SET NULL',
+        eager: true,
+    })
+    @JoinColumn({ name: 'jump_policy_id' })
+    public jumpPolicy?: JumpPolicyEntity;
 
     public static create(
         id: number,

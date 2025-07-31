@@ -1,4 +1,4 @@
-import { JumpPolicy } from '../../models';
+import { JumpPolicyEntity } from '../../repositories/entities';
 import { JumpPolicyRepositoryService } from '../../repositories/services/jump-policy-repository.service';
 import { RetrieveJumpPoliciesQuery } from '../retrieve-jump-policies.query';
 import { RetrieveJumpPoliciesQueryHandler } from './retrieve-jump-policies.query-handler';
@@ -14,7 +14,7 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
 
     describe('execute', () => {
         it('should call the repo with page size and page number; and return value from the repo', async () => {
-            const expectedJumpPolicies = [] as JumpPolicy[];
+            const expectedJumpPolicies = [] as JumpPolicyEntity[];
             const jumpPolicyRepositoryServiceFindByMethod = jest
                 .spyOn(jumpPolicyRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpPolicies);
@@ -26,7 +26,7 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
-            const expectedJumpPolicies = [] as JumpPolicy[];
+            const expectedJumpPolicies = [] as JumpPolicyEntity[];
             const jumpPolicyRepositoryServiceFindByMethod = jest
                 .spyOn(jumpPolicyRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpPolicies);
