@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateProtocolTunnelJumpCommand as BTCreateProtocolTunnelJumpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/commands';
 import { ProtocolTunnelJumpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/dtos/outputs';
@@ -18,6 +19,8 @@ export class CreateProtocolTunnelJumpCommandHandler implements ICommandHandler<C
     ) {}
 
     public async execute(command: CreateProtocolTunnelJumpCommand): Promise<ProtocolTunnelJump> {
+        await this.validateProtocolTunnelJumpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+
         const btProtocolTunnelJump = await this.createBTProtocolTunnelJump(command);
         const protocolTunnelJumpEntity = this.createProtocolTunnelJumpEntity(btProtocolTunnelJump);
 
@@ -41,6 +44,20 @@ export class CreateProtocolTunnelJumpCommandHandler implements ICommandHandler<C
             );
 
             throw error;
+        }
+    }
+
+    private async validateProtocolTunnelJumpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
+        const existingProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.findOneBy({
+            name,
+            jumpGroupId,
+            tag,
+        });
+
+        if (existingProtocolTunnelJump) {
+            throw new ConflictException(
+                `A Protocol Tunnel Jump with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
+            );
         }
     }
 

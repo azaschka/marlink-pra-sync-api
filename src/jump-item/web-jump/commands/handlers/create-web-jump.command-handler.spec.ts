@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateWebJumpCommand as BTCreateWebJumpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/web-jump/commands';
 import { WebJumpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/web-jump/dtos/outputs';
@@ -58,6 +59,24 @@ describe('CreateWebJumpCommandHandler', () => {
     });
 
     describe('execute', () => {
+        it('should throw a ConflictException if a Web Jump with the same name, jump group id and tag already exists', async () => {
+            // Arrange
+            const command = <CreateWebJumpCommand>{
+                transactionId: 'transaction-1',
+                name: 'web-jump-1',
+                jumpointId: 2,
+                url: 'url-1',
+                jumpGroupId: 3,
+                tag: 'tag-1',
+            };
+            jest.spyOn(webJumpRepositoryService, 'findOneBy').mockResolvedValue({
+                id: 123,
+            } as WebJumpEntity);
+
+            // Act & Assert
+            await expect(handler.execute(command)).rejects.toThrow(ConflictException);
+        });
+
         it.each([
             <CreateWebJumpCommand>{
                 transactionId: 'transaction-1',
@@ -229,6 +248,7 @@ function mockCommandBus() {
 function mockWebJumpRepositoryService() {
     const webJumpRepositoryService = {} as WebJumpRepositoryService;
     webJumpRepositoryService.create = jest.fn();
+    webJumpRepositoryService.findOneBy = jest.fn().mockResolvedValue(null);
 
     return webJumpRepositoryService;
 }

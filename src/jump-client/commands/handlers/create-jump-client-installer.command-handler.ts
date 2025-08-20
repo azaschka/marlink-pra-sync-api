@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateJumpClientInstallerCommand as BTCreateJumpClientInstallerCommand } from '../../../beyondtrust-pra-conf-api/jump-client/commands';
 import { JumpClientInstallerCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
@@ -24,6 +25,8 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
     ) {}
 
     public async execute(command: CreateJumpClientInstallerCommand): Promise<JumpClientInstaller> {
+        await this.validateJumpClientInstallerDoesNotExist(command.name, command.tag);
+
         const btJumpClientInstaller = await this.createBTJumpClientInstaller(command);
         const jumpClientInstallerEntity = this.createJumpClientInstallerEntity(btJumpClientInstaller);
 
@@ -47,6 +50,18 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
             );
 
             throw error;
+        }
+    }
+
+    private async validateJumpClientInstallerDoesNotExist(name?: string, tag?: string): Promise<void> {
+        if (!name && !tag) {
+            return; // No validation needed if neither name nor tag is provided
+        }
+
+        const existingInstaller = await this.jumpClientInstallerRepositoryService.findOneBy({ name, tag });
+
+        if (existingInstaller) {
+            throw new ConflictException(`Jump Client Installer with name "${name}" and tag "${tag}" already exists.`);
         }
     }
 

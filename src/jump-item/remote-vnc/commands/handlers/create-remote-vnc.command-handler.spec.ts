@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateRemoteVncCommand as BTCreateRemoteVncCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/commands';
 import { RemoteVncCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/dtos/outputs';
@@ -48,6 +49,22 @@ describe('CreateRemoteVncCommandHandler', () => {
     });
 
     describe('execute', () => {
+        it('should throw ConflictException if Remote VNC with same name, jump group id and tag already exists', async () => {
+            // Arrange
+            const command = <CreateRemoteVncCommand>{
+                transactionId: 'transaction-1',
+                name: 'remote-vnc-1',
+                jumpointId: 1,
+                jumpGroupId: 2,
+                jumpGroupType: JumpGroupType.Personal,
+                tag: 'tag-1',
+            };
+            jest.spyOn(remoteVncRepositoryService, 'findOneBy').mockResolvedValue({ id: 123 } as RemoteVncEntity);
+
+            // Act & Assert
+            await expect(handler.execute(command)).rejects.toThrow(ConflictException);
+        });
+
         it.each([
             <CreateRemoteVncCommand>{
                 transactionId: 'transaction-1',
@@ -204,6 +221,7 @@ function mockCommandBus() {
 function mockRemoteVncRepositoryService() {
     const remoteVncRepositoryService = {} as RemoteVncRepositoryService;
     remoteVncRepositoryService.create = jest.fn();
+    remoteVncRepositoryService.findOneBy = jest.fn().mockResolvedValue(null);
 
     return remoteVncRepositoryService;
 }

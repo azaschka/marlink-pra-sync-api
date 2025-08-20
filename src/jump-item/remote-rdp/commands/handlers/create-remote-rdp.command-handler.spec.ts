@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateRemoteRdpCommand as BTCreateRemoteRdpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/commands';
 import { RemoteRdpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/dtos/outputs';
@@ -69,6 +70,22 @@ describe('CreateRemoteRdpCommandHandler', () => {
     });
 
     describe('execute', () => {
+        it('should throw ConflictException if a Remote RDP with the same name, jump group id and tag already exists', async () => {
+            // Arrange
+            const command = <CreateRemoteRdpCommand>{
+                transactionId: 'transaction-1',
+                name: 'remote-rdp-1',
+                jumpointId: 1,
+                hostname: 'hostname-1',
+                jumpGroupId: 2,
+                tag: 'tag-1',
+            };
+            jest.spyOn(remoteRdpRepositoryService, 'findOneBy').mockResolvedValue({ id: 123 } as RemoteRdpEntity);
+
+            // Act & Assert
+            await expect(handler.execute(command)).rejects.toThrow(ConflictException);
+        });
+
         it.each([
             <CreateRemoteRdpCommand>{
                 transactionId: 'transaction-1',
@@ -262,6 +279,7 @@ function mockCommandBus() {
 function mockRemoteRdpRepositoryService() {
     const remoteRdpRepositoryService = {} as RemoteRdpRepositoryService;
     remoteRdpRepositoryService.create = jest.fn();
+    remoteRdpRepositoryService.findOneBy = jest.fn().mockResolvedValue(null);
 
     return remoteRdpRepositoryService;
 }

@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateRemoteRdpCommand as BTCreateRemoteRdpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/commands';
 import { RemoteRdpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/dtos/outputs';
@@ -25,6 +26,8 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
     ) {}
 
     public async execute(command: CreateRemoteRdpCommand): Promise<RemoteRdp> {
+        await this.validateRemoteRdpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+
         const btRemoteRdp = await this.createBTRemoteRdp(command);
         const remoteRdpEntity = this.createRemoteRdpEntity(btRemoteRdp);
 
@@ -47,6 +50,20 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
             );
 
             throw error;
+        }
+    }
+
+    private async validateRemoteRdpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
+        const existingRemoteRdp = await this.remoteRdpRepositoryService.findOneBy({
+            name,
+            jumpGroupId,
+            tag,
+        });
+
+        if (existingRemoteRdp) {
+            throw new ConflictException(
+                `A Remote RDP with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
+            );
         }
     }
 

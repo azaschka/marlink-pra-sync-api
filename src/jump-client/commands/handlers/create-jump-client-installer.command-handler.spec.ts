@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateJumpClientInstallerCommand as BTCreateJumpClientInstallerCommand } from '../../../beyondtrust-pra-conf-api/jump-client/commands';
 import { JumpClientInstallerCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
@@ -54,6 +55,25 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
     });
 
     describe('execute', () => {
+        it('should throw a ConflictException if a Jump Client installer with the same name and tag already exists', async () => {
+            // Arrange
+            jest.spyOn(jumpClientInstallerRepositoryService, 'findOneBy').mockResolvedValue({
+                id: 1,
+                name: 'jump-client-1',
+                tag: 'tag-1',
+            } as JumpClientInstallerEntity);
+
+            // Act & Assert
+            await expect(
+                handler.execute(<CreateJumpClientInstallerCommand>{
+                    transactionId: 'transaction-1',
+                    jumpGroupId: 1,
+                    name: 'jump-client-1',
+                    tag: 'tag-1',
+                }),
+            ).rejects.toThrow(ConflictException);
+        });
+
         it.each([
             <CreateJumpClientInstallerCommand>{
                 transactionId: 'transaction-1',
@@ -241,6 +261,7 @@ function mockCommandBus() {
 function mockJumpClientInstallerRepositoryService() {
     const jumpClientInstallerRepositoryService = {} as JumpClientInstallerRepositoryService;
     jumpClientInstallerRepositoryService.create = jest.fn();
+    jumpClientInstallerRepositoryService.findOneBy = jest.fn().mockResolvedValue(null);
 
     return jumpClientInstallerRepositoryService;
 }

@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateRemoteVncCommand as BTCreateRemoteVncCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/commands';
 import { RemoteVncCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/dtos/outputs';
@@ -18,6 +19,8 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
     ) {}
 
     public async execute(command: CreateRemoteVncCommand): Promise<RemoteVnc> {
+        await this.validateRemoteVncDoesNotExist(command.name, command.jumpGroupId, command.tag);
+
         const btRemoteVnc = await this.createBTRemoteVnc(command);
         const remoteVncEntity = this.createRemoteVncEntity(btRemoteVnc);
 
@@ -40,6 +43,20 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
             );
 
             throw error;
+        }
+    }
+
+    private async validateRemoteVncDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
+        const existingRemoteVnc = await this.remoteVncRepositoryService.findOneBy({
+            name,
+            jumpGroupId,
+            tag,
+        });
+
+        if (existingRemoteVnc) {
+            throw new ConflictException(
+                `A Remote VNC with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
+            );
         }
     }
 

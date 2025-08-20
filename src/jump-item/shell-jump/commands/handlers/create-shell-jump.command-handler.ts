@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateShellJumpCommand as BTCreateShellJumpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/commands';
 import { ShellJumpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/dtos/outputs';
@@ -25,6 +26,8 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
     ) {}
 
     public async execute(command: CreateShellJumpCommand): Promise<ShellJump> {
+        await this.validateShellJumpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+
         const btShellJump = await this.createBTShellJump(command);
         const shellJumpEntity = this.createShellJumpEntity(btShellJump);
 
@@ -47,6 +50,20 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
             );
 
             throw error;
+        }
+    }
+
+    private async validateShellJumpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
+        const existingShellJump = await this.shellJumpRepositoryService.findOneBy({
+            name,
+            jumpGroupId,
+            tag,
+        });
+
+        if (existingShellJump) {
+            throw new ConflictException(
+                `A Shell Jump with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
+            );
         }
     }
 

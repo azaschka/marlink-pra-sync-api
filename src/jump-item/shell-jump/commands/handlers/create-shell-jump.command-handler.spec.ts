@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateShellJumpCommand as BTCreateShellJumpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/commands';
 import { ShellJumpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/dtos/outputs';
@@ -60,6 +61,22 @@ describe('CreateShellJumpCommandHandler', () => {
     });
 
     describe('execute', () => {
+        it('should throw a ConflictException if a Shell Jump with the same name, jump group id and tag already exists', async () => {
+            // Arrange
+            const command = <CreateShellJumpCommand>{
+                transactionId: 'transaction-1',
+                name: 'shell-jump-1',
+                jumpointId: 2,
+                protocolType: ShellJumpProtocolType.SSH,
+                jumpGroupId: 3,
+                tag: 'tag-1',
+            };
+            jest.spyOn(shellJumpRepositoryService, 'findOneBy').mockResolvedValue({ id: 123 } as ShellJumpEntity);
+
+            // Act & Assert
+            await expect(handler.execute(command)).rejects.toThrow(ConflictException);
+        });
+
         it.each([
             <CreateShellJumpCommand>{
                 transactionId: 'transaction-1',
@@ -229,6 +246,7 @@ function mockCommandBus() {
 function mockShellJumpRepositoryService() {
     const shellJumpRepositoryService = {} as ShellJumpRepositoryService;
     shellJumpRepositoryService.create = jest.fn();
+    shellJumpRepositoryService.findOneBy = jest.fn().mockResolvedValue(null);
 
     return shellJumpRepositoryService;
 }

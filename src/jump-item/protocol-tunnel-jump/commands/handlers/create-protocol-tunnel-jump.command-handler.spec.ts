@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateProtocolTunnelJumpCommand as BTCreateProtocolTunnelJumpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/commands';
 import { ProtocolTunnelJumpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/dtos/outputs';
@@ -59,6 +60,25 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
     });
 
     describe('execute', () => {
+        it('should throw a ConflictException if a Protocol Tunnel Jump with the same name, jump group id and tag already exists', async () => {
+            // Arrange
+            const command = <CreateProtocolTunnelJumpCommand>{
+                transactionId: 'transaction-1',
+                name: 'protocol-tunnel-jump-1',
+                jumpointId: 2,
+                hostname: 'hostname-1',
+                jumpGroupId: 3,
+                jumpGroupType: JumpGroupType.Personal,
+                tag: 'tag-1',
+            };
+            jest.spyOn(protocolTunnelJumpRepositoryService, 'findOneBy').mockResolvedValue({
+                id: 123,
+            } as ProtocolTunnelJumpEntity);
+
+            // Act & Assert
+            await expect(handler.execute(command)).rejects.toThrow(ConflictException);
+        });
+
         it.each([
             <CreateProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-1',
@@ -238,6 +258,7 @@ function mockCommandBus() {
 function mockProtocolTunnelJumpRepositoryService() {
     const protocolTunnelJumpRepositoryService = {} as ProtocolTunnelJumpRepositoryService;
     protocolTunnelJumpRepositoryService.create = jest.fn();
+    protocolTunnelJumpRepositoryService.findOneBy = jest.fn().mockResolvedValue(null);
 
     return protocolTunnelJumpRepositoryService;
 }

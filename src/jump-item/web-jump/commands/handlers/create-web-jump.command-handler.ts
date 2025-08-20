@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateWebJumpCommand as BTCreateWebJumpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/web-jump/commands';
 import { WebJumpCreatedDtoOutput } from '../../../../beyondtrust-pra-conf-api/jump-item/web-jump/dtos/outputs';
@@ -23,6 +24,8 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
     ) {}
 
     public async execute(command: CreateWebJumpCommand): Promise<WebJump> {
+        await this.validateWebJumpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+
         const btWebJump = await this.createBTWebJump(command);
         const webJumpEntity = this.createWebJumpEntity(btWebJump);
 
@@ -45,6 +48,20 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
             );
 
             throw error;
+        }
+    }
+
+    private async validateWebJumpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
+        const existingWebJump = await this.webJumpRepositoryService.findOneBy({
+            name,
+            jumpGroupId,
+            tag,
+        });
+
+        if (existingWebJump) {
+            throw new ConflictException(
+                `A Web Jump with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
+            );
         }
     }
 
