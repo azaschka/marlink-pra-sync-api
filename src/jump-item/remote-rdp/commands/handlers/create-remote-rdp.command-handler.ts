@@ -61,9 +61,7 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
         });
 
         if (existingRemoteRdp) {
-            throw new ConflictException(
-                `A Remote RDP with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
-            );
+            throw new ConflictException(`Remote RDP "${name}" with tag "${tag ?? ''}" already exists.`);
         }
     }
 

@@ -59,9 +59,7 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
         });
 
         if (existingWebJump) {
-            throw new ConflictException(
-                `A Web Jump with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
-            );
+            throw new ConflictException(`Web Jump "${name}" with tag "${tag ?? ''}" already exists.`);
         }
     }
 

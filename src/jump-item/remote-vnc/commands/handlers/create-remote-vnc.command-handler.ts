@@ -54,9 +54,7 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
         });
 
         if (existingRemoteVnc) {
-            throw new ConflictException(
-                `A Remote VNC with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
-            );
+            throw new ConflictException(`Remote VNC "${name}" with tag "${tag ?? ''}" already exists.`);
         }
     }
 

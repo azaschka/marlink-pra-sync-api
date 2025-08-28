@@ -55,9 +55,7 @@ export class CreateProtocolTunnelJumpCommandHandler implements ICommandHandler<C
         });
 
         if (existingProtocolTunnelJump) {
-            throw new ConflictException(
-                `A Protocol Tunnel Jump with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
-            );
+            throw new ConflictException(`Protocol Tunnel Jump "${name}" with tag "${tag ?? ''}" already exists.`);
         }
     }
 

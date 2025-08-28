@@ -61,9 +61,7 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
         });
 
         if (existingShellJump) {
-            throw new ConflictException(
-                `A Shell Jump with the name "${name}", jump group id "${jumpGroupId}" and tag "${tag ?? ''}" already exists.`,
-            );
+            throw new ConflictException(`Shell Jump "${name}" with tag "${tag ?? ''}" already exists.`);
         }
     }
 
