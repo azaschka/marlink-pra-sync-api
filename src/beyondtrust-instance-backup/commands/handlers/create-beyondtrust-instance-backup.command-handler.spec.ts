@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { BeyondtrustInstance } from '../../../beyondtrust-instance/models';
-import { UrlUtility } from '../../../shared/utilities';
-import { BeyondtrustInstanceBackupCreatedEvent } from '../../events';
+import { ErrorProcessorUtility, UrlUtility } from '../../../shared/utilities';
+import { BeyondtrustInstanceBackupCreatedEvent, BeyondtrustInstanceBackupCreationFailedEvent } from '../../events';
 import { BeyondtrustInstanceBackupEntity } from '../../repositories/entities';
 import { BeyondtrustInstanceBackupRepositoryService } from '../../repositories/services/beyondtrust-instance-backup-repository.service';
 import { CreateBeyondtrustInstanceBackupCommand } from '../create-beyondtrust-instance-backup.command';
@@ -47,11 +47,38 @@ describe('CreateBeyondtrustInstanceBackupCommandHandler', () => {
         it('should throw NotFoundException if the beyondtrust instance is does not exist', async () => {
             // Arrange
             queryBus.execute = jest.fn().mockResolvedValue(null);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
 
             // Act & Assert
             await expect(
                 handler.execute(new CreateBeyondtrustInstanceBackupCommand('transaction-1', 123)),
             ).rejects.toThrow(NotFoundException);
+
+            expect(eventBusPublishMethod).not.toHaveBeenCalled();
+        });
+
+        it('should throw the error and publish an event if there is an error after beyondtrust instance is retrieved', async () => {
+            // Arrange
+            const error = new Error('Command bus error');
+            (commandBus.execute as jest.Mock).mockRejectedValue(error);
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+            ErrorProcessorUtility.stringify = jest.fn().mockReturnValue(error.message);
+
+            // Act & Assert
+            await expect(
+                handler.execute(new CreateBeyondtrustInstanceBackupCommand('transaction-1', 123)),
+            ).rejects.toThrow(error);
+
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining(<BeyondtrustInstanceBackupCreationFailedEvent>{
+                    transactionId: 'transaction-1',
+                    eventType: BeyondtrustInstanceBackupCreationFailedEvent.EVENT_TYPE,
+                    payload: {
+                        errorMessage: error.message,
+                        beyondtrustInstanceId: 123,
+                    },
+                }),
+            );
         });
 
         it('should call the command bus, repository service, publish an event and return the result', async () => {

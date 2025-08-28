@@ -6,8 +6,8 @@ import { AppConfigService } from '../../../app-config/services/app-config.servic
 import { BeyondtrustInstance } from '../../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstanceByIdQuery } from '../../../beyondtrust-instance/queries';
 import { CreateBackupCommand } from '../../../beyondtrust-pra-conf-api/backup/commands';
-import { UrlUtility } from '../../../shared/utilities';
-import { BeyondtrustInstanceBackupCreatedEvent } from '../../events';
+import { ErrorProcessorUtility, UrlUtility } from '../../../shared/utilities';
+import { BeyondtrustInstanceBackupCreatedEvent, BeyondtrustInstanceBackupCreationFailedEvent } from '../../events';
 import { BeyondtrustInstanceBackup } from '../../models';
 import { BeyondtrustInstanceBackupEntity } from '../../repositories/entities';
 import { BeyondtrustInstanceBackupRepositoryService } from '../../repositories/services/beyondtrust-instance-backup-repository.service';
@@ -32,21 +32,33 @@ export class CreateBeyondtrustInstanceBackupCommandHandler
             command.transactionId,
             command.beyondtrustInstanceId,
         );
-        const relativeFilePath = await this.downloadBackupFile(command.transactionId, command.password);
-        const beyondTrustInstanceEntity = BeyondtrustInstanceBackupEntity.createWithoutId(
-            beyondtrustInstance.id,
-            relativeFilePath,
-        );
-        const createdBeyondtrustInstanceBackup =
-            await this.beyondtrustInstanceBackupRepositoryService.create(beyondTrustInstanceEntity);
 
-        this.eventBus.publish(
-            new BeyondtrustInstanceBackupCreatedEvent(command.transactionId, {
-                beyondtrustInstanceBackup: createdBeyondtrustInstanceBackup,
-            }),
-        );
+        try {
+            const relativeFilePath = await this.downloadBackupFile(command.transactionId, command.password);
+            const beyondTrustInstanceEntity = BeyondtrustInstanceBackupEntity.createWithoutId(
+                beyondtrustInstance.id,
+                relativeFilePath,
+            );
+            const createdBeyondtrustInstanceBackup =
+                await this.beyondtrustInstanceBackupRepositoryService.create(beyondTrustInstanceEntity);
 
-        return createdBeyondtrustInstanceBackup;
+            this.eventBus.publish(
+                new BeyondtrustInstanceBackupCreatedEvent(command.transactionId, {
+                    beyondtrustInstanceBackup: createdBeyondtrustInstanceBackup,
+                }),
+            );
+
+            return createdBeyondtrustInstanceBackup;
+        } catch (error) {
+            this.eventBus.publish(
+                new BeyondtrustInstanceBackupCreationFailedEvent(command.transactionId, {
+                    errorMessage: ErrorProcessorUtility.stringify(error),
+                    beyondtrustInstanceId: command.beyondtrustInstanceId,
+                }),
+            );
+
+            throw error;
+        }
     }
 
     private async getBeyondtrustInstance(
