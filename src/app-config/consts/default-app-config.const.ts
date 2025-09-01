@@ -1,7 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export abstract class DefaultAppConfig {
-    private static readonly PORT_NUMBER = 3000;
+    private static readonly PORT_NUMBER = 9001;
     private static readonly MARLINK_HTTP_PROXY = 'http://10.10.105.19:3128';
     private static readonly MARLINK_HTTPS_PROXY = 'https://10.10.105.19:3128';
     private static readonly HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT = 80;

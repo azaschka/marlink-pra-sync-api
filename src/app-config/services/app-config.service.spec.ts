@@ -58,7 +58,7 @@ describe('AppConfigService', () => {
             },
             {
                 input: undefined,
-                expected: 3000,
+                expected: 9001,
             },
         ])('should return the port variable as expected', ({ input, expected }) => {
             const configServiceGetMethod = jest.spyOn(configService, 'get').mockReturnValue(input);
