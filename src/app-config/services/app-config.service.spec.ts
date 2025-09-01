@@ -362,80 +362,80 @@ describe('AppConfigService', () => {
                     api: {
                         baseUrl: 'unknown',
                         user: {
-                            path: 'unknown',
+                            path: '/user',
                             groupPolicies: {
-                                path: 'unknown',
-                                change: 'unknown',
+                                path: '/group-policies',
+                                change: 'group-policy-changes',
                             },
                         },
                         jumpClient: {
-                            path: 'unknown',
-                            copy: 'unknown',
+                            path: '/jump-client',
+                            copy: 'copy',
                             installer: {
-                                path: 'unknown',
+                                path: '/installer',
                             },
                         },
                         groupPolicy: {
-                            path: 'unknown',
+                            path: '/group-policy',
                             jumpoint: {
-                                path: 'unknown',
+                                path: '/jumpoint',
                             },
                             jumpGroup: {
-                                path: 'unknown',
+                                path: '/jump-group',
                             },
                             member: {
-                                path: 'unknown',
+                                path: '/member',
                             },
                             team: {
-                                path: 'unknown',
+                                path: '/team',
                             },
                         },
                         team: {
-                            path: 'unknown',
+                            path: '/team',
                             user: {
-                                path: 'unknown',
+                                path: '/user',
                             },
                         },
                         jumpGroup: {
-                            path: 'unknown',
+                            path: '/jump-group',
                         },
                         jumpPolicy: {
-                            path: 'unknown',
+                            path: '/jump-policy',
                         },
                         jumpoint: {
-                            path: 'unknown',
+                            path: '/jumpoint',
                             node: {
-                                path: 'unknown',
+                                path: '/node',
                             },
                             installer: {
-                                path: 'unknown',
+                                path: '/installer',
                             },
                         },
                         jumpItem: {
                             remoteRdp: {
-                                path: 'unknown',
-                                copy: 'unknown',
+                                path: '/jump-item/remote-rdp',
+                                copy: 'copy',
                             },
                             shellJump: {
-                                path: 'unknown',
-                                copy: 'unknown',
+                                path: '/jump-item/shell-jump',
+                                copy: 'copy',
                             },
                             webJump: {
-                                path: 'unknown',
-                                copy: 'unknown',
+                                path: '/jump-item/web-jump',
+                                copy: 'copy',
                             },
                             remoteVnc: {
-                                path: 'unknown',
-                                copy: 'unknown',
+                                path: '/jump-item/remote-vnc',
+                                copy: 'copy',
                             },
                             protocolTunnelJump: {
-                                path: 'unknown',
-                                copy: 'unknown',
+                                path: '/jump-item/protocol-tunnel-jump',
+                                copy: 'copy',
                             },
                         },
                         communication: {
-                            retryAttempts: 0,
-                            retryDelayInMs: 0,
+                            retryAttempts: 5,
+                            retryDelayInMs: 5000,
                         },
                     },
                     backup: {
@@ -761,11 +761,11 @@ describe('AppConfigService', () => {
             {
                 input: {},
                 expected: {
-                    maxBatchSize: 0,
+                    maxBatchSize: 100,
                     cronJobTimezone: 'Europe/Berlin',
                     cronJobExpressions: '0 0 * * *',
-                    cronJobRetryAttempts: 0,
-                    cronJobRetryDelayInMs: 0,
+                    cronJobRetryAttempts: 5,
+                    cronJobRetryDelayInMs: 10000,
                 },
             },
         ])('should return the sync configuration as expected', ({ input, expected }) => {

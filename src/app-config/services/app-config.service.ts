@@ -1,21 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DefaultAppConfig } from '../consts';
 
 @Injectable()
 export class AppConfigService {
     private static readonly DEFAULT_UNDEFINED_STRING = 'unknown';
     private static readonly DEFAULT_UNDEFINED_NUMBER = 0;
-    private static readonly DEFAULT_PORT_NUMBER = 3000;
-    private static readonly DEFAULT_MARLINK_HTTP_PROXY = 'http://10.10.105.19:3128';
-    private static readonly DEFAULT_MARLINK_HTTPS_PROXY = 'https://10.10.105.19:3128';
-    private static readonly DEFAULT_HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT = 80;
-    private static readonly DEFAULT_HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 256;
-    private static readonly DEFAULT_SYNC_CRON_JOB_TIMEZONE = 'Europe/Berlin';
-    private static readonly DEFAULT_SYNC_CRON_JOB_EXPRESSION = '0 0 * * *'; // Every day at midnight
-    private static readonly DEFAULT_DB_RETRY_ATTEMPTS = 60;
-    private static readonly DEFAULT_DB_RETRY_DELAY_IN_MS = 8000; // 8 seconds
-    private static readonly DEFAULT_DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
 
     constructor(private readonly configService: ConfigService) {}
 
@@ -28,14 +19,14 @@ export class AppConfigService {
     }
 
     public get port(): number {
-        return this.configService.get<number>('PORT') ?? AppConfigService.DEFAULT_PORT_NUMBER;
+        return this.configService.get<number>('PORT') ?? DefaultAppConfig.port;
     }
 
     public get proxy() {
         if (this.isProduction) {
             return {
-                http: this.configService.get<string>('HTTP_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTP_PROXY,
-                https: this.configService.get<string>('HTTPS_PROXY') ?? AppConfigService.DEFAULT_MARLINK_HTTPS_PROXY,
+                http: this.configService.get<string>('HTTP_PROXY') ?? DefaultAppConfig.proxy.http,
+                https: this.configService.get<string>('HTTPS_PROXY') ?? DefaultAppConfig.proxy.https,
             };
         }
 
@@ -49,10 +40,10 @@ export class AppConfigService {
         return {
             diskStorageUsageThresholdInPercent:
                 this.configService.get<number>('HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT') ??
-                AppConfigService.DEFAULT_HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT,
+                DefaultAppConfig.health.diskStorageUsageThresholdInPercent,
             memoryHeapUsageThresholdInMB:
                 this.configService.get<number>('HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB') ??
-                AppConfigService.DEFAULT_HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB,
+                DefaultAppConfig.health.memoryHeapUsageThresholdInMB,
         };
     }
 
@@ -76,138 +67,138 @@ export class AppConfigService {
                 user: {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_USER_PATH') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.user.path,
                     groupPolicies: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_USER_GROUP_POLICIES_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.user.groupPolicies.path,
                         change:
                             this.configService.get<string>('BEYONDTRUST_API_USER_CHANGE_GROUP_POLICIES') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.user.groupPolicies.change,
                     },
                 },
                 jumpClient: {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.jumpClient.path,
                     copy:
                         this.configService.get<string>('BEYONDTRUST_API_COPY_JUMP_CLIENT') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.jumpClient.copy,
                     installer: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_INSTALLER_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpClient.installer.path,
                     },
                 },
                 groupPolicy: {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_PATH') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.groupPolicy.path,
                     jumpoint: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.groupPolicy.jumpoint.path,
                     },
                     jumpGroup: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_JUMP_GROUP_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.groupPolicy.jumpGroup.path,
                     },
                     member: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_MEMBER_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.groupPolicy.member.path,
                     },
                     team: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_TEAM_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.groupPolicy.team.path,
                     },
                 },
                 team: {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_TEAM_PATH') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.team.path,
                     user: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_TEAM_USER_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.team.user.path,
                     },
                 },
                 jumpGroup: {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_JUMP_GROUP_PATH') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.jumpGroup.path,
                 },
                 jumpPolicy: {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_JUMP_POLICY_PATH') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.jumpPolicy.path,
                 },
                 jumpoint: {
                     path:
                         this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_PATH') ??
-                        AppConfigService.DEFAULT_UNDEFINED_STRING,
+                        DefaultAppConfig.beyondTrust.api.jumpoint.path,
                     node: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_NODE_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpoint.node.path,
                     },
                     installer: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_INSTALLER_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpoint.installer.path,
                     },
                 },
                 jumpItem: {
                     remoteRdp: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteRdp.path,
                         copy:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_RDP') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteRdp.copy,
                     },
                     shellJump: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.shellJump.path,
                         copy:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_SHELL_JUMP') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.shellJump.copy,
                     },
                     webJump: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.webJump.path,
                         copy:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_WEB_JUMP') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.webJump.copy,
                     },
                     remoteVnc: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteVnc.path,
                         copy:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_VNC') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteVnc.copy,
                     },
                     protocolTunnelJump: {
                         path:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.protocolTunnelJump.path,
                         copy:
                             this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_PROTOCOL_TUNNEL_JUMP') ??
-                            AppConfigService.DEFAULT_UNDEFINED_STRING,
+                            DefaultAppConfig.beyondTrust.api.jumpItem.protocolTunnelJump.copy,
                     },
                 },
                 communication: {
                     retryAttempts:
                         this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS') ??
-                        AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+                        DefaultAppConfig.beyondTrust.api.communication.retryAttempts,
                     retryDelayInMs:
                         this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS') ??
-                        AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+                        DefaultAppConfig.beyondTrust.api.communication.retryDelayInMs,
                 },
             },
             backup: {
@@ -231,12 +222,11 @@ export class AppConfigService {
             logging: false,
             autoLoadEntities: true,
             retryAttempts:
-                this.configService.get<number>('DB_RETRY_ATTEMPTS') ?? AppConfigService.DEFAULT_DB_RETRY_ATTEMPTS,
-            retryDelay:
-                this.configService.get<number>('DB_RETRY_DELAY_IN_MS') ?? AppConfigService.DEFAULT_DB_RETRY_DELAY_IN_MS,
+                this.configService.get<number>('DB_RETRY_ATTEMPTS') ?? DefaultAppConfig.database.retryAttempts,
+            retryDelay: this.configService.get<number>('DB_RETRY_DELAY_IN_MS') ?? DefaultAppConfig.database.retryDelay,
             maxQueryExecutionTime:
                 this.configService.get<number>('DB_MAX_QUERY_EXECUTION_TIME_IN_MS') ??
-                AppConfigService.DEFAULT_DB_MAX_QUERY_EXECUTION_TIME_IN_MS, // Only applicable to MariaDB and MySQL
+                DefaultAppConfig.database.maxQueryExecutionTime, // Only applicable to MariaDB and MySQL
         };
     }
 
@@ -251,20 +241,17 @@ export class AppConfigService {
 
     public get sync() {
         return {
-            maxBatchSize:
-                this.configService.get<number>('SYNC_MAX_BATCH_SIZE') ?? AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+            maxBatchSize: this.configService.get<number>('SYNC_MAX_BATCH_SIZE') ?? DefaultAppConfig.sync.maxBatchSize,
             cronJobTimezone:
-                this.configService.get<string>('SYNC_CRON_JOB_TIMEZONE') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_TIMEZONE,
+                this.configService.get<string>('SYNC_CRON_JOB_TIMEZONE') ?? DefaultAppConfig.sync.cronJobTimezone,
             cronJobExpressions:
-                this.configService.get<string>('SYNC_CRON_JOB_EXPRESSIONS') ??
-                AppConfigService.DEFAULT_SYNC_CRON_JOB_EXPRESSION,
+                this.configService.get<string>('SYNC_CRON_JOB_EXPRESSIONS') ?? DefaultAppConfig.sync.cronJobExpressions,
             cronJobRetryAttempts:
                 this.configService.get<number>('SYNC_CRON_JOB_RETRY_ATTEMPTS') ??
-                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+                DefaultAppConfig.sync.cronJobRetryAttempts,
             cronJobRetryDelayInMs:
                 this.configService.get<number>('SYNC_CRON_JOB_RETRY_DELAY_IN_MS') ??
-                AppConfigService.DEFAULT_UNDEFINED_NUMBER,
+                DefaultAppConfig.sync.cronJobRetryDelayInMs,
         };
     }
 }
