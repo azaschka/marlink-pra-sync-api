@@ -22,7 +22,10 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
         const groupPolicyEntity = this.createGroupPolicyEntity(btGroupPolicy);
 
         try {
-            const createdGroupPolicy = await this.groupPolicyRepositoryService.create(groupPolicyEntity);
+            const createdGroupPolicy = await this.groupPolicyRepositoryService.create(
+                command.tenantId,
+                groupPolicyEntity,
+            );
 
             this.eventBus.publish(
                 new GroupPolicyCreatedEvent(command.transactionId, {

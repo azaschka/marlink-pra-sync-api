@@ -64,6 +64,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
         it.each([
             <CreateGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'group-policy-1',
                 hasEndpointsAccessPermission: true,
                 accessPermissionStatusType: AccessPermissionStatusType.Final,
@@ -90,6 +91,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
             },
             <CreateGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'group-policy-2',
             },
         ])(
@@ -167,7 +169,10 @@ describe('CreateGroupPolicyCommandHandler', () => {
                     TestHelper.mockedGroupPolicyCreatedDtoOutput.inferiorJumpItemRoleId,
                     TestHelper.mockedGroupPolicyCreatedDtoOutput.unassignedJumpItemRoleId,
                 );
-                expect(groupPolicyRepositoryServiceCreateMethod).toHaveBeenCalledWith(groupPolicyEntityToBeCreated);
+                expect(groupPolicyRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    123,
+                    groupPolicyEntityToBeCreated,
+                );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<GroupPolicyCreatedEvent>{
                         transactionId: command.transactionId,
@@ -189,6 +194,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
             await expect(
                 handler.execute(<CreateGroupPolicyCommand>{
                     transactionId: 'transaction-1',
+                    tenantId: 123,
                     name: 'group-policy-1',
                 }),
             ).rejects.toThrow('Error');
@@ -215,6 +221,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
             await expect(
                 handler.execute(<CreateGroupPolicyCommand>{
                     transactionId: 'transaction-1',
+                    tenantId: 123,
                     name: 'group-policy-1',
                 }),
             ).rejects.toThrow(expectedError);

@@ -50,7 +50,7 @@ describe('SyncController', () => {
                 .spyOn(controller, 'syncJumpItemsWebJumps')
                 .mockResolvedValue(expectedResult);
 
-            await controller.syncAll();
+            await controller.syncAll(123);
 
             expect(syncUsersMethod).toHaveBeenCalledTimes(1);
             expect(syncTeamsMethod).toHaveBeenCalledTimes(1);
@@ -158,7 +158,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncGroupPolicies();
+            const result = await controller.syncGroupPolicies(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdGroupPolicyIds,

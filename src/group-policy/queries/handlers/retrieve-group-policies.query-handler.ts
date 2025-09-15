@@ -20,6 +20,7 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
         }
 
         const groupPolicies = await this.groupPolicyRepositoryService.findBy(
+            query.tenantId,
             groupPoliciesFindByQuery,
             query.pageNumber,
             query.pageSize,

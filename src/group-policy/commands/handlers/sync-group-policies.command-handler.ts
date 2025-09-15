@@ -29,11 +29,12 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
 
             await this.syncBTToDbGroupPoliciesPerPage(
                 command.transactionId,
+                command.tenantId,
                 1,
                 createdGroupPolicyIds,
                 updatedGroupPolicyIds,
             );
-            await this.syncDbToBTGroupPoliciesPerPage(1, startSyncUtcDate, deletedGroupPolicyIds);
+            await this.syncDbToBTGroupPoliciesPerPage(command.tenantId, 1, startSyncUtcDate, deletedGroupPolicyIds);
 
             this.eventBus.publish(
                 new GroupPoliciesSyncedEvent(command.transactionId, {
@@ -61,6 +62,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
 
     private async syncBTToDbGroupPoliciesPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdGroupPolicyIds: number[],
         updatedGroupPolicyIds: number[],
@@ -83,6 +85,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
 
         // Retrieve existing group policies from the DB using BeyondTrust group policy IDs
         const dbGroupPolicies = await this.groupPolicyRepositoryService.findByIds(
+            tenantId,
             btGroupPolicies.map((policy) => policy.id).filter((id) => id !== undefined),
         );
 
@@ -93,11 +96,11 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
         );
 
         if (groupPoliciesToBeCreated.length > 0) {
-            await this.groupPolicyRepositoryService.createOrUpdateByIds(groupPoliciesToBeCreated);
+            await this.groupPolicyRepositoryService.createOrUpdateByIds(tenantId, groupPoliciesToBeCreated);
         }
 
         if (groupPoliciesToBeUpdated.length > 0) {
-            await this.groupPolicyRepositoryService.createOrUpdateByIds(groupPoliciesToBeUpdated);
+            await this.groupPolicyRepositoryService.createOrUpdateByIds(tenantId, groupPoliciesToBeUpdated);
         }
 
         // Collect created and updated group policy IDs
@@ -110,6 +113,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
 
         await this.syncBTToDbGroupPoliciesPerPage(
             transactionId,
+            tenantId,
             pageNumber + 1,
             createdGroupPolicyIds,
             updatedGroupPolicyIds,
@@ -117,11 +121,13 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
     }
 
     private async syncDbToBTGroupPoliciesPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTGroupPolicies: Date,
         deletedGroupPolicyIds: number[],
     ) {
         const dbGroupPolicies = await this.groupPolicyRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTGroupPolicies,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -129,7 +135,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
         const groupPolicyIds = dbGroupPolicies.map((dbGroupPolicy) => dbGroupPolicy.id);
 
         if (groupPolicyIds.length > 0) {
-            await this.groupPolicyRepositoryService.deleteByIds(groupPolicyIds);
+            await this.groupPolicyRepositoryService.deleteByIds(tenantId, groupPolicyIds);
         }
 
         // Collect deleted group policy IDs
@@ -140,6 +146,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
         }
 
         await this.syncDbToBTGroupPoliciesPerPage(
+            tenantId,
             pageNumber + 1,
             dateBeforeSyncingBTGroupPolicies,
             deletedGroupPolicyIds,

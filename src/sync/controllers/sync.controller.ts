@@ -2,6 +2,7 @@ import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AppConfigService } from '../../app-config/services/app-config.service';
+import { TenantIdHeader } from '../../core/decorators';
 import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
 import { GroupPoliciesSyncResult } from '../../group-policy/models';
 import { SyncJumpClientInstallersCommand, SyncJumpClientsCommand } from '../../jump-client/commands';
@@ -40,7 +41,7 @@ export class SyncController {
     @Post()
     @ApiOkResponse()
     @HttpCode(HttpStatus.OK)
-    public async syncAll(): Promise<unknown> {
+    public async syncAll(@TenantIdHeader() tenantId: number): Promise<unknown> {
         const syncOrders = [
             { name: 'jump-policies', func: () => this.syncJumpPolicies() }, // Required dependency for jump assets
             { name: 'jump-groups', func: () => this.syncJumpGroups() }, // Required dependency for jump assets
@@ -54,7 +55,7 @@ export class SyncController {
             { name: 'jump-client-installers', func: () => this.syncJumpClientInstallers() },
             { name: 'users', func: () => this.syncUsers() }, // Automatically trigger sync for relational data with group policies after group policies are synced
             { name: 'teams', func: () => this.syncTeams() }, // Automatically trigger sync for relational data with users
-            { name: 'group-policies', func: () => this.syncGroupPolicies() }, // Automatically trigger sync for relational data with jump groups, jumpoints, users, teams
+            { name: 'group-policies', func: () => this.syncGroupPolicies(tenantId) }, // Automatically trigger sync for relational data with jump groups, jumpoints, users, teams
         ];
 
         const syncResults = [];
@@ -146,9 +147,9 @@ export class SyncController {
     @Post('group-policies')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncGroupPolicies(): Promise<SyncResultDtoOutput> {
+    public async syncGroupPolicies(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncGroupPoliciesCommand, GroupPoliciesSyncResult>(
-            new SyncGroupPoliciesCommand(UuidUtility.generate()),
+            new SyncGroupPoliciesCommand(UuidUtility.generate(), tenantId),
         );
 
         return {

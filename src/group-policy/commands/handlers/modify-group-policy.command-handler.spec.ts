@@ -64,6 +64,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
         it.each([
             <ModifyGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 name: 'group-policy-1',
                 hasEndpointsAccessPermission: true,
@@ -91,6 +92,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
             },
             <ModifyGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 2,
                 name: 'group-policy-2',
             },
@@ -174,9 +176,11 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.unassignedJumpItemRoleId,
                 );
                 expect(groupPolicyRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    123,
                     groupPolicyEntityToBeUpdated,
                 );
                 expect(groupPolicyRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(
+                    123,
                     groupPolicyEntityToBeUpdated.id,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
