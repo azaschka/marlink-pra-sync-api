@@ -27,7 +27,7 @@ export class CopyWebJumpCommandHandler implements ICommandHandler<CopyWebJumpCom
         const webJumpEntity = this.createWebJumpEntity(btWebJump);
 
         try {
-            const createdWebJump = await this.webJumpRepositoryService.create(webJumpEntity);
+            const createdWebJump = await this.webJumpRepositoryService.create(command.tenantId, webJumpEntity);
 
             this.eventBus.publish(
                 new WebJumpCopiedEvent(command.transactionId, {

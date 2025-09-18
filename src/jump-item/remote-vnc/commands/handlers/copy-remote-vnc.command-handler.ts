@@ -27,7 +27,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
         const remoteVncEntity = this.createRemoteVncEntity(btRemoteVnc);
 
         try {
-            const createdRemoteVnc = await this.remoteVncRepositoryService.create(remoteVncEntity);
+            const createdRemoteVnc = await this.remoteVncRepositoryService.create(command.tenantId, remoteVncEntity);
 
             this.eventBus.publish(
                 new RemoteVncCopiedEvent(command.transactionId, {

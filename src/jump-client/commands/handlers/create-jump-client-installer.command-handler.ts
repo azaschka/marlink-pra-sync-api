@@ -25,14 +25,16 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
     ) {}
 
     public async execute(command: CreateJumpClientInstallerCommand): Promise<JumpClientInstaller> {
-        await this.validateJumpClientInstallerDoesNotExist(command.name, command.tag);
+        await this.validateJumpClientInstallerDoesNotExist(command.tenantId, command.name, command.tag);
 
         const btJumpClientInstaller = await this.createBTJumpClientInstaller(command);
         const jumpClientInstallerEntity = this.createJumpClientInstallerEntity(btJumpClientInstaller);
 
         try {
-            const createdJumpClientInstaller =
-                await this.jumpClientInstallerRepositoryService.create(jumpClientInstallerEntity);
+            const createdJumpClientInstaller = await this.jumpClientInstallerRepositoryService.create(
+                command.tenantId,
+                jumpClientInstallerEntity,
+            );
 
             this.eventBus.publish(
                 new JumpClientInstallerCreatedEvent(command.transactionId, {
@@ -53,12 +55,16 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
         }
     }
 
-    private async validateJumpClientInstallerDoesNotExist(name?: string, tag?: string): Promise<void> {
+    private async validateJumpClientInstallerDoesNotExist(
+        tenantId: number,
+        name?: string,
+        tag?: string,
+    ): Promise<void> {
         if (!name && !tag) {
             return; // No validation needed if neither name nor tag is provided
         }
 
-        const existingInstaller = await this.jumpClientInstallerRepositoryService.findOneBy({ name, tag });
+        const existingInstaller = await this.jumpClientInstallerRepositoryService.findOneBy(tenantId, { name, tag });
 
         if (existingInstaller) {
             throw new ConflictException(`Jump Client Installer with name "${name}" and tag "${tag}" already exists.`);

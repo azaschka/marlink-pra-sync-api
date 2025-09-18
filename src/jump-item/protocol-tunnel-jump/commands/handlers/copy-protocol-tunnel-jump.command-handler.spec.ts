@@ -95,6 +95,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -131,6 +132,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
                 TestHelper.mockedProtocolTunnelJumpRetrievedDtoOutput.caCertificates,
             );
             expect(protocolTunnelJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                123,
                 protocolTunnelJumpEntityToBeCreated,
             );
             expect(eventBusPublishMethod).toHaveBeenCalledWith(

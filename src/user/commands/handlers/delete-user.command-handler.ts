@@ -19,7 +19,7 @@ export class DeleteUserCommandHandler implements ICommandHandler<DeleteUserComma
         );
 
         try {
-            await this.userRepositoryService.deleteById(command.id);
+            await this.userRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new UserDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

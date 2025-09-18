@@ -1,5 +1,5 @@
 import { DataSource, In } from 'typeorm';
-import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { JumpointNodeRepositoryService } from './jumpoint-node-repository.service';
 
 describe('JumpointNodeRepositoryService', () => {
@@ -16,39 +16,39 @@ describe('JumpointNodeRepositoryService', () => {
     describe('createOrUpdateByIdAndJumpointId', () => {
         it('should call createOrUpdate with the correct parameters', async () => {
             const entities = [{ id: 1, jumpointId: 2, name: 'Test Jumpoint' }];
-            const baseRepositoryCreateOrUpdateMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'createOrUpdate')
+            const baseTenantRepositoryCreateOrUpdateMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'createOrUpdate')
                 .mockReturnValue(Promise.resolve());
 
-            await service.createOrUpdateByIdAndJumpointId(entities);
+            await service.createOrUpdateByIdAndJumpointId(123, entities);
 
-            expect(baseRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(entities, ['id', 'jumpointId']);
+            expect(baseTenantRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(123, entities, ['id', 'jumpointId']);
         });
     });
 
     describe('deleteByJumpointIds', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const jumpointIds = [1, 2, 3];
-            const baseRepositoryDeleteByMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'deleteBy')
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteByJumpointIds(jumpointIds);
+            await service.deleteByJumpointIds(123, jumpointIds);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith({ jumpointId: In(jumpointIds) });
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, { jumpointId: In(jumpointIds) });
         });
     });
 
     describe('deleteByJumpointId', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const jumpointId = 1;
-            const baseRepositoryDeleteByMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'deleteBy')
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteByJumpointId(jumpointId);
+            await service.deleteByJumpointId(123, jumpointId);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith({ jumpointId });
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, { jumpointId });
         });
     });
 });

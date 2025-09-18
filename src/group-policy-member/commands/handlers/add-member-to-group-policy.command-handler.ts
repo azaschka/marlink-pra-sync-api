@@ -21,7 +21,7 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
         const groupPolicyMemberEntity = this.createGroupPolicyMemberEntity(command.id, btGroupPolicyMember);
 
         try {
-            const groupPolicyMember = await this.addGroupPolicyMember(groupPolicyMemberEntity);
+            const groupPolicyMember = await this.addGroupPolicyMember(command.tenantId, groupPolicyMemberEntity);
 
             this.eventBus.publish(
                 new GroupPolicyMemberAddedEvent(command.transactionId, {
@@ -69,8 +69,11 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
         );
     }
 
-    private async addGroupPolicyMember(groupPolicyMemberEntity: GroupPolicyMemberEntity): Promise<GroupPolicyMember> {
-        await this.groupPolicyMemberRepositoryService.create(groupPolicyMemberEntity);
+    private async addGroupPolicyMember(
+        tenantId: number,
+        groupPolicyMemberEntity: GroupPolicyMemberEntity,
+    ): Promise<GroupPolicyMember> {
+        await this.groupPolicyMemberRepositoryService.create(tenantId, groupPolicyMemberEntity);
 
         return {
             groupPolicyId: groupPolicyMemberEntity.groupPolicyId,

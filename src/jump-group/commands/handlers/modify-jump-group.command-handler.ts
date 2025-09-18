@@ -21,7 +21,7 @@ export class ModifyJumpGroupCommandHandler implements ICommandHandler<ModifyJump
         const jumpGroupEntity = this.createJumpGroupEntity(btJumpGroup);
 
         try {
-            const updatedJumpGroup = await this.updateJumpGroup(jumpGroupEntity);
+            const updatedJumpGroup = await this.updateJumpGroup(command.tenantId, jumpGroupEntity);
 
             this.eventBus.publish(
                 new JumpGroupModifiedEvent(command.transactionId, {
@@ -58,10 +58,13 @@ export class ModifyJumpGroupCommandHandler implements ICommandHandler<ModifyJump
         return JumpGroupEntity.create(btJumpGroup.id, btJumpGroup.name, btJumpGroup.codeName, btJumpGroup.comments);
     }
 
-    private async updateJumpGroup(jumpGroupEntity: JumpGroupEntity) {
-        await this.jumpGroupRepositoryService.createOrUpdateById(jumpGroupEntity);
+    private async updateJumpGroup(tenantId: number, jumpGroupEntity: JumpGroupEntity) {
+        await this.jumpGroupRepositoryService.createOrUpdateById(tenantId, jumpGroupEntity);
 
-        const createdOrUpdatedJumpGroup = await this.jumpGroupRepositoryService.findOneById(jumpGroupEntity.id);
+        const createdOrUpdatedJumpGroup = await this.jumpGroupRepositoryService.findOneById(
+            tenantId,
+            jumpGroupEntity.id,
+        );
 
         if (!createdOrUpdatedJumpGroup) {
             throw new Error('Jump Group has been created or updated but could not be retrieved.');

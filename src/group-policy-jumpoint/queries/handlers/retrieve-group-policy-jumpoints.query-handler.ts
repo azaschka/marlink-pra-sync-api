@@ -12,6 +12,7 @@ export class RetrieveGroupPolicyJumpointsQueryHandler implements IQueryHandler<R
         groupPolicyJumpointFindByQuery.groupPolicyId = query.groupPolicyId;
 
         const groupPolicyJumpoints = await this.groupPolicyJumpointRepositoryService.findBy(
+            query.tenantId,
             groupPolicyJumpointFindByQuery,
             query.pageNumber,
             query.pageSize,

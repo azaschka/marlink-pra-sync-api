@@ -89,6 +89,7 @@ describe('CopyWebJumpCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyWebJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -117,7 +118,7 @@ describe('CopyWebJumpCommandHandler', () => {
                 TestHelper.mockedWebJumpRetrievedDtoOutput.submitField,
                 TestHelper.mockedWebJumpRetrievedDtoOutput.sessionPolicyId,
             );
-            expect(webJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(webJumpEntityToBeCreated);
+            expect(webJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, webJumpEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<WebJumpCopiedEvent>{
                     transactionId: 'transaction-1',

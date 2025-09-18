@@ -52,7 +52,7 @@ describe('SyncUsersCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncUsersCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncUsersCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<UsersSyncFailedEvent>{
@@ -199,27 +199,31 @@ describe('SyncUsersCommandHandler', () => {
                 const userRepositoryServiceDeleteByIds = jest.spyOn(userRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncUsersCommand('transaction-1'));
+                const result = await handler.execute(new SyncUsersCommand('transaction-1', 123));
 
                 expect(userRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedUserRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedUserRepositoryServiceFindByIdsCall) {
-                    expect(userRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(userRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(userRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
                     expectedUserRepositoryServiceCreateOrUpdateByIdsCall.length,
                 );
                 for (const item of expectedUserRepositoryServiceCreateOrUpdateByIdsCall) {
-                    expect(userRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(item.iter, item.entity);
+                    expect(userRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
+                        item.iter,
+                        123,
+                        item.entity,
+                    );
                 }
 
                 expect(userRepositoryServiceDeleteByIds).toHaveBeenCalledTimes(
                     expectedUserRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedUserRepositoryServiceDeleteByIdsCall) {
-                    expect(userRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(userRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);

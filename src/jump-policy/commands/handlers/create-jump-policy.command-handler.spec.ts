@@ -82,6 +82,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
         it.each([
             <CreateJumpPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 displayName: 'jump-policy-1',
                 codeName: 'jump-policy-code-1',
                 description: 'jump-policy-description-1',
@@ -110,6 +111,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
             },
             <CreateJumpPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 displayName: 'jump-policy-2',
             },
         ])(
@@ -191,7 +193,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                     TestHelper.mockedJumpPolicyCreatedDtoOutput.approvalApproverScope,
                     TestHelper.mockedJumpPolicyCreatedDtoOutput.recordingsDisabled,
                 );
-                expect(jumpPolicyRepositoryServiceCreateMethod).toHaveBeenCalledWith(jumpPolicyEntityToBeCreated);
+                expect(jumpPolicyRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, jumpPolicyEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpPolicyCreatedEvent>{
                         transactionId: command.transactionId,

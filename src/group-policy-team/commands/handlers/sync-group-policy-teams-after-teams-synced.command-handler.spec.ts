@@ -51,7 +51,7 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
 
             // Act
             await handler.execute(
-                new SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommand('transaction-1', [1, 2], [3, 4], [5, 6]),
+                new SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommand('transaction-1', 123, [1, 2], [3, 4], [5, 6]),
             );
 
             // Assert
@@ -66,32 +66,32 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
             expect(groupPolicyTeamEntityCreateMethod).toHaveBeenNthCalledWith(5, 2, 5, undefined);
             expect(groupPolicyTeamEntityCreateMethod).toHaveBeenNthCalledWith(6, 4, 6, undefined);
             expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenCalledTimes(4);
-            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 1);
-            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 2);
-            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 3);
-            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 4);
+            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 123, 1);
+            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 123, 2);
+            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 123, 3);
+            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 123, 4);
             expect(groupPolicyTeamRepositoryServiceCreateOrUpdateByGroupPolicyIdAndTeamIdMethod).toHaveBeenCalledTimes(
                 4,
             );
             expect(
                 groupPolicyTeamRepositoryServiceCreateOrUpdateByGroupPolicyIdAndTeamIdMethod,
-            ).toHaveBeenNthCalledWith(1, [
+            ).toHaveBeenNthCalledWith(1, 123, [
                 { groupPolicyId: 1, teamId: 1 },
                 { groupPolicyId: 1, teamId: 2 },
                 { groupPolicyId: 1, teamId: 3 },
             ]);
             expect(
                 groupPolicyTeamRepositoryServiceCreateOrUpdateByGroupPolicyIdAndTeamIdMethod,
-            ).toHaveBeenNthCalledWith(2, [
+            ).toHaveBeenNthCalledWith(2, 123, [
                 { groupPolicyId: 2, teamId: 4 },
                 { groupPolicyId: 2, teamId: 5 },
             ]);
             expect(
                 groupPolicyTeamRepositoryServiceCreateOrUpdateByGroupPolicyIdAndTeamIdMethod,
-            ).toHaveBeenNthCalledWith(3, []);
+            ).toHaveBeenNthCalledWith(3, 123, []);
             expect(
                 groupPolicyTeamRepositoryServiceCreateOrUpdateByGroupPolicyIdAndTeamIdMethod,
-            ).toHaveBeenNthCalledWith(4, [{ groupPolicyId: 4, teamId: 6 }]);
+            ).toHaveBeenNthCalledWith(4, 123, [{ groupPolicyId: 4, teamId: 6 }]);
             expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
@@ -153,7 +153,7 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
 
             // deletedGroupPolicyIds: [5, 6]
             expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledTimes(1);
-            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith([5, 6]);
+            expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith(123, [5, 6]);
         });
 
         it('should publish an event and not throw error when failure occurs', async () => {
@@ -167,6 +167,7 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
             await handler.execute(
                 new SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommand(
                     'transaction-1',
+                    123,
                     [1, 2],
                     [3, 4, 5],
                     [5, 6, 7, 8],

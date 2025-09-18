@@ -12,6 +12,7 @@ export class RetrieveTeamUsersQueryHandler implements IQueryHandler<RetrieveTeam
         teamUserFindByQuery.teamId = query.teamId;
 
         const teamUsers = await this.teamUserRepositoryService.findBy(
+            query.tenantId,
             teamUserFindByQuery,
             query.pageNumber,
             query.pageSize,

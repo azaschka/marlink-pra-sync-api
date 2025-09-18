@@ -56,7 +56,7 @@ describe('SyncJumpGroupsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncJumpGroupsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncJumpGroupsCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<JumpGroupsSyncFailedEvent>{
@@ -204,13 +204,13 @@ describe('SyncJumpGroupsCommandHandler', () => {
                 const jumpGroupRepositoryServiceDeleteByIds = jest.spyOn(jumpGroupRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncJumpGroupsCommand('transaction-1'));
+                const result = await handler.execute(new SyncJumpGroupsCommand('transaction-1', 123));
 
                 expect(jumpGroupRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedJumpGroupRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedJumpGroupRepositoryServiceFindByIdsCall) {
-                    expect(jumpGroupRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpGroupRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(jumpGroupRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
@@ -219,6 +219,7 @@ describe('SyncJumpGroupsCommandHandler', () => {
                 for (const item of expectedJumpGroupRepositoryServiceCreateOrUpdateByIdsCall) {
                     expect(jumpGroupRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -227,7 +228,7 @@ describe('SyncJumpGroupsCommandHandler', () => {
                     expectedJumpGroupRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedJumpGroupRepositoryServiceDeleteByIdsCall) {
-                    expect(jumpGroupRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpGroupRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);

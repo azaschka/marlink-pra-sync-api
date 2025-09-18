@@ -36,12 +36,14 @@ describe('AddUserToTeamCommandHandler', () => {
         it.each([
             <AddUserToTeamCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 userId: 2,
                 roleType: UserTeamRoleType.Member,
             },
             <AddUserToTeamCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 userId: 4,
             },
@@ -56,6 +58,7 @@ describe('AddUserToTeamCommandHandler', () => {
                     teamId: 100,
                     userId: 101,
                     roleType: UserTeamRoleType.Manager,
+                    lastSyncDate: new Date('2025-01-01'),
                 } as TeamUserEntity;
                 const teamUserEntityCreateMethod = jest
                     .spyOn(TeamUserEntity, 'create')
@@ -74,7 +77,7 @@ describe('AddUserToTeamCommandHandler', () => {
                     TestHelper.mockedUserAddedToTeamDtoOutput.userId,
                     TestHelper.mockedUserAddedToTeamDtoOutput.role,
                 );
-                expect(teamUserRepositoryServiceCreateMethod).toHaveBeenCalledWith(teamUserEntityToBeCreated);
+                expect(teamUserRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, teamUserEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<TeamUserAddedEvent>{
                         transactionId: command.transactionId,
@@ -88,6 +91,7 @@ describe('AddUserToTeamCommandHandler', () => {
                     teamId: teamUserEntityToBeCreated.teamId,
                     userId: teamUserEntityToBeCreated.userId,
                     roleType: teamUserEntityToBeCreated.roleType,
+                    lastSyncDate: new Date('2025-01-01'),
                 });
             },
         );

@@ -111,6 +111,7 @@ describe('CopyJumpClientCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyJumpClientCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpClientGroupType.Personal,
@@ -149,7 +150,7 @@ describe('CopyJumpClientCommandHandler', () => {
                 TestHelper.mockedJumpClientRetrievedDtoOutput.endpointAgreementPolicy,
                 TestHelper.mockedJumpClientRetrievedDtoOutput.jumpointProxy,
             );
-            expect(jumpClientRepositoryServiceCreateMethod).toHaveBeenCalledWith(jumpClientEntityToBeCreated);
+            expect(jumpClientRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, jumpClientEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<JumpClientCopiedEvent>{
                     transactionId: 'transaction-1',

@@ -19,7 +19,7 @@ export class RemoveJumpGroupFromGroupPolicyCommandHandler
         await this.removeBTGroupPolicyJumpGroup(command);
 
         try {
-            await this.removeGroupPolicyJumpGroup(command.id, command.jumpGroupId);
+            await this.removeGroupPolicyJumpGroup(command.tenantId, command.id, command.jumpGroupId);
 
             this.eventBus.publish(
                 new GroupPolicyJumpGroupRemovedEvent(command.transactionId, {
@@ -46,8 +46,13 @@ export class RemoveJumpGroupFromGroupPolicyCommandHandler
         );
     }
 
-    private async removeGroupPolicyJumpGroup(groupPolicyId: number, jumpGroupId: number): Promise<void> {
+    private async removeGroupPolicyJumpGroup(
+        tenantId: number,
+        groupPolicyId: number,
+        jumpGroupId: number,
+    ): Promise<void> {
         await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyIdAndJumpGroupId(
+            tenantId,
             groupPolicyId,
             jumpGroupId,
         );

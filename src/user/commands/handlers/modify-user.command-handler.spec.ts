@@ -100,6 +100,7 @@ describe('ModifyUserCommandHandler', () => {
         it.each([
             <ModifyUserCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 100,
                 id: 123,
                 publicDisplayName: 'display-name-1',
                 username: 'user-1',
@@ -114,6 +115,7 @@ describe('ModifyUserCommandHandler', () => {
             },
             <ModifyUserCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 100,
                 id: 456,
                 publicDisplayName: 'display-name-2',
                 username: 'user-2',
@@ -208,8 +210,8 @@ describe('ModifyUserCommandHandler', () => {
                     TestHelper.mockedUserModifiedDtoOutput.permVault,
                     TestHelper.mockedUserModifiedDtoOutput.permEndpointAutomation,
                 );
-                expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated);
-                expect(userRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated.id);
+                expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(100, userEntityToBeUpdated);
+                expect(userRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(100, userEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<UserModifiedEvent>{
                         transactionId: command.transactionId,

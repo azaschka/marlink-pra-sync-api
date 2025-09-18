@@ -27,8 +27,10 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
         const protocolTunnelJumpEntity = this.createProtocolTunnelJumpEntity(btProtocolTunnelJump);
 
         try {
-            const createdProtocolTunnelJump =
-                await this.protocolTunnelJumpRepositoryService.create(protocolTunnelJumpEntity);
+            const createdProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.create(
+                command.tenantId,
+                protocolTunnelJumpEntity,
+            );
 
             this.eventBus.publish(
                 new ProtocolTunnelJumpCopiedEvent(command.transactionId, {

@@ -4,4 +4,5 @@ export interface GroupPolicyTeam {
     groupPolicyId: number;
     teamId: number;
     roleType?: GroupPolicyTeamRoleType;
+    lastSyncDate: Date;
 }

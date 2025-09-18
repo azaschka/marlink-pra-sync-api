@@ -44,6 +44,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',
@@ -82,16 +83,17 @@ describe('RetrieveJumpointsQueryHandler', () => {
                 .spyOn(jumpointRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpoints);
 
-            const result = await handler.execute(new RetrieveJumpointsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveJumpointsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpoints);
-            expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it.each([
             {
                 query: new RetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',
@@ -105,6 +107,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
             {
                 query: new RetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',
@@ -129,7 +132,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
 
                 expect(result).toStrictEqual(expectedJumpoints);
                 expect(queryBusExecuteMethod).not.toHaveBeenCalled();
-                expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(expectedFindByQuery, 1, 10);
+                expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, expectedFindByQuery, 1, 10);
             },
         );
     });

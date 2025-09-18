@@ -23,11 +23,13 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
         it.each([
             <RemoveTeamFromGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 teamId: 2,
             },
             <RemoveTeamFromGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 teamId: 4,
             },
@@ -50,6 +52,7 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
                     new BTRemoveTeamFromGroupPolicyCommand(command.transactionId, command.id, command.teamId),
                 );
                 expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdAndTeamIdMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     command.id,
                     command.teamId,
                 );

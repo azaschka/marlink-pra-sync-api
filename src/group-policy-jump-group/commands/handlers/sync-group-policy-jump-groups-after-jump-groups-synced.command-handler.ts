@@ -30,6 +30,7 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
                     btGroupPolicyJumpGroups,
                 );
                 const groupPolicyJumpGroups = await this.replaceGroupPolicyJumpGroups(
+                    command.tenantId,
                     groupPolicyId,
                     groupPolicyJumpGroupEntities,
                 );
@@ -53,7 +54,10 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
         }
 
         try {
-            await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyIds(command.deletedGroupPolicyIds);
+            await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyIds(
+                command.tenantId,
+                command.deletedGroupPolicyIds,
+            );
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyJumpGroupsSyncFailedEvent(command.transactionId, {
@@ -85,14 +89,16 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
     }
 
     private async replaceGroupPolicyJumpGroups(
+        tenantId: number,
         groupPolicyId: number,
         groupPolicyJumpGroupEntities: GroupPolicyJumpGroupEntity[],
     ): Promise<GroupPolicyJumpGroup[]> {
         // Delete all existing group policy jump groups
-        await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyId(groupPolicyId);
+        await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyId(tenantId, groupPolicyId);
 
         // Recreate the group policy jump groups
         await this.groupPolicyJumpGroupRepositoryService.createOrUpdateByGroupPolicyIdAndJumpGroupId(
+            tenantId,
             groupPolicyJumpGroupEntities,
         );
 

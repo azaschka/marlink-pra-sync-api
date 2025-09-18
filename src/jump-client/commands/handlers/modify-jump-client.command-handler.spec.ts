@@ -83,6 +83,7 @@ describe('ModifyJumpClientCommandHandler', () => {
         it.each([
             <ModifyJumpClientCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 100,
                 id: 1,
                 jumpGroupId: 123,
                 jumpGroupType: JumpClientGroupType.Personal,
@@ -96,6 +97,7 @@ describe('ModifyJumpClientCommandHandler', () => {
             },
             <ModifyJumpClientCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 100,
                 id: 2,
                 jumpGroupId: 123,
             },
@@ -167,9 +169,13 @@ describe('ModifyJumpClientCommandHandler', () => {
                     TestHelper.mockedJumpClientModifiedDtoOutput.jumpointProxy,
                 );
                 expect(jumpClientRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     jumpClientEntityToBeUpdated,
                 );
-                expect(jumpClientRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(jumpClientEntityToBeUpdated.id);
+                expect(jumpClientRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(
+                    command.tenantId,
+                    jumpClientEntityToBeUpdated.id,
+                );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpClientModifiedEvent>{
                         transactionId: command.transactionId,

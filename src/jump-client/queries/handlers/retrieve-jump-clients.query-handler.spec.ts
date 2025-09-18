@@ -20,10 +20,10 @@ describe('RetrieveJumpClientsQueryHandler', () => {
                 .spyOn(jumpClientRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpClients);
 
-            const result = await handler.execute(new RetrieveJumpClientsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveJumpClientsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpClients);
-            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -35,6 +35,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpClientsQuery(
                     'transaction-2',
+                    100,
                     10,
                     1,
                     'jump-client-1',
@@ -52,6 +53,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
 
             expect(result).toBe(expectedJumpClients);
             expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                100,
                 {
                     name: 'jump-client-1',
                     hostname: 'host-1',

@@ -68,6 +68,7 @@ describe('CreateRemoteVncCommandHandler', () => {
         it.each([
             <CreateRemoteVncCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'remote-vnc-1',
                 jumpointId: 1,
                 hostname: 'hostname-1',
@@ -81,6 +82,7 @@ describe('CreateRemoteVncCommandHandler', () => {
             },
             <CreateRemoteVncCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'remote-vnc-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -135,7 +137,7 @@ describe('CreateRemoteVncCommandHandler', () => {
                     TestHelper.mockedRemoteVncCreatedDtoOutput.jumpPolicyId,
                     TestHelper.mockedRemoteVncCreatedDtoOutput.sessionPolicyId,
                 );
-                expect(remoteVncRepositoryServiceCreateMethod).toHaveBeenCalledWith(remoteVncEntityToBeCreated);
+                expect(remoteVncRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, remoteVncEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<RemoteVncCreatedEvent>{
                         transactionId: command.transactionId,

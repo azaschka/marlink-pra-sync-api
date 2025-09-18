@@ -19,7 +19,7 @@ export class DeleteJumpGroupCommandHandler implements ICommandHandler<DeleteJump
         );
 
         try {
-            await this.jumpGroupRepositoryService.deleteById(command.id);
+            await this.jumpGroupRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new JumpGroupDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

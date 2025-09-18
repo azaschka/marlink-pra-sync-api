@@ -23,11 +23,13 @@ describe('RemoveUserFromTeamCommandHandler', () => {
         it.each([
             <RemoveUserFromTeamCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 userId: 2,
             },
             <RemoveUserFromTeamCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 userId: 4,
             },
@@ -50,6 +52,7 @@ describe('RemoveUserFromTeamCommandHandler', () => {
                     new BTRemoveUserFromTeamCommand(command.transactionId, command.id, command.userId),
                 );
                 expect(teamUserRepositoryServiceDeleteByTeamIdAndUserIdMethod).toHaveBeenCalledWith(
+                    123,
                     command.id,
                     command.userId,
                 );

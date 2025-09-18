@@ -59,7 +59,7 @@ describe('SyncRemoteRdpsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncRemoteRdpsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncRemoteRdpsCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<RemoteRdpsSyncFailedEvent>{
@@ -207,13 +207,13 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                 const remoteRdpRepositoryServiceDeleteByIds = jest.spyOn(remoteRdpRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncRemoteRdpsCommand('transaction-1'));
+                const result = await handler.execute(new SyncRemoteRdpsCommand('transaction-1', 123));
 
                 expect(remoteRdpRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedRemoteRdpRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedRemoteRdpRepositoryServiceFindByIdsCall) {
-                    expect(remoteRdpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(remoteRdpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(remoteRdpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
@@ -222,6 +222,7 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                 for (const item of expectedRemoteRdpRepositoryServiceCreateOrUpdateByIdCall) {
                     expect(remoteRdpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -230,7 +231,7 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                     expectedRemoteRdpRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedRemoteRdpRepositoryServiceDeleteByIdsCall) {
-                    expect(remoteRdpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(remoteRdpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);

@@ -36,11 +36,13 @@ describe('AddTeamToGroupPolicyCommandHandler', () => {
         it.each([
             <AddTeamToGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 teamId: 2,
             },
             <AddTeamToGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 teamId: 4,
             },
@@ -55,6 +57,7 @@ describe('AddTeamToGroupPolicyCommandHandler', () => {
                     groupPolicyId: 100,
                     teamId: 101,
                     roleType: GroupPolicyTeamRoleType.Lead,
+                    lastSyncDate: new Date('2025-01-01T00:00:00Z'),
                 } as GroupPolicyTeamEntity;
                 const groupPolicyTeamEntityCreateMethod = jest
                     .spyOn(GroupPolicyTeamEntity, 'create')
@@ -77,6 +80,7 @@ describe('AddTeamToGroupPolicyCommandHandler', () => {
                     TestHelper.mockedTeamAddedToGroupPolicyDtoOutput.role,
                 );
                 expect(groupPolicyTeamRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     groupPolicyTeamEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -92,6 +96,7 @@ describe('AddTeamToGroupPolicyCommandHandler', () => {
                     groupPolicyId: groupPolicyTeamEntityToBeCreated.groupPolicyId,
                     teamId: groupPolicyTeamEntityToBeCreated.teamId,
                     roleType: groupPolicyTeamEntityToBeCreated.roleType,
+                    lastSyncDate: groupPolicyTeamEntityToBeCreated.lastSyncDate,
                 });
             },
         );

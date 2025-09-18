@@ -32,7 +32,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
         const remoteRdpEntity = this.createRemoteRdpEntity(btRemoteRdp);
 
         try {
-            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(remoteRdpEntity);
+            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(command.tenantId, remoteRdpEntity);
 
             this.eventBus.publish(
                 new RemoteRdpCopiedEvent(command.transactionId, {

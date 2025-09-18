@@ -39,11 +39,13 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
         it.each([
             <AddJumpGroupToGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 2,
             },
             <AddJumpGroupToGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 jumpGroupId: 4,
             },
@@ -81,6 +83,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                     TestHelper.mockedJumpGroupAddedToGroupPolicyDtoOutput.jumpPolicyId,
                 );
                 expect(groupPolicyJumpGroupRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    123,
                     groupPolicyJumpGroupEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(

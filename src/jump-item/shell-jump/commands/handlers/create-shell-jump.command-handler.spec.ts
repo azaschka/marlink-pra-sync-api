@@ -80,6 +80,7 @@ describe('CreateShellJumpCommandHandler', () => {
         it.each([
             <CreateShellJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'shell-jump-1',
                 jumpointId: 2,
                 hostname: 'hostname-1',
@@ -97,6 +98,7 @@ describe('CreateShellJumpCommandHandler', () => {
             },
             <CreateShellJumpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'shell-jump-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -160,7 +162,7 @@ describe('CreateShellJumpCommandHandler', () => {
                     TestHelper.mockedShellJumpCreatedDtoOutput.username,
                     TestHelper.mockedShellJumpCreatedDtoOutput.sessionPolicyId,
                 );
-                expect(shellJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(shellJumpEntityToBeCreated);
+                expect(shellJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, shellJumpEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<ShellJumpCreatedEvent>{
                         transactionId: command.transactionId,

@@ -34,7 +34,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
         const jumpClientEntity = this.createJumpClientEntity(btJumpClient);
 
         try {
-            const createdJumpClient = await this.jumpClientRepositoryService.create(jumpClientEntity);
+            const createdJumpClient = await this.jumpClientRepositoryService.create(command.tenantId, jumpClientEntity);
 
             this.eventBus.publish(
                 new JumpClientCopiedEvent(command.transactionId, {

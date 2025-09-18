@@ -19,7 +19,7 @@ export class DeleteJumpointCommandHandler implements ICommandHandler<DeleteJumpo
         );
 
         try {
-            await this.jumpointRepositoryService.deleteById(command.id);
+            await this.jumpointRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new JumpointDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

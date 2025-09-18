@@ -12,6 +12,8 @@ export class RetrieveJumpClientInstallerPlatformQueryHandler
     public async execute(
         query: RetrieveJumpClientInstallerPlatformQuery,
     ): Promise<AxiosResponse<NodeJS.ReadableStream>> {
+        // TODO: Use tenantId
+
         return this.queryBus.execute<
             BTRetrieveJumpClientInstallerPlatformQuery,
             Promise<AxiosResponse<NodeJS.ReadableStream>>

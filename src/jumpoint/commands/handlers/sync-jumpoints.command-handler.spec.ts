@@ -59,7 +59,7 @@ describe('SyncJumpointsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncJumpointsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncJumpointsCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<JumpointsSyncFailedEvent>{
@@ -207,13 +207,13 @@ describe('SyncJumpointsCommandHandler', () => {
                 const jumpointRepositoryServiceDeleteByIds = jest.spyOn(jumpointRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncJumpointsCommand('transaction-1'));
+                const result = await handler.execute(new SyncJumpointsCommand('transaction-1', 123));
 
                 expect(jumpointRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedJumpointRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedJumpointRepositoryServiceFindByIdsCall) {
-                    expect(jumpointRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpointRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(jumpointRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
@@ -222,6 +222,7 @@ describe('SyncJumpointsCommandHandler', () => {
                 for (const item of expectedJumpointRepositoryServiceCreateOrUpdateByIdsCall) {
                     expect(jumpointRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -230,7 +231,7 @@ describe('SyncJumpointsCommandHandler', () => {
                     expectedJumpointRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedJumpointRepositoryServiceDeleteByIdsCall) {
-                    expect(jumpointRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpointRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);

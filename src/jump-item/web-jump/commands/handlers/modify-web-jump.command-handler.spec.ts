@@ -61,6 +61,7 @@ describe('ModifyWebJumpCommandHandler', () => {
         it.each([
             <ModifyWebJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 name: 'web-jump-1',
                 jumpointId: 2,
@@ -80,6 +81,7 @@ describe('ModifyWebJumpCommandHandler', () => {
             },
             <ModifyWebJumpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'web-jump-2',
                 jumpointId: 2,
                 url: 'url-2',
@@ -148,8 +150,11 @@ describe('ModifyWebJumpCommandHandler', () => {
                     TestHelper.mockedWebJumpModifiedDtoOutput.submitField,
                     TestHelper.mockedWebJumpModifiedDtoOutput.sessionPolicyId,
                 );
-                expect(webJumpRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(webJumpEntityToBeUpdated);
-                expect(webJumpRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(webJumpEntityToBeUpdated.id);
+                expect(webJumpRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    123,
+                    webJumpEntityToBeUpdated,
+                );
+                expect(webJumpRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(123, webJumpEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<WebJumpModifiedEvent>{
                         transactionId: command.transactionId,

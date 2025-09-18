@@ -91,6 +91,7 @@ describe('CopyShellJumpCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyShellJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -118,7 +119,7 @@ describe('CopyShellJumpCommandHandler', () => {
                 TestHelper.mockedShellJumpRetrievedDtoOutput.username,
                 TestHelper.mockedShellJumpRetrievedDtoOutput.sessionPolicyId,
             );
-            expect(shellJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(shellJumpEntityToBeCreated);
+            expect(shellJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, shellJumpEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<ShellJumpCopiedEvent>{
                     transactionId: 'transaction-1',

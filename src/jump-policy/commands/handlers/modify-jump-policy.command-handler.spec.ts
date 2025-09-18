@@ -82,6 +82,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
         it.each([
             <ModifyJumpPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 displayName: 'jump-policy-1',
                 codeName: 'jump-policy-code-1',
@@ -111,6 +112,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
             },
             <ModifyJumpPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 2,
                 displayName: 'jump-policy-2',
             },
@@ -198,9 +200,13 @@ describe('ModifyJumpPolicyCommandHandler', () => {
                     TestHelper.mockedJumpPolicyModifiedDtoOutput.recordingsDisabled,
                 );
                 expect(jumpPolicyRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    123,
                     jumpPolicyEntityToBeUpdated,
                 );
-                expect(jumpPolicyRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(jumpPolicyEntityToBeUpdated.id);
+                expect(jumpPolicyRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(
+                    123,
+                    jumpPolicyEntityToBeUpdated.id,
+                );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpPolicyModifiedEvent>{
                         transactionId: command.transactionId,

@@ -22,7 +22,12 @@ export class RetrieveUsersQueryHandler implements IQueryHandler<RetrieveUsersQue
             userFindByQuery.email = query.email;
         }
 
-        const users = await this.userRepositoryService.findBy(userFindByQuery, query.pageNumber, query.pageSize);
+        const users = await this.userRepositoryService.findBy(
+            query.tenantId,
+            userFindByQuery,
+            query.pageNumber,
+            query.pageSize,
+        );
 
         return users;
     }

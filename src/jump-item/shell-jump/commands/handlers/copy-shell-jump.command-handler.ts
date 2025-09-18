@@ -32,7 +32,7 @@ export class CopyShellJumpCommandHandler implements ICommandHandler<CopyShellJum
         const shellJumpEntity = this.createShellJumpEntity(btShellJump);
 
         try {
-            const createdShellJump = await this.shellJumpRepositoryService.create(shellJumpEntity);
+            const createdShellJump = await this.shellJumpRepositoryService.create(command.tenantId, shellJumpEntity);
 
             this.eventBus.publish(
                 new ShellJumpCopiedEvent(command.transactionId, {

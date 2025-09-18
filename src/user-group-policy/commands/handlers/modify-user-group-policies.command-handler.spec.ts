@@ -63,9 +63,9 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
             const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
 
             const userGroupPolicyEntitiesToBeReplaced = [
-                { userId: 123, groupPolicyId: 1 },
-                { userId: 123, groupPolicyId: 2 },
-                { userId: 123, groupPolicyId: 3 },
+                { userId: 123, groupPolicyId: 1, lastSyncDate: new Date('2025-01-01') },
+                { userId: 123, groupPolicyId: 2, lastSyncDate: new Date('2025-01-01') },
+                { userId: 123, groupPolicyId: 3, lastSyncDate: new Date('2025-01-01') },
             ] as UserGroupPolicyEntity[];
             const userGroupPolicyEntityCreateMethod = jest
                 .spyOn(UserGroupPolicyEntity, 'create')
@@ -80,7 +80,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
 
             // Act
             const result = await handler.execute(
-                new ModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6]),
+                new ModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6]),
             );
 
             // Assert
@@ -88,8 +88,9 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                 new BTModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6]),
             );
             expect(userGroupPolicyEntityCreateMethod).toHaveBeenCalledWith(123, [1, 2, 3]);
-            expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenCalledWith(123);
+            expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenCalledWith(100, 123);
             expect(userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod).toHaveBeenCalledWith(
+                100,
                 userGroupPolicyEntitiesToBeReplaced,
             );
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -105,14 +106,17 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                 {
                     userId: 123,
                     groupPolicyId: 1,
+                    lastSyncDate: new Date('2025-01-01'),
                 },
                 {
                     userId: 123,
                     groupPolicyId: 2,
+                    lastSyncDate: new Date('2025-01-01'),
                 },
                 {
                     userId: 123,
                     groupPolicyId: 3,
+                    lastSyncDate: new Date('2025-01-01'),
                 },
             ]);
         });
@@ -123,7 +127,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6])),
+                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6])),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
         });
@@ -146,7 +150,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6])),
+                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6])),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
             expect(userGroupPolicyEntityCreateMethod).toHaveBeenCalled();

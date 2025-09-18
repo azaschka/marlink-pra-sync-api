@@ -27,11 +27,13 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
         it.each([
             <RemoveJumpGroupFromGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 2,
             },
             <RemoveJumpGroupFromGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 jumpGroupId: 4,
             },
@@ -55,7 +57,7 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
                 );
                 expect(
                     groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdAndJumpGroupIdMethod,
-                ).toHaveBeenCalledWith(command.id, command.jumpGroupId);
+                ).toHaveBeenCalledWith(command.tenantId, command.id, command.jumpGroupId);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<GroupPolicyJumpGroupRemovedEvent>{
                         transactionId: command.transactionId,

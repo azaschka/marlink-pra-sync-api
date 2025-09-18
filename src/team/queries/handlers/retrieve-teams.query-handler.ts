@@ -18,7 +18,12 @@ export class RetrieveTeamsQueryHandler implements IQueryHandler<RetrieveTeamsQue
             teamsFindByQuery.codeName = query.codeName;
         }
 
-        const teams = await this.teamRepositoryService.findBy(teamsFindByQuery, query.pageNumber, query.pageSize);
+        const teams = await this.teamRepositoryService.findBy(
+            query.tenantId,
+            teamsFindByQuery,
+            query.pageNumber,
+            query.pageSize,
+        );
 
         return teams;
     }

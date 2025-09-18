@@ -22,7 +22,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { ApiTransactionIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
+import { ApiTenantIdHeader, ApiTransactionIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, ModifyGroupPolicyCommand } from '../commands';
@@ -35,6 +35,7 @@ import {
 import { GroupPolicy } from '../models';
 import { RetrieveGroupPoliciesQuery } from '../queries';
 
+@ApiTenantIdHeader()
 @ApiTransactionIdHeader()
 @ApiTags('Group Policies')
 @Controller('group-policies')

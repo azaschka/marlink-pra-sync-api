@@ -66,7 +66,9 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncProtocolTunnelJumpsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncProtocolTunnelJumpsCommand('transaction-1', 123))).rejects.toThrow(
+                error,
+            );
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<ProtocolTunnelJumpsSyncFailedEvent>{
@@ -217,13 +219,17 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                 );
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncProtocolTunnelJumpsCommand('transaction-1'));
+                const result = await handler.execute(new SyncProtocolTunnelJumpsCommand('transaction-1', 123));
 
                 expect(protocolTunnelJumpRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedProtocolTunnelJumpRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedProtocolTunnelJumpRepositoryServiceFindByIdsCall) {
-                    expect(protocolTunnelJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(protocolTunnelJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(
+                        item.iter,
+                        123,
+                        item.ids,
+                    );
                 }
 
                 expect(protocolTunnelJumpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
@@ -232,6 +238,7 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                 for (const item of expectedProtocolTunnelJumpRepositoryServiceCreateOrUpdateByIdCall) {
                     expect(protocolTunnelJumpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -240,7 +247,11 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                     expectedProtocolTunnelJumpRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedProtocolTunnelJumpRepositoryServiceDeleteByIdsCall) {
-                    expect(protocolTunnelJumpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(protocolTunnelJumpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(
+                        item.iter,
+                        123,
+                        item.ids,
+                    );
                 }
 
                 expect(result).toEqual(expectedResult);

@@ -30,6 +30,7 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
                     btGroupPolicyMembers,
                 );
                 const groupPolicyMembers = await this.replaceGroupPolicyMembers(
+                    command.tenantId,
                     groupPolicyId,
                     groupPolicyMemberEntities,
                 );
@@ -53,7 +54,10 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
         }
 
         try {
-            await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyIds(command.deletedGroupPolicyIds);
+            await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyIds(
+                command.tenantId,
+                command.deletedGroupPolicyIds,
+            );
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyMembersSyncFailedEvent(command.transactionId, {
@@ -88,14 +92,16 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
     }
 
     private async replaceGroupPolicyMembers(
+        tenantId: number,
         groupPolicyId: number,
         groupPolicyMemberEntities: GroupPolicyMemberEntity[],
     ): Promise<GroupPolicyMember[]> {
         // Delete all existing group policy members
-        await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyId(groupPolicyId);
+        await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyId(tenantId, groupPolicyId);
 
         // Recreate the group policy members
         await this.groupPolicyMemberRepositoryService.createOrUpdateByGroupPolicyIdAndMemberId(
+            tenantId,
             groupPolicyMemberEntities,
         );
 

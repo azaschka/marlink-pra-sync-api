@@ -17,7 +17,7 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
         await this.removeBTTeamUser(command);
 
         try {
-            await this.removeTeamUser(command.id, command.userId);
+            await this.removeTeamUser(command.tenantId, command.id, command.userId);
 
             this.eventBus.publish(
                 new TeamUserRemovedEvent(command.transactionId, {
@@ -44,7 +44,7 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
         );
     }
 
-    private async removeTeamUser(teamId: number, userId: number): Promise<void> {
-        await this.teamUserRepositoryService.deleteByTeamIdAndUserId(teamId, userId);
+    private async removeTeamUser(tenantId: number, teamId: number, userId: number): Promise<void> {
+        await this.teamUserRepositoryService.deleteByTeamIdAndUserId(tenantId, teamId, userId);
     }
 }

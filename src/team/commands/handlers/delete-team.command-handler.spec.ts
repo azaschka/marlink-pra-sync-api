@@ -24,10 +24,10 @@ describe('DeleteTeamCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const teamRepositoryServiceDeleteByIdMethod = jest.spyOn(teamRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteTeamCommand('transaction-1', 123));
+        await handler.execute(new DeleteTeamCommand('transaction-1', 100, 123));
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 123));
-        expect(teamRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(teamRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<TeamDeletedEvent>{
                 transactionId: 'transaction-1',
@@ -45,7 +45,7 @@ describe('DeleteTeamCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const teamRepositoryServiceDeleteByIdMethod = jest.spyOn(teamRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteTeamCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteTeamCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 123));
         expect(teamRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
@@ -63,10 +63,10 @@ describe('DeleteTeamCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteTeamCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteTeamCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 123));
-        expect(teamRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(teamRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({

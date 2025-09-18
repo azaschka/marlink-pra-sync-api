@@ -24,13 +24,13 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
     ) {}
 
     public async execute(command: CreateWebJumpCommand): Promise<WebJump> {
-        await this.validateWebJumpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+        await this.validateWebJumpDoesNotExist(command.tenantId, command.name, command.jumpGroupId, command.tag);
 
         const btWebJump = await this.createBTWebJump(command);
         const webJumpEntity = this.createWebJumpEntity(btWebJump);
 
         try {
-            const createdWebJump = await this.webJumpRepositoryService.create(webJumpEntity);
+            const createdWebJump = await this.webJumpRepositoryService.create(command.tenantId, webJumpEntity);
 
             this.eventBus.publish(
                 new WebJumpCreatedEvent(command.transactionId, {
@@ -51,8 +51,8 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
         }
     }
 
-    private async validateWebJumpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
-        const existingWebJump = await this.webJumpRepositoryService.findOneBy({
+    private async validateWebJumpDoesNotExist(tenantId: number, name: string, jumpGroupId: number, tag?: string) {
+        const existingWebJump = await this.webJumpRepositoryService.findOneBy(tenantId, {
             name,
             jumpGroupId,
             tag,

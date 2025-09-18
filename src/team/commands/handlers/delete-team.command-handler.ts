@@ -19,7 +19,7 @@ export class DeleteTeamCommandHandler implements ICommandHandler<DeleteTeamComma
         );
 
         try {
-            await this.teamRepositoryService.deleteById(command.id);
+            await this.teamRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new TeamDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

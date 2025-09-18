@@ -19,7 +19,7 @@ export class DeleteJumpClientInstallerCommandHandler implements ICommandHandler<
         );
 
         try {
-            await this.jumpClientInstallerRepositoryService.deleteById(command.id);
+            await this.jumpClientInstallerRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new JumpClientInstallerDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

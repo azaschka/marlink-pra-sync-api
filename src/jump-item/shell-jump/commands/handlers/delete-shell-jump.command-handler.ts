@@ -19,7 +19,7 @@ export class DeleteShellJumpCommandHandler implements ICommandHandler<DeleteShel
         );
 
         try {
-            await this.shellJumpRepositoryService.deleteById(command.id);
+            await this.shellJumpRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new ShellJumpDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

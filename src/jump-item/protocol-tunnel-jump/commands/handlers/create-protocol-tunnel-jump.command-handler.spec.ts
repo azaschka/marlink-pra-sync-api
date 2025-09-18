@@ -64,6 +64,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
             // Arrange
             const command = <CreateProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'protocol-tunnel-jump-1',
                 jumpointId: 2,
                 hostname: 'hostname-1',
@@ -82,6 +83,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
         it.each([
             <CreateProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'protocol-tunnel-jump-1',
                 jumpointId: 1,
                 hostname: 'hostname-1',
@@ -101,6 +103,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
             },
             <CreateProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'protocol-tunnel-jump-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -168,6 +171,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                     TestHelper.mockedProtocolTunnelJumpCreatedDtoOutput.caCertificates,
                 );
                 expect(protocolTunnelJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    123,
                     protocolTunnelJumpEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(

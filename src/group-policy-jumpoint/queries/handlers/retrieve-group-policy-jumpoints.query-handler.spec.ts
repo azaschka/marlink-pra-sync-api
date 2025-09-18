@@ -36,10 +36,13 @@ describe('RetrieveGroupPolicyJumpointsQueryHandler', () => {
                 .spyOn(groupPolicyJumpointRepositoryService, 'findBy')
                 .mockResolvedValue(expectedGroupPolicyJumpointEntities);
 
-            const result = await handler.execute(new RetrieveGroupPolicyJumpointsQuery('transaction-2', 10, 1, 123));
+            const result = await handler.execute(
+                new RetrieveGroupPolicyJumpointsQuery('transaction-2', 100, 10, 1, 123),
+            );
 
             expect(result).toBe(expectedGroupPolicyJumpointEntities);
             expect(groupPolicyJumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                100,
                 { groupPolicyId: 123 },
                 1,
                 10,

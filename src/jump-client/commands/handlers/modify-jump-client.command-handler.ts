@@ -30,7 +30,7 @@ export class ModifyJumpClientCommandHandler implements ICommandHandler<ModifyJum
         const jumpClientEntity = this.createJumpClientEntity(btJumpClient);
 
         try {
-            const updatedJumpClient = await this.updateJumpClient(jumpClientEntity);
+            const updatedJumpClient = await this.updateJumpClient(command.tenantId, jumpClientEntity);
 
             this.eventBus.publish(
                 new JumpClientModifiedEvent(command.transactionId, {
@@ -106,10 +106,13 @@ export class ModifyJumpClientCommandHandler implements ICommandHandler<ModifyJum
         );
     }
 
-    private async updateJumpClient(jumpClientEntity: JumpClientEntity) {
-        await this.jumpClientRepositoryService.createOrUpdateById(jumpClientEntity);
+    private async updateJumpClient(tenantId: number, jumpClientEntity: JumpClientEntity) {
+        await this.jumpClientRepositoryService.createOrUpdateById(tenantId, jumpClientEntity);
 
-        const createdOrUpdatedJumpClient = await this.jumpClientRepositoryService.findOneById(jumpClientEntity.id);
+        const createdOrUpdatedJumpClient = await this.jumpClientRepositoryService.findOneById(
+            tenantId,
+            jumpClientEntity.id,
+        );
 
         if (!createdOrUpdatedJumpClient) {
             throw new Error('JumpClient has been created or updated but could not be retrieved.');

@@ -27,8 +27,14 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
             const updatedJumpointIds: number[] = [];
             const deletedJumpointIds: number[] = [];
 
-            await this.syncBTToDbJumpointsPerPage(command.transactionId, 1, createdJumpointIds, updatedJumpointIds);
-            await this.syncDbToBTJumpointsPerPage(1, startSyncUtcDate, deletedJumpointIds);
+            await this.syncBTToDbJumpointsPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdJumpointIds,
+                updatedJumpointIds,
+            );
+            await this.syncDbToBTJumpointsPerPage(command.tenantId, 1, startSyncUtcDate, deletedJumpointIds);
 
             this.eventBus.publish(
                 new JumpointsSyncedEvent(command.transactionId, {
@@ -56,6 +62,7 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
 
     private async syncBTToDbJumpointsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdJumpointIds: number[],
         updatedJumpointIds: number[],
@@ -77,6 +84,7 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
 
         // Retrieve existing jumpoints from the DB using BeyondTrust jumpoint IDs
         const dbJumpoints = await this.jumpointRepositoryService.findByIds(
+            tenantId,
             btJumpoints.map((jumpoint) => jumpoint.id).filter((id) => id !== undefined),
         );
 
@@ -84,11 +92,11 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
         const jumpointsToBeUpdated = this.findAllJumpointsToBeUpdatedOrUpdateLastSyncDate(btJumpoints, dbJumpoints);
 
         if (jumpointsToBeCreated.length > 0) {
-            await this.jumpointRepositoryService.createOrUpdateByIds(jumpointsToBeCreated);
+            await this.jumpointRepositoryService.createOrUpdateByIds(tenantId, jumpointsToBeCreated);
         }
 
         if (jumpointsToBeUpdated.length > 0) {
-            await this.jumpointRepositoryService.createOrUpdateByIds(jumpointsToBeUpdated);
+            await this.jumpointRepositoryService.createOrUpdateByIds(tenantId, jumpointsToBeUpdated);
         }
 
         // Collect created and updated jumpoint IDs
@@ -99,15 +107,23 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
             return;
         }
 
-        await this.syncBTToDbJumpointsPerPage(transactionId, pageNumber + 1, createdJumpointIds, updatedJumpointIds);
+        await this.syncBTToDbJumpointsPerPage(
+            transactionId,
+            tenantId,
+            pageNumber + 1,
+            createdJumpointIds,
+            updatedJumpointIds,
+        );
     }
 
     private async syncDbToBTJumpointsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTJumpoints: Date,
         deletedJumpointIds: number[],
     ) {
         const dbJumpoints = await this.jumpointRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTJumpoints,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -115,7 +131,7 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
         const jumpointIds = dbJumpoints.map((dbJumpoint) => dbJumpoint.id);
 
         if (jumpointIds.length > 0) {
-            await this.jumpointRepositoryService.deleteByIds(jumpointIds);
+            await this.jumpointRepositoryService.deleteByIds(tenantId, jumpointIds);
         }
 
         // Collect deleted jumpoint IDs
@@ -125,7 +141,12 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
             return;
         }
 
-        await this.syncDbToBTJumpointsPerPage(pageNumber + 1, dateBeforeSyncingBTJumpoints, deletedJumpointIds);
+        await this.syncDbToBTJumpointsPerPage(
+            tenantId,
+            pageNumber + 1,
+            dateBeforeSyncingBTJumpoints,
+            deletedJumpointIds,
+        );
     }
 
     private findAllJumpointsToBeCreated(btJumpoints: JumpointRetrievedDtoOutput[], dbJumpoints: JumpointEntity[]) {

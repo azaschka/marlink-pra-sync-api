@@ -37,11 +37,13 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
         it.each([
             <AddMemberToGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 userId: 2,
             },
             <AddMemberToGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 userId: 4,
             },
@@ -89,6 +91,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                     TestHelper.mockedMemberAddedToGroupPolicyDtoOutput.groupName,
                 );
                 expect(groupPolicyMemberRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     groupPolicyMemberEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(

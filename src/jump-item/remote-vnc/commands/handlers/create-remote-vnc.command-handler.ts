@@ -19,13 +19,13 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
     ) {}
 
     public async execute(command: CreateRemoteVncCommand): Promise<RemoteVnc> {
-        await this.validateRemoteVncDoesNotExist(command.name, command.jumpGroupId, command.tag);
+        await this.validateRemoteVncDoesNotExist(command.tenantId, command.name, command.jumpGroupId, command.tag);
 
         const btRemoteVnc = await this.createBTRemoteVnc(command);
         const remoteVncEntity = this.createRemoteVncEntity(btRemoteVnc);
 
         try {
-            const createdRemoteVnc = await this.remoteVncRepositoryService.create(remoteVncEntity);
+            const createdRemoteVnc = await this.remoteVncRepositoryService.create(command.tenantId, remoteVncEntity);
 
             this.eventBus.publish(
                 new RemoteVncCreatedEvent(command.transactionId, {
@@ -46,8 +46,8 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
         }
     }
 
-    private async validateRemoteVncDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
-        const existingRemoteVnc = await this.remoteVncRepositoryService.findOneBy({
+    private async validateRemoteVncDoesNotExist(tenantId: number, name: string, jumpGroupId: number, tag?: string) {
+        const existingRemoteVnc = await this.remoteVncRepositoryService.findOneBy(tenantId, {
             name,
             jumpGroupId,
             tag,

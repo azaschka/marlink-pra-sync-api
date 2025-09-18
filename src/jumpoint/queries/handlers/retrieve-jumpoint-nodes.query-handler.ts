@@ -14,6 +14,7 @@ export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<Retrieve
         jumpointNodeFindByQuery.jumpointId = query.jumpointId;
 
         const jumpointNodes = await this.jumpointNodeRepositoryService.findBy(
+            query.tenantId,
             jumpointNodeFindByQuery,
             undefined,
             undefined,

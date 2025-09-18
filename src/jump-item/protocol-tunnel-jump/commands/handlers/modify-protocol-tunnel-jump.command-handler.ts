@@ -22,7 +22,10 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
         const protocolTunnelJumpEntity = this.createProtocolTunnelJumpEntity(btProtocolTunnelJump);
 
         try {
-            const updatedProtocolTunnelJump = await this.updateProtocolTunnelJump(protocolTunnelJumpEntity);
+            const updatedProtocolTunnelJump = await this.updateProtocolTunnelJump(
+                command.tenantId,
+                protocolTunnelJumpEntity,
+            );
 
             this.eventBus.publish(
                 new ProtocolTunnelJumpModifiedEvent(command.transactionId, {
@@ -90,10 +93,11 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
         );
     }
 
-    private async updateProtocolTunnelJump(protocolTunnelJumpEntity: ProtocolTunnelJumpEntity) {
-        await this.protocolTunnelJumpRepositoryService.createOrUpdateById(protocolTunnelJumpEntity);
+    private async updateProtocolTunnelJump(tenantId: number, protocolTunnelJumpEntity: ProtocolTunnelJumpEntity) {
+        await this.protocolTunnelJumpRepositoryService.createOrUpdateById(tenantId, protocolTunnelJumpEntity);
 
         const createdOrUpdatedProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.findOneById(
+            tenantId,
             protocolTunnelJumpEntity.id,
         );
 

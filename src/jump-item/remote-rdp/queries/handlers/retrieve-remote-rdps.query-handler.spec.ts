@@ -20,10 +20,10 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
                 .spyOn(remoteRdpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedRemoteRdps);
 
-            const result = await handler.execute(new RetrieveRemoteRdpsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveRemoteRdpsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedRemoteRdps);
-            expect(remoteRdpRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(remoteRdpRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -35,6 +35,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveRemoteRdpsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'remote-rdp-1',
@@ -49,6 +50,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
 
             expect(result).toBe(expectedRemoteRdps);
             expect(remoteRdpRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                123,
                 {
                     name: 'remote-rdp-1',
                     hostname: 'host-1',

@@ -17,7 +17,7 @@ export class RemoveTeamFromGroupPolicyCommandHandler implements ICommandHandler<
         await this.removeBTGroupPolicyTeam(command);
 
         try {
-            await this.removeGroupPolicyTeam(command.id, command.teamId);
+            await this.removeGroupPolicyTeam(command.tenantId, command.id, command.teamId);
 
             this.eventBus.publish(
                 new GroupPolicyTeamRemovedEvent(command.transactionId, {
@@ -44,7 +44,7 @@ export class RemoveTeamFromGroupPolicyCommandHandler implements ICommandHandler<
         );
     }
 
-    private async removeGroupPolicyTeam(groupPolicyId: number, teamId: number): Promise<void> {
-        await this.groupPolicyTeamRepositoryService.deleteByGroupPolicyIdAndTeamId(groupPolicyId, teamId);
+    private async removeGroupPolicyTeam(tenantId: number, groupPolicyId: number, teamId: number): Promise<void> {
+        await this.groupPolicyTeamRepositoryService.deleteByGroupPolicyIdAndTeamId(tenantId, groupPolicyId, teamId);
     }
 }

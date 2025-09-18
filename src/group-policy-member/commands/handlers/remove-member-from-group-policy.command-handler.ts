@@ -17,7 +17,7 @@ export class RemoveMemberFromGroupPolicyCommandHandler implements ICommandHandle
         await this.removeBTGroupPolicyMember(command);
 
         try {
-            await this.removeGroupPolicyMember(command.id, command.memberId);
+            await this.removeGroupPolicyMember(command.tenantId, command.id, command.memberId);
 
             this.eventBus.publish(
                 new GroupPolicyMemberRemovedEvent(command.transactionId, {
@@ -44,7 +44,11 @@ export class RemoveMemberFromGroupPolicyCommandHandler implements ICommandHandle
         );
     }
 
-    private async removeGroupPolicyMember(groupPolicyId: number, memberId: number): Promise<void> {
-        await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyIdAndMemberId(groupPolicyId, memberId);
+    private async removeGroupPolicyMember(tenantId: number, groupPolicyId: number, memberId: number): Promise<void> {
+        await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyIdAndMemberId(
+            tenantId,
+            groupPolicyId,
+            memberId,
+        );
     }
 }

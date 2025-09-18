@@ -19,7 +19,7 @@ export class DeleteRemoteVncCommandHandler implements ICommandHandler<DeleteRemo
         );
 
         try {
-            await this.remoteVncRepositoryService.deleteById(command.id);
+            await this.remoteVncRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new RemoteVncDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

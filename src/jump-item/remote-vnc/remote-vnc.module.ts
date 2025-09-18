@@ -1,8 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../../app-config/app-config.module';
+import { BeyondtrustInstance } from '../../beyondtrust-instance/models';
+import { RetrieveBeyondtrustInstancesQuery } from '../../beyondtrust-instance/queries';
+import { ErrorProcessorUtility, PaginationUtility, UuidUtility } from '../../shared/utilities';
 import { CommandHandlers } from './commands/handlers';
 import { RemoteVncController } from './controllers/remote-vnc.controller';
+import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { RemoteVncEntity } from './repositories/entities';
 import { RemoteVncRepositoryService } from './repositories/services/remote-vnc-repository.service';
@@ -10,6 +15,40 @@ import { RemoteVncRepositoryService } from './repositories/services/remote-vnc-r
 @Module({
     imports: [TypeOrmModule.forFeature([RemoteVncEntity]), AppConfigModule],
     controllers: [RemoteVncController],
-    providers: [...QueryHandlers, ...CommandHandlers, RemoteVncRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, RemoteVncRepositoryService],
 })
-export class RemoteVncModule {}
+export class RemoteVncModule implements OnApplicationBootstrap {
+    private static readonly MAX_PAGE_SIZE = 50;
+
+    constructor(
+        private readonly queryBus: QueryBus,
+        private readonly remoteVncRepositoryService: RemoteVncRepositoryService,
+    ) {}
+
+    public async onApplicationBootstrap() {
+        try {
+            const btInstances = await PaginationUtility.queryUntilLastPage((pageNumber) => {
+                return this.queryBus.execute<RetrieveBeyondtrustInstancesQuery, BeyondtrustInstance[]>(
+                    new RetrieveBeyondtrustInstancesQuery(
+                        UuidUtility.generate(),
+                        RemoteVncModule.MAX_PAGE_SIZE,
+                        pageNumber,
+                    ),
+                );
+            });
+
+            for (const btInstance of btInstances) {
+                try {
+                    const { tableName } = await this.remoteVncRepositoryService.createAndConnectTable(btInstance.id);
+                    console.log(`[DB_TABLE][BT_ID][CONNECTION]: ${tableName} | ${btInstance.id} | SUCCESS`);
+                } catch (error) {
+                    console.error(
+                        `[DB_TABLE][BT_ID][CONNECTION]: (Remote VNC) | ${btInstance.id} | FAILED (${ErrorProcessorUtility.stringify(error)})`,
+                    );
+                }
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve BeyondTrust instances: ${ErrorProcessorUtility.stringify(error)}`);
+        }
+    }
+}

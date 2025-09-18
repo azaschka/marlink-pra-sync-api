@@ -35,6 +35,7 @@ export class RetrieveShellJumpsQueryHandler implements IQueryHandler<RetrieveShe
         }
 
         const shellJumps = await this.shellJumpRepositoryService.findBy(
+            query.tenantId,
             shellJumpsFindByQuery,
             query.pageNumber,
             query.pageSize,

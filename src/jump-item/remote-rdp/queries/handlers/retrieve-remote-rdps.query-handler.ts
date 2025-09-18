@@ -39,6 +39,7 @@ export class RetrieveRemoteRdpsQueryHandler implements IQueryHandler<RetrieveRem
         }
 
         const remoteRdps = await this.remoteRdpRepositoryService.findBy(
+            query.tenantId,
             remoteRdpsFindByQuery,
             query.pageNumber,
             query.pageSize,

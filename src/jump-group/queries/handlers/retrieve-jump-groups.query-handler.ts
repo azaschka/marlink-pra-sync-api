@@ -19,6 +19,7 @@ export class RetrieveJumpGroupsQueryHandler implements IQueryHandler<RetrieveJum
         }
 
         const jumpGroups = await this.jumpGroupRepositoryService.findBy(
+            query.tenantId,
             jumpGroupsFindByQuery,
             query.pageNumber,
             query.pageSize,

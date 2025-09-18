@@ -24,10 +24,10 @@ describe('DeleteJumpPolicyCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const jumpPolicyRepositoryServiceDeleteByIdMethod = jest.spyOn(jumpPolicyRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteJumpPolicyCommand('transaction-1', 123));
+        await handler.execute(new DeleteJumpPolicyCommand('transaction-1', 100, 123));
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 123));
-        expect(jumpPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(jumpPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<JumpPolicyDeletedEvent>{
                 transactionId: 'transaction-1',
@@ -45,7 +45,9 @@ describe('DeleteJumpPolicyCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const jumpPolicyRepositoryServiceDeleteByIdMethod = jest.spyOn(jumpPolicyRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteJumpPolicyCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteJumpPolicyCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 123));
         expect(jumpPolicyRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
@@ -63,10 +65,12 @@ describe('DeleteJumpPolicyCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteJumpPolicyCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteJumpPolicyCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 123));
-        expect(jumpPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(jumpPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({

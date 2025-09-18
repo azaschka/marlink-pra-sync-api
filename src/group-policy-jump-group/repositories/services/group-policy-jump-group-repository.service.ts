@@ -1,37 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
-import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { GroupPolicyJumpGroupEntity } from '../entities';
+import { GroupPolicyJumpGroupSchemaFactory } from '../factories';
 
 @Injectable()
-export class GroupPolicyJumpGroupRepositoryService extends BaseRepositoryService<GroupPolicyJumpGroupEntity> {
+export class GroupPolicyJumpGroupRepositoryService extends BaseTenantRepositoryService<GroupPolicyJumpGroupEntity> {
     constructor(dataSource: DataSource) {
-        super(dataSource, GroupPolicyJumpGroupEntity);
+        super(dataSource, new GroupPolicyJumpGroupSchemaFactory());
     }
 
     public async createOrUpdateByGroupPolicyIdAndJumpGroupId(
+        tenantId: number,
         entities: Partial<GroupPolicyJumpGroupEntity>[],
     ): Promise<void> {
         if (entities.length === 0) {
             return;
         }
 
-        await super.createOrUpdate(entities, ['groupPolicyId', 'jumpGroupId']);
+        await super.createOrUpdate(tenantId, entities, ['groupPolicyId', 'jumpGroupId']);
     }
 
-    public async deleteByGroupPolicyId(groupPolicyId: number): Promise<void> {
-        await super.deleteBy({ groupPolicyId: groupPolicyId });
+    public async deleteByGroupPolicyId(tenantId: number, groupPolicyId: number): Promise<void> {
+        await super.deleteBy(tenantId, { groupPolicyId: groupPolicyId });
     }
 
-    public async deleteByGroupPolicyIdAndJumpGroupId(groupPolicyId: number, jumpGroupId: number): Promise<void> {
-        await super.deleteBy({ groupPolicyId: groupPolicyId, jumpGroupId: jumpGroupId });
+    public async deleteByGroupPolicyIdAndJumpGroupId(
+        tenantId: number,
+        groupPolicyId: number,
+        jumpGroupId: number,
+    ): Promise<void> {
+        await super.deleteBy(tenantId, { groupPolicyId: groupPolicyId, jumpGroupId: jumpGroupId });
     }
 
-    public async deleteByGroupPolicyIds(groupPolicyIds: number[]): Promise<void> {
+    public async deleteByGroupPolicyIds(tenantId: number, groupPolicyIds: number[]): Promise<void> {
         if (groupPolicyIds.length === 0) {
             return;
         }
 
-        await super.deleteBy({ groupPolicyId: In(groupPolicyIds) });
+        await super.deleteBy(tenantId, { groupPolicyId: In(groupPolicyIds) });
     }
 }

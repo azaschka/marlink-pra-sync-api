@@ -27,7 +27,7 @@ export class CreateJumpointCommandHandler implements ICommandHandler<CreateJumpo
         const jumpointEntity = this.createJumpointEntity(btJumpoint);
 
         try {
-            const createdJumpoint = await this.jumpointRepositoryService.create(jumpointEntity);
+            const createdJumpoint = await this.jumpointRepositoryService.create(command.tenantId, jumpointEntity);
 
             this.eventBus.publish(
                 new JumpointCreatedEvent(command.transactionId, {

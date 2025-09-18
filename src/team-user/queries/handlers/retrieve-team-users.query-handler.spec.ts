@@ -36,10 +36,10 @@ describe('RetrieveTeamUsersQueryHandler', () => {
                 .spyOn(teamUserRepositoryService, 'findBy')
                 .mockResolvedValue(expectedTeamUserEntities);
 
-            const result = await handler.execute(new RetrieveTeamUsersQuery('transaction-2', 10, 1, 123));
+            const result = await handler.execute(new RetrieveTeamUsersQuery('transaction-2', 123, 10, 1, 123));
 
             expect(result).toBe(expectedTeamUserEntities);
-            expect(teamUserRepositoryServiceFindByMethod).toHaveBeenCalledWith({ teamId: 123 }, 1, 10);
+            expect(teamUserRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, { teamId: 123 }, 1, 10);
         });
     });
 });

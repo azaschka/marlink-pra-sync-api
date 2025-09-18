@@ -100,6 +100,7 @@ describe('CreateUserCommandHandler', () => {
         it.each([
             <CreateUserCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 publicDisplayName: 'display-name-1',
                 username: 'user-1',
                 password: 'password-1',
@@ -113,6 +114,7 @@ describe('CreateUserCommandHandler', () => {
             },
             <CreateUserCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 publicDisplayName: 'display-name-2',
                 username: 'user-2',
             },
@@ -202,7 +204,7 @@ describe('CreateUserCommandHandler', () => {
                     TestHelper.mockedUserCreatedDtoOutput.permVault,
                     TestHelper.mockedUserCreatedDtoOutput.permEndpointAutomation,
                 );
-                expect(userRepositoryServiceCreateMethod).toHaveBeenCalledWith(userEntityToBeCreated);
+                expect(userRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, userEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<UserCreatedEvent>{
                         transactionId: command.transactionId,

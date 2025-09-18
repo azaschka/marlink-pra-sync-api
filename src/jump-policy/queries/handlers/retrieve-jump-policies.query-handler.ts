@@ -15,6 +15,7 @@ export class RetrieveJumpPoliciesQueryHandler implements IQueryHandler<RetrieveJ
         }
 
         const jumpPolicies = await this.jumpPolicyRepositoryService.findBy(
+            query.tenantId,
             jumpPoliciesFindByQuery,
             query.pageNumber,
             query.pageSize,

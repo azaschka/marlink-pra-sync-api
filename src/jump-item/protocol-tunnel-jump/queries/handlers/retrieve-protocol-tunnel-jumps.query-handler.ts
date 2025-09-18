@@ -35,6 +35,7 @@ export class RetrieveProtocolTunnelJumpsQueryHandler implements IQueryHandler<Re
         }
 
         const protocolTunnelJumps = await this.protocolTunnelJumpRepositoryService.findBy(
+            query.tenantId,
             protocolTunnelJumpsFindByQuery,
             query.pageNumber,
             query.pageSize,

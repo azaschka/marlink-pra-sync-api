@@ -21,7 +21,7 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
         const teamEntity = this.createTeamEntity(btTeam);
 
         try {
-            const createdTeam = await this.teamRepositoryService.create(teamEntity);
+            const createdTeam = await this.teamRepositoryService.create(command.tenantId, teamEntity);
 
             this.eventBus.publish(
                 new TeamCreatedEvent(command.transactionId, {

@@ -26,7 +26,11 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         const userGroupPolicyEntities = this.createUserGroupPolicyEntities(command.userId, btUserGroupPolicies);
 
         try {
-            const userGroupPolicies = await this.replaceUserGroupPolicies(command.userId, userGroupPolicyEntities);
+            const userGroupPolicies = await this.replaceUserGroupPolicies(
+                command.tenantId,
+                command.userId,
+                userGroupPolicyEntities,
+            );
 
             this.eventBus.publish(
                 new UserGroupPoliciesModifiedEvent(command.transactionId, {
@@ -72,18 +76,23 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
     }
 
     private async replaceUserGroupPolicies(
+        tenantId: number,
         userId: number,
         userGroupPolicyEntities: UserGroupPolicyEntity[],
     ): Promise<UserGroupPolicy[]> {
         // Delete all existing user group policies
-        await this.userGroupPolicyRepositoryService.deleteByUserId(userId);
+        await this.userGroupPolicyRepositoryService.deleteByUserId(tenantId, userId);
 
         // Recreate the user group policies
-        await this.userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId(userGroupPolicyEntities);
+        await this.userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId(
+            tenantId,
+            userGroupPolicyEntities,
+        );
 
         return userGroupPolicyEntities.map((entity) => ({
             userId: userId,
             groupPolicyId: entity.groupPolicyId,
+            lastSyncDate: entity.lastSyncDate,
         }));
     }
 }

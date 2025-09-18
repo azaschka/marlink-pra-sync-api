@@ -77,6 +77,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
         it.each([
             <CreateJumpClientInstallerCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 jumpGroupId: 1,
                 name: 'jump-client-1',
                 jumpGroupType: JumpClientGroupType.Personal,
@@ -98,6 +99,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
             },
             <CreateJumpClientInstallerCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 jumpGroupId: 2,
                 name: 'jump-client-2',
             },
@@ -170,6 +172,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
                     TestHelper.mockedJumpClientInstallerCreatedDtoOutput.jumpointProxy,
                 );
                 expect(jumpClientInstallerRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     jumpClientInstallerEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(

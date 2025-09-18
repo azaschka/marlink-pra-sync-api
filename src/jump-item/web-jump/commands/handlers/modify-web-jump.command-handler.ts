@@ -27,7 +27,7 @@ export class ModifyWebJumpCommandHandler implements ICommandHandler<ModifyWebJum
         const webJumpEntity = this.createWebJumpEntity(btWebJump);
 
         try {
-            const updatedWebJump = await this.updateWebJump(webJumpEntity);
+            const updatedWebJump = await this.updateWebJump(command.tenantId, webJumpEntity);
 
             this.eventBus.publish(
                 new WebJumpModifiedEvent(command.transactionId, {
@@ -93,10 +93,10 @@ export class ModifyWebJumpCommandHandler implements ICommandHandler<ModifyWebJum
         );
     }
 
-    private async updateWebJump(webJumpEntity: WebJumpEntity) {
-        await this.webJumpRepositoryService.createOrUpdateById(webJumpEntity);
+    private async updateWebJump(tenantId: number, webJumpEntity: WebJumpEntity) {
+        await this.webJumpRepositoryService.createOrUpdateById(tenantId, webJumpEntity);
 
-        const createdOrUpdatedWebJump = await this.webJumpRepositoryService.findOneById(webJumpEntity.id);
+        const createdOrUpdatedWebJump = await this.webJumpRepositoryService.findOneById(tenantId, webJumpEntity.id);
 
         if (!createdOrUpdatedWebJump) {
             throw new Error('Web jump has been created or updated but could not be retrieved.');

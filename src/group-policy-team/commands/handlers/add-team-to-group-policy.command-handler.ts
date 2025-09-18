@@ -21,7 +21,7 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
         const groupPolicyTeamEntity = this.createGroupPolicyTeamEntity(command.id, btGroupPolicyTeam);
 
         try {
-            const groupPolicyTeam = await this.addGroupPolicyTeam(groupPolicyTeamEntity);
+            const groupPolicyTeam = await this.addGroupPolicyTeam(command.tenantId, groupPolicyTeamEntity);
 
             this.eventBus.publish(
                 new GroupPolicyTeamAddedEvent(command.transactionId, {
@@ -52,13 +52,17 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
         return GroupPolicyTeamEntity.create(groupPolicyId, btGroupPolicyTeam.teamId, btGroupPolicyTeam.role);
     }
 
-    private async addGroupPolicyTeam(groupPolicyTeamEntity: GroupPolicyTeamEntity): Promise<GroupPolicyTeam> {
-        await this.groupPolicyTeamRepositoryService.create(groupPolicyTeamEntity);
+    private async addGroupPolicyTeam(
+        tenantId: number,
+        groupPolicyTeamEntity: GroupPolicyTeamEntity,
+    ): Promise<GroupPolicyTeam> {
+        await this.groupPolicyTeamRepositoryService.create(tenantId, groupPolicyTeamEntity);
 
         return {
             groupPolicyId: groupPolicyTeamEntity.groupPolicyId,
             teamId: groupPolicyTeamEntity.teamId,
             roleType: groupPolicyTeamEntity.roleType,
+            lastSyncDate: groupPolicyTeamEntity.lastSyncDate,
         };
     }
 }

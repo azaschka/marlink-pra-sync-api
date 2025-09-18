@@ -19,7 +19,7 @@ export class DeleteRemoteRdpCommandHandler implements ICommandHandler<DeleteRemo
         );
 
         try {
-            await this.remoteRdpRepositoryService.deleteById(command.id);
+            await this.remoteRdpRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new RemoteRdpDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

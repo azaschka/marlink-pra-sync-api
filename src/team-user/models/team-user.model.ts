@@ -4,4 +4,5 @@ export interface TeamUser {
     teamId: number;
     userId: number;
     roleType: UserTeamRoleType;
+    lastSyncDate: Date;
 }

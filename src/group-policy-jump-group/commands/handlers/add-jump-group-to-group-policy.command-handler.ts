@@ -21,7 +21,10 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
         const groupPolicyJumpGroupEntity = this.createGroupPolicyJumpGroupEntity(command.id, btGroupPolicyJumpGroup);
 
         try {
-            const groupPolicyJumpGroup = await this.addGroupPolicyJumpGroup(groupPolicyJumpGroupEntity);
+            const groupPolicyJumpGroup = await this.addGroupPolicyJumpGroup(
+                command.tenantId,
+                groupPolicyJumpGroupEntity,
+            );
 
             this.eventBus.publish(
                 new GroupPolicyJumpGroupAddedEvent(command.transactionId, {
@@ -67,9 +70,10 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
     }
 
     private async addGroupPolicyJumpGroup(
+        tenantId: number,
         groupPolicyJumpGroupEntity: GroupPolicyJumpGroupEntity,
     ): Promise<GroupPolicyJumpGroup> {
-        await this.groupPolicyJumpGroupRepositoryService.create(groupPolicyJumpGroupEntity);
+        await this.groupPolicyJumpGroupRepositoryService.create(tenantId, groupPolicyJumpGroupEntity);
 
         return {
             groupPolicyId: groupPolicyJumpGroupEntity.groupPolicyId,

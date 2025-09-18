@@ -36,12 +36,14 @@ describe('CreateTeamCommandHandler', () => {
         it.each([
             <CreateTeamCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'team-1',
                 codeName: 'team-code-1',
                 comments: 'team-comments-1',
             },
             <CreateTeamCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'team-2',
             },
         ])(
@@ -72,7 +74,7 @@ describe('CreateTeamCommandHandler', () => {
                     TestHelper.mockedTeamCreatedDtoOutput.codeName,
                     TestHelper.mockedTeamCreatedDtoOutput.comments,
                 );
-                expect(teamRepositoryServiceCreateMethod).toHaveBeenCalledWith(teamEntityToBeCreated);
+                expect(teamRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, teamEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<TeamCreatedEvent>{
                         transactionId: command.transactionId,

@@ -35,6 +35,7 @@ export class RetrieveRemoteVncsQueryHandler implements IQueryHandler<RetrieveRem
         }
 
         const remoteVncs = await this.remoteVncRepositoryService.findBy(
+            query.tenantId,
             remoteVncsFindByQuery,
             query.pageNumber,
             query.pageSize,

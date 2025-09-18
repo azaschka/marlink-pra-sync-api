@@ -12,6 +12,7 @@ export class RetrieveGroupPolicyMembersQueryHandler implements IQueryHandler<Ret
         groupPolicyMemberFindByQuery.groupPolicyId = query.groupPolicyId;
 
         const groupPolicyMembers = await this.groupPolicyMemberRepositoryService.findBy(
+            query.tenantId,
             groupPolicyMemberFindByQuery,
             query.pageNumber,
             query.pageSize,

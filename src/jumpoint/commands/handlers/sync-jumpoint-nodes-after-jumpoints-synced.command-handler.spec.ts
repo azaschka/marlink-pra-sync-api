@@ -51,7 +51,7 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
 
             // Act
             await handler.execute(
-                new SyncJumpointNodesAfterJumpointsSyncedCommand('transaction-1', [1, 2], [3, 4], [5, 6]),
+                new SyncJumpointNodesAfterJumpointsSyncedCommand('transaction-1', 123, [1, 2], [3, 4], [5, 6]),
             );
 
             // Assert
@@ -120,22 +120,26 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
                 undefined,
             );
             expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenCalledTimes(4);
-            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(1, 1);
-            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(2, 2);
-            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(3, 3);
-            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(4, 4);
+            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(1, 123, 1);
+            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(2, 123, 2);
+            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(3, 123, 3);
+            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdMethod).toHaveBeenNthCalledWith(4, 123, 4);
             expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenCalledTimes(4);
-            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(1, [
+            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(1, 123, [
                 { jumpointId: 1, id: 1 },
                 { jumpointId: 2, id: 1 },
                 { jumpointId: 3, id: 1 },
             ]);
-            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(2, [
+            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(2, 123, [
                 { jumpointId: 4, id: 2 },
                 { jumpointId: 5, id: 2 },
             ]);
-            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(3, []);
-            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(4, [
+            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(
+                3,
+                123,
+                [],
+            );
+            expect(jumpointNodeRepositoryServiceCreateOrUpdateByIdAndJumpointIdMethod).toHaveBeenNthCalledWith(4, 123, [
                 { jumpointId: 6, id: 4 },
             ]);
             expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
@@ -199,7 +203,7 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
 
             // deletedJumpointIds: [5, 6]
             expect(jumpointNodeRepositoryServiceDeleteByJumpointIdsMethod).toHaveBeenCalledTimes(1);
-            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdsMethod).toHaveBeenCalledWith([5, 6]);
+            expect(jumpointNodeRepositoryServiceDeleteByJumpointIdsMethod).toHaveBeenCalledWith(123, [5, 6]);
         });
 
         it('should publish an event and not throw error when failure occurs', async () => {
@@ -211,7 +215,7 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
 
             // Act
             await handler.execute(
-                new SyncJumpointNodesAfterJumpointsSyncedCommand('transaction-1', [1, 2], [3, 4, 5], [5, 6, 7, 8]),
+                new SyncJumpointNodesAfterJumpointsSyncedCommand('transaction-1', 123, [1, 2], [3, 4, 5], [5, 6, 7, 8]),
             );
 
             // Assert

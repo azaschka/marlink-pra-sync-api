@@ -22,7 +22,7 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
         const teamUserEntity = this.createTeamUserEntity(command.id, btTeamUser);
 
         try {
-            const teamUser = await this.addTeamUser(teamUserEntity);
+            const teamUser = await this.addTeamUser(command.tenantId, teamUserEntity);
 
             this.eventBus.publish(
                 new TeamUserAddedEvent(command.transactionId, {
@@ -53,13 +53,14 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
         return TeamUserEntity.create(teamId, btTeamUser.userId, mapFromBTUserTeamRoleType(btTeamUser.role));
     }
 
-    private async addTeamUser(teamUserEntity: TeamUserEntity): Promise<TeamUser> {
-        await this.teamUserRepositoryService.create(teamUserEntity);
+    private async addTeamUser(tenantId: number, teamUserEntity: TeamUserEntity): Promise<TeamUser> {
+        await this.teamUserRepositoryService.create(tenantId, teamUserEntity);
 
         return {
             teamId: teamUserEntity.teamId,
             userId: teamUserEntity.userId,
             roleType: teamUserEntity.roleType,
+            lastSyncDate: teamUserEntity.lastSyncDate,
         };
     }
 }

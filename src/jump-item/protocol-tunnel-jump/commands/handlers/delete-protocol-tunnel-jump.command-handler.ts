@@ -19,7 +19,7 @@ export class DeleteProtocolTunnelJumpCommandHandler implements ICommandHandler<D
         );
 
         try {
-            await this.protocolTunnelJumpRepositoryService.deleteById(command.id);
+            await this.protocolTunnelJumpRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new ProtocolTunnelJumpDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

@@ -21,7 +21,7 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
         const groupPolicyJumpointEntity = this.createGroupPolicyJumpointEntity(command.id, btGroupPolicyJumpoint);
 
         try {
-            const groupPolicyJumpoint = await this.addGroupPolicyJumpoint(groupPolicyJumpointEntity);
+            const groupPolicyJumpoint = await this.addGroupPolicyJumpoint(command.tenantId, groupPolicyJumpointEntity);
 
             this.eventBus.publish(
                 new GroupPolicyJumpointAddedEvent(command.transactionId, {
@@ -56,13 +56,15 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
     }
 
     private async addGroupPolicyJumpoint(
+        tenantId: number,
         groupPolicyJumpointEntity: GroupPolicyJumpointEntity,
     ): Promise<GroupPolicyJumpoint> {
-        await this.groupPolicyJumpointRepositoryService.create(groupPolicyJumpointEntity);
+        await this.groupPolicyJumpointRepositoryService.create(tenantId, groupPolicyJumpointEntity);
 
         return {
             groupPolicyId: groupPolicyJumpointEntity.groupPolicyId,
             jumpointId: groupPolicyJumpointEntity.jumpointId,
+            lastSyncDate: groupPolicyJumpointEntity.lastSyncDate,
         };
     }
 }

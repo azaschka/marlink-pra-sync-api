@@ -36,6 +36,7 @@ describe('ModifyJumpGroupCommandHandler', () => {
         it.each([
             <ModifyJumpGroupCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 name: 'jump-group-1',
                 codeName: 'jump-group-code-1',
@@ -43,6 +44,7 @@ describe('ModifyJumpGroupCommandHandler', () => {
             },
             <ModifyJumpGroupCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 2,
                 name: 'jump-group-2',
             },
@@ -86,9 +88,13 @@ describe('ModifyJumpGroupCommandHandler', () => {
                     TestHelper.mockedJumpGroupModifiedDtoOutput.comments,
                 );
                 expect(jumpGroupRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    123,
                     jumpGroupEntityToBeUpdated,
                 );
-                expect(jumpGroupRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(jumpGroupEntityToBeUpdated.id);
+                expect(jumpGroupRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(
+                    123,
+                    jumpGroupEntityToBeUpdated.id,
+                );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpGroupModifiedEvent>{
                         transactionId: command.transactionId,

@@ -26,7 +26,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
         const userEntity = this.createUserEntity(btUser);
 
         try {
-            const createdUser = await this.userRepositoryService.create(userEntity);
+            const createdUser = await this.userRepositoryService.create(command.tenantId, userEntity);
 
             this.eventBus.publish(
                 new UserCreatedEvent(command.transactionId, {

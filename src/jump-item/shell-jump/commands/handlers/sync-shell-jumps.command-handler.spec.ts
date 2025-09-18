@@ -63,7 +63,7 @@ describe('SyncShellJumpsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncShellJumpsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncShellJumpsCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<ShellJumpsSyncFailedEvent>{
@@ -211,13 +211,13 @@ describe('SyncShellJumpsCommandHandler', () => {
                 const shellJumpRepositoryServiceDeleteByIds = jest.spyOn(shellJumpRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncShellJumpsCommand('transaction-1'));
+                const result = await handler.execute(new SyncShellJumpsCommand('transaction-1', 123));
 
                 expect(shellJumpRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedShellJumpRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedShellJumpRepositoryServiceFindByIdsCall) {
-                    expect(shellJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(shellJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(shellJumpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
@@ -226,6 +226,7 @@ describe('SyncShellJumpsCommandHandler', () => {
                 for (const item of expectedShellJumpRepositoryServiceCreateOrUpdateByIdCall) {
                     expect(shellJumpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -234,7 +235,7 @@ describe('SyncShellJumpsCommandHandler', () => {
                     expectedShellJumpRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedShellJumpRepositoryServiceDeleteByIdsCall) {
-                    expect(shellJumpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(shellJumpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);

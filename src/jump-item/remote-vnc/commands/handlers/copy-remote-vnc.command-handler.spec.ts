@@ -79,6 +79,7 @@ describe('CopyRemoteVncCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyRemoteVncCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -102,7 +103,7 @@ describe('CopyRemoteVncCommandHandler', () => {
                 TestHelper.mockedRemoteVncRetrievedDtoOutput.jumpPolicyId,
                 TestHelper.mockedRemoteVncRetrievedDtoOutput.sessionPolicyId,
             );
-            expect(remoteVncRepositoryServiceCreateMethod).toHaveBeenCalledWith(remoteVncEntityToBeCreated);
+            expect(remoteVncRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, remoteVncEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<RemoteVncCopiedEvent>{
                     transactionId: 'transaction-1',

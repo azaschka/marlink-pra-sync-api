@@ -22,7 +22,7 @@ export class ModifyRemoteVncCommandHandler implements ICommandHandler<ModifyRemo
         const remoteVncEntity = this.createRemoteVncEntity(btRemoteVnc);
 
         try {
-            const updatedRemoteVnc = await this.updateRemoteVnc(remoteVncEntity);
+            const updatedRemoteVnc = await this.updateRemoteVnc(command.tenantId, remoteVncEntity);
 
             this.eventBus.publish(
                 new RemoteVncModifiedEvent(command.transactionId, {
@@ -78,10 +78,13 @@ export class ModifyRemoteVncCommandHandler implements ICommandHandler<ModifyRemo
         );
     }
 
-    private async updateRemoteVnc(remoteVncEntity: RemoteVncEntity) {
-        await this.remoteVncRepositoryService.createOrUpdateById(remoteVncEntity);
+    private async updateRemoteVnc(tenantId: number, remoteVncEntity: RemoteVncEntity) {
+        await this.remoteVncRepositoryService.createOrUpdateById(tenantId, remoteVncEntity);
 
-        const createdOrUpdatedRemoteVnc = await this.remoteVncRepositoryService.findOneById(remoteVncEntity.id);
+        const createdOrUpdatedRemoteVnc = await this.remoteVncRepositoryService.findOneById(
+            tenantId,
+            remoteVncEntity.id,
+        );
 
         if (!createdOrUpdatedRemoteVnc) {
             throw new Error('Remote vnc has been created or updated but could not be retrieved.');

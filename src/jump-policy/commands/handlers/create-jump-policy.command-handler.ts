@@ -31,7 +31,7 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
         const jumpPolicyEntity = this.createJumpPolicyEntity(btJumpPolicy);
 
         try {
-            const createdJumpPolicy = await this.jumpPolicyRepositoryService.create(jumpPolicyEntity);
+            const createdJumpPolicy = await this.jumpPolicyRepositoryService.create(command.tenantId, jumpPolicyEntity);
 
             this.eventBus.publish(
                 new JumpPolicyCreatedEvent(command.transactionId, {

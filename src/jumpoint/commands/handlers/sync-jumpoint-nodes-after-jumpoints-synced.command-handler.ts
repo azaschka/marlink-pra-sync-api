@@ -23,7 +23,11 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
             try {
                 const btJumpointNodes = await this.retrieveAllBTJumpointNodes(command.transactionId, jumpointId);
                 const jumpointNodeEntities = this.createJumpointNodeEntities(jumpointId, btJumpointNodes);
-                const jumpointNodes = await this.replaceJumpointNodes(jumpointId, jumpointNodeEntities);
+                const jumpointNodes = await this.replaceJumpointNodes(
+                    command.tenantId,
+                    jumpointId,
+                    jumpointNodeEntities,
+                );
 
                 if (jumpointNodes.length === 0) {
                     continue;
@@ -44,7 +48,7 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
         }
 
         try {
-            await this.jumpointNodeRepositoryService.deleteByJumpointIds(command.deletedJumpointIds);
+            await this.jumpointNodeRepositoryService.deleteByJumpointIds(command.tenantId, command.deletedJumpointIds);
         } catch (error) {
             this.eventBus.publish(
                 new JumpointNodesSyncFailedEvent(command.transactionId, {
@@ -75,14 +79,15 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
     }
 
     private async replaceJumpointNodes(
+        tenantId: number,
         jumpointId: number,
         jumpointNodeEntities: JumpointNodeEntity[],
     ): Promise<JumpointNode[]> {
         // Delete all existing jumpoint nodes
-        await this.jumpointNodeRepositoryService.deleteByJumpointId(jumpointId);
+        await this.jumpointNodeRepositoryService.deleteByJumpointId(tenantId, jumpointId);
 
         // Recreate the jumpoint nodes
-        await this.jumpointNodeRepositoryService.createOrUpdateByIdAndJumpointId(jumpointNodeEntities);
+        await this.jumpointNodeRepositoryService.createOrUpdateByIdAndJumpointId(tenantId, jumpointNodeEntities);
 
         return jumpointNodeEntities.map((entity) => {
             return {

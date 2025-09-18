@@ -19,7 +19,7 @@ export class DeleteJumpClientCommandHandler implements ICommandHandler<DeleteJum
         );
 
         try {
-            await this.jumpClientRepositoryService.deleteById(command.id);
+            await this.jumpClientRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new JumpClientDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

@@ -51,7 +51,13 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
 
             // Act
             await handler.execute(
-                new SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommand('transaction-1', [1, 2], [3, 4], [5, 6]),
+                new SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommand(
+                    'transaction-1',
+                    123,
+                    [1, 2],
+                    [3, 4],
+                    [5, 6],
+                ),
             );
 
             // Assert
@@ -66,32 +72,32 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
             expect(groupPolicyJumpGroupEntityCreateMethod).toHaveBeenNthCalledWith(5, 2, 5, undefined, undefined);
             expect(groupPolicyJumpGroupEntityCreateMethod).toHaveBeenNthCalledWith(6, 4, 6, undefined, undefined);
             expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenCalledTimes(4);
-            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 1);
-            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 2);
-            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 3);
-            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 4);
+            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 123, 1);
+            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 123, 2);
+            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 123, 3);
+            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 123, 4);
             expect(
                 groupPolicyJumpGroupRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpGroupIdMethod,
             ).toHaveBeenCalledTimes(4);
             expect(
                 groupPolicyJumpGroupRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpGroupIdMethod,
-            ).toHaveBeenNthCalledWith(1, [
+            ).toHaveBeenNthCalledWith(1, 123, [
                 { groupPolicyId: 1, jumpGroupId: 1 },
                 { groupPolicyId: 1, jumpGroupId: 2 },
                 { groupPolicyId: 1, jumpGroupId: 3 },
             ]);
             expect(
                 groupPolicyJumpGroupRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpGroupIdMethod,
-            ).toHaveBeenNthCalledWith(2, [
+            ).toHaveBeenNthCalledWith(2, 123, [
                 { groupPolicyId: 2, jumpGroupId: 4 },
                 { groupPolicyId: 2, jumpGroupId: 5 },
             ]);
             expect(
                 groupPolicyJumpGroupRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpGroupIdMethod,
-            ).toHaveBeenNthCalledWith(3, []);
+            ).toHaveBeenNthCalledWith(3, 123, []);
             expect(
                 groupPolicyJumpGroupRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpGroupIdMethod,
-            ).toHaveBeenNthCalledWith(4, [{ groupPolicyId: 4, jumpGroupId: 6 }]);
+            ).toHaveBeenNthCalledWith(4, 123, [{ groupPolicyId: 4, jumpGroupId: 6 }]);
             expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
@@ -153,7 +159,7 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
 
             // deletedGroupPolicyIds: [5, 6]
             expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledTimes(1);
-            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith([5, 6]);
+            expect(groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith(123, [5, 6]);
         });
 
         it('should publish an event and not throw error when failure occurs', async () => {
@@ -169,6 +175,7 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
             await handler.execute(
                 new SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommand(
                     'transaction-1',
+                    123,
                     [1, 2],
                     [3, 4, 5],
                     [5, 6, 7, 8],

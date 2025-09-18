@@ -27,11 +27,13 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
         it.each([
             <RemoveJumpointFromGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpointId: 2,
             },
             <RemoveJumpointFromGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 jumpointId: 4,
             },
@@ -55,7 +57,7 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
                 );
                 expect(
                     groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdAndJumpointIdMethod,
-                ).toHaveBeenCalledWith(command.id, command.jumpointId);
+                ).toHaveBeenCalledWith(command.tenantId, command.id, command.jumpointId);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<GroupPolicyJumpointRemovedEvent>{
                         transactionId: command.transactionId,

@@ -26,13 +26,13 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
     ) {}
 
     public async execute(command: CreateRemoteRdpCommand): Promise<RemoteRdp> {
-        await this.validateRemoteRdpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+        await this.validateRemoteRdpDoesNotExist(command.tenantId, command.name, command.jumpGroupId, command.tag);
 
         const btRemoteRdp = await this.createBTRemoteRdp(command);
         const remoteRdpEntity = this.createRemoteRdpEntity(btRemoteRdp);
 
         try {
-            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(remoteRdpEntity);
+            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(command.tenantId, remoteRdpEntity);
 
             this.eventBus.publish(
                 new RemoteRdpCreatedEvent(command.transactionId, {
@@ -53,8 +53,8 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
         }
     }
 
-    private async validateRemoteRdpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
-        const existingRemoteRdp = await this.remoteRdpRepositoryService.findOneBy({
+    private async validateRemoteRdpDoesNotExist(tenantId: number, name: string, jumpGroupId: number, tag?: string) {
+        const existingRemoteRdp = await this.remoteRdpRepositoryService.findOneBy(tenantId, {
             name,
             jumpGroupId,
             tag,

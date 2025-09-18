@@ -31,8 +31,14 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
             const updatedUserIds: number[] = [];
             const deletedUserIds: number[] = [];
 
-            await this.syncBTToDbUsersPerPage(command.transactionId, 1, createdUserIds, updatedUserIds);
-            await this.syncDbToBTUsersPerPage(1, startSyncUtcDate, deletedUserIds);
+            await this.syncBTToDbUsersPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdUserIds,
+                updatedUserIds,
+            );
+            await this.syncDbToBTUsersPerPage(command.tenantId, 1, startSyncUtcDate, deletedUserIds);
 
             this.eventBus.publish(
                 new UsersSyncedEvent(command.transactionId, {
@@ -60,6 +66,7 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
 
     private async syncBTToDbUsersPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdUserIds: number[],
         updatedUserIds: number[],
@@ -81,6 +88,7 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
 
         // Retrieve existing users from the DB using BeyondTrust user IDs
         const dbUsers = await this.userRepositoryService.findByIds(
+            tenantId,
             btUsers.map((user) => user.id).filter((id) => id !== undefined),
         );
 
@@ -88,11 +96,11 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
         const usersToBeUpdated = this.findAllUsersToBeUpdatedOrUpdateLastSyncDate(btUsers, dbUsers);
 
         if (usersToBeCreated.length > 0) {
-            await this.userRepositoryService.createOrUpdateByIds(usersToBeCreated);
+            await this.userRepositoryService.createOrUpdateByIds(tenantId, usersToBeCreated);
         }
 
         if (usersToBeUpdated.length > 0) {
-            await this.userRepositoryService.createOrUpdateByIds(usersToBeUpdated);
+            await this.userRepositoryService.createOrUpdateByIds(tenantId, usersToBeUpdated);
         }
 
         // Collect created and updated user IDs
@@ -103,11 +111,17 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
             return;
         }
 
-        await this.syncBTToDbUsersPerPage(transactionId, pageNumber + 1, createdUserIds, updatedUserIds);
+        await this.syncBTToDbUsersPerPage(transactionId, tenantId, pageNumber + 1, createdUserIds, updatedUserIds);
     }
 
-    private async syncDbToBTUsersPerPage(pageNumber: number, dateBeforeSyncingBTUsers: Date, deletedUserIds: number[]) {
+    private async syncDbToBTUsersPerPage(
+        tenantId: number,
+        pageNumber: number,
+        dateBeforeSyncingBTUsers: Date,
+        deletedUserIds: number[],
+    ) {
         const dbUsers = await this.userRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTUsers,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -115,7 +129,7 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
         const userIds = dbUsers.map((dbUser) => dbUser.id);
 
         if (userIds.length > 0) {
-            await this.userRepositoryService.deleteByIds(userIds);
+            await this.userRepositoryService.deleteByIds(tenantId, userIds);
         }
 
         // Collect deleted user IDs
@@ -125,7 +139,7 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
             return;
         }
 
-        await this.syncDbToBTUsersPerPage(pageNumber + 1, dateBeforeSyncingBTUsers, deletedUserIds);
+        await this.syncDbToBTUsersPerPage(tenantId, pageNumber + 1, dateBeforeSyncingBTUsers, deletedUserIds);
     }
 
     private findAllUsersToBeCreated(btUsers: UserRetrievedDtoOutput[], dbUsers: UserEntity[]) {

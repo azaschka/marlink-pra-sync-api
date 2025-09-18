@@ -70,6 +70,7 @@ describe('ModifyJumpointCommandHandler', () => {
         it.each([
             <ModifyJumpointCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 100,
                 id: 123,
                 name: 'Jumpoint 1',
                 codeName: 'code-1',
@@ -89,6 +90,7 @@ describe('ModifyJumpointCommandHandler', () => {
             },
             <ModifyJumpointCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 100,
                 id: 456,
                 name: 'Jumpoint 1',
                 codeName: 'code-2',
@@ -162,9 +164,10 @@ describe('ModifyJumpointCommandHandler', () => {
                     TestHelper.mockedJumpointModifiedDtoOutput.keyInfo,
                 );
                 expect(jumpointRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    100,
                     jumpointEntityToBeUpdated,
                 );
-                expect(jumpointRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(jumpointEntityToBeUpdated.id);
+                expect(jumpointRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(100, jumpointEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpointModifiedEvent>{
                         transactionId: command.transactionId,

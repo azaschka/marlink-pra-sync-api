@@ -70,6 +70,7 @@ describe('CreateJumpointCommandHandler', () => {
         it.each([
             <CreateJumpointCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'Jumpoint 1',
                 platformType: JumpointPlatformType.LinuxX86,
                 codeName: 'J1',
@@ -90,6 +91,7 @@ describe('CreateJumpointCommandHandler', () => {
             },
             <CreateJumpointCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'Jumpoint 1',
                 platformType: JumpointPlatformType.WindowsX86,
             },
@@ -159,7 +161,7 @@ describe('CreateJumpointCommandHandler', () => {
                     TestHelper.mockedJumpointCreatedDtoOutput.dockerDeployKey,
                     TestHelper.mockedJumpointCreatedDtoOutput.keyInfo,
                 );
-                expect(jumpointRepositoryServiceCreateMethod).toHaveBeenCalledWith(jumpointEntityToBeCreated);
+                expect(jumpointRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, jumpointEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpointCreatedEvent>{
                         transactionId: command.transactionId,

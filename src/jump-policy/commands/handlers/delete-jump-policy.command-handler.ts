@@ -19,7 +19,7 @@ export class DeleteJumpPolicyCommandHandler implements ICommandHandler<DeleteJum
         );
 
         try {
-            await this.jumpPolicyRepositoryService.deleteById(command.id);
+            await this.jumpPolicyRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new JumpPolicyDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

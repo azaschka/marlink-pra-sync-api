@@ -51,6 +51,7 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
         }
 
         const jumpClients = await this.jumpClientRepositoryService.findBy(
+            query.tenantId,
             jumpClientFindByQuery,
             query.pageNumber,
             query.pageSize,

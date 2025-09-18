@@ -12,6 +12,7 @@ export class RetrieveGroupPolicyJumpGroupsQueryHandler implements IQueryHandler<
         groupPolicyJumpGroupFindByQuery.groupPolicyId = query.groupPolicyId;
 
         const groupPolicyJumpGroups = await this.groupPolicyJumpGroupRepositoryService.findBy(
+            query.tenantId,
             groupPolicyJumpGroupFindByQuery,
             query.pageNumber,
             query.pageSize,

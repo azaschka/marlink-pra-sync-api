@@ -17,6 +17,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
 
     public async execute(query: RetrieveJumpointsQuery): Promise<Jumpoint[]> {
         if (query.hostname || query.publicIp || query.privateIp) {
+            // TODO: Use tenantId
             const btJumpoints = await this.queryBus.execute<BTRetrieveJumpointsQuery, JumpointRetrievedDtoOutput[]>(
                 new BTRetrieveJumpointsQuery(
                     query.transactionId,
@@ -48,6 +49,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
         }
 
         const jumpoints = await this.jumpointRepositoryService.findBy(
+            query.tenantId,
             jumpointFindByQuery,
             query.pageNumber,
             query.pageSize,

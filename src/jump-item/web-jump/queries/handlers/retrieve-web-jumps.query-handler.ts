@@ -35,6 +35,7 @@ export class RetrieveWebJumpsQueryHandler implements IQueryHandler<RetrieveWebJu
         }
 
         const webJumps = await this.webJumpRepositoryService.findBy(
+            query.tenantId,
             webJumpsFindByQuery,
             query.pageNumber,
             query.pageSize,

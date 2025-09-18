@@ -100,6 +100,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyRemoteRdpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -136,7 +137,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
                 TestHelper.mockedRemoteRdpRetrievedDtoOutput.targetSystem,
                 TestHelper.mockedRemoteRdpRetrievedDtoOutput.credentialType,
             );
-            expect(remoteRdpRepositoryServiceCreateMethod).toHaveBeenCalledWith(remoteRdpEntityToBeCreated);
+            expect(remoteRdpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, remoteRdpEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<RemoteRdpCopiedEvent>{
                     transactionId: 'transaction-1',

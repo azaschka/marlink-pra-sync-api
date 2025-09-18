@@ -19,7 +19,7 @@ export class DeleteWebJumpCommandHandler implements ICommandHandler<DeleteWebJum
         );
 
         try {
-            await this.webJumpRepositoryService.deleteById(command.id);
+            await this.webJumpRepositoryService.deleteById(command.tenantId, command.id);
 
             this.eventBus.publish(new WebJumpDeletedEvent(command.transactionId, { id: command.id }));
         } catch (error) {

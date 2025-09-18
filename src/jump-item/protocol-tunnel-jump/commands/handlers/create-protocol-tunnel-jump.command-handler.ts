@@ -19,14 +19,21 @@ export class CreateProtocolTunnelJumpCommandHandler implements ICommandHandler<C
     ) {}
 
     public async execute(command: CreateProtocolTunnelJumpCommand): Promise<ProtocolTunnelJump> {
-        await this.validateProtocolTunnelJumpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+        await this.validateProtocolTunnelJumpDoesNotExist(
+            command.tenantId,
+            command.name,
+            command.jumpGroupId,
+            command.tag,
+        );
 
         const btProtocolTunnelJump = await this.createBTProtocolTunnelJump(command);
         const protocolTunnelJumpEntity = this.createProtocolTunnelJumpEntity(btProtocolTunnelJump);
 
         try {
-            const createdProtocolTunnelJump =
-                await this.protocolTunnelJumpRepositoryService.create(protocolTunnelJumpEntity);
+            const createdProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.create(
+                command.tenantId,
+                protocolTunnelJumpEntity,
+            );
 
             this.eventBus.publish(
                 new ProtocolTunnelJumpCreatedEvent(command.transactionId, {
@@ -47,8 +54,13 @@ export class CreateProtocolTunnelJumpCommandHandler implements ICommandHandler<C
         }
     }
 
-    private async validateProtocolTunnelJumpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
-        const existingProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.findOneBy({
+    private async validateProtocolTunnelJumpDoesNotExist(
+        tenantId: number,
+        name: string,
+        jumpGroupId: number,
+        tag?: string,
+    ) {
+        const existingProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.findOneBy(tenantId, {
             name,
             jumpGroupId,
             tag,

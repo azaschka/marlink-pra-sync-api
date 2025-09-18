@@ -8,6 +8,7 @@ export class RetrieveJumpointInstallerQueryHandler implements IQueryHandler<Retr
     constructor(private readonly queryBus: QueryBus) {}
 
     public async execute(query: RetrieveJumpointInstallerQuery): Promise<AxiosResponse<NodeJS.ReadableStream>> {
+        // TODO: Use tenantId
         return this.queryBus.execute<BTRetrieveJumpointInstallerQuery, Promise<AxiosResponse<NodeJS.ReadableStream>>>(
             new BTRetrieveJumpointInstallerQuery(query.transactionId, query.jumpointId),
         );

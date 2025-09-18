@@ -21,7 +21,7 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
         const jumpGroupEntity = this.createJumpGroupEntity(btJumpGroup);
 
         try {
-            const createdJumpGroup = await this.jumpGroupRepositoryService.create(jumpGroupEntity);
+            const createdJumpGroup = await this.jumpGroupRepositoryService.create(command.tenantId, jumpGroupEntity);
 
             this.eventBus.publish(
                 new JumpGroupCreatedEvent(command.transactionId, {

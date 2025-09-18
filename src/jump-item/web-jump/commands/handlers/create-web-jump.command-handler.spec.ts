@@ -80,6 +80,7 @@ describe('CreateWebJumpCommandHandler', () => {
         it.each([
             <CreateWebJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'web-jump-1',
                 jumpointId: 2,
                 url: 'url-1',
@@ -98,6 +99,7 @@ describe('CreateWebJumpCommandHandler', () => {
             },
             <CreateWebJumpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'web-jump-2',
                 jumpointId: 2,
                 url: 'url-2',
@@ -162,7 +164,7 @@ describe('CreateWebJumpCommandHandler', () => {
                     TestHelper.mockedWebJumpCreatedDtoOutput.submitField,
                     TestHelper.mockedWebJumpCreatedDtoOutput.sessionPolicyId,
                 );
-                expect(webJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(webJumpEntityToBeCreated);
+                expect(webJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, webJumpEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<WebJumpCreatedEvent>{
                         transactionId: command.transactionId,

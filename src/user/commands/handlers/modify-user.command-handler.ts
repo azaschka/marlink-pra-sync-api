@@ -2,7 +2,7 @@ import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/c
 import { ModifyUserCommand as BTModifyUserCommand } from '../../../beyondtrust-pra-conf-api/user/commands';
 import { UserModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { UserModifiedEvent, UserModificationFailedEvent } from '../../events';
+import { UserModificationFailedEvent, UserModifiedEvent } from '../../events';
 import {
     mapFromBTUserAllowedAccessPermissionType,
     mapFromBTUserViewSupportReportsPermissionType,
@@ -26,7 +26,7 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
         const userEntity = this.createUserEntity(btUser);
 
         try {
-            const updatedUser = await this.updateUser(userEntity);
+            const updatedUser = await this.updateUser(command.tenantId, userEntity);
 
             this.eventBus.publish(
                 new UserModifiedEvent(command.transactionId, {
@@ -125,10 +125,10 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
         );
     }
 
-    private async updateUser(userEntity: UserEntity) {
-        await this.userRepositoryService.createOrUpdateById(userEntity);
+    private async updateUser(tenantId: number, userEntity: UserEntity) {
+        await this.userRepositoryService.createOrUpdateById(tenantId, userEntity);
 
-        const createdOrUpdatedUser = await this.userRepositoryService.findOneById(userEntity.id);
+        const createdOrUpdatedUser = await this.userRepositoryService.findOneById(tenantId, userEntity.id);
 
         if (!createdOrUpdatedUser) {
             throw new Error('User has been created or updated but could not be retrieved.');

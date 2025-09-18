@@ -59,7 +59,7 @@ describe('SyncWebJumpsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncWebJumpsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncWebJumpsCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<WebJumpsSyncFailedEvent>{
@@ -207,27 +207,31 @@ describe('SyncWebJumpsCommandHandler', () => {
                 const webJumpRepositoryServiceDeleteByIds = jest.spyOn(webJumpRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncWebJumpsCommand('transaction-1'));
+                const result = await handler.execute(new SyncWebJumpsCommand('transaction-1', 123));
 
                 expect(webJumpRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedWebJumpRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedWebJumpRepositoryServiceFindByIdsCall) {
-                    expect(webJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(webJumpRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(webJumpRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
                     expectedWebJumpRepositoryServiceCreateOrUpdateByIdCall.length,
                 );
                 for (const item of expectedWebJumpRepositoryServiceCreateOrUpdateByIdCall) {
-                    expect(webJumpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(item.iter, item.entity);
+                    expect(webJumpRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
+                        item.iter,
+                        123,
+                        item.entity,
+                    );
                 }
 
                 expect(webJumpRepositoryServiceDeleteByIds).toHaveBeenCalledTimes(
                     expectedWebJumpRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedWebJumpRepositoryServiceDeleteByIdsCall) {
-                    expect(webJumpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(webJumpRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);

@@ -17,6 +17,7 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
     public async execute(query: RetrieveJumpClientInstallersQuery): Promise<JumpClientInstaller[]> {
         const jumpClientInstallerFindByQuery = <JumpClientInstaller>{};
 
+        // TODO: Use tenantId
         if (query.hostname || query.fqdn) {
             return this.retrieveBTJumpClientInstallers(query);
         }
@@ -42,6 +43,7 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
         }
 
         const jumpClientInstallers = await this.jumpClientInstallerRepositoryService.findBy(
+            query.tenantId,
             jumpClientInstallerFindByQuery,
             query.pageNumber,
             query.pageSize,

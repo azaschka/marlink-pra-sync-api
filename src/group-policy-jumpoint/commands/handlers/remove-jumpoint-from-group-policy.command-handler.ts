@@ -19,7 +19,7 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
         await this.removeBTGroupPolicyJumpoint(command);
 
         try {
-            await this.removeGroupPolicyJumpoint(command.id, command.jumpointId);
+            await this.removeGroupPolicyJumpoint(command.tenantId, command.id, command.jumpointId);
 
             this.eventBus.publish(
                 new GroupPolicyJumpointRemovedEvent(command.transactionId, {
@@ -46,7 +46,15 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
         );
     }
 
-    private async removeGroupPolicyJumpoint(groupPolicyId: number, jumpointId: number): Promise<void> {
-        await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyIdAndJumpointId(groupPolicyId, jumpointId);
+    private async removeGroupPolicyJumpoint(
+        tenantId: number,
+        groupPolicyId: number,
+        jumpointId: number,
+    ): Promise<void> {
+        await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyIdAndJumpointId(
+            tenantId,
+            groupPolicyId,
+            jumpointId,
+        );
     }
 }

@@ -1,5 +1,5 @@
 import { DataSource, In } from 'typeorm';
-import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { TeamEntity } from '../../../team/repositories/entities';
 import { UserEntity } from '../../../user/repositories/entities';
 import { UserTeamRoleType } from '../../enums';
@@ -19,13 +19,13 @@ describe('TeamUserRepositoryService', () => {
 
     describe('createOrUpdateByTeamIdAndUserId', () => {
         it('should not call createOrUpdate if entities are empty', async () => {
-            const baseRepositoryCreateOrUpdateMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'createOrUpdate')
+            const baseTenantRepositoryCreateOrUpdateMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'createOrUpdate')
                 .mockResolvedValue(Promise.resolve());
 
-            await service.createOrUpdateByTeamIdAndUserId([]);
+            await service.createOrUpdateByTeamIdAndUserId(123, []);
 
-            expect(baseRepositoryCreateOrUpdateMethod).not.toHaveBeenCalled();
+            expect(baseTenantRepositoryCreateOrUpdateMethod).not.toHaveBeenCalled();
         });
 
         it('should call createOrUpdate with the correct parameters when entities are provided', async () => {
@@ -48,11 +48,14 @@ describe('TeamUserRepositoryService', () => {
                 },
             ];
             const expectedConflictPaths = ['teamId', 'userId'];
-            const baseRepositoryCreateOrUpdateMethod = jest.spyOn(BaseRepositoryService.prototype, 'createOrUpdate');
+            const baseTenantRepositoryCreateOrUpdateMethod = jest.spyOn(
+                BaseTenantRepositoryService.prototype,
+                'createOrUpdate',
+            );
 
-            await service.createOrUpdateByTeamIdAndUserId(entities);
+            await service.createOrUpdateByTeamIdAndUserId(123, entities);
 
-            expect(baseRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(entities, expectedConflictPaths);
+            expect(baseTenantRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(123, entities, expectedConflictPaths);
         });
     });
 
@@ -60,13 +63,13 @@ describe('TeamUserRepositoryService', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const id = 1;
             const expectedWhere = { teamId: id };
-            const baseRepositoryDeleteByMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'deleteBy')
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteByTeamId(id);
+            await service.deleteByTeamId(123, id);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
         });
     });
 
@@ -75,33 +78,33 @@ describe('TeamUserRepositoryService', () => {
             const teamId = 1;
             const userId = 2;
             const expectedWhere = { teamId: teamId, userId: userId };
-            const baseRepositoryDeleteByMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'deleteBy')
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteByTeamIdAndUserId(teamId, userId);
+            await service.deleteByTeamIdAndUserId(123, teamId, userId);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
         });
     });
 
     describe('deleteByTeamIds', () => {
         it('should not call deleteBy if ids are empty', async () => {
-            const baseRepositoryDeleteByMethod = jest.spyOn(BaseRepositoryService.prototype, 'deleteBy');
+            const baseTenantRepositoryDeleteByMethod = jest.spyOn(BaseTenantRepositoryService.prototype, 'deleteBy');
 
-            await service.deleteByTeamIds([]);
+            await service.deleteByTeamIds(123, []);
 
-            expect(baseRepositoryDeleteByMethod).not.toHaveBeenCalled();
+            expect(baseTenantRepositoryDeleteByMethod).not.toHaveBeenCalled();
         });
 
         it('should call deleteBy with the correct parameters when ids are provided', async () => {
             const ids = [1, 2, 3];
             const expectedWhere = { teamId: In(ids) };
-            const baseRepositoryDeleteByMethod = jest.spyOn(BaseRepositoryService.prototype, 'deleteBy');
+            const baseTenantRepositoryDeleteByMethod = jest.spyOn(BaseTenantRepositoryService.prototype, 'deleteBy');
 
-            await service.deleteByTeamIds(ids);
+            await service.deleteByTeamIds(123, ids);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
         });
     });
 });

@@ -26,7 +26,7 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
         const jumpointEntity = this.createJumpointEntity(btJumpoint);
 
         try {
-            const updatedJumpoint = await this.updateJumpoint(jumpointEntity);
+            const updatedJumpoint = await this.updateJumpoint(command.tenantId, jumpointEntity);
 
             this.eventBus.publish(
                 new JumpointModifiedEvent(command.transactionId, {
@@ -101,10 +101,10 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
         );
     }
 
-    private async updateJumpoint(jumpointEntity: JumpointEntity) {
-        await this.jumpointRepositoryService.createOrUpdateById(jumpointEntity);
+    private async updateJumpoint(tenantId: number, jumpointEntity: JumpointEntity) {
+        await this.jumpointRepositoryService.createOrUpdateById(tenantId, jumpointEntity);
 
-        const createdOrUpdatedJumpoint = await this.jumpointRepositoryService.findOneById(jumpointEntity.id);
+        const createdOrUpdatedJumpoint = await this.jumpointRepositoryService.findOneById(tenantId, jumpointEntity.id);
 
         if (!createdOrUpdatedJumpoint) {
             throw new Error('Jumpoint has been created or updated but could not be retrieved.');
