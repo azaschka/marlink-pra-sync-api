@@ -42,6 +42,7 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
 
             this.eventBus.publish(
                 new UsersSyncedEvent(command.transactionId, {
+                    tenantId: command.tenantId,
                     createdUserIds,
                     updatedUserIds,
                     deletedUserIds,

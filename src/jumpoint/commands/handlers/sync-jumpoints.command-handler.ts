@@ -38,6 +38,7 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
 
             this.eventBus.publish(
                 new JumpointsSyncedEvent(command.transactionId, {
+                    tenantId: command.tenantId,
                     createdJumpointIds,
                     updatedJumpointIds,
                     deletedJumpointIds,

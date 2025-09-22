@@ -2,7 +2,7 @@ import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AppConfigService } from '../../app-config/services/app-config.service';
-import { TenantIdHeader } from '../../core/decorators';
+import { ApiTenantIdHeader, TenantIdHeader } from '../../core/decorators';
 import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
 import { GroupPoliciesSyncResult } from '../../group-policy/models';
 import { SyncJumpClientInstallersCommand, SyncJumpClientsCommand } from '../../jump-client/commands';
@@ -30,6 +30,7 @@ import { SyncUsersCommand } from '../../user/commands';
 import { UsersSyncResult } from '../../user/models';
 import { SyncResultDtoOutput } from '../dtos/outputs';
 
+@ApiTenantIdHeader()
 @ApiTags('Sync')
 @Controller('sync')
 export class SyncController {

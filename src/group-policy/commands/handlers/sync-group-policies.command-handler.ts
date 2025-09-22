@@ -38,6 +38,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
 
             this.eventBus.publish(
                 new GroupPoliciesSyncedEvent(command.transactionId, {
+                    tenantId: command.tenantId,
                     createdGroupPolicyIds,
                     updatedGroupPolicyIds,
                     deletedGroupPolicyIds,

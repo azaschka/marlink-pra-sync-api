@@ -241,6 +241,7 @@ describe('SyncJumpointsCommandHandler', () => {
                         eventType: JumpointsSyncedEvent.EVENT_TYPE,
                         transactionId: 'transaction-1',
                         payload: {
+                            tenantId: 123,
                             createdJumpointIds: expectedResult.createdJumpointIds,
                             updatedJumpointIds: expectedResult.updatedJumpointIds,
                             deletedJumpointIds: expectedResult.deletedJumpointIds,

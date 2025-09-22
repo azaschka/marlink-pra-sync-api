@@ -233,6 +233,7 @@ describe('SyncUsersCommandHandler', () => {
                         eventType: UsersSyncedEvent.EVENT_TYPE,
                         transactionId: 'transaction-1',
                         payload: {
+                            tenantId: 123,
                             createdUserIds: expectedResult.createdUserIds,
                             updatedUserIds: expectedResult.updatedUserIds,
                             deletedUserIds: expectedResult.deletedUserIds,

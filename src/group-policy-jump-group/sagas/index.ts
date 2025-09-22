@@ -14,6 +14,7 @@ export class GroupPolicyJumpGroupsSaga {
                 (event) =>
                     new SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommand(
                         event.transactionId,
+                        (event.payload as GroupPoliciesSyncedEventPayload).tenantId,
                         (event.payload as GroupPoliciesSyncedEventPayload).createdGroupPolicyIds,
                         (event.payload as GroupPoliciesSyncedEventPayload).updatedGroupPolicyIds,
                         (event.payload as GroupPoliciesSyncedEventPayload).deletedGroupPolicyIds,

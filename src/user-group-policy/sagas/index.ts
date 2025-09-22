@@ -39,6 +39,7 @@ export class UserGroupPoliciesSaga {
 
                 const command = new SyncUserGroupPoliciesAfterUsersSyncedCommand(
                     this.lastUsersSyncedEvent.transactionId,
+                    payload.tenantId,
                     payload.createdUserIds,
                     payload.updatedUserIds,
                     payload.deletedUserIds,

@@ -241,6 +241,7 @@ describe('SyncGroupPoliciesCommandHandler', () => {
                         eventType: GroupPoliciesSyncedEvent.EVENT_TYPE,
                         transactionId: 'transaction-1',
                         payload: {
+                            tenantId: 123,
                             createdGroupPolicyIds: expectedResult.createdGroupPolicyIds,
                             updatedGroupPolicyIds: expectedResult.updatedGroupPolicyIds,
                             deletedGroupPolicyIds: expectedResult.deletedGroupPolicyIds,

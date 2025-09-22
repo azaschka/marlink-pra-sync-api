@@ -14,6 +14,7 @@ export class JumpointNodesSaga {
                 (event) =>
                     new SyncJumpointNodesAfterJumpointsSyncedCommand(
                         event.transactionId,
+                        (event.payload as JumpointsSyncedEventPayload).tenantId,
                         (event.payload as JumpointsSyncedEventPayload).createdJumpointIds,
                         (event.payload as JumpointsSyncedEventPayload).updatedJumpointIds,
                         (event.payload as JumpointsSyncedEventPayload).deletedJumpointIds,

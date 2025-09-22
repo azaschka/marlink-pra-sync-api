@@ -232,6 +232,7 @@ describe('SyncTeamsCommandHandler', () => {
                         eventType: TeamsSyncedEvent.EVENT_TYPE,
                         transactionId: 'transaction-1',
                         payload: {
+                            tenantId: 123,
                             createdTeamIds: expectedResult.createdTeamIds,
                             updatedTeamIds: expectedResult.updatedTeamIds,
                             deletedTeamIds: expectedResult.deletedTeamIds,

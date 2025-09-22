@@ -1,4 +1,4 @@
-import { Controller, Logger, OnModuleInit } from '@nestjs/common';
+import { Controller, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
@@ -9,7 +9,7 @@ import { PaginationUtility, UuidUtility } from '../../shared/utilities';
 import { SyncController } from './sync.controller';
 
 @Controller('sync-job')
-export class SyncJobController implements OnModuleInit {
+export class SyncJobController implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;
 
     private readonly logger = new Logger(SyncJobController.name);
@@ -21,7 +21,7 @@ export class SyncJobController implements OnModuleInit {
         private readonly syncController: SyncController,
     ) {}
 
-    public async onModuleInit(): Promise<void> {
+    public async onApplicationBootstrap(): Promise<void> {
         const beyondtrustInstances = await this.getAllBeyondtrustInstances();
 
         const cronJobMap = [

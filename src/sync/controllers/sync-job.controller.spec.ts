@@ -25,7 +25,7 @@ describe('SyncJobController', () => {
         PaginationUtility.queryUntilLastPage = jest.fn().mockResolvedValue([{ id: 1 }, { id: 2 }]);
         const schedulerRegistryAddCronJob = jest.spyOn(schedulerRegistry, 'addCronJob');
 
-        await controller.onModuleInit();
+        await controller.onApplicationBootstrap();
 
         expect(schedulerRegistryAddCronJob).toHaveBeenCalledTimes(1);
     });

@@ -37,6 +37,7 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
 
             this.eventBus.publish(
                 new TeamsSyncedEvent(command.transactionId, {
+                    tenantId: command.tenantId,
                     createdTeamIds,
                     updatedTeamIds,
                     deletedTeamIds,
