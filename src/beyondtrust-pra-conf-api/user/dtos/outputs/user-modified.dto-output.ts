@@ -1,6 +1,7 @@
 import { Expose } from 'class-transformer';
 import {
     UserAllowedAccessPermissionType,
+    UserEndpointAutomationPermissionType,
     UserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType,
 } from '../../enums';
@@ -151,5 +152,5 @@ export class UserModifiedDtoOutput {
     public permVault?: boolean;
 
     @Expose({ name: 'perm_endpoint_automation' })
-    public permEndpointAutomation?: boolean;
+    public permEndpointAutomation?: UserEndpointAutomationPermissionType;
 }

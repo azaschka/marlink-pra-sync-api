@@ -5,6 +5,7 @@ import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { UserCreatedEvent, UserCreationFailedEvent } from '../../events';
 import {
     mapFromBTUserAllowedAccessPermissionType,
+    mapFromBTUserEndpointAutomationPermissionType,
     mapFromBTUserViewSupportReportsPermissionType,
     mapFromBTUserViewVaultReportsPermissionType,
 } from '../../mappers';
@@ -122,7 +123,9 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
             btUser.permProtocolTunnel,
             btUser.permSdStaticPortForExternalTools,
             btUser.permVault,
-            btUser.permEndpointAutomation,
+            btUser.permEndpointAutomation
+                ? mapFromBTUserEndpointAutomationPermissionType(btUser.permEndpointAutomation)
+                : undefined,
         );
     }
 }

@@ -2,6 +2,7 @@ import { EntitySchema } from 'typeorm';
 import { BaseTenantEntitySchemaFactory } from '../../../core/factories';
 import {
     UserAllowedAccessPermissionType,
+    UserEndpointAutomationPermissionType,
     UserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType,
 } from '../../enums';
@@ -265,9 +266,10 @@ export class UserSchemaFactory implements BaseTenantEntitySchemaFactory<User> {
                     type: 'boolean',
                     nullable: true,
                 },
-                hasEndpointAutomationPermission: {
-                    name: 'has_endpoint_automation_permission',
-                    type: 'boolean',
+                endpointAutomationPermissionType: {
+                    name: 'endpoint_automation_permission_type',
+                    type: 'enum',
+                    enum: UserEndpointAutomationPermissionType,
                     nullable: true,
                 },
                 lastSyncDate: {

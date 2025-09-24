@@ -4,6 +4,7 @@ import { HttpClientService } from '../../../http-client/services/http-client.ser
 import { UserCreatedDtoOutput } from '../../dtos/outputs';
 import {
     UserAllowedAccessPermissionType,
+    UserEndpointAutomationPermissionType,
     UserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType,
 } from '../../enums';
@@ -62,7 +63,7 @@ abstract class TestHelper {
             permProtocolTunnel: false,
             permSdStaticPortForExternalTools: false,
             permVault: false,
-            permEndpointAutomation: false,
+            permEndpointAutomation: UserEndpointAutomationPermissionType.NotAllowed,
         };
     }
 }

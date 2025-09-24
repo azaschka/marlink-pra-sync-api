@@ -5,6 +5,7 @@ import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { UserModificationFailedEvent, UserModifiedEvent } from '../../events';
 import {
     mapFromBTUserAllowedAccessPermissionType,
+    mapFromBTUserEndpointAutomationPermissionType,
     mapFromBTUserViewSupportReportsPermissionType,
     mapFromBTUserViewVaultReportsPermissionType,
 } from '../../mappers';
@@ -123,7 +124,9 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
             btUser.permProtocolTunnel,
             btUser.permSdStaticPortForExternalTools,
             btUser.permVault,
-            btUser.permEndpointAutomation,
+            btUser.permEndpointAutomation
+                ? mapFromBTUserEndpointAutomationPermissionType(btUser.permEndpointAutomation)
+                : undefined,
         );
     }
 
