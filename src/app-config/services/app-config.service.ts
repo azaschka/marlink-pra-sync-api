@@ -254,4 +254,11 @@ export class AppConfigService {
                 DefaultAppConfig.sync.cronJobRetryDelayInMs,
         };
     }
+
+    public get throttle() {
+        return {
+            ttlInMs: this.configService.get<number>('THROTTLE_TTL_IN_MS') ?? DefaultAppConfig.throttle.ttlInMs,
+            limit: this.configService.get<number>('THROTTLE_LIMIT') ?? DefaultAppConfig.throttle.limit,
+        };
+    }
 }

@@ -1,5 +1,7 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { CommandBus, CqrsModule, QueryBus } from '@nestjs/cqrs';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from './app-config/app-config.module';
 import { AppConfigService } from './app-config/services/app-config.service';
@@ -36,6 +38,16 @@ import { UserModule } from './user/user.module';
             useFactory: (config: AppConfigService) => config.database,
             inject: [AppConfigService],
         }),
+        ThrottlerModule.forRootAsync({
+            imports: [AppConfigModule],
+            useFactory: (config: AppConfigService) => [
+                {
+                    ttl: config.throttle.ttlInMs,
+                    limit: config.throttle.limit,
+                },
+            ],
+            inject: [AppConfigService],
+        }),
         CqrsModule.forRoot(),
         BeyondtrustPraConfApiModule,
         HealthModule,
@@ -59,6 +71,12 @@ import { UserModule } from './user/user.module';
         LogModule,
     ],
     controllers: [AppController],
+    providers: [
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard, // global rate limiting
+        },
+    ],
 })
 export class AppModule implements OnApplicationBootstrap {
     constructor(
