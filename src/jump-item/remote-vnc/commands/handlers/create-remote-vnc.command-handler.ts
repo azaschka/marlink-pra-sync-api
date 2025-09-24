@@ -30,6 +30,7 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
             this.eventBus.publish(
                 new RemoteVncCreatedEvent(command.transactionId, {
                     remoteVnc: createdRemoteVnc,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -39,6 +40,7 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
                 new RemoteVncCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteVnc: remoteVncEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

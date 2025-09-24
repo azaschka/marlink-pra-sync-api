@@ -31,6 +31,7 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
             this.eventBus.publish(
                 new UserModifiedEvent(command.transactionId, {
                     user: updatedUser,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -40,6 +41,7 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
                 new UserModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     user: userEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

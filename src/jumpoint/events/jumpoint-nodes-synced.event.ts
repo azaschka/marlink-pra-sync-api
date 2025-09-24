@@ -3,6 +3,7 @@ import { JumpointNode } from '../models';
 
 export interface JumpointNodesSyncedEventPayload {
     jumpointNodes: JumpointNode[];
+    tenantId: number;
 }
 
 export class JumpointNodesSyncedEvent extends BaseEvent {

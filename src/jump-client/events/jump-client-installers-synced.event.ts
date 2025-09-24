@@ -4,6 +4,7 @@ export interface JumpClientInstallersSyncedEventPayload {
     createdJumpClientInstallerIds: number[];
     updatedJumpClientInstallerIds: number[];
     deletedJumpClientInstallerIds: number[];
+    tenantId: number;
 }
 
 export class JumpClientInstallersSyncedEvent extends BaseEvent {

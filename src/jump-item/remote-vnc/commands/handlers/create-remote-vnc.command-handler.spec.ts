@@ -144,6 +144,7 @@ describe('CreateRemoteVncCommandHandler', () => {
                         eventType: RemoteVncCreatedEvent.EVENT_TYPE,
                         payload: {
                             remoteVnc: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -186,6 +187,7 @@ describe('CreateRemoteVncCommandHandler', () => {
                 handler.execute(<CreateRemoteVncCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-vnc-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -199,6 +201,7 @@ describe('CreateRemoteVncCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteVnc: remoteVncEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

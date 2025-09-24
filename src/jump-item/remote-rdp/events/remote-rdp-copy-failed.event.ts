@@ -4,6 +4,7 @@ import { RemoteRdp } from '../models';
 export interface RemoteRdpCopyFailedEventPayload {
     errorMessage: string;
     remoteRdp: RemoteRdp;
+    tenantId: number;
 }
 
 export class RemoteRdpCopyFailedEvent extends BaseEvent {

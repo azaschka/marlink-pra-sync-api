@@ -141,6 +141,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
                     eventType: ProtocolTunnelJumpCopiedEvent.EVENT_TYPE,
                     payload: {
                         protocolTunnelJump: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -185,6 +186,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
                 handler.execute(<CopyProtocolTunnelJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'protocol-tunnel-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -198,6 +200,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         protocolTunnelJump: protocolTunnelJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

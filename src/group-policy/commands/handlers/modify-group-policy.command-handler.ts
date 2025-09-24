@@ -27,6 +27,7 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
             this.eventBus.publish(
                 new GroupPolicyModifiedEvent(command.transactionId, {
                     groupPolicy: updatedGroupPolicy,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -36,6 +37,7 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
                 new GroupPolicyModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicy: groupPolicyEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

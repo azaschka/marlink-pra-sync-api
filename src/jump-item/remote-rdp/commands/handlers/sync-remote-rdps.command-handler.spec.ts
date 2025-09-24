@@ -67,6 +67,7 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -244,6 +245,7 @@ describe('SyncRemoteRdpsCommandHandler', () => {
                             createdRemoteRdpIds: expectedResult.createdRemoteRdpIds,
                             updatedRemoteRdpIds: expectedResult.updatedRemoteRdpIds,
                             deletedRemoteRdpIds: expectedResult.deletedRemoteRdpIds,
+                            tenantId: 123,
                         },
                     }),
                 );

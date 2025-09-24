@@ -84,6 +84,7 @@ describe('AddUserToTeamCommandHandler', () => {
                         eventType: TeamUserAddedEvent.EVENT_TYPE,
                         payload: {
                             teamUser: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -137,6 +138,7 @@ describe('AddUserToTeamCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     userId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -154,6 +156,7 @@ describe('AddUserToTeamCommandHandler', () => {
                             userId: teamUserEntityToBeCreated.userId,
                             roleType: UserTeamRoleType.Manager,
                         },
+                        tenantId: 123,
                     },
                 }),
             );

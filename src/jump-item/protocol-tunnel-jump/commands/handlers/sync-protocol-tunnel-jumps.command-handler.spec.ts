@@ -76,6 +76,7 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -264,6 +265,7 @@ describe('SyncProtocolTunnelJumpsCommandHandler', () => {
                             createdProtocolTunnelJumpIds: expectedResult.createdProtocolTunnelJumpIds,
                             updatedProtocolTunnelJumpIds: expectedResult.updatedProtocolTunnelJumpIds,
                             deletedProtocolTunnelJumpIds: expectedResult.deletedProtocolTunnelJumpIds,
+                            tenantId: 123,
                         },
                     }),
                 );

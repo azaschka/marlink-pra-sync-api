@@ -163,6 +163,7 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
                                 id: 1,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -182,6 +183,7 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
                                 id: 2,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -197,6 +199,7 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
                                 id: 4,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -225,6 +228,7 @@ describe('SyncJumpointNodesAfterJumpointsSyncedCommandHandler', () => {
                     eventType: JumpointNodesSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface TeamDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class TeamDeletionFailedEvent extends BaseEvent {

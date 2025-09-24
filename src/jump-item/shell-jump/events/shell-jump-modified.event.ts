@@ -3,6 +3,7 @@ import { ShellJump } from '../models';
 
 export interface ShellJumpModifiedEventPayload {
     shellJump: ShellJump;
+    tenantId: number;
 }
 
 export class ShellJumpModifiedEvent extends BaseEvent {

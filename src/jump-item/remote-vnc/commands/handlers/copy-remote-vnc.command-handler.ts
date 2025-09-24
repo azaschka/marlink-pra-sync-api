@@ -32,6 +32,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
             this.eventBus.publish(
                 new RemoteVncCopiedEvent(command.transactionId, {
                     remoteVnc: createdRemoteVnc,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -41,6 +42,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
                 new RemoteVncCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteVnc: remoteVncEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

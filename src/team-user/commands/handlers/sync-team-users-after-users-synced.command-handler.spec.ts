@@ -113,6 +113,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                                 roleType: UserTeamRoleType.Member,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -134,6 +135,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                                 roleType: UserTeamRoleType.Lead,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -150,6 +152,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                                 roleType: UserTeamRoleType.Member,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -178,6 +181,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                     eventType: TeamUsersSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

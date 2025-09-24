@@ -110,6 +110,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                             { groupPolicyId: 1, jumpointId: 2 },
                             { groupPolicyId: 1, jumpointId: 3 },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -123,6 +124,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                             { groupPolicyId: 2, jumpointId: 4 },
                             { groupPolicyId: 2, jumpointId: 5 },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -138,6 +140,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                                 jumpointId: 6,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -174,6 +177,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                     eventType: GroupPolicyJumpointsSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

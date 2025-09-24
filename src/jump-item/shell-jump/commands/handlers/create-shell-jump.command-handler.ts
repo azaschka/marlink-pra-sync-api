@@ -37,6 +37,7 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
             this.eventBus.publish(
                 new ShellJumpCreatedEvent(command.transactionId, {
                     shellJump: createdShellJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
                 new ShellJumpCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     shellJump: shellJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

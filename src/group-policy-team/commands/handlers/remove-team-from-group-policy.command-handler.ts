@@ -23,6 +23,7 @@ export class RemoveTeamFromGroupPolicyCommandHandler implements ICommandHandler<
                 new GroupPolicyTeamRemovedEvent(command.transactionId, {
                     groupPolicyId: command.id,
                     teamId: command.teamId,
+                    tenantId: command.tenantId,
                 }),
             );
         } catch (error) {
@@ -31,6 +32,7 @@ export class RemoveTeamFromGroupPolicyCommandHandler implements ICommandHandler<
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyId: command.id,
                     teamId: command.teamId,
+                    tenantId: command.tenantId,
                 }),
             );
 

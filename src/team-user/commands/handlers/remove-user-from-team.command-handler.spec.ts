@@ -63,6 +63,7 @@ describe('RemoveUserFromTeamCommandHandler', () => {
                         payload: {
                             teamId: command.id,
                             userId: command.userId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -102,6 +103,7 @@ describe('RemoveUserFromTeamCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     userId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -115,6 +117,7 @@ describe('RemoveUserFromTeamCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         teamId: 3,
                         userId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

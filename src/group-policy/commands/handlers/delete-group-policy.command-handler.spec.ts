@@ -34,6 +34,7 @@ describe('DeleteGroupPolicyCommandHandler', () => {
                 eventType: GroupPolicyDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 1,
                 },
             }),
         );
@@ -79,6 +80,7 @@ describe('DeleteGroupPolicyCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 1,
                 },
             }),
         );

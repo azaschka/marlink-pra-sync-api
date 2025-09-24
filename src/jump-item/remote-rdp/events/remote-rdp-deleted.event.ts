@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface RemoteRdpDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class RemoteRdpDeletedEvent extends BaseEvent {

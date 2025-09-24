@@ -113,6 +113,7 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
                                 teamId: 3,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -132,6 +133,7 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
                                 teamId: 5,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -147,6 +149,7 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
                                 teamId: 6,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -181,6 +184,7 @@ describe('SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler', () => {
                     eventType: GroupPolicyTeamsSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

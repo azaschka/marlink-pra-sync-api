@@ -26,6 +26,7 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
             this.eventBus.publish(
                 new TeamModifiedEvent(command.transactionId, {
                     team: updatedTeam,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
                 new TeamModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     team: teamEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

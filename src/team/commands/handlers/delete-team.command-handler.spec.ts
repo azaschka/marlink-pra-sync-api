@@ -34,6 +34,7 @@ describe('DeleteTeamCommandHandler', () => {
                 eventType: TeamDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -75,6 +76,7 @@ describe('DeleteTeamCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

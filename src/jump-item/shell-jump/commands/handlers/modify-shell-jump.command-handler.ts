@@ -34,6 +34,7 @@ export class ModifyShellJumpCommandHandler implements ICommandHandler<ModifyShel
             this.eventBus.publish(
                 new ShellJumpModifiedEvent(command.transactionId, {
                     shellJump: updatedShellJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -43,6 +44,7 @@ export class ModifyShellJumpCommandHandler implements ICommandHandler<ModifyShel
                 new ShellJumpModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     shellJump: shellJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

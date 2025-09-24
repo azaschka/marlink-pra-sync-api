@@ -39,6 +39,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
             this.eventBus.publish(
                 new JumpClientCopiedEvent(command.transactionId, {
                     jumpClient: createdJumpClient,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -48,6 +49,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
                 new JumpClientCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpClient: jumpClientEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

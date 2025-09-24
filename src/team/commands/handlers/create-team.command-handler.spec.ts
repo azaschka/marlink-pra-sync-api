@@ -81,6 +81,7 @@ describe('CreateTeamCommandHandler', () => {
                         eventType: TeamCreatedEvent.EVENT_TYPE,
                         payload: {
                             team: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -121,6 +122,7 @@ describe('CreateTeamCommandHandler', () => {
                 handler.execute(<CreateTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -134,6 +136,7 @@ describe('CreateTeamCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         team: teamEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

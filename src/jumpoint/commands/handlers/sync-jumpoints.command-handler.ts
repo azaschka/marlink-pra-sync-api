@@ -54,6 +54,7 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
             this.eventBus.publish(
                 new JumpointsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 

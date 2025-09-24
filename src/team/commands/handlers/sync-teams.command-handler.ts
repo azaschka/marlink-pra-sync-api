@@ -53,6 +53,7 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
             this.eventBus.publish(
                 new TeamsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 

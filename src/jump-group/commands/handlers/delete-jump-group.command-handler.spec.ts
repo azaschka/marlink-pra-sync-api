@@ -34,6 +34,7 @@ describe('DeleteJumpGroupCommandHandler', () => {
                 eventType: JumpGroupDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -79,6 +80,7 @@ describe('DeleteJumpGroupCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

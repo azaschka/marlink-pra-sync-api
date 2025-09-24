@@ -68,6 +68,7 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -256,6 +257,7 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
                             createdJumpClientInstallerIds: expectedResult.createdJumpClientInstallerIds,
                             updatedJumpClientInstallerIds: expectedResult.updatedJumpClientInstallerIds,
                             deletedJumpClientInstallerIds: expectedResult.deletedJumpClientInstallerIds,
+                            tenantId: 123,
                         },
                     }),
                 );

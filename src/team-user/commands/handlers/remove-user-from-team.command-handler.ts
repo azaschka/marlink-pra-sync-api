@@ -23,6 +23,7 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
                 new TeamUserRemovedEvent(command.transactionId, {
                     teamId: command.id,
                     userId: command.userId,
+                    tenantId: command.tenantId,
                 }),
             );
         } catch (error) {
@@ -31,6 +32,7 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     teamId: command.id,
                     userId: command.userId,
+                    tenantId: command.tenantId,
                 }),
             );
 

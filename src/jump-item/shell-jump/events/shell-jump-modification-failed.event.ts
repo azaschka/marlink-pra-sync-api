@@ -4,6 +4,7 @@ import { ShellJump } from '../models';
 export interface ShellJumpModificationFailedEventPayload {
     errorMessage: string;
     shellJump: ShellJump;
+    tenantId: number;
 }
 
 export class ShellJumpModificationFailedEvent extends BaseEvent {

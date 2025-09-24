@@ -32,6 +32,7 @@ export class CopyWebJumpCommandHandler implements ICommandHandler<CopyWebJumpCom
             this.eventBus.publish(
                 new WebJumpCopiedEvent(command.transactionId, {
                     webJump: createdWebJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -41,6 +42,7 @@ export class CopyWebJumpCommandHandler implements ICommandHandler<CopyWebJumpCom
                 new WebJumpCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     webJump: webJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

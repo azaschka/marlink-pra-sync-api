@@ -26,6 +26,7 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
             this.eventBus.publish(
                 new TeamCreatedEvent(command.transactionId, {
                     team: createdTeam,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
                 new TeamCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     team: teamEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

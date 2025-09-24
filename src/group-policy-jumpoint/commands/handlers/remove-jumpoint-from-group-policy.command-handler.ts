@@ -25,6 +25,7 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
                 new GroupPolicyJumpointRemovedEvent(command.transactionId, {
                     groupPolicyId: command.id,
                     jumpointId: command.jumpointId,
+                    tenantId: command.tenantId,
                 }),
             );
         } catch (error) {
@@ -33,6 +34,7 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyId: command.id,
                     jumpointId: command.jumpointId,
+                    tenantId: command.tenantId,
                 }),
             );
 

@@ -21,12 +21,15 @@ export class DeleteShellJumpCommandHandler implements ICommandHandler<DeleteShel
         try {
             await this.shellJumpRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new ShellJumpDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new ShellJumpDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new ShellJumpDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

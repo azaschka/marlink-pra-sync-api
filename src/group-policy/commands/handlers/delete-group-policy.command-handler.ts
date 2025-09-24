@@ -21,12 +21,15 @@ export class DeleteGroupPolicyCommandHandler implements ICommandHandler<DeleteGr
         try {
             await this.groupPolicyRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new GroupPolicyDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new GroupPolicyDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

@@ -36,12 +36,14 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
                 this.eventBus.publish(
                     new JumpointNodesSyncedEvent(command.transactionId, {
                         jumpointNodes: jumpointNodes,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new JumpointNodesSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for jumpoint "${jumpointId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
@@ -53,6 +55,7 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
             this.eventBus.publish(
                 new JumpointNodesSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }

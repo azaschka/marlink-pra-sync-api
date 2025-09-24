@@ -100,6 +100,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyMemberAddedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicyMember: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -156,6 +157,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     userId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -173,6 +175,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                             userId: groupPolicyMemberEntityToBeCreated.userId,
                             memberId: groupPolicyMemberEntityToBeCreated.memberId,
                         },
+                        tenantId: 123,
                     },
                 }),
             );

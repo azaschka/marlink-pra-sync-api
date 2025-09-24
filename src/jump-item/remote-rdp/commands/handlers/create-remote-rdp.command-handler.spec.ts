@@ -202,6 +202,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
                         eventType: RemoteRdpCreatedEvent.EVENT_TYPE,
                         payload: {
                             remoteRdp: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -244,6 +245,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
                 handler.execute(<CreateRemoteRdpCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-rdp-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -257,6 +259,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteRdp: remoteRdpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

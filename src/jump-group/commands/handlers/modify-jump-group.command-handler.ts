@@ -26,6 +26,7 @@ export class ModifyJumpGroupCommandHandler implements ICommandHandler<ModifyJump
             this.eventBus.publish(
                 new JumpGroupModifiedEvent(command.transactionId, {
                     jumpGroup: updatedJumpGroup,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class ModifyJumpGroupCommandHandler implements ICommandHandler<ModifyJump
                 new JumpGroupModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpGroup: jumpGroupEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

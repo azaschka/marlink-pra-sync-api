@@ -27,6 +27,7 @@ export class ModifyRemoteVncCommandHandler implements ICommandHandler<ModifyRemo
             this.eventBus.publish(
                 new RemoteVncModifiedEvent(command.transactionId, {
                     remoteVnc: updatedRemoteVnc,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -36,6 +37,7 @@ export class ModifyRemoteVncCommandHandler implements ICommandHandler<ModifyRemo
                 new RemoteVncModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteVnc: remoteVncEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

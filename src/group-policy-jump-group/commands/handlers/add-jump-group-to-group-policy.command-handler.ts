@@ -29,6 +29,7 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
             this.eventBus.publish(
                 new GroupPolicyJumpGroupAddedEvent(command.transactionId, {
                     groupPolicyJumpGroup: groupPolicyJumpGroup,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -38,6 +39,7 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
                 new GroupPolicyJumpGroupAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyJumpGroup: groupPolicyJumpGroupEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

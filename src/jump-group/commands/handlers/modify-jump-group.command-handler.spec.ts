@@ -101,6 +101,7 @@ describe('ModifyJumpGroupCommandHandler', () => {
                         eventType: JumpGroupModifiedEvent.EVENT_TYPE,
                         payload: {
                             jumpGroup: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -146,6 +147,7 @@ describe('ModifyJumpGroupCommandHandler', () => {
                 handler.execute(<ModifyJumpGroupCommand>{
                     transactionId: 'transaction-1',
                     name: 'jump-group-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -160,6 +162,7 @@ describe('ModifyJumpGroupCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpGroup: jumpGroupEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -186,6 +189,7 @@ describe('ModifyJumpGroupCommandHandler', () => {
                 handler.execute(<ModifyJumpGroupCommand>{
                     transactionId: 'transaction-1',
                     name: 'jump-group-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -199,6 +203,7 @@ describe('ModifyJumpGroupCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpGroup: jumpGroupEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

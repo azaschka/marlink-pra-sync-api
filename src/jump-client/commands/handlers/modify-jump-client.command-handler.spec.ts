@@ -182,6 +182,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                         eventType: JumpClientModifiedEvent.EVENT_TYPE,
                         payload: {
                             jumpClient: result,
+                            tenantId: 100,
                         },
                     }),
                 );
@@ -227,6 +228,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                 handler.execute(<ModifyJumpClientCommand>{
                     transactionId: 'transaction-1',
                     id: 123,
+                    tenantId: 100,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -241,6 +243,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpClient: jumpClientEntityToBeCreated,
+                        tenantId: 100,
                     },
                 }),
             );
@@ -267,6 +270,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                 handler.execute(<ModifyJumpClientCommand>{
                     transactionId: 'transaction-1',
                     id: 123,
+                    tenantId: 100,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -280,6 +284,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpClient: jumpClientEntityToBeCreated,
+                        tenantId: 100,
                     },
                 }),
             );

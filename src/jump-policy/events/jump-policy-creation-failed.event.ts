@@ -4,6 +4,7 @@ import { JumpPolicy } from '../models';
 export interface JumpPolicyCreationFailedEventPayload {
     errorMessage: string;
     jumpPolicy: JumpPolicy;
+    tenantId: number;
 }
 
 export class JumpPolicyCreationFailedEvent extends BaseEvent {

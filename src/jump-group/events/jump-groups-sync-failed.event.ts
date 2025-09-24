@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface JumpGroupsSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class JumpGroupsSyncFailedEvent extends BaseEvent {

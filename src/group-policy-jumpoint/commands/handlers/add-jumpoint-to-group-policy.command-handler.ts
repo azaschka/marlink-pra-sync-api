@@ -26,6 +26,7 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
             this.eventBus.publish(
                 new GroupPolicyJumpointAddedEvent(command.transactionId, {
                     groupPolicyJumpoint: groupPolicyJumpoint,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
                 new GroupPolicyJumpointAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyJumpoint: groupPolicyJumpointEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

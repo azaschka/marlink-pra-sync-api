@@ -125,6 +125,7 @@ describe('CopyWebJumpCommandHandler', () => {
                     eventType: WebJumpCopiedEvent.EVENT_TYPE,
                     payload: {
                         webJump: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -166,6 +167,7 @@ describe('CopyWebJumpCommandHandler', () => {
                 handler.execute(<CopyWebJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'web-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -179,6 +181,7 @@ describe('CopyWebJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         webJump: webJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

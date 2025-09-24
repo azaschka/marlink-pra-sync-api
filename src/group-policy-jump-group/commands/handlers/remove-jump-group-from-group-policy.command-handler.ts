@@ -25,6 +25,7 @@ export class RemoveJumpGroupFromGroupPolicyCommandHandler
                 new GroupPolicyJumpGroupRemovedEvent(command.transactionId, {
                     groupPolicyId: command.id,
                     jumpGroupId: command.jumpGroupId,
+                    tenantId: command.tenantId,
                 }),
             );
         } catch (error) {
@@ -33,6 +34,7 @@ export class RemoveJumpGroupFromGroupPolicyCommandHandler
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyId: command.id,
                     jumpGroupId: command.jumpGroupId,
+                    tenantId: command.tenantId,
                 }),
             );
 

@@ -34,6 +34,7 @@ describe('DeleteShellJumpCommandHandler', () => {
                 eventType: ShellJumpDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -79,6 +80,7 @@ describe('DeleteShellJumpCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

@@ -30,6 +30,7 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
             this.eventBus.publish(
                 new GroupPolicyCreatedEvent(command.transactionId, {
                     groupPolicy: createdGroupPolicy,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -39,6 +40,7 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
                 new GroupPolicyCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicy: groupPolicyEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

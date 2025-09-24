@@ -65,6 +65,7 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
                         payload: {
                             groupPolicyId: command.id,
                             jumpointId: command.jumpointId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -104,6 +105,7 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     jumpointId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -117,6 +119,7 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         groupPolicyId: 3,
                         jumpointId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

@@ -4,6 +4,7 @@ import { GroupPolicy } from '../models';
 export interface GroupPolicyCreationFailedEventPayload {
     errorMessage: string;
     groupPolicy: GroupPolicy;
+    tenantId: number;
 }
 
 export class GroupPolicyCreationFailedEvent extends BaseEvent {

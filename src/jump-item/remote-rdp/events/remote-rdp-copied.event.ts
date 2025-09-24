@@ -3,6 +3,7 @@ import { RemoteRdp } from '../models';
 
 export interface RemoteRdpCopiedEventPayload {
     remoteRdp: RemoteRdp;
+    tenantId: number;
 }
 
 export class RemoteRdpCopiedEvent extends BaseEvent {

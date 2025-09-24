@@ -67,6 +67,7 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
                         payload: {
                             groupPolicyId: command.id,
                             memberId: command.memberId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -106,6 +107,7 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     memberId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -119,6 +121,7 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         groupPolicyId: 3,
                         memberId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

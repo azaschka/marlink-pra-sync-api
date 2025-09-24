@@ -171,6 +171,7 @@ describe('CreateWebJumpCommandHandler', () => {
                         eventType: WebJumpCreatedEvent.EVENT_TYPE,
                         payload: {
                             webJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -213,6 +214,7 @@ describe('CreateWebJumpCommandHandler', () => {
                 handler.execute(<CreateWebJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'web-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -226,6 +228,7 @@ describe('CreateWebJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         webJump: webJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

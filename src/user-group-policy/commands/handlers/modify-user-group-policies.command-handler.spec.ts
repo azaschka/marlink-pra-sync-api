@@ -99,6 +99,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                     eventType: UserGroupPoliciesModifiedEvent.EVENT_TYPE,
                     payload: {
                         userGroupPolicies: result,
+                        tenantId: 100,
                     },
                 }),
             );
@@ -165,6 +166,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                         userId: 123,
                         groupPolicyIdsToAdd: [1, 2, 3],
                         groupPolicyIdsToRemove: [4, 5, 6],
+                        tenantId: 100,
                     },
                 }),
             );

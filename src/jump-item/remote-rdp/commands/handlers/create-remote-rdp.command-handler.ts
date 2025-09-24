@@ -37,6 +37,7 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
             this.eventBus.publish(
                 new RemoteRdpCreatedEvent(command.transactionId, {
                     remoteRdp: createdRemoteRdp,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
                 new RemoteRdpCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteRdp: remoteRdpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

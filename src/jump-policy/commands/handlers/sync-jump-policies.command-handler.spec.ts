@@ -63,6 +63,7 @@ describe('SyncJumpPoliciesCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -240,6 +241,7 @@ describe('SyncJumpPoliciesCommandHandler', () => {
                             createdJumpPolicyIds: expectedResult.createdJumpPolicyIds,
                             updatedJumpPolicyIds: expectedResult.updatedJumpPolicyIds,
                             deletedJumpPolicyIds: expectedResult.deletedJumpPolicyIds,
+                            tenantId: 123,
                         },
                     }),
                 );

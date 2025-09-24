@@ -4,6 +4,7 @@ export interface ProtocolTunnelJumpsSyncedEventPayload {
     createdProtocolTunnelJumpIds: number[];
     updatedProtocolTunnelJumpIds: number[];
     deletedProtocolTunnelJumpIds: number[];
+    tenantId: number;
 }
 
 export class ProtocolTunnelJumpsSyncedEvent extends BaseEvent {

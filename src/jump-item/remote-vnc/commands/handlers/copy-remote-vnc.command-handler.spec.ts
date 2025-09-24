@@ -110,6 +110,7 @@ describe('CopyRemoteVncCommandHandler', () => {
                     eventType: RemoteVncCopiedEvent.EVENT_TYPE,
                     payload: {
                         remoteVnc: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -151,6 +152,7 @@ describe('CopyRemoteVncCommandHandler', () => {
                 handler.execute(<CopyRemoteVncCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-vnc-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -164,6 +166,7 @@ describe('CopyRemoteVncCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteVnc: remoteVncEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

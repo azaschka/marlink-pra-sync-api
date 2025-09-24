@@ -67,6 +67,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -244,6 +245,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
                             createdRemoteVncIds: expectedResult.createdRemoteVncIds,
                             updatedRemoteVncIds: expectedResult.updatedRemoteVncIds,
                             deletedRemoteVncIds: expectedResult.deletedRemoteVncIds,
+                            tenantId: 123,
                         },
                     }),
                 );

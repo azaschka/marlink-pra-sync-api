@@ -41,6 +41,7 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
                     createdShellJumpIds,
                     updatedShellJumpIds,
                     deletedShellJumpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -53,6 +54,7 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
             this.eventBus.publish(
                 new ShellJumpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -198,6 +200,7 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
                 this.eventBus.publish(
                     new ShellJumpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing shell jump with id ${shellJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

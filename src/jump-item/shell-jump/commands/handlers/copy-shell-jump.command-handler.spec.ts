@@ -126,6 +126,7 @@ describe('CopyShellJumpCommandHandler', () => {
                     eventType: ShellJumpCopiedEvent.EVENT_TYPE,
                     payload: {
                         shellJump: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -167,6 +168,7 @@ describe('CopyShellJumpCommandHandler', () => {
                 handler.execute(<CopyShellJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'shell-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -180,6 +182,7 @@ describe('CopyShellJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         shellJump: shellJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

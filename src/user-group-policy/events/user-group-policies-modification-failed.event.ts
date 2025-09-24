@@ -5,6 +5,7 @@ export interface UserGroupPoliciesModificationFailedEventPayload {
     userId: number;
     groupPolicyIdsToAdd: number[];
     groupPolicyIdsToRemove: number[];
+    tenantId: number;
 }
 
 export class UserGroupPoliciesModificationFailedEvent extends BaseEvent {

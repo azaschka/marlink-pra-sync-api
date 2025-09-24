@@ -35,6 +35,7 @@ export class ModifyJumpClientCommandHandler implements ICommandHandler<ModifyJum
             this.eventBus.publish(
                 new JumpClientModifiedEvent(command.transactionId, {
                     jumpClient: updatedJumpClient,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -44,6 +45,7 @@ export class ModifyJumpClientCommandHandler implements ICommandHandler<ModifyJum
                 new JumpClientModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpClient: jumpClientEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

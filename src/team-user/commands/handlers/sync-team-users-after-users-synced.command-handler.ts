@@ -33,12 +33,14 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
                 this.eventBus.publish(
                     new TeamUsersSyncedEvent(command.transactionId, {
                         teamUsers: teamUsers,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new TeamUsersSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for team "${teamId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
@@ -50,6 +52,7 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
             this.eventBus.publish(
                 new TeamUsersSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }

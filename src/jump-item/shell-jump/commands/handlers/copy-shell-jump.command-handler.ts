@@ -37,6 +37,7 @@ export class CopyShellJumpCommandHandler implements ICommandHandler<CopyShellJum
             this.eventBus.publish(
                 new ShellJumpCopiedEvent(command.transactionId, {
                     shellJump: createdShellJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class CopyShellJumpCommandHandler implements ICommandHandler<CopyShellJum
                 new ShellJumpCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     shellJump: shellJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

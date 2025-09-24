@@ -27,6 +27,7 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
             this.eventBus.publish(
                 new TeamUserAddedEvent(command.transactionId, {
                     teamUser: teamUser,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -36,6 +37,7 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
                 new TeamUserAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     teamUser: teamUserEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

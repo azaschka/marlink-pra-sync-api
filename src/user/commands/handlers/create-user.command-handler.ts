@@ -31,6 +31,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
             this.eventBus.publish(
                 new UserCreatedEvent(command.transactionId, {
                     user: createdUser,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -40,6 +41,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
                 new UserCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     user: userEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

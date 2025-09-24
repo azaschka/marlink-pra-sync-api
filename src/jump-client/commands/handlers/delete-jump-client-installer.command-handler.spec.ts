@@ -43,6 +43,7 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
                 eventType: JumpClientInstallerDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -95,6 +96,7 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

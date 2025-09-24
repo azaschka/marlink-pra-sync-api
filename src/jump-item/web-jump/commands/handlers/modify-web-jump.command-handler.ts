@@ -32,6 +32,7 @@ export class ModifyWebJumpCommandHandler implements ICommandHandler<ModifyWebJum
             this.eventBus.publish(
                 new WebJumpModifiedEvent(command.transactionId, {
                     webJump: updatedWebJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -41,6 +42,7 @@ export class ModifyWebJumpCommandHandler implements ICommandHandler<ModifyWebJum
                 new WebJumpModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     webJump: webJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

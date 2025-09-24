@@ -31,6 +31,7 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
             this.eventBus.publish(
                 new JumpointModifiedEvent(command.transactionId, {
                     jumpoint: updatedJumpoint,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -40,6 +41,7 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
                 new JumpointModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpoint: jumpointEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

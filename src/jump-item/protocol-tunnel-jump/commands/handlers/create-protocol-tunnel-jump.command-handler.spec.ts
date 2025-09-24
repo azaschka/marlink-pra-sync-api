@@ -180,6 +180,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                         eventType: ProtocolTunnelJumpCreatedEvent.EVENT_TYPE,
                         payload: {
                             protocolTunnelJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -225,6 +226,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                 handler.execute(<CreateProtocolTunnelJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'protocol-tunnel-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -238,6 +240,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         protocolTunnelJump: protocolTunnelJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

@@ -179,6 +179,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyCreatedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicy: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -236,6 +237,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         groupPolicy: groupPolicyEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

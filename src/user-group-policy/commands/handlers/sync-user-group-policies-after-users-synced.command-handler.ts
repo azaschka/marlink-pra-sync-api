@@ -36,12 +36,14 @@ export class SyncUserGroupPoliciesAfterUsersSyncedCommandHandler
                 this.eventBus.publish(
                     new UserGroupPoliciesSyncedEvent(command.transactionId, {
                         userGroupPolicies: userGroupPolicies,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new UserGroupPoliciesSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for user "${userId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
@@ -53,6 +55,7 @@ export class SyncUserGroupPoliciesAfterUsersSyncedCommandHandler
             this.eventBus.publish(
                 new UserGroupPoliciesSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }

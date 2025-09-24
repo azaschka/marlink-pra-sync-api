@@ -169,6 +169,7 @@ describe('CreateShellJumpCommandHandler', () => {
                         eventType: ShellJumpCreatedEvent.EVENT_TYPE,
                         payload: {
                             shellJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -211,6 +212,7 @@ describe('CreateShellJumpCommandHandler', () => {
                 handler.execute(<CreateShellJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'shell-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -224,6 +226,7 @@ describe('CreateShellJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         shellJump: shellJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

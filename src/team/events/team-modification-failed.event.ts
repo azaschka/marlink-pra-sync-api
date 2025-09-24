@@ -4,6 +4,7 @@ import { Team } from '../models';
 export interface TeamModificationFailedEventPayload {
     errorMessage: string;
     team: Team;
+    tenantId: number;
 }
 
 export class TeamModificationFailedEvent extends BaseEvent {

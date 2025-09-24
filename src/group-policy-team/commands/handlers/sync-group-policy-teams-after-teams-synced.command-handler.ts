@@ -39,12 +39,14 @@ export class SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler
                 this.eventBus.publish(
                     new GroupPolicyTeamsSyncedEvent(command.transactionId, {
                         groupPolicyTeams: groupPolicyTeams,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new GroupPolicyTeamsSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for group policy "${groupPolicyId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
@@ -59,6 +61,7 @@ export class SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler
             this.eventBus.publish(
                 new GroupPolicyTeamsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }

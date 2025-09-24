@@ -46,6 +46,7 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
                     createdJumpPolicyIds,
                     updatedJumpPolicyIds,
                     deletedJumpPolicyIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -58,6 +59,7 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
             this.eventBus.publish(
                 new JumpPoliciesSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 

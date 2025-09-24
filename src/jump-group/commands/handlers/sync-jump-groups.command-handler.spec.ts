@@ -64,6 +64,7 @@ describe('SyncJumpGroupsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -241,6 +242,7 @@ describe('SyncJumpGroupsCommandHandler', () => {
                             createdJumpGroupIds: expectedResult.createdJumpGroupIds,
                             updatedJumpGroupIds: expectedResult.updatedJumpGroupIds,
                             deletedJumpGroupIds: expectedResult.deletedJumpGroupIds,
+                            tenantId: 123,
                         },
                     }),
                 );

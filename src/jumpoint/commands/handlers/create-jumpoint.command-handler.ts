@@ -32,6 +32,7 @@ export class CreateJumpointCommandHandler implements ICommandHandler<CreateJumpo
             this.eventBus.publish(
                 new JumpointCreatedEvent(command.transactionId, {
                     jumpoint: createdJumpoint,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -41,6 +42,7 @@ export class CreateJumpointCommandHandler implements ICommandHandler<CreateJumpo
                 new JumpointCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpoint: jumpointEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

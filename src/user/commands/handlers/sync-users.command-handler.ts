@@ -58,6 +58,7 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
             this.eventBus.publish(
                 new UsersSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 

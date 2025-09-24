@@ -211,6 +211,7 @@ describe('CreateUserCommandHandler', () => {
                         eventType: UserCreatedEvent.EVENT_TYPE,
                         payload: {
                             user: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -252,6 +253,7 @@ describe('CreateUserCommandHandler', () => {
                 handler.execute(<CreateUserCommand>{
                     transactionId: 'transaction-1',
                     publicDisplayName: 'user-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -265,6 +267,7 @@ describe('CreateUserCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         user: userEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

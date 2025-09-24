@@ -41,6 +41,7 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
                     createdRemoteVncIds,
                     updatedRemoteVncIds,
                     deletedRemoteVncIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -53,6 +54,7 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
             this.eventBus.publish(
                 new RemoteVncsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -194,6 +196,7 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
                 this.eventBus.publish(
                     new RemoteVncsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing remote VNC with id ${remoteVnc.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

@@ -88,6 +88,7 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyJumpointAddedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicyJumpoint: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -139,6 +140,7 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     jumpointId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -155,6 +157,7 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
                             groupPolicyId: groupPolicyJumpointEntityToBeCreated.groupPolicyId,
                             jumpointId: groupPolicyJumpointEntityToBeCreated.jumpointId,
                         },
+                        tenantId: 123,
                     },
                 }),
             );

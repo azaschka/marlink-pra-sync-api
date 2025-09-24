@@ -46,6 +46,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
                     createdProtocolTunnelJumpIds,
                     updatedProtocolTunnelJumpIds,
                     deletedProtocolTunnelJumpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -58,6 +59,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
             this.eventBus.publish(
                 new ProtocolTunnelJumpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -236,6 +238,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
                 this.eventBus.publish(
                     new ProtocolTunnelJumpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing protocol tunnel jump with id ${protocolTunnelJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

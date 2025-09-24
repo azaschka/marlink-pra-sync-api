@@ -200,6 +200,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                         eventType: JumpPolicyCreatedEvent.EVENT_TYPE,
                         payload: {
                             jumpPolicy: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -242,6 +243,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                 handler.execute(<CreateJumpPolicyCommand>{
                     transactionId: 'transaction-1',
                     displayName: 'jump-policy-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -255,6 +257,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpPolicy: jumpPolicyEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

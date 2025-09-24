@@ -3,6 +3,7 @@ import { GroupPolicyTeam } from '../models';
 
 export interface GroupPolicyTeamsSyncedEventPayload {
     groupPolicyTeams: GroupPolicyTeam[];
+    tenantId: number;
 }
 
 export class GroupPolicyTeamsSyncedEvent extends BaseEvent {

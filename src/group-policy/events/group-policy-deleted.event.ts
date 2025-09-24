@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface GroupPolicyDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class GroupPolicyDeletedEvent extends BaseEvent {

@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface RemoteVncDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class RemoteVncDeletedEvent extends BaseEvent {

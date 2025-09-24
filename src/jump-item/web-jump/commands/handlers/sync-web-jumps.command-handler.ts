@@ -41,6 +41,7 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
                     createdWebJumpIds,
                     updatedWebJumpIds,
                     deletedWebJumpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -53,6 +54,7 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
             this.eventBus.publish(
                 new WebJumpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -194,6 +196,7 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
                 this.eventBus.publish(
                     new WebJumpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing web jump with id ${webJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

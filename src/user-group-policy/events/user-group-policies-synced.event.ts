@@ -3,6 +3,7 @@ import { UserGroupPolicy } from '../models';
 
 export interface UserGroupPoliciesSyncedEventPayload {
     userGroupPolicies: UserGroupPolicy[];
+    tenantId: number;
 }
 
 export class UserGroupPoliciesSyncedEvent extends BaseEvent {

@@ -168,6 +168,7 @@ describe('CreateJumpointCommandHandler', () => {
                         eventType: JumpointCreatedEvent.EVENT_TYPE,
                         payload: {
                             jumpoint: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -216,6 +217,7 @@ describe('CreateJumpointCommandHandler', () => {
                     transactionId: 'transaction-1',
                     name: 'jumpoint-1',
                     platformType: JumpointPlatformType.WindowsX86,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -229,6 +231,7 @@ describe('CreateJumpointCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpoint: jumpointEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

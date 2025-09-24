@@ -35,6 +35,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
             this.eventBus.publish(
                 new UserGroupPoliciesModifiedEvent(command.transactionId, {
                     userGroupPolicies: userGroupPolicies,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
                     userId: command.userId,
                     groupPolicyIdsToAdd: command.groupPolicyIdsToAdd,
                     groupPolicyIdsToRemove: command.groupPolicyIdsToRemove,
+                    tenantId: command.tenantId,
                 }),
             );
 

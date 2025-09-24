@@ -4,6 +4,7 @@ import { JumpGroup } from '../models';
 export interface JumpGroupCreationFailedEventPayload {
     errorMessage: string;
     jumpGroup: JumpGroup;
+    tenantId: number;
 }
 
 export class JumpGroupCreationFailedEvent extends BaseEvent {

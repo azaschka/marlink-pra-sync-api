@@ -157,6 +157,7 @@ describe('CopyJumpClientCommandHandler', () => {
                     eventType: JumpClientCopiedEvent.EVENT_TYPE,
                     payload: {
                         jumpClient: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -198,6 +199,7 @@ describe('CopyJumpClientCommandHandler', () => {
                 handler.execute(<CopyJumpClientCommand>{
                     transactionId: 'transaction-1',
                     name: 'jump-client-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -211,6 +213,7 @@ describe('CopyJumpClientCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpClient: jumpClientEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

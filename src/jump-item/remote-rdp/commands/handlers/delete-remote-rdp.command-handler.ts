@@ -21,12 +21,15 @@ export class DeleteRemoteRdpCommandHandler implements ICommandHandler<DeleteRemo
         try {
             await this.remoteRdpRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new RemoteRdpDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new RemoteRdpDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new RemoteRdpDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

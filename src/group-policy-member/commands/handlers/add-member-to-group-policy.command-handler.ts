@@ -26,6 +26,7 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
             this.eventBus.publish(
                 new GroupPolicyMemberAddedEvent(command.transactionId, {
                     groupPolicyMember: groupPolicyMember,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
                 new GroupPolicyMemberAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyMember: groupPolicyMemberEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

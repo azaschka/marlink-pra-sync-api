@@ -3,6 +3,7 @@ import { JumpGroup } from '../models';
 
 export interface JumpGroupCreatedEventPayload {
     jumpGroup: JumpGroup;
+    tenantId: number;
 }
 
 export class JumpGroupCreatedEvent extends BaseEvent {

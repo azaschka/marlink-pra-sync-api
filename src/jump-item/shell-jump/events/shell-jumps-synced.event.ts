@@ -4,6 +4,7 @@ export interface ShellJumpsSyncedEventPayload {
     createdShellJumpIds: number[];
     updatedShellJumpIds: number[];
     deletedShellJumpIds: number[];
+    tenantId: number;
 }
 
 export class ShellJumpsSyncedEvent extends BaseEvent {

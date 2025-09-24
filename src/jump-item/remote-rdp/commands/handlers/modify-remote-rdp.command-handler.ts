@@ -34,6 +34,7 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
             this.eventBus.publish(
                 new RemoteRdpModifiedEvent(command.transactionId, {
                     remoteRdp: updatedRemoteRdp,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -43,6 +44,7 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
                 new RemoteRdpModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteRdp: remoteRdpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

@@ -41,6 +41,7 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
                     createdRemoteRdpIds,
                     updatedRemoteRdpIds,
                     deletedRemoteRdpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -53,6 +54,7 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
             this.eventBus.publish(
                 new RemoteRdpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -207,6 +209,7 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
                 this.eventBus.publish(
                     new RemoteRdpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing remote RDP with id ${remoteRdp.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

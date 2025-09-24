@@ -54,6 +54,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
             this.eventBus.publish(
                 new GroupPoliciesSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 

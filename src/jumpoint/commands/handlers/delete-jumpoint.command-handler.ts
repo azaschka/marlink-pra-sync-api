@@ -21,12 +21,15 @@ export class DeleteJumpointCommandHandler implements ICommandHandler<DeleteJumpo
         try {
             await this.jumpointRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new JumpointDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new JumpointDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new JumpointDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

@@ -26,6 +26,7 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
             this.eventBus.publish(
                 new JumpGroupCreatedEvent(command.transactionId, {
                     jumpGroup: createdJumpGroup,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
                 new JumpGroupCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpGroup: jumpGroupEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

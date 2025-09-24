@@ -53,6 +53,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
                     createdJumpClientInstallerIds,
                     updatedJumpClientInstallerIds,
                     deletedJumpClientInstallerIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -65,6 +66,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
             this.eventBus.publish(
                 new JumpClientInstallersSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 

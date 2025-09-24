@@ -36,6 +36,7 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
             this.eventBus.publish(
                 new JumpPolicyCreatedEvent(command.transactionId, {
                     jumpPolicy: createdJumpPolicy,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -45,6 +46,7 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
                 new JumpPolicyCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpPolicy: jumpPolicyEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

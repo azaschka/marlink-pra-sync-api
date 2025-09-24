@@ -163,6 +163,7 @@ describe('ModifyShellJumpCommandHandler', () => {
                         eventType: ShellJumpModifiedEvent.EVENT_TYPE,
                         payload: {
                             shellJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -208,6 +209,7 @@ describe('ModifyShellJumpCommandHandler', () => {
                 handler.execute(<ModifyShellJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'shell-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -222,6 +224,7 @@ describe('ModifyShellJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         shellJump: shellJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -248,6 +251,7 @@ describe('ModifyShellJumpCommandHandler', () => {
                 handler.execute(<ModifyShellJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'shell-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -261,6 +265,7 @@ describe('ModifyShellJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         shellJump: shellJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

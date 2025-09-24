@@ -174,6 +174,7 @@ describe('ModifyJumpointCommandHandler', () => {
                         eventType: JumpointModifiedEvent.EVENT_TYPE,
                         payload: {
                             jumpoint: result,
+                            tenantId: 100,
                         },
                     }),
                 );
@@ -223,6 +224,7 @@ describe('ModifyJumpointCommandHandler', () => {
                 handler.execute(<ModifyJumpointCommand>{
                     transactionId: 'transaction-1',
                     name: 'jumpoint-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -237,6 +239,7 @@ describe('ModifyJumpointCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpoint: jumpointEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -267,6 +270,7 @@ describe('ModifyJumpointCommandHandler', () => {
                 handler.execute(<ModifyJumpointCommand>{
                     transactionId: 'transaction-1',
                     name: 'jumpoint-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -280,6 +284,7 @@ describe('ModifyJumpointCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpoint: jumpointEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

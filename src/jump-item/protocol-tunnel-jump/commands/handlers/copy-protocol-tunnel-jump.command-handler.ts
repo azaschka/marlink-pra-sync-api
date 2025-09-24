@@ -35,6 +35,7 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
             this.eventBus.publish(
                 new ProtocolTunnelJumpCopiedEvent(command.transactionId, {
                     protocolTunnelJump: createdProtocolTunnelJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -44,6 +45,7 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
                 new ProtocolTunnelJumpCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     protocolTunnelJump: protocolTunnelJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

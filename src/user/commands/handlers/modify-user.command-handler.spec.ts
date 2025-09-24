@@ -218,6 +218,7 @@ describe('ModifyUserCommandHandler', () => {
                         eventType: UserModifiedEvent.EVENT_TYPE,
                         payload: {
                             user: result,
+                            tenantId: 100,
                         },
                     }),
                 );
@@ -263,6 +264,7 @@ describe('ModifyUserCommandHandler', () => {
                 handler.execute(<ModifyUserCommand>{
                     transactionId: 'transaction-1',
                     publicDisplayName: 'user-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -277,6 +279,7 @@ describe('ModifyUserCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         user: userEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -302,6 +305,7 @@ describe('ModifyUserCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 123,
                     publicDisplayName: 'user-1',
+                    tenantId: 100,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -315,6 +319,7 @@ describe('ModifyUserCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         user: userEntityToBeCreated,
+                        tenantId: 100,
                     },
                 }),
             );

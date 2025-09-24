@@ -30,6 +30,7 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
             this.eventBus.publish(
                 new ProtocolTunnelJumpModifiedEvent(command.transactionId, {
                     protocolTunnelJump: updatedProtocolTunnelJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -39,6 +40,7 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
                 new ProtocolTunnelJumpModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     protocolTunnelJump: protocolTunnelJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

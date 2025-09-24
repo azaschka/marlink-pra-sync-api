@@ -144,6 +144,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
                     eventType: RemoteRdpCopiedEvent.EVENT_TYPE,
                     payload: {
                         remoteRdp: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -185,6 +186,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
                 handler.execute(<CopyRemoteRdpCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-rdp-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -198,6 +200,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteRdp: remoteRdpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

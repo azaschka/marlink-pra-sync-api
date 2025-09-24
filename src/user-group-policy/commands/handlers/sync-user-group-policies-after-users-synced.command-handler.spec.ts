@@ -107,6 +107,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
                                     groupPolicyId: 3,
                                 },
                             ],
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -136,6 +137,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
                     eventType: UserGroupPoliciesSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

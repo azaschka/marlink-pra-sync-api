@@ -35,6 +35,7 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
             this.eventBus.publish(
                 new WebJumpCreatedEvent(command.transactionId, {
                     webJump: createdWebJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -44,6 +45,7 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
                 new WebJumpCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     webJump: webJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

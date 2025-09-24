@@ -34,6 +34,7 @@ describe('DeleteUserCommandHandler', () => {
                 eventType: UserDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -75,6 +76,7 @@ describe('DeleteUserCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

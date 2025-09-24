@@ -71,6 +71,7 @@ describe('SyncShellJumpsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -248,6 +249,7 @@ describe('SyncShellJumpsCommandHandler', () => {
                             createdShellJumpIds: expectedResult.createdShellJumpIds,
                             updatedShellJumpIds: expectedResult.updatedShellJumpIds,
                             deletedShellJumpIds: expectedResult.deletedShellJumpIds,
+                            tenantId: 123,
                         },
                     }),
                 );

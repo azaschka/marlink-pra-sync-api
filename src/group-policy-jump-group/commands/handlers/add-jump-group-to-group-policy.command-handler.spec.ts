@@ -92,6 +92,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyJumpGroupAddedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicyJumpGroup: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -145,6 +146,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     jumpGroupId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -161,6 +163,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                             groupPolicyId: groupPolicyJumpGroupEntityToBeCreated.groupPolicyId,
                             jumpGroupId: groupPolicyJumpGroupEntityToBeCreated.jumpGroupId,
                         },
+                        tenantId: 123,
                     },
                 }),
             );

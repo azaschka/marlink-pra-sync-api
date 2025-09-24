@@ -213,6 +213,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
                         eventType: JumpPolicyModifiedEvent.EVENT_TYPE,
                         payload: {
                             jumpPolicy: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -258,6 +259,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
                 handler.execute(<ModifyJumpPolicyCommand>{
                     transactionId: 'transaction-1',
                     displayName: 'jump-policy-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -272,6 +274,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpPolicy: jumpPolicyEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -298,6 +301,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
                 handler.execute(<ModifyJumpPolicyCommand>{
                     transactionId: 'transaction-1',
                     displayName: 'jump-policy-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -311,6 +315,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpPolicy: jumpPolicyEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

@@ -3,6 +3,7 @@ import { Team } from '../models';
 
 export interface TeamCreatedEventPayload {
     team: Team;
+    tenantId: number;
 }
 
 export class TeamCreatedEvent extends BaseEvent {

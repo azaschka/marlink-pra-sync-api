@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface UserDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class UserDeletionFailedEvent extends BaseEvent {

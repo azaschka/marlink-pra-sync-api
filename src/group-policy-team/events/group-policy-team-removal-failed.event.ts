@@ -4,6 +4,7 @@ export interface GroupPolicyTeamRemovalFailedEventPayload {
     errorMessage: string;
     groupPolicyId: number;
     teamId: number;
+    tenantId: number;
 }
 
 export class GroupPolicyTeamRemovalFailedEvent extends BaseEvent {

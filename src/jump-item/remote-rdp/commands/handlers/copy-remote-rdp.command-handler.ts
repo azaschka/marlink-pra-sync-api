@@ -37,6 +37,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
             this.eventBus.publish(
                 new RemoteRdpCopiedEvent(command.transactionId, {
                     remoteRdp: createdRemoteRdp,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
                 new RemoteRdpCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteRdp: remoteRdpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

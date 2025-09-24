@@ -119,6 +119,7 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
                                 jumpGroupId: 3,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -138,6 +139,7 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
                                 jumpGroupId: 5,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -153,6 +155,7 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
                                 jumpGroupId: 6,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -189,6 +192,7 @@ describe('SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler', () =
                     eventType: GroupPolicyJumpGroupsSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

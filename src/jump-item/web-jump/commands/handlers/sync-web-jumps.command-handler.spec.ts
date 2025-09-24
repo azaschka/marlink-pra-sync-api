@@ -67,6 +67,7 @@ describe('SyncWebJumpsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -244,6 +245,7 @@ describe('SyncWebJumpsCommandHandler', () => {
                             createdWebJumpIds: expectedResult.createdWebJumpIds,
                             updatedWebJumpIds: expectedResult.updatedWebJumpIds,
                             deletedWebJumpIds: expectedResult.deletedWebJumpIds,
+                            tenantId: 123,
                         },
                     }),
                 );

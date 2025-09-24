@@ -3,6 +3,7 @@ import { JumpClientInstaller } from '../models';
 
 export interface JumpClientInstallerCreatedEventPayload {
     jumpClientInstaller: JumpClientInstaller;
+    tenantId: number;
 }
 
 export class JumpClientInstallerCreatedEvent extends BaseEvent {

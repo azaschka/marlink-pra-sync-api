@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface JumpGroupDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class JumpGroupDeletionFailedEvent extends BaseEvent {

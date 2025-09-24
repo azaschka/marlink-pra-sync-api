@@ -39,6 +39,7 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
             this.eventBus.publish(
                 new JumpClientInstallerCreatedEvent(command.transactionId, {
                     jumpClientInstaller: createdJumpClientInstaller,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -48,6 +49,7 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
                 new JumpClientInstallerCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpClientInstaller: jumpClientInstallerEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 

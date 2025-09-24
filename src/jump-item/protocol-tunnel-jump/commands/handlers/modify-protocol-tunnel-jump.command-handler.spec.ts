@@ -168,6 +168,7 @@ describe('ModifyProtocolTunnelJumpCommandHandler', () => {
                         eventType: ProtocolTunnelJumpModifiedEvent.EVENT_TYPE,
                         payload: {
                             protocolTunnelJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -216,6 +217,7 @@ describe('ModifyProtocolTunnelJumpCommandHandler', () => {
                 handler.execute(<ModifyProtocolTunnelJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'protocol-tunnel-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -230,6 +232,7 @@ describe('ModifyProtocolTunnelJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         protocolTunnelJump: protocolTunnelJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -259,6 +262,7 @@ describe('ModifyProtocolTunnelJumpCommandHandler', () => {
                 handler.execute(<ModifyProtocolTunnelJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'protocol-tunnel-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -272,6 +276,7 @@ describe('ModifyProtocolTunnelJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         protocolTunnelJump: protocolTunnelJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

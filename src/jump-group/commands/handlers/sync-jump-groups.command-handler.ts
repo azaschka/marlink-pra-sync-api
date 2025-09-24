@@ -40,6 +40,7 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
                     createdJumpGroupIds,
                     updatedJumpGroupIds,
                     deletedJumpGroupIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -52,6 +53,7 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
             this.eventBus.publish(
                 new JumpGroupsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 

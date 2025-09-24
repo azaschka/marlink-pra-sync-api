@@ -47,6 +47,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
                     createdJumpClientIds,
                     updatedJumpClientIds,
                     deletedJumpClientIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -59,6 +60,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
             this.eventBus.publish(
                 new JumpClientsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -225,6 +227,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
                 this.eventBus.publish(
                     new JumpClientsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing jump client with id ${jumpClient.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

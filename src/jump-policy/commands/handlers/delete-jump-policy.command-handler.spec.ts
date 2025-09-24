@@ -34,6 +34,7 @@ describe('DeleteJumpPolicyCommandHandler', () => {
                 eventType: JumpPolicyDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -79,6 +80,7 @@ describe('DeleteJumpPolicyCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

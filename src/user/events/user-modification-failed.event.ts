@@ -4,6 +4,7 @@ import { User } from '../models';
 export interface UserModificationFailedEventPayload {
     errorMessage: string;
     user: User;
+    tenantId: number;
 }
 
 export class UserModificationFailedEvent extends BaseEvent {

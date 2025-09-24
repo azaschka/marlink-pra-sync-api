@@ -3,6 +3,7 @@ import { BaseEvent } from '../../../core/events';
 export interface RemoteRdpDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class RemoteRdpDeletionFailedEvent extends BaseEvent {

@@ -93,6 +93,7 @@ describe('ModifyTeamCommandHandler', () => {
                         eventType: TeamModifiedEvent.EVENT_TYPE,
                         payload: {
                             team: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -136,6 +137,7 @@ describe('ModifyTeamCommandHandler', () => {
                 handler.execute(<ModifyTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -150,6 +152,7 @@ describe('ModifyTeamCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         team: teamEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -174,6 +177,7 @@ describe('ModifyTeamCommandHandler', () => {
                 handler.execute(<ModifyTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -187,6 +191,7 @@ describe('ModifyTeamCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         team: teamEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
