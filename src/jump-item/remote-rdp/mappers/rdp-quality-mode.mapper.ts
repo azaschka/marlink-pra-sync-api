@@ -7,6 +7,8 @@ export function mapFromBTRdpQualityMode(btRdpQualityMode: BTRdpQualityMode): Rdp
             return RdpQualityMode.Lossless;
         case BTRdpQualityMode.Performance:
             return RdpQualityMode.Performance;
+        case BTRdpQualityMode.BestPerformance:
+            return RdpQualityMode.BestPerformance;
         case BTRdpQualityMode.PerformanceQuality:
             return RdpQualityMode.PerformanceQuality;
         case BTRdpQualityMode.Quality:
@@ -26,6 +28,8 @@ export function mapToBTRdpQualityMode(rdpQualityMode: RdpQualityMode): BTRdpQual
             return BTRdpQualityMode.Lossless;
         case RdpQualityMode.Performance:
             return BTRdpQualityMode.Performance;
+        case RdpQualityMode.BestPerformance:
+            return BTRdpQualityMode.BestPerformance;
         case RdpQualityMode.PerformanceQuality:
             return BTRdpQualityMode.PerformanceQuality;
         case RdpQualityMode.Quality:

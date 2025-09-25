@@ -10,18 +10,25 @@ describe('mapFromBTJumpClientInstallerPlatformType', () => {
     });
 
     it.each([
+        [BTJumpClientInstallerPlatformType.Linux32Armv7, JumpClientInstallerPlatformType.Linux32Armv7],
+        [BTJumpClientInstallerPlatformType.Linux32Armv7Headless, JumpClientInstallerPlatformType.Linux32Armv7Headless],
+        [BTJumpClientInstallerPlatformType.Linux64X86, JumpClientInstallerPlatformType.Linux64X86],
+        [BTJumpClientInstallerPlatformType.Linux64X86Headless, JumpClientInstallerPlatformType.Linux64X86Headless],
         [BTJumpClientInstallerPlatformType.Linux64, JumpClientInstallerPlatformType.Linux64],
         [BTJumpClientInstallerPlatformType.Linux64Headless, JumpClientInstallerPlatformType.Linux64Headless],
-        [BTJumpClientInstallerPlatformType.MacDmg, JumpClientInstallerPlatformType.MacDmg],
-        [BTJumpClientInstallerPlatformType.MacZip, JumpClientInstallerPlatformType.MacZip],
-        [BTJumpClientInstallerPlatformType.Windows64, JumpClientInstallerPlatformType.Windows64],
-        [BTJumpClientInstallerPlatformType.Windows64Msi, JumpClientInstallerPlatformType.Windows64Msi],
         [
             BTJumpClientInstallerPlatformType.RaspberryPi32Headless,
             JumpClientInstallerPlatformType.RaspberryPi32Headless,
         ],
+        [BTJumpClientInstallerPlatformType.MacDmg, JumpClientInstallerPlatformType.MacDmg],
+        [BTJumpClientInstallerPlatformType.MacZip, JumpClientInstallerPlatformType.MacZip],
+        [BTJumpClientInstallerPlatformType.MacOsxX86, JumpClientInstallerPlatformType.MacOsxX86],
+        [BTJumpClientInstallerPlatformType.Windows64, JumpClientInstallerPlatformType.Windows64],
+        [BTJumpClientInstallerPlatformType.Windows64Msi, JumpClientInstallerPlatformType.Windows64Msi],
+        [BTJumpClientInstallerPlatformType.WinNT64Msi, JumpClientInstallerPlatformType.WinNT64Msi],
         [BTJumpClientInstallerPlatformType.Windows32, JumpClientInstallerPlatformType.Windows32],
         [BTJumpClientInstallerPlatformType.Windows32Msi, JumpClientInstallerPlatformType.Windows32Msi],
+        [BTJumpClientInstallerPlatformType.WinNT32Msi, JumpClientInstallerPlatformType.WinNT32Msi],
     ])('should map %s to %s', (input, expected) => {
         const result = mapFromBTJumpClientInstallerPlatformType(input);
         expect(result).toBe(expected);

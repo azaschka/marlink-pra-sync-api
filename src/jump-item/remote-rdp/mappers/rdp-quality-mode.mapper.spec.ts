@@ -12,6 +12,7 @@ describe('mapFromBTRdpQualityMode', () => {
     it.each([
         [BTRdpQualityMode.Lossless, RdpQualityMode.Lossless],
         [BTRdpQualityMode.Performance, RdpQualityMode.Performance],
+        [BTRdpQualityMode.BestPerformance, RdpQualityMode.BestPerformance],
         [BTRdpQualityMode.PerformanceQuality, RdpQualityMode.PerformanceQuality],
         [BTRdpQualityMode.Quality, RdpQualityMode.Quality],
         [BTRdpQualityMode.Video, RdpQualityMode.Video],
@@ -37,6 +38,7 @@ describe('mapToBTRdpQualityMode', () => {
     it.each([
         [RdpQualityMode.Lossless, BTRdpQualityMode.Lossless],
         [RdpQualityMode.Performance, BTRdpQualityMode.Performance],
+        [RdpQualityMode.BestPerformance, BTRdpQualityMode.BestPerformance],
         [RdpQualityMode.PerformanceQuality, BTRdpQualityMode.PerformanceQuality],
         [RdpQualityMode.Quality, BTRdpQualityMode.Quality],
         [RdpQualityMode.Video, BTRdpQualityMode.Video],

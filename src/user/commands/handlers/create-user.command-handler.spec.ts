@@ -3,6 +3,7 @@ import { CreateUserCommand as BTCreateUserCommand } from '../../../beyondtrust-p
 import { UserCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
 import {
     UserAllowedAccessPermissionType as BTUserAllowedAccessPermissionType,
+    UserEndpointAutomationPermissionType as BTUserEndpointAutomationPermissionType,
     UserViewSupportReportsPermissionType as BTUserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType as BTUserViewVaultReportsPermissionType,
 } from '../../../beyondtrust-pra-conf-api/user/enums';
@@ -24,6 +25,9 @@ jest.mock('../../mappers', () => ({
     mapFromBTUserAllowedAccessPermissionType: jest
         .fn()
         .mockImplementation((type: BTUserViewSupportReportsPermissionType) => type),
+    mapFromBTUserEndpointAutomationPermissionType: jest
+        .fn()
+        .mockImplementation((type: BTUserEndpointAutomationPermissionType) => type),
 }));
 
 abstract class TestHelper {
@@ -78,7 +82,7 @@ abstract class TestHelper {
             permProtocolTunnel: false,
             permSdStaticPortForExternalTools: false,
             permVault: false,
-            permEndpointAutomation: false,
+            permEndpointAutomation: BTUserEndpointAutomationPermissionType.NotAllowed,
         };
     }
 }

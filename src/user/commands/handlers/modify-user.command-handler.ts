@@ -2,9 +2,10 @@ import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/c
 import { ModifyUserCommand as BTModifyUserCommand } from '../../../beyondtrust-pra-conf-api/user/commands';
 import { UserModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { UserModifiedEvent, UserModificationFailedEvent } from '../../events';
+import { UserModificationFailedEvent, UserModifiedEvent } from '../../events';
 import {
     mapFromBTUserAllowedAccessPermissionType,
+    mapFromBTUserEndpointAutomationPermissionType,
     mapFromBTUserViewSupportReportsPermissionType,
     mapFromBTUserViewVaultReportsPermissionType,
 } from '../../mappers';
@@ -121,7 +122,9 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
             btUser.permProtocolTunnel,
             btUser.permSdStaticPortForExternalTools,
             btUser.permVault,
-            btUser.permEndpointAutomation,
+            btUser.permEndpointAutomation
+                ? mapFromBTUserEndpointAutomationPermissionType(btUser.permEndpointAutomation)
+                : undefined,
         );
     }
 

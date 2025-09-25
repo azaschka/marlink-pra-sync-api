@@ -5,6 +5,7 @@ import { TeamUserEntity } from '../../../team-user/repositories/entities';
 import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
 import {
     UserAllowedAccessPermissionType,
+    UserEndpointAutomationPermissionType,
     UserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType,
 } from '../../enums';
@@ -174,8 +175,13 @@ export class UserEntity implements User {
     @Column({ name: 'has_vault_permission', type: 'boolean', nullable: true })
     public hasVaultPermission?: boolean;
 
-    @Column({ name: 'has_endpoint_automation_permission', type: 'boolean', nullable: true })
-    public hasEndpointAutomationPermission?: boolean;
+    @Column({
+        name: 'endpoint_automation_permission_type',
+        type: 'enum',
+        enum: UserEndpointAutomationPermissionType,
+        nullable: true,
+    })
+    public endpointAutomationPermissionType?: UserEndpointAutomationPermissionType;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
@@ -239,7 +245,7 @@ export class UserEntity implements User {
         hasProtocolTunnelPermission?: boolean,
         hasSdStaticPortForExternalToolsPermission?: boolean,
         hasVaultPermission?: boolean,
-        hasEndpointAutomationPermission?: boolean,
+        endpointAutomationPermissionType?: UserEndpointAutomationPermissionType,
     ): UserEntity {
         const entity = new UserEntity();
         entity.id = id;
@@ -291,7 +297,7 @@ export class UserEntity implements User {
         entity.hasProtocolTunnelPermission = hasProtocolTunnelPermission;
         entity.hasSdStaticPortForExternalToolsPermission = hasSdStaticPortForExternalToolsPermission;
         entity.hasVaultPermission = hasVaultPermission;
-        entity.hasEndpointAutomationPermission = hasEndpointAutomationPermission;
+        entity.endpointAutomationPermissionType = endpointAutomationPermissionType;
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
