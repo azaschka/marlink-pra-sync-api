@@ -54,6 +54,7 @@ export class CreateJumpointCommandHandler implements ICommandHandler<CreateJumpo
         return await this.commandBus.execute<BTCreateJumpointCommand, JumpointCreatedDtoOutput>(
             new BTCreateJumpointCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 mapToBTJumpointPlatformType(command.platformType),
                 command.codeName,

@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -44,19 +43,6 @@ describe('CreateBeyondtrustInstanceBackupCommandHandler', () => {
     });
 
     describe('execute', () => {
-        it('should throw NotFoundException if the beyondtrust instance is does not exist', async () => {
-            // Arrange
-            queryBus.execute = jest.fn().mockResolvedValue(null);
-            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
-
-            // Act & Assert
-            await expect(
-                handler.execute(new CreateBeyondtrustInstanceBackupCommand('transaction-1', 123)),
-            ).rejects.toThrow(NotFoundException);
-
-            expect(eventBusPublishMethod).not.toHaveBeenCalled();
-        });
-
         it('should throw the error and publish an event if there is an error after beyondtrust instance is retrieved', async () => {
             // Arrange
             const error = new Error('Command bus error');

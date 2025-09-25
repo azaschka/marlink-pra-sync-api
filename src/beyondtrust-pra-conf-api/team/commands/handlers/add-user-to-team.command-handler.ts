@@ -14,16 +14,18 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
     ) {}
 
     public async execute(command: AddUserToTeamCommand): Promise<UserAddedToTeamDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.team.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.team.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.team.user.path,
+            this.appConfigService.beyondTrust.api.config.team.user.path,
         );
 
         return await this.httpClientService.post<UserAddedToTeamDtoOutput, UserAddedToTeamDtoOutput>(
             UserAddedToTeamDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             AddUserToTeamDtoInput.create(command.userId, command.role),
         );
     }

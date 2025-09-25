@@ -54,6 +54,7 @@ export class CopyWebJumpCommandHandler implements ICommandHandler<CopyWebJumpCom
         const response = await this.commandBus.execute<BTCopyWebJumpCommand, WebJumpCopiedDtoOutput>(
             new BTCopyWebJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -62,7 +63,7 @@ export class CopyWebJumpCommandHandler implements ICommandHandler<CopyWebJumpCom
         );
 
         return await this.queryBus.execute<BTRetrieveWebJumpByIdQuery, WebJumpRetrievedDtoOutput>(
-            new BTRetrieveWebJumpByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveWebJumpByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

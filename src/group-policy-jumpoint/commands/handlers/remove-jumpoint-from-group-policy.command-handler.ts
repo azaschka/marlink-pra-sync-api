@@ -44,7 +44,12 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
 
     private async removeBTGroupPolicyJumpoint(command: RemoveJumpointFromGroupPolicyCommand) {
         await this.commandBus.execute<BTRemoveJumpointFromGroupPolicyCommand, void>(
-            new BTRemoveJumpointFromGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+            new BTRemoveJumpointFromGroupPolicyCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.jumpointId,
+            ),
         );
     }
 

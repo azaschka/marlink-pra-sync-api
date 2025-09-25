@@ -12,14 +12,14 @@ export class RemoveMemberFromGroupPolicyCommandHandler implements ICommandHandle
     ) {}
 
     public async execute(command: RemoveMemberFromGroupPolicyCommand): Promise<void> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.groupPolicy.member.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.member.path,
             command.memberId.toString(),
         );
 
-        return await this.httpClientService.delete(url);
+        return await this.httpClientService.delete(command.transactionId, command.beyondtrustInstanceId, urlPath);
     }
 }

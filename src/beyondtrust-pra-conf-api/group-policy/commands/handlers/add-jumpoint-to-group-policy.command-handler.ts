@@ -14,16 +14,22 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
     ) {}
 
     public async execute(command: AddJumpointToGroupPolicyCommand): Promise<JumpointAddedToGroupPolicyDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.groupPolicy.jumpoint.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.jumpoint.path,
         );
 
         return await this.httpClientService.post<
             JumpointAddedToGroupPolicyDtoOutput,
             JumpointAddedToGroupPolicyDtoOutput
-        >(JumpointAddedToGroupPolicyDtoOutput, url, AddJumpointToGroupPolicyDtoInput.create(command.jumpointId));
+        >(
+            JumpointAddedToGroupPolicyDtoOutput,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
+            AddJumpointToGroupPolicyDtoInput.create(command.jumpointId),
+        );
     }
 }

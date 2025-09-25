@@ -46,7 +46,13 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
 
     private async createBTTeam(command: CreateTeamCommand) {
         return await this.commandBus.execute<BTCreateTeamCommand, TeamCreatedDtoOutput>(
-            new BTCreateTeamCommand(command.transactionId, command.name, command.codeName, command.comments),
+            new BTCreateTeamCommand(
+                command.transactionId,
+                command.tenantId,
+                command.name,
+                command.codeName,
+                command.comments,
+            ),
         );
     }
 

@@ -15,7 +15,7 @@ export class DeleteTeamCommandHandler implements ICommandHandler<DeleteTeamComma
 
     public async execute(command: DeleteTeamCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteTeamCommand, void>(
-            new BTDeleteTeamCommand(command.transactionId, command.id),
+            new BTDeleteTeamCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

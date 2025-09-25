@@ -49,6 +49,7 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
         return await this.commandBus.execute<BTModifyGroupPolicyCommand, GroupPolicyModifiedDtoOutput>(
             new BTModifyGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.hasEndpointsAccessPermission,

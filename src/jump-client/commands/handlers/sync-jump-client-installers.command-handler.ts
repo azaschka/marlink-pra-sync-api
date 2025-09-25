@@ -85,14 +85,21 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
         const btJumpClientInstallers = await this.queryBus.execute<
             RetrieveJumpClientInstallersQuery,
             JumpClientInstallerRetrievedDtoOutput[]
-        >(new RetrieveJumpClientInstallersQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber));
+        >(
+            new RetrieveJumpClientInstallersQuery(
+                transactionId,
+                tenantId,
+                this.appConfigService.sync.maxBatchSize,
+                pageNumber,
+            ),
+        );
 
         // Populate keyInfo for each jump client installer since the previous query does not include it.
         for (const btJumpClientInstaller of btJumpClientInstallers) {
             const moreDetailedBTJumpClientInstaller = await this.queryBus.execute<
                 RetrieveJumpClientInstallerByIdQuery,
                 JumpClientInstallerRetrievedDtoOutput
-            >(new RetrieveJumpClientInstallerByIdQuery(transactionId, btJumpClientInstaller.id));
+            >(new RetrieveJumpClientInstallerByIdQuery(transactionId, tenantId, btJumpClientInstaller.id));
 
             btJumpClientInstaller.keyInfo = moreDetailedBTJumpClientInstaller.keyInfo;
         }

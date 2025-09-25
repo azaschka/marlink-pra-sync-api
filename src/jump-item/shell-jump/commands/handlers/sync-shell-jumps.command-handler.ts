@@ -71,7 +71,7 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
     ) {
         // Retrieve shell jumps from BeyondTrust
         const btShellJumps = await this.queryBus.execute<RetrieveShellJumpsQuery, ShellJumpRetrievedDtoOutput[]>(
-            new RetrieveShellJumpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveShellJumpsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

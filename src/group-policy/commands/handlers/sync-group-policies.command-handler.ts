@@ -73,7 +73,7 @@ export class SyncGroupPoliciesCommandHandler implements ICommandHandler<SyncGrou
         const btGroupPolicies = await this.queryBus.execute<
             RetrieveGroupPoliciesQuery,
             GroupPolicyRetrievedDtoOutput[]
-        >(new RetrieveGroupPoliciesQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber));
+        >(new RetrieveGroupPoliciesQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber));
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
         if (

@@ -54,6 +54,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
         return await this.commandBus.execute<BTCreateUserCommand, UserCreatedDtoOutput>(
             new BTCreateUserCommand(
                 command.transactionId,
+                command.tenantId,
                 command.publicDisplayName,
                 command.username,
                 command.password,

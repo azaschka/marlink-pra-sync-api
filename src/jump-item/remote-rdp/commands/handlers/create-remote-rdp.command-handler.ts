@@ -71,6 +71,7 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
         return await this.commandBus.execute<BTCreateRemoteRdpCommand, RemoteRdpCreatedDtoOutput>(
             new BTCreateRemoteRdpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.hostname,

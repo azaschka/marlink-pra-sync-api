@@ -46,7 +46,13 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
 
     private async addBTGroupPolicyTeam(command: AddTeamToGroupPolicyCommand) {
         return await this.commandBus.execute<BTAddTeamToGroupPolicyCommand, TeamAddedToGroupPolicyDtoOutput>(
-            new BTAddTeamToGroupPolicyCommand(command.transactionId, command.id, command.teamId, command.roleType),
+            new BTAddTeamToGroupPolicyCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.teamId,
+                command.roleType,
+            ),
         );
     }
 

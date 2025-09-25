@@ -25,7 +25,15 @@ export class RetrieveAllGroupPolicyJumpGroupsQueryHandler
             const batch = await this.queryBus.execute<
                 RetrieveGroupPolicyJumpGroupsQuery,
                 GroupPolicyJumpGroupRetrievedDtoOutput[]
-            >(new RetrieveGroupPolicyJumpGroupsQuery(query.transactionId, maxBatchSize, pageNumber, query.id));
+            >(
+                new RetrieveGroupPolicyJumpGroupsQuery(
+                    query.transactionId,
+                    query.beyondtrustInstanceId,
+                    maxBatchSize,
+                    pageNumber,
+                    query.id,
+                ),
+            );
 
             // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
             if (

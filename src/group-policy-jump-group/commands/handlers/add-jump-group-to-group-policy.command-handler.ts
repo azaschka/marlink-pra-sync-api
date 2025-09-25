@@ -51,6 +51,7 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
         return await this.commandBus.execute<BTAddJumpGroupToGroupPolicyCommand, JumpGroupAddedToGroupPolicyDtoOutput>(
             new BTAddJumpGroupToGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 command.jumpItemRoleId,

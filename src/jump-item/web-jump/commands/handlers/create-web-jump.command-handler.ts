@@ -69,6 +69,7 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
         return await this.commandBus.execute<BTCreateWebJumpCommand, WebJumpCreatedDtoOutput>(
             new BTCreateWebJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.url,

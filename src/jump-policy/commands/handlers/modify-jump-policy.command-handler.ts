@@ -58,6 +58,7 @@ export class ModifyJumpPolicyCommandHandler implements ICommandHandler<ModifyJum
         return await this.commandBus.execute<BTModifyJumpPolicyCommand, JumpPolicyModifiedDtoOutput>(
             new BTModifyJumpPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.displayName,
                 command.codeName,

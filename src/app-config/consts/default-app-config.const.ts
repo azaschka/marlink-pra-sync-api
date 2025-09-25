@@ -35,6 +35,12 @@ export abstract class DefaultAppConfig {
     public static get beyondTrust() {
         return {
             api: {
+                backup: {
+                    path: '/backup',
+                },
+                config: {
+                    path: '/config/v1',
+                },
                 user: {
                     path: '/user',
                     groupPolicies: {

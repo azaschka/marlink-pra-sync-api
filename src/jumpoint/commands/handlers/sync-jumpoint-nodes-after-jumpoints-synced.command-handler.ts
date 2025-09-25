@@ -21,7 +21,11 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
     public async execute(command: SyncJumpointNodesAfterJumpointsSyncedCommand): Promise<void> {
         for (const jumpointId of [...command.createdJumpointIds, ...command.updatedJumpointIds]) {
             try {
-                const btJumpointNodes = await this.retrieveAllBTJumpointNodes(command.transactionId, jumpointId);
+                const btJumpointNodes = await this.retrieveAllBTJumpointNodes(
+                    command.transactionId,
+                    command.tenantId,
+                    jumpointId,
+                );
                 const jumpointNodeEntities = this.createJumpointNodeEntities(jumpointId, btJumpointNodes);
                 const jumpointNodes = await this.replaceJumpointNodes(
                     command.tenantId,
@@ -61,9 +65,9 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
         }
     }
 
-    private async retrieveAllBTJumpointNodes(transactionId: string, jumpointId: number) {
+    private async retrieveAllBTJumpointNodes(transactionId: string, tenantId: number, jumpointId: number) {
         return await this.queryBus.execute<BTRetrieveJumpointNodesQuery, JumpointNodeRetrievedDtoOutput[]>(
-            new BTRetrieveJumpointNodesQuery(transactionId, jumpointId),
+            new BTRetrieveJumpointNodesQuery(transactionId, tenantId, jumpointId),
         );
     }
 

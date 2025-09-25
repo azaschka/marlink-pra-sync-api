@@ -56,6 +56,7 @@ export class ModifyShellJumpCommandHandler implements ICommandHandler<ModifyShel
         return await this.commandBus.execute<BTModifyShellJumpCommand, ShellJumpModifiedDtoOutput>(
             new BTModifyShellJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,

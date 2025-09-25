@@ -14,11 +14,11 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
     ) {}
 
     public async execute(command: AddJumpGroupToGroupPolicyCommand): Promise<JumpGroupAddedToGroupPolicyDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.groupPolicy.jumpGroup.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.jumpGroup.path,
         );
 
         return await this.httpClientService.post<
@@ -26,7 +26,9 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
             JumpGroupAddedToGroupPolicyDtoOutput
         >(
             JumpGroupAddedToGroupPolicyDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             AddJumpGroupToGroupPolicyDtoInput.create(command.jumpGroupId, command.jumpItemRoleId, command.jumpPolicyId),
         );
     }

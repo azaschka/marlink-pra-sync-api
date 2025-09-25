@@ -19,7 +19,13 @@ export class RetrieveAllTeamUsersQueryHandler implements IQueryHandler<RetrieveA
 
         while (true) {
             const batch = await this.queryBus.execute<RetrieveTeamUsersQuery, TeamUserRetrievedDtoOutput[]>(
-                new RetrieveTeamUsersQuery(query.transactionId, maxBatchSize, pageNumber, query.id),
+                new RetrieveTeamUsersQuery(
+                    query.transactionId,
+                    query.beyondtrustInstanceId,
+                    maxBatchSize,
+                    pageNumber,
+                    query.id,
+                ),
             );
 
             // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

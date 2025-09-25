@@ -14,10 +14,10 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
     ) {}
 
     public async execute(query: RetrieveJumpClientInstallersQuery): Promise<JumpClientInstallerRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpClient.path,
-            this.appConfigService.beyondTrust.api.jumpClient.installer.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.installer.path,
         );
 
         return await this.httpClientService.get<
@@ -25,7 +25,9 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
             JumpClientInstallerRetrievedDtoOutput[]
         >(
             JumpClientInstallerRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveJumpClientInstallersDtoInput.create(
                 query.pageSize,
                 query.pageNumber,

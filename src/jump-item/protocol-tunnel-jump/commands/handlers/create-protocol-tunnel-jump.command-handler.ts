@@ -77,6 +77,7 @@ export class CreateProtocolTunnelJumpCommandHandler implements ICommandHandler<C
         return await this.commandBus.execute<BTCreateProtocolTunnelJumpCommand, ProtocolTunnelJumpCreatedDtoOutput>(
             new BTCreateProtocolTunnelJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.hostname,

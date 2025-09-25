@@ -15,7 +15,7 @@ export class DeleteUserCommandHandler implements ICommandHandler<DeleteUserComma
 
     public async execute(command: DeleteUserCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteUserCommand, void>(
-            new BTDeleteUserCommand(command.transactionId, command.id),
+            new BTDeleteUserCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

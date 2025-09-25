@@ -42,7 +42,7 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
 
     private async removeBTTeamUser(command: RemoveUserFromTeamCommand) {
         await this.commandBus.execute<BTRemoveUserFromTeamCommand, void>(
-            new BTRemoveUserFromTeamCommand(command.transactionId, command.id, command.userId),
+            new BTRemoveUserFromTeamCommand(command.transactionId, command.tenantId, command.id, command.userId),
         );
     }
 

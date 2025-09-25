@@ -77,6 +77,7 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
         return await this.commandBus.execute<BTCreateJumpClientInstallerCommand, JumpClientInstallerCreatedDtoOutput>(
             new BTCreateJumpClientInstallerCommand(
                 command.transactionId,
+                command.tenantId,
                 command.jumpGroupId,
                 command.name,
                 command.jumpGroupType ? mapToBTJumpClientGroupType(command.jumpGroupType) : undefined,

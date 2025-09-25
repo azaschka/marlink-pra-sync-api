@@ -64,6 +64,7 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
         return await this.commandBus.execute<BTCreateRemoteVncCommand, RemoteVncCreatedDtoOutput>(
             new BTCreateRemoteVncCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.hostname,

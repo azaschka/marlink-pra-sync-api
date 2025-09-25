@@ -48,6 +48,7 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
         return await this.commandBus.execute<BTAddMemberToGroupPolicyCommand, MemberAddedToGroupPolicyDtoOutput>(
             new BTAddMemberToGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.userId,
                 command.securityProviderId,

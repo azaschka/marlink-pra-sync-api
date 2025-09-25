@@ -15,7 +15,7 @@ export class DeleteRemoteRdpCommandHandler implements ICommandHandler<DeleteRemo
 
     public async execute(command: DeleteRemoteRdpCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteRemoteRdpCommand, void>(
-            new BTDeleteRemoteRdpCommand(command.transactionId, command.id),
+            new BTDeleteRemoteRdpCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

@@ -15,7 +15,7 @@ export class DeleteShellJumpCommandHandler implements ICommandHandler<DeleteShel
 
     public async execute(command: DeleteShellJumpCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteShellJumpCommand, void>(
-            new BTDeleteShellJumpCommand(command.transactionId, command.id),
+            new BTDeleteShellJumpCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

@@ -77,7 +77,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
     ) {
         // Retrieve jump clients from BeyondTrust
         const btJumpClients = await this.queryBus.execute<RetrieveJumpClientsQuery, JumpClientRetrievedDtoOutput[]>(
-            new RetrieveJumpClientsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveJumpClientsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

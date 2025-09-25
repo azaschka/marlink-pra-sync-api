@@ -42,7 +42,12 @@ export class RemoveMemberFromGroupPolicyCommandHandler implements ICommandHandle
 
     private async removeBTGroupPolicyMember(command: RemoveMemberFromGroupPolicyCommand) {
         await this.commandBus.execute<BTRemoveMemberFromGroupPolicyCommand, void>(
-            new BTRemoveMemberFromGroupPolicyCommand(command.transactionId, command.id, command.memberId),
+            new BTRemoveMemberFromGroupPolicyCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.memberId,
+            ),
         );
     }
 

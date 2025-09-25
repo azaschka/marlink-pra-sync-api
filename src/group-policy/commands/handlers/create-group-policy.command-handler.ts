@@ -52,6 +52,7 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
         return await this.commandBus.execute<BTCreateGroupPolicyCommand, GroupPolicyCreatedDtoOutput>(
             new BTCreateGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.hasEndpointsAccessPermission,
                 command.accessPermissionStatusType

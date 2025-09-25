@@ -42,7 +42,7 @@ export class RemoveTeamFromGroupPolicyCommandHandler implements ICommandHandler<
 
     private async removeBTGroupPolicyTeam(command: RemoveTeamFromGroupPolicyCommand) {
         await this.commandBus.execute<BTRemoveTeamFromGroupPolicyCommand, void>(
-            new BTRemoveTeamFromGroupPolicyCommand(command.transactionId, command.id, command.teamId),
+            new BTRemoveTeamFromGroupPolicyCommand(command.transactionId, command.tenantId, command.id, command.teamId),
         );
     }
 

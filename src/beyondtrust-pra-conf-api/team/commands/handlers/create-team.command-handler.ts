@@ -14,14 +14,16 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
     ) {}
 
     public async execute(command: CreateTeamCommand): Promise<TeamCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.team.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.team.path,
         );
 
         return await this.httpClientService.post<TeamCreatedDtoOutput, TeamCreatedDtoOutput>(
             TeamCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateTeamDtoInput.create(command.name, command.codeName, command.comments),
         );
     }

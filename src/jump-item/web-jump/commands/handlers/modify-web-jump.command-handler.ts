@@ -54,6 +54,7 @@ export class ModifyWebJumpCommandHandler implements ICommandHandler<ModifyWebJum
         return await this.commandBus.execute<BTModifyWebJumpCommand, WebJumpModifiedDtoOutput>(
             new BTModifyWebJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,

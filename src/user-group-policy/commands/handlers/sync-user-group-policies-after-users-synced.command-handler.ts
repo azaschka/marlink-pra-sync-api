@@ -21,7 +21,11 @@ export class SyncUserGroupPoliciesAfterUsersSyncedCommandHandler
     public async execute(command: SyncUserGroupPoliciesAfterUsersSyncedCommand): Promise<void> {
         for (const userId of [...command.createdUserIds, ...command.updatedUserIds]) {
             try {
-                const btUserGroupPolicies = await this.retrieveBTUserGroupPolicies(command.transactionId, userId);
+                const btUserGroupPolicies = await this.retrieveBTUserGroupPolicies(
+                    command.transactionId,
+                    command.tenantId,
+                    userId,
+                );
                 const userGroupPolicyEntities = this.createUserGroupPolicyEntities(userId, btUserGroupPolicies);
                 const userGroupPolicies = await this.replaceUserGroupPolicies(
                     command.tenantId,
@@ -61,9 +65,9 @@ export class SyncUserGroupPoliciesAfterUsersSyncedCommandHandler
         }
     }
 
-    private async retrieveBTUserGroupPolicies(transactionId: string, userId: number) {
+    private async retrieveBTUserGroupPolicies(transactionId: string, tenantId: number, userId: number) {
         return await this.queryBus.execute<BTRetrieveUserGroupPoliciesQuery, UserGroupPolicyRetrievedDtoOutput[]>(
-            new BTRetrieveUserGroupPoliciesQuery(transactionId, userId),
+            new BTRetrieveUserGroupPoliciesQuery(transactionId, tenantId, userId),
         );
     }
 

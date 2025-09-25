@@ -59,6 +59,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         await this.commandBus.execute<BTModifyUserGroupPoliciesCommand, UserGroupPoliciesModifiedDtoOutput>(
             new BTModifyUserGroupPoliciesCommand(
                 command.transactionId,
+                command.tenantId,
                 command.userId,
                 command.groupPolicyIdsToAdd,
                 command.groupPolicyIdsToRemove,
@@ -66,7 +67,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         );
 
         return await this.queryBus.execute<RetrieveUserGroupPoliciesQuery, UserGroupPolicyRetrievedDtoOutput[]>(
-            new RetrieveUserGroupPoliciesQuery(command.transactionId, command.userId),
+            new RetrieveUserGroupPoliciesQuery(command.transactionId, command.tenantId, command.userId),
         );
     }
 

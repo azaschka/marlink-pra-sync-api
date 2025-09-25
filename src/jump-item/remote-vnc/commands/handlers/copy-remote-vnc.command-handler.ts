@@ -54,6 +54,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
         const response = await this.commandBus.execute<BTCopyRemoteVncCommand, RemoteVncCopiedDtoOutput>(
             new BTCopyRemoteVncCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -62,7 +63,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
         );
 
         return await this.queryBus.execute<BTRetrieveRemoteVncByIdQuery, RemoteVncRetrievedDtoOutput>(
-            new BTRetrieveRemoteVncByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveRemoteVncByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

@@ -46,7 +46,12 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
 
     private async addBTGroupPolicyJumpoint(command: AddJumpointToGroupPolicyCommand) {
         return await this.commandBus.execute<BTAddJumpointToGroupPolicyCommand, JumpointAddedToGroupPolicyDtoOutput>(
-            new BTAddJumpointToGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+            new BTAddJumpointToGroupPolicyCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.jumpointId,
+            ),
         );
     }
 

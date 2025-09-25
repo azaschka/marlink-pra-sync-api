@@ -13,15 +13,17 @@ export class RetrieveShellJumpByIdQueryHandler implements IQueryHandler<Retrieve
     ) {}
 
     public async execute(query: RetrieveShellJumpByIdQuery): Promise<ShellJumpRetrievedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.shellJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.shellJump.path,
             query.id.toString(),
         );
 
         return await this.httpClientService.get<ShellJumpRetrievedDtoOutput, ShellJumpRetrievedDtoOutput>(
             ShellJumpRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
         );
     }
 }

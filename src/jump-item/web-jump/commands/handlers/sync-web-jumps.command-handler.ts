@@ -71,7 +71,7 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
     ) {
         // Retrieve web jumps from BeyondTrust
         const btWebJumps = await this.queryBus.execute<RetrieveWebJumpsQuery, WebJumpRetrievedDtoOutput[]>(
-            new RetrieveWebJumpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveWebJumpsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

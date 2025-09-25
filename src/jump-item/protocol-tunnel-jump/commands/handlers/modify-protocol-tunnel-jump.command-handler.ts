@@ -52,6 +52,7 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
         return await this.commandBus.execute<BTModifyProtocolTunnelJumpCommand, ProtocolTunnelJumpModifiedDtoOutput>(
             new BTModifyProtocolTunnelJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,

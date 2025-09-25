@@ -15,7 +15,7 @@ export class DeleteJumpClientCommandHandler implements ICommandHandler<DeleteJum
 
     public async execute(command: DeleteJumpClientCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteJumpClientCommand, void>(
-            new BTDeleteJumpClientCommand(command.transactionId, command.id),
+            new BTDeleteJumpClientCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

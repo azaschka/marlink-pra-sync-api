@@ -46,7 +46,13 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
 
     private async createBTJumpGroup(command: CreateJumpGroupCommand) {
         return await this.commandBus.execute<BTCreateJumpGroupCommand, JumpGroupCreatedDtoOutput>(
-            new BTCreateJumpGroupCommand(command.transactionId, command.name, command.codeName, command.comments),
+            new BTCreateJumpGroupCommand(
+                command.transactionId,
+                command.tenantId,
+                command.name,
+                command.codeName,
+                command.comments,
+            ),
         );
     }
 

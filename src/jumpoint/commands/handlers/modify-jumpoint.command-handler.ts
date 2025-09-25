@@ -53,6 +53,7 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
         return await this.commandBus.execute<BTModifyJumpointCommand, JumpointModifiedDtoOutput>(
             new BTModifyJumpointCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.codeName,

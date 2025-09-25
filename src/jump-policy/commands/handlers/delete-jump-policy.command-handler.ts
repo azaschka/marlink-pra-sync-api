@@ -15,7 +15,7 @@ export class DeleteJumpPolicyCommandHandler implements ICommandHandler<DeleteJum
 
     public async execute(command: DeleteJumpPolicyCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteJumpPolicyCommand, void>(
-            new BTDeleteJumpPolicyCommand(command.transactionId, command.id),
+            new BTDeleteJumpPolicyCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

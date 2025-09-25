@@ -78,7 +78,14 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
         const btProtocolTunnelJumps = await this.queryBus.execute<
             RetrieveProtocolTunnelJumpsQuery,
             ProtocolTunnelJumpRetrievedDtoOutput[]
-        >(new RetrieveProtocolTunnelJumpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber));
+        >(
+            new RetrieveProtocolTunnelJumpsQuery(
+                transactionId,
+                tenantId,
+                this.appConfigService.sync.maxBatchSize,
+                pageNumber,
+            ),
+        );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
         if (

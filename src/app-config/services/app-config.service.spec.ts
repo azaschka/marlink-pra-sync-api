@@ -173,264 +173,258 @@ describe('AppConfigService', () => {
         it.each([
             {
                 input: {
-                    auth: {
-                        oauth2TokenUrl: 'auth-oauth2-token-url-1',
-                        clientId: 'auth-client-id-1',
-                        secret: 'auth-secret-1',
-                    },
                     api: {
-                        baseUrl: 'api-base-url-1',
-                        user: {
-                            path: 'api-path-user-1',
-                            groupPolicies: {
-                                path: 'api-path-user-group-policies-1',
-                                change: 'api-path-user-group-policies-change-1',
-                            },
+                        backup: {
+                            path: 'api-backup-path-1',
                         },
-                        jumpClient: {
-                            path: 'api-path-jump-client-1',
-                            copy: 'api-path-jump-client-copy-1',
-                            installer: {
-                                path: 'api-path-jump-client-installer-1',
+                        config: {
+                            path: 'api-config-path-1',
+                            user: {
+                                path: 'api-path-user-1',
+                                groupPolicies: {
+                                    path: 'api-path-user-group-policies-1',
+                                    change: 'api-path-user-group-policies-change-1',
+                                },
                             },
-                        },
-                        groupPolicy: {
-                            path: 'api-path-group-policy-1',
-                            jumpoint: {
-                                path: 'api-path-group-policy-jumpoint-1',
+                            jumpClient: {
+                                path: 'api-path-jump-client-1',
+                                copy: 'api-path-jump-client-copy-1',
+                                installer: {
+                                    path: 'api-path-jump-client-installer-1',
+                                },
                             },
-                            jumpGroup: {
-                                path: 'api-path-group-policy-jump-group-1',
-                            },
-                            member: {
-                                path: 'api-path-group-policy-member-1',
+                            groupPolicy: {
+                                path: 'api-path-group-policy-1',
+                                jumpoint: {
+                                    path: 'api-path-group-policy-jumpoint-1',
+                                },
+                                jumpGroup: {
+                                    path: 'api-path-group-policy-jump-group-1',
+                                },
+                                member: {
+                                    path: 'api-path-group-policy-member-1',
+                                },
+                                team: {
+                                    path: 'api-path-group-policy-team-1',
+                                },
                             },
                             team: {
-                                path: 'api-path-group-policy-team-1',
+                                path: 'api-path-team-1',
+                                user: {
+                                    path: 'api-path-team-user-1',
+                                },
                             },
-                        },
-                        team: {
-                            path: 'api-path-team-1',
-                            user: {
-                                path: 'api-path-team-user-1',
+                            jumpGroup: {
+                                path: 'api-path-jump-group-1',
                             },
-                        },
-                        jumpGroup: {
-                            path: 'api-path-jump-group-1',
-                        },
-                        jumpPolicy: {
-                            path: 'api-path-jump-policy-1',
-                        },
-                        jumpoint: {
-                            path: 'api-path-jumpoint-1',
-                            node: {
-                                path: 'api-path-jumpoint-node-1',
+                            jumpPolicy: {
+                                path: 'api-path-jump-policy-1',
                             },
-                            installer: {
-                                path: 'api-path-jumpoint-installer-1',
+                            jumpoint: {
+                                path: 'api-path-jumpoint-1',
+                                node: {
+                                    path: 'api-path-jumpoint-node-1',
+                                },
+                                installer: {
+                                    path: 'api-path-jumpoint-installer-1',
+                                },
                             },
-                        },
-                        jumpItem: {
-                            remoteRdp: {
-                                path: 'api-path-jump-item-remote-rdp-1',
-                                copy: 'api-path-jump-item-remote-rdp-copy-1',
+                            jumpItem: {
+                                remoteRdp: {
+                                    path: 'api-path-jump-item-remote-rdp-1',
+                                    copy: 'api-path-jump-item-remote-rdp-copy-1',
+                                },
+                                shellJump: {
+                                    path: 'api-path-jump-item-shell-jump-1',
+                                    copy: 'api-path-jump-item-shell-jump-copy-1',
+                                },
+                                webJump: {
+                                    path: 'api-path-jump-item-web-jump-1',
+                                    copy: 'api-path-jump-item-web-jump-copy-1',
+                                },
+                                remoteVnc: {
+                                    path: 'api-path-jump-item-remote-vnc-1',
+                                    copy: 'api-path-jump-item-remote-vnc-copy-1',
+                                },
+                                protocolTunnelJump: {
+                                    path: 'api-path-jump-item-protocol-tunnel-jump-1',
+                                    copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
+                                },
                             },
-                            shellJump: {
-                                path: 'api-path-jump-item-shell-jump-1',
-                                copy: 'api-path-jump-item-shell-jump-copy-1',
-                            },
-                            webJump: {
-                                path: 'api-path-jump-item-web-jump-1',
-                                copy: 'api-path-jump-item-web-jump-copy-1',
-                            },
-                            remoteVnc: {
-                                path: 'api-path-jump-item-remote-vnc-1',
-                                copy: 'api-path-jump-item-remote-vnc-copy-1',
-                            },
-                            protocolTunnelJump: {
-                                path: 'api-path-jump-item-protocol-tunnel-jump-1',
-                                copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
-                            },
-                        },
-                        communication: {
-                            retryAttempts: 10,
-                            retryDelayInMs: 500,
                         },
                     },
-                    backup: {
-                        apiUrl: 'backup-api-url-1',
+                    communication: {
+                        retryAttempts: 10,
+                        retryDelayInMs: 500,
                     },
                 },
                 expected: {
-                    auth: {
-                        oauth2TokenUrl: 'auth-oauth2-token-url-1',
-                        clientId: 'auth-client-id-1',
-                        secret: 'auth-secret-1',
-                    },
                     api: {
-                        baseUrl: 'api-base-url-1',
-                        user: {
-                            path: 'api-path-user-1',
-                            groupPolicies: {
-                                path: 'api-path-user-group-policies-1',
-                                change: 'api-path-user-group-policies-change-1',
-                            },
+                        backup: {
+                            path: 'api-backup-path-1',
                         },
-                        jumpClient: {
-                            path: 'api-path-jump-client-1',
-                            copy: 'api-path-jump-client-copy-1',
-                            installer: {
-                                path: 'api-path-jump-client-installer-1',
+                        config: {
+                            path: 'api-config-path-1',
+                            user: {
+                                path: 'api-path-user-1',
+                                groupPolicies: {
+                                    path: 'api-path-user-group-policies-1',
+                                    change: 'api-path-user-group-policies-change-1',
+                                },
                             },
-                        },
-                        groupPolicy: {
-                            path: 'api-path-group-policy-1',
-                            jumpoint: {
-                                path: 'api-path-group-policy-jumpoint-1',
+                            jumpClient: {
+                                path: 'api-path-jump-client-1',
+                                copy: 'api-path-jump-client-copy-1',
+                                installer: {
+                                    path: 'api-path-jump-client-installer-1',
+                                },
                             },
-                            jumpGroup: {
-                                path: 'api-path-group-policy-jump-group-1',
-                            },
-                            member: {
-                                path: 'api-path-group-policy-member-1',
+                            groupPolicy: {
+                                path: 'api-path-group-policy-1',
+                                jumpoint: {
+                                    path: 'api-path-group-policy-jumpoint-1',
+                                },
+                                jumpGroup: {
+                                    path: 'api-path-group-policy-jump-group-1',
+                                },
+                                member: {
+                                    path: 'api-path-group-policy-member-1',
+                                },
+                                team: {
+                                    path: 'api-path-group-policy-team-1',
+                                },
                             },
                             team: {
-                                path: 'api-path-group-policy-team-1',
+                                path: 'api-path-team-1',
+                                user: {
+                                    path: 'api-path-team-user-1',
+                                },
                             },
-                        },
-                        team: {
-                            path: 'api-path-team-1',
-                            user: {
-                                path: 'api-path-team-user-1',
+                            jumpGroup: {
+                                path: 'api-path-jump-group-1',
                             },
-                        },
-                        jumpGroup: {
-                            path: 'api-path-jump-group-1',
-                        },
-                        jumpPolicy: {
-                            path: 'api-path-jump-policy-1',
-                        },
-                        jumpoint: {
-                            path: 'api-path-jumpoint-1',
-                            node: {
-                                path: 'api-path-jumpoint-node-1',
+                            jumpPolicy: {
+                                path: 'api-path-jump-policy-1',
                             },
-                            installer: {
-                                path: 'api-path-jumpoint-installer-1',
+                            jumpoint: {
+                                path: 'api-path-jumpoint-1',
+                                node: {
+                                    path: 'api-path-jumpoint-node-1',
+                                },
+                                installer: {
+                                    path: 'api-path-jumpoint-installer-1',
+                                },
                             },
-                        },
-                        jumpItem: {
-                            remoteRdp: {
-                                path: 'api-path-jump-item-remote-rdp-1',
-                                copy: 'api-path-jump-item-remote-rdp-copy-1',
-                            },
-                            shellJump: {
-                                path: 'api-path-jump-item-shell-jump-1',
-                                copy: 'api-path-jump-item-shell-jump-copy-1',
-                            },
-                            webJump: {
-                                path: 'api-path-jump-item-web-jump-1',
-                                copy: 'api-path-jump-item-web-jump-copy-1',
-                            },
-                            remoteVnc: {
-                                path: 'api-path-jump-item-remote-vnc-1',
-                                copy: 'api-path-jump-item-remote-vnc-copy-1',
-                            },
-                            protocolTunnelJump: {
-                                path: 'api-path-jump-item-protocol-tunnel-jump-1',
-                                copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
+                            jumpItem: {
+                                remoteRdp: {
+                                    path: 'api-path-jump-item-remote-rdp-1',
+                                    copy: 'api-path-jump-item-remote-rdp-copy-1',
+                                },
+                                shellJump: {
+                                    path: 'api-path-jump-item-shell-jump-1',
+                                    copy: 'api-path-jump-item-shell-jump-copy-1',
+                                },
+                                webJump: {
+                                    path: 'api-path-jump-item-web-jump-1',
+                                    copy: 'api-path-jump-item-web-jump-copy-1',
+                                },
+                                remoteVnc: {
+                                    path: 'api-path-jump-item-remote-vnc-1',
+                                    copy: 'api-path-jump-item-remote-vnc-copy-1',
+                                },
+                                protocolTunnelJump: {
+                                    path: 'api-path-jump-item-protocol-tunnel-jump-1',
+                                    copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
+                                },
                             },
                         },
                         communication: {
                             retryAttempts: 10,
                             retryDelayInMs: 500,
                         },
-                    },
-                    backup: {
-                        apiUrl: 'backup-api-url-1',
                     },
                 },
             },
             {
                 input: {},
                 expected: {
-                    auth: {
-                        oauth2TokenUrl: 'unknown',
-                        clientId: 'unknown',
-                        secret: 'unknown',
-                    },
                     api: {
-                        baseUrl: 'unknown',
-                        user: {
-                            path: '/user',
-                            groupPolicies: {
-                                path: '/group-policies',
-                                change: 'group-policy-changes',
-                            },
+                        backup: {
+                            path: '/backup',
                         },
-                        jumpClient: {
-                            path: '/jump-client',
-                            copy: 'copy',
-                            installer: {
-                                path: '/installer',
+                        config: {
+                            path: '/config/v1',
+                            user: {
+                                path: '/user',
+                                groupPolicies: {
+                                    path: '/group-policies',
+                                    change: 'group-policy-changes',
+                                },
                             },
-                        },
-                        groupPolicy: {
-                            path: '/group-policy',
-                            jumpoint: {
-                                path: '/jumpoint',
+                            jumpClient: {
+                                path: '/jump-client',
+                                copy: 'copy',
+                                installer: {
+                                    path: '/installer',
+                                },
+                            },
+                            groupPolicy: {
+                                path: '/group-policy',
+                                jumpoint: {
+                                    path: '/jumpoint',
+                                },
+                                jumpGroup: {
+                                    path: '/jump-group',
+                                },
+                                member: {
+                                    path: '/member',
+                                },
+                                team: {
+                                    path: '/team',
+                                },
+                            },
+                            team: {
+                                path: '/team',
+                                user: {
+                                    path: '/user',
+                                },
                             },
                             jumpGroup: {
                                 path: '/jump-group',
                             },
-                            member: {
-                                path: '/member',
+                            jumpPolicy: {
+                                path: '/jump-policy',
                             },
-                            team: {
-                                path: '/team',
+                            jumpoint: {
+                                path: '/jumpoint',
+                                node: {
+                                    path: '/node',
+                                },
+                                installer: {
+                                    path: '/installer',
+                                },
                             },
-                        },
-                        team: {
-                            path: '/team',
-                            user: {
-                                path: '/user',
-                            },
-                        },
-                        jumpGroup: {
-                            path: '/jump-group',
-                        },
-                        jumpPolicy: {
-                            path: '/jump-policy',
-                        },
-                        jumpoint: {
-                            path: '/jumpoint',
-                            node: {
-                                path: '/node',
-                            },
-                            installer: {
-                                path: '/installer',
-                            },
-                        },
-                        jumpItem: {
-                            remoteRdp: {
-                                path: '/jump-item/remote-rdp',
-                                copy: 'copy',
-                            },
-                            shellJump: {
-                                path: '/jump-item/shell-jump',
-                                copy: 'copy',
-                            },
-                            webJump: {
-                                path: '/jump-item/web-jump',
-                                copy: 'copy',
-                            },
-                            remoteVnc: {
-                                path: '/jump-item/remote-vnc',
-                                copy: 'copy',
-                            },
-                            protocolTunnelJump: {
-                                path: '/jump-item/protocol-tunnel-jump',
-                                copy: 'copy',
+                            jumpItem: {
+                                remoteRdp: {
+                                    path: '/jump-item/remote-rdp',
+                                    copy: 'copy',
+                                },
+                                shellJump: {
+                                    path: '/jump-item/shell-jump',
+                                    copy: 'copy',
+                                },
+                                webJump: {
+                                    path: '/jump-item/web-jump',
+                                    copy: 'copy',
+                                },
+                                remoteVnc: {
+                                    path: '/jump-item/remote-vnc',
+                                    copy: 'copy',
+                                },
+                                protocolTunnelJump: {
+                                    path: '/jump-item/protocol-tunnel-jump',
+                                    copy: 'copy',
+                                },
                             },
                         },
                         communication: {
@@ -438,176 +432,164 @@ describe('AppConfigService', () => {
                             retryDelayInMs: 5000,
                         },
                     },
-                    backup: {
-                        apiUrl: 'unknown',
-                    },
                 },
             },
         ])('should return the beyondTrust configuration as expected', ({ input, expected }) => {
             configService.get = jest.fn().mockImplementation((key: string) => {
                 switch (key) {
-                    case 'BEYONDTRUST_AUTH_OAUTH2_TOKEN_URL':
-                        return input.auth?.oauth2TokenUrl;
-                    case 'BEYONDTRUST_AUTH_CLIENT_ID':
-                        return input.auth?.clientId;
-                    case 'BEYONDTRUST_AUTH_SECRET':
-                        return input.auth?.secret;
-                    case 'BEYONDTRUST_API_BASE_URL':
-                        return input.api?.baseUrl;
+                    case 'BEYONDTRUST_API_BACKUP_PATH':
+                        return input.api?.backup?.path;
+                    case 'BEYONDTRUST_API_CONFIG_PATH':
+                        return input.api?.config?.path;
                     case 'BEYONDTRUST_API_USER_PATH':
-                        return input.api?.user.path;
+                        return input.api?.config.user?.path;
                     case 'BEYONDTRUST_API_USER_GROUP_POLICIES_PATH':
-                        return input.api?.user.groupPolicies.path;
+                        return input.api?.config.user?.groupPolicies?.path;
                     case 'BEYONDTRUST_API_USER_CHANGE_GROUP_POLICIES':
-                        return input.api?.user.groupPolicies.change;
+                        return input.api?.config.user?.groupPolicies?.change;
                     case 'BEYONDTRUST_API_JUMP_CLIENT_PATH':
-                        return input.api?.jumpClient.path;
+                        return input.api?.config.jumpClient?.path;
                     case 'BEYONDTRUST_API_COPY_JUMP_CLIENT':
-                        return input.api?.jumpClient.copy;
+                        return input.api?.config.jumpClient?.copy;
                     case 'BEYONDTRUST_API_JUMP_CLIENT_INSTALLER_PATH':
-                        return input.api?.jumpClient.installer.path;
+                        return input.api?.config.jumpClient?.installer?.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_PATH':
-                        return input.api?.groupPolicy.path;
+                        return input.api?.config.groupPolicy?.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH':
-                        return input.api?.groupPolicy.jumpoint.path;
+                        return input.api?.config.groupPolicy?.jumpoint?.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_JUMP_GROUP_PATH':
-                        return input.api?.groupPolicy.jumpGroup.path;
+                        return input.api?.config.groupPolicy?.jumpGroup?.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_MEMBER_PATH':
-                        return input.api?.groupPolicy.member.path;
+                        return input.api?.config.groupPolicy?.member?.path;
                     case 'BEYONDTRUST_API_GROUP_POLICY_TEAM_PATH':
-                        return input.api?.groupPolicy.team.path;
+                        return input.api?.config.groupPolicy?.team?.path;
                     case 'BEYONDTRUST_API_TEAM_PATH':
-                        return input.api?.team.path;
+                        return input.api?.config.team?.path;
                     case 'BEYONDTRUST_API_TEAM_USER_PATH':
-                        return input.api?.team.user.path;
+                        return input.api?.config.team?.user?.path;
                     case 'BEYONDTRUST_API_JUMP_GROUP_PATH':
-                        return input.api?.jumpGroup.path;
+                        return input.api?.config.jumpGroup?.path;
                     case 'BEYONDTRUST_API_JUMP_POLICY_PATH':
-                        return input.api?.jumpPolicy.path;
+                        return input.api?.config.jumpPolicy?.path;
                     case 'BEYONDTRUST_API_JUMPOINT_PATH':
-                        return input.api?.jumpoint.path;
+                        return input.api?.config.jumpoint?.path;
                     case 'BEYONDTRUST_API_JUMPOINT_NODE_PATH':
-                        return input.api?.jumpoint.node.path;
+                        return input.api?.config.jumpoint?.node?.path;
                     case 'BEYONDTRUST_API_JUMPOINT_INSTALLER_PATH':
-                        return input.api?.jumpoint.installer.path;
+                        return input.api?.config.jumpoint?.installer?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH':
-                        return input.api?.jumpItem?.remoteRdp?.path;
+                        return input.api?.config.jumpItem?.remoteRdp?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_RDP':
-                        return input.api?.jumpItem?.remoteRdp?.copy;
+                        return input.api?.config.jumpItem?.remoteRdp?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH':
-                        return input.api?.jumpItem?.shellJump?.path;
+                        return input.api?.config.jumpItem?.shellJump?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_COPY_SHELL_JUMP':
-                        return input.api?.jumpItem?.shellJump?.copy;
+                        return input.api?.config.jumpItem?.shellJump?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH':
-                        return input.api?.jumpItem?.webJump?.path;
+                        return input.api?.config.jumpItem?.webJump?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_COPY_WEB_JUMP':
-                        return input.api?.jumpItem?.webJump?.copy;
+                        return input.api?.config.jumpItem?.webJump?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH':
-                        return input.api?.jumpItem?.remoteVnc?.path;
+                        return input.api?.config.jumpItem?.remoteVnc?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_VNC':
-                        return input.api?.jumpItem?.remoteVnc?.copy;
+                        return input.api?.config.jumpItem?.remoteVnc?.copy;
                     case 'BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH':
-                        return input.api?.jumpItem?.protocolTunnelJump?.path;
+                        return input.api?.config.jumpItem?.protocolTunnelJump?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_COPY_PROTOCOL_TUNNEL_JUMP':
-                        return input.api?.jumpItem?.protocolTunnelJump?.copy;
+                        return input.api?.config.jumpItem?.protocolTunnelJump?.copy;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
-                        return input.api?.communication?.retryAttempts;
+                        return input.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
-                        return input.api?.communication?.retryDelayInMs;
-                    case 'BEYONDTRUST_BACKUP_API_URL':
-                        return input.backup?.apiUrl;
+                        return input.communication?.retryDelayInMs;
                     default:
                         return undefined;
                 }
             });
 
             expect(service.beyondTrust).toEqual({
-                auth: {
-                    oauth2TokenUrl: expected.auth.oauth2TokenUrl,
-                    clientId: expected.auth.clientId,
-                    secret: expected.auth.secret,
-                },
                 api: {
-                    baseUrl: expected.api.baseUrl,
-                    user: {
-                        path: expected.api.user?.path,
-                        groupPolicies: {
-                            path: expected.api.user?.groupPolicies.path,
-                            change: expected.api.user?.groupPolicies.change,
-                        },
+                    backup: {
+                        path: expected.api.backup.path,
                     },
-                    jumpClient: {
-                        path: expected.api.jumpClient?.path,
-                        copy: expected.api.jumpClient?.copy,
-                        installer: {
-                            path: expected.api.jumpClient?.installer.path,
+                    config: {
+                        path: expected.api.config.path,
+                        user: {
+                            path: expected.api.config.user.path,
+                            groupPolicies: {
+                                path: expected.api.config.user.groupPolicies.path,
+                                change: expected.api.config.user.groupPolicies.change,
+                            },
                         },
-                    },
-                    groupPolicy: {
-                        path: expected.api.groupPolicy?.path,
-                        jumpoint: {
-                            path: expected.api.groupPolicy?.jumpoint.path,
+                        jumpClient: {
+                            path: expected.api.config.jumpClient.path,
+                            copy: expected.api.config.jumpClient.copy,
+                            installer: {
+                                path: expected.api.config.jumpClient.installer.path,
+                            },
                         },
-                        jumpGroup: {
-                            path: expected.api.groupPolicy?.jumpGroup.path,
-                        },
-                        member: {
-                            path: expected.api.groupPolicy?.member.path,
+                        groupPolicy: {
+                            path: expected.api.config.groupPolicy.path,
+                            jumpoint: {
+                                path: expected.api.config.groupPolicy.jumpoint.path,
+                            },
+                            jumpGroup: {
+                                path: expected.api.config.groupPolicy.jumpGroup.path,
+                            },
+                            member: {
+                                path: expected.api.config.groupPolicy.member.path,
+                            },
+                            team: {
+                                path: expected.api.config.groupPolicy.team.path,
+                            },
                         },
                         team: {
-                            path: expected.api.groupPolicy?.team.path,
+                            path: expected.api.config.team.path,
+                            user: {
+                                path: expected.api.config.team.user.path,
+                            },
                         },
-                    },
-                    team: {
-                        path: expected.api.team?.path,
-                        user: {
-                            path: expected.api.team?.user.path,
+                        jumpGroup: {
+                            path: expected.api.config.jumpGroup.path,
                         },
-                    },
-                    jumpGroup: {
-                        path: expected.api.jumpGroup?.path,
-                    },
-                    jumpPolicy: {
-                        path: expected.api.jumpPolicy?.path,
-                    },
-                    jumpoint: {
-                        path: expected.api.jumpoint?.path,
-                        node: {
-                            path: expected.api.jumpoint?.node?.path,
+                        jumpPolicy: {
+                            path: expected.api.config.jumpPolicy.path,
                         },
-                        installer: {
-                            path: expected.api.jumpoint?.installer?.path,
+                        jumpoint: {
+                            path: expected.api.config.jumpoint.path,
+                            node: {
+                                path: expected.api.config.jumpoint.node.path,
+                            },
+                            installer: {
+                                path: expected.api.config.jumpoint.installer.path,
+                            },
                         },
-                    },
-                    jumpItem: {
-                        remoteRdp: {
-                            path: expected.api.jumpItem?.remoteRdp?.path,
-                            copy: expected.api.jumpItem?.remoteRdp?.copy,
-                        },
-                        shellJump: {
-                            path: expected.api.jumpItem?.shellJump?.path,
-                            copy: expected.api.jumpItem?.shellJump?.copy,
-                        },
-                        webJump: {
-                            path: expected.api.jumpItem?.webJump?.path,
-                            copy: expected.api.jumpItem?.webJump?.copy,
-                        },
-                        remoteVnc: {
-                            path: expected.api.jumpItem?.remoteVnc?.path,
-                            copy: expected.api.jumpItem?.remoteVnc?.copy,
-                        },
-                        protocolTunnelJump: {
-                            path: expected.api.jumpItem?.protocolTunnelJump?.path,
-                            copy: expected.api.jumpItem?.protocolTunnelJump?.copy,
+                        jumpItem: {
+                            remoteRdp: {
+                                path: expected.api.config.jumpItem.remoteRdp.path,
+                                copy: expected.api.config.jumpItem.remoteRdp.copy,
+                            },
+                            shellJump: {
+                                path: expected.api.config.jumpItem.shellJump.path,
+                                copy: expected.api.config.jumpItem.shellJump.copy,
+                            },
+                            webJump: {
+                                path: expected.api.config.jumpItem.webJump.path,
+                                copy: expected.api.config.jumpItem.webJump.copy,
+                            },
+                            remoteVnc: {
+                                path: expected.api.config.jumpItem.remoteVnc.path,
+                                copy: expected.api.config.jumpItem.remoteVnc.copy,
+                            },
+                            protocolTunnelJump: {
+                                path: expected.api.config.jumpItem.protocolTunnelJump.path,
+                                copy: expected.api.config.jumpItem.protocolTunnelJump.copy,
+                            },
                         },
                     },
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,
                         retryDelayInMs: expected.api.communication.retryDelayInMs,
                     },
-                },
-                backup: {
-                    apiUrl: expected.backup.apiUrl,
                 },
             });
         });

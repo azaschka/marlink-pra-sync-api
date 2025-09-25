@@ -48,6 +48,7 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
         return await this.commandBus.execute<BTModifyTeamCommand, TeamModifiedDtoOutput>(
             new BTModifyTeamCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.codeName,

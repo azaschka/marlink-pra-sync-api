@@ -12,11 +12,16 @@ export class RetrieveJumpClientInstallerPlatformQueryHandler
     public async execute(
         query: RetrieveJumpClientInstallerPlatformQuery,
     ): Promise<AxiosResponse<NodeJS.ReadableStream>> {
-        // TODO: Use tenantId
-
         return this.queryBus.execute<
             BTRetrieveJumpClientInstallerPlatformQuery,
             Promise<AxiosResponse<NodeJS.ReadableStream>>
-        >(new BTRetrieveJumpClientInstallerPlatformQuery(query.transactionId, query.installerId, query.platformType));
+        >(
+            new BTRetrieveJumpClientInstallerPlatformQuery(
+                query.transactionId,
+                query.tenantId,
+                query.installerId,
+                query.platformType,
+            ),
+        );
     }
 }

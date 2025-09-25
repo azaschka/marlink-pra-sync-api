@@ -22,7 +22,7 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
     public async execute(command: SyncTeamUsersAfterTeamsSyncedCommand): Promise<void> {
         for (const teamId of [...command.createdTeamIds, ...command.updatedTeamIds]) {
             try {
-                const btTeamUsers = await this.retrieveAllBTTeamUsers(command.transactionId, teamId);
+                const btTeamUsers = await this.retrieveAllBTTeamUsers(command.transactionId, command.tenantId, teamId);
                 const teamUserEntities = this.createTeamUserEntities(btTeamUsers);
                 const teamUsers = await this.replaceTeamUsers(command.tenantId, teamId, teamUserEntities);
 
@@ -58,9 +58,9 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
         }
     }
 
-    private async retrieveAllBTTeamUsers(transactionId: string, teamId: number) {
+    private async retrieveAllBTTeamUsers(transactionId: string, tenantId: number, teamId: number) {
         return await this.queryBus.execute<BTRetrieveAllTeamUsersQuery, TeamUserRetrievedDtoOutput[]>(
-            new BTRetrieveAllTeamUsersQuery(transactionId, teamId),
+            new BTRetrieveAllTeamUsersQuery(transactionId, tenantId, teamId),
         );
     }
 

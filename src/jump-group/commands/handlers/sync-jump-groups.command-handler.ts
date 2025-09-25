@@ -70,7 +70,7 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
     ) {
         // Retrieve jump groups from BeyondTrust
         const btJumpGroups = await this.queryBus.execute<RetrieveJumpGroupsQuery, JumpGroupRetrievedDtoOutput[]>(
-            new RetrieveJumpGroupsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveJumpGroupsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

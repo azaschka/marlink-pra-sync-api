@@ -56,6 +56,7 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
         return await this.commandBus.execute<BTModifyRemoteRdpCommand, RemoteRdpModifiedDtoOutput>(
             new BTModifyRemoteRdpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,

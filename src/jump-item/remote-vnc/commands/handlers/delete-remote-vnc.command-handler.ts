@@ -15,7 +15,7 @@ export class DeleteRemoteVncCommandHandler implements ICommandHandler<DeleteRemo
 
     public async execute(command: DeleteRemoteVncCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteRemoteVncCommand, void>(
-            new BTDeleteRemoteVncCommand(command.transactionId, command.id),
+            new BTDeleteRemoteVncCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

@@ -70,7 +70,7 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
     ) {
         // Retrieve teams from BeyondTrust
         const btTeams = await this.queryBus.execute<RetrieveTeamsQuery, TeamRetrievedDtoOutput[]>(
-            new RetrieveTeamsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveTeamsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

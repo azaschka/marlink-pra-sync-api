@@ -14,9 +14,9 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
     ) {}
 
     public async execute(command: ModifyProtocolTunnelJumpCommand): Promise<ProtocolTunnelJumpModifiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.protocolTunnelJump.path,
             command.id.toString(),
         );
 
@@ -25,7 +25,9 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
             ProtocolTunnelJumpModifiedDtoOutput
         >(
             ProtocolTunnelJumpModifiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyProtocolTunnelJumpDtoInput.create(
                 command.name,
                 command.jumpointId,

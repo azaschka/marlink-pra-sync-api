@@ -15,7 +15,7 @@ export class DeleteJumpointCommandHandler implements ICommandHandler<DeleteJumpo
 
     public async execute(command: DeleteJumpointCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteJumpointCommand, void>(
-            new BTDeleteJumpointCommand(command.transactionId, command.id),
+            new BTDeleteJumpointCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

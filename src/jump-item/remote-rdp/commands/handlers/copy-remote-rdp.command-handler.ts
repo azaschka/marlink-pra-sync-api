@@ -59,6 +59,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
         const response = await this.commandBus.execute<BTCopyRemoteRdpCommand, RemoteRdpCopiedDtoOutput>(
             new BTCopyRemoteRdpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -67,7 +68,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
         );
 
         return await this.queryBus.execute<BTRetrieveRemoteRdpByIdQuery, RemoteRdpRetrievedDtoOutput>(
-            new BTRetrieveRemoteRdpByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveRemoteRdpByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

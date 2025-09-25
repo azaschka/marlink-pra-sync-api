@@ -23,6 +23,7 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
             try {
                 const btGroupPolicyJumpoints = await this.retrieveAllBTGroupPolicyJumpoints(
                     command.transactionId,
+                    command.tenantId,
                     groupPolicyId,
                 );
                 const groupPolicyJumpointEntities = this.createGroupPolicyJumpointEntities(
@@ -70,11 +71,11 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
         }
     }
 
-    private async retrieveAllBTGroupPolicyJumpoints(transactionId: string, groupPolicyId: number) {
+    private async retrieveAllBTGroupPolicyJumpoints(transactionId: string, tenantId: number, groupPolicyId: number) {
         return await this.queryBus.execute<
             BTRetrieveAllGroupPolicyJumpointsQuery,
             GroupPolicyJumpointRetrievedDtoOutput[]
-        >(new BTRetrieveAllGroupPolicyJumpointsQuery(transactionId, groupPolicyId));
+        >(new BTRetrieveAllGroupPolicyJumpointsQuery(transactionId, tenantId, groupPolicyId));
     }
 
     private createGroupPolicyJumpointEntities(

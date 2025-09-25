@@ -61,6 +61,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
         const response = await this.commandBus.execute<BTCopyJumpClientCommand, JumpClientCopiedDtoOutput>(
             new BTCopyJumpClientCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpClientGroupType(command.jumpGroupType),
@@ -69,7 +70,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
         );
 
         return await this.queryBus.execute<BTRetrieveJumpClientByIdQuery, JumpClientRetrievedDtoOutput>(
-            new BTRetrieveJumpClientByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveJumpClientByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

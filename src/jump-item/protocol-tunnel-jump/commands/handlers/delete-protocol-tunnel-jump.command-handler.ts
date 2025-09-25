@@ -15,7 +15,7 @@ export class DeleteProtocolTunnelJumpCommandHandler implements ICommandHandler<D
 
     public async execute(command: DeleteProtocolTunnelJumpCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteProtocolTunnelJumpCommand, void>(
-            new BTDeleteProtocolTunnelJumpCommand(command.transactionId, command.id),
+            new BTDeleteProtocolTunnelJumpCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {

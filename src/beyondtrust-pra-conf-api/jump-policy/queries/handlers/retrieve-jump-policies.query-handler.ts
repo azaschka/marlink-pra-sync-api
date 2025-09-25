@@ -14,14 +14,16 @@ export class RetrieveJumpPoliciesQueryHandler implements IQueryHandler<RetrieveJ
     ) {}
 
     public async execute(query: RetrieveJumpPoliciesQuery): Promise<JumpPolicyRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpPolicy.path,
         );
 
         return await this.httpClientService.get<JumpPolicyRetrievedDtoOutput, JumpPolicyRetrievedDtoOutput[]>(
             JumpPolicyRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveJumpPoliciesDtoInput.create(query.pageSize, query.pageNumber, query.codeName),
         );
     }

@@ -47,7 +47,13 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
 
     private async addBTTeamUser(command: AddUserToTeamCommand) {
         return await this.commandBus.execute<BTAddUserToTeamCommand, UserAddedToTeamDtoOutput>(
-            new BTAddUserToTeamCommand(command.transactionId, command.id, command.userId, command.roleType),
+            new BTAddUserToTeamCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.userId,
+                command.roleType,
+            ),
         );
     }
 

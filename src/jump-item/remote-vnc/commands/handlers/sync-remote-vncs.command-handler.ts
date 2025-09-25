@@ -71,7 +71,7 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
     ) {
         // Retrieve remote vncs from BeyondTrust
         const btRemoteVncs = await this.queryBus.execute<RetrieveRemoteVncsQuery, RemoteVncRetrievedDtoOutput[]>(
-            new RetrieveRemoteVncsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveRemoteVncsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

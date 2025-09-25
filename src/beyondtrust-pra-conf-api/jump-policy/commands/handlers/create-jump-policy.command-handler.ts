@@ -14,14 +14,16 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
     ) {}
 
     public async execute(command: CreateJumpPolicyCommand): Promise<JumpPolicyCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpPolicy.path,
         );
 
         return await this.httpClientService.post<JumpPolicyCreatedDtoOutput, JumpPolicyCreatedDtoOutput>(
             JumpPolicyCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateJumpPolicyDtoInput.create(
                 command.displayName,
                 command.codeName,

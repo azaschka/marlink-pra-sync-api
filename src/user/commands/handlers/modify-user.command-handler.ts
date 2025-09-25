@@ -54,6 +54,7 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
         return await this.commandBus.execute<BTModifyUserCommand, UserModifiedDtoOutput>(
             new BTModifyUserCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.publicDisplayName,
                 command.username,

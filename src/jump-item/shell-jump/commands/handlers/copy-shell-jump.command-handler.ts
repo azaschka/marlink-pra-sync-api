@@ -59,6 +59,7 @@ export class CopyShellJumpCommandHandler implements ICommandHandler<CopyShellJum
         const response = await this.commandBus.execute<BTCopyShellJumpCommand, ShellJumpCopiedDtoOutput>(
             new BTCopyShellJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -67,7 +68,7 @@ export class CopyShellJumpCommandHandler implements ICommandHandler<CopyShellJum
         );
 
         return await this.queryBus.execute<BTRetrieveShellJumpByIdQuery, ShellJumpRetrievedDtoOutput>(
-            new BTRetrieveShellJumpByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveShellJumpByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

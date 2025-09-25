@@ -71,7 +71,7 @@ export class SyncJumpointsCommandHandler implements ICommandHandler<SyncJumpoint
     ) {
         // Retrieve jumpoints from BeyondTrust
         const btJumpoints = await this.queryBus.execute<RetrieveJumpointsQuery, JumpointRetrievedDtoOutput[]>(
-            new RetrieveJumpointsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveJumpointsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

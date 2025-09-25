@@ -48,6 +48,7 @@ export class ModifyJumpGroupCommandHandler implements ICommandHandler<ModifyJump
         return await this.commandBus.execute<BTModifyJumpGroupCommand, JumpGroupModifiedDtoOutput>(
             new BTModifyJumpGroupCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.codeName,

@@ -76,7 +76,7 @@ export class SyncUsersCommandHandler implements ICommandHandler<SyncUsersCommand
     ) {
         // Retrieve users from BeyondTrust
         const btUsers = await this.queryBus.execute<RetrieveUsersQuery, UserRetrievedDtoOutput[]>(
-            new RetrieveUsersQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveUsersQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

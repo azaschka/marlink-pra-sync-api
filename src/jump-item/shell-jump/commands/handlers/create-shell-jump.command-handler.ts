@@ -71,6 +71,7 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
         return await this.commandBus.execute<BTCreateShellJumpCommand, ShellJumpCreatedDtoOutput>(
             new BTCreateShellJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.hostname,

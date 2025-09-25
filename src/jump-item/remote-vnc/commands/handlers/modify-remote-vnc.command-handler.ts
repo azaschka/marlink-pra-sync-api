@@ -49,6 +49,7 @@ export class ModifyRemoteVncCommandHandler implements ICommandHandler<ModifyRemo
         return await this.commandBus.execute<BTModifyRemoteVncCommand, RemoteVncModifiedDtoOutput>(
             new BTModifyRemoteVncCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,

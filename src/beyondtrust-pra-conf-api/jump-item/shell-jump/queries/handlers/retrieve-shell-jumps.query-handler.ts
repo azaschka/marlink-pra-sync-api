@@ -14,14 +14,16 @@ export class RetrieveShellJumpsQueryHandler implements IQueryHandler<RetrieveShe
     ) {}
 
     public async execute(query: RetrieveShellJumpsQuery): Promise<ShellJumpRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.shellJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.shellJump.path,
         );
 
         return await this.httpClientService.get<ShellJumpRetrievedDtoOutput, ShellJumpRetrievedDtoOutput[]>(
             ShellJumpRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveShellJumpsDtoInput.create(
                 query.pageSize,
                 query.pageNumber,

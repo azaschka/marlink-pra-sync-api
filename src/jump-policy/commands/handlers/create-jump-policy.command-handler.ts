@@ -58,6 +58,7 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
         return await this.commandBus.execute<BTCreateJumpPolicyCommand, JumpPolicyCreatedDtoOutput>(
             new BTCreateJumpPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.displayName,
                 command.codeName,
                 command.description,

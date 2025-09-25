@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { BeyondtrustInstance } from '../../models';
 import { BeyondtrustInstanceRepositoryService } from '../../repositories/services/beyondtrust-instance-repository.service';
@@ -9,7 +10,13 @@ export class RetrieveBeyondtrustInstanceByIdQueryHandler
 {
     constructor(private readonly beyondtrustInstanceRepositoryService: BeyondtrustInstanceRepositoryService) {}
 
-    public async execute(query: RetrieveBeyondtrustInstanceByIdQuery): Promise<BeyondtrustInstance | null> {
-        return await this.beyondtrustInstanceRepositoryService.findOneById(query.id);
+    public async execute(query: RetrieveBeyondtrustInstanceByIdQuery): Promise<BeyondtrustInstance> {
+        const beyondtrustInstance = await this.beyondtrustInstanceRepositoryService.findOneById(query.id);
+
+        if (!beyondtrustInstance) {
+            throw new NotFoundException(`Beyondtrust instance with ID ${query.id} not found.`);
+        }
+
+        return beyondtrustInstance;
     }
 }

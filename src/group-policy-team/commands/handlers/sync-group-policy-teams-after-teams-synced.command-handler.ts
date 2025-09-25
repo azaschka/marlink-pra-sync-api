@@ -23,6 +23,7 @@ export class SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler
             try {
                 const btGroupPolicyTeams = await this.retrieveAllBTGroupPolicyTeams(
                     command.transactionId,
+                    command.tenantId,
                     groupPolicyId,
                 );
                 const groupPolicyTeamEntities = this.createGroupPolicyTeamEntities(groupPolicyId, btGroupPolicyTeams);
@@ -67,9 +68,9 @@ export class SyncGroupPolicyTeamsAfterGroupPoliciesSyncedCommandHandler
         }
     }
 
-    private async retrieveAllBTGroupPolicyTeams(transactionId: string, groupPolicyId: number) {
+    private async retrieveAllBTGroupPolicyTeams(transactionId: string, tenantId: number, groupPolicyId: number) {
         return await this.queryBus.execute<BTRetrieveAllGroupPolicyTeamsQuery, GroupPolicyTeamRetrievedDtoOutput[]>(
-            new BTRetrieveAllGroupPolicyTeamsQuery(transactionId, groupPolicyId),
+            new BTRetrieveAllGroupPolicyTeamsQuery(transactionId, tenantId, groupPolicyId),
         );
     }
 

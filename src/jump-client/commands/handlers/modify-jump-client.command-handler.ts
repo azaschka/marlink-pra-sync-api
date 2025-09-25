@@ -57,6 +57,7 @@ export class ModifyJumpClientCommandHandler implements ICommandHandler<ModifyJum
         return await this.commandBus.execute<BTModifyJumpClientCommand, JumpClientModifiedDtoOutput>(
             new BTModifyJumpClientCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 command.jumpGroupType ? mapToBTJumpClientGroupType(command.jumpGroupType) : undefined,

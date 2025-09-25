@@ -71,7 +71,7 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
     ) {
         // Retrieve remote rdps from BeyondTrust
         const btRemoteRdps = await this.queryBus.execute<RetrieveRemoteRdpsQuery, RemoteRdpRetrievedDtoOutput[]>(
-            new RetrieveRemoteRdpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveRemoteRdpsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.

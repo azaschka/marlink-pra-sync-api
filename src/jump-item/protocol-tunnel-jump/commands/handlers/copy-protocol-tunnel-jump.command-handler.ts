@@ -60,6 +60,7 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
         >(
             new BTCopyProtocolTunnelJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -68,7 +69,7 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
         );
 
         return await this.queryBus.execute<BTRetrieveProtocolTunnelJumpByIdQuery, ProtocolTunnelJumpRetrievedDtoOutput>(
-            new BTRetrieveProtocolTunnelJumpByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveProtocolTunnelJumpByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 
