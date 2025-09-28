@@ -26,11 +26,11 @@ export class GroupPolicyMemberEntity implements GroupPolicyMember {
 
     @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyMembers, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_policy_id' })
-    public groupPolicy!: GroupPolicyEntity;
+    public groupPolicy?: GroupPolicyEntity;
 
     @ManyToOne(() => UserEntity, (user) => user.groupPolicyMembers, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
-    public user!: UserEntity;
+    public user?: UserEntity;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;

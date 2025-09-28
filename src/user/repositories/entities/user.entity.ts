@@ -187,13 +187,13 @@ export class UserEntity implements User {
     public lastSyncDate!: Date;
 
     @OneToMany(() => UserGroupPolicyEntity, (userGroupPolicy) => userGroupPolicy.user)
-    public userGroupPolicies!: UserGroupPolicyEntity[];
+    public userGroupPolicies?: UserGroupPolicyEntity[];
 
     @OneToMany(() => TeamUserEntity, (teamUser) => teamUser.user)
-    public teamUsers!: TeamUserEntity[];
+    public teamUsers?: TeamUserEntity[];
 
     @OneToMany(() => GroupPolicyMemberEntity, (groupPolicyMember) => groupPolicyMember.user)
-    public groupPolicyMembers!: GroupPolicyMemberEntity[];
+    public groupPolicyMembers?: GroupPolicyMemberEntity[];
 
     public static create(
         id: number,

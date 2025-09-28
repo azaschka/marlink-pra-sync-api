@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { RemoteRdp } from '../../models';
+import { RemoteRdpEntity } from '../../repositories/entities';
 import { RemoteRdpRepositoryService } from '../../repositories/services/remote-rdp-repository.service';
 import { RetrieveRemoteRdpsQuery } from '../retrieve-remote-rdps.query';
 
@@ -8,7 +9,7 @@ export class RetrieveRemoteRdpsQueryHandler implements IQueryHandler<RetrieveRem
     constructor(private readonly remoteRdpRepositoryService: RemoteRdpRepositoryService) {}
 
     public async execute(query: RetrieveRemoteRdpsQuery): Promise<RemoteRdp[]> {
-        const remoteRdpsFindByQuery = <RemoteRdp>{};
+        const remoteRdpsFindByQuery = <RemoteRdpEntity>{};
 
         if (query.name) {
             remoteRdpsFindByQuery.name = query.name;

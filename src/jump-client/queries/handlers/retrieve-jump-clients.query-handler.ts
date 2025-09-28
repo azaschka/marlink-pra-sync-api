@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { JumpClient } from '../../models';
+import { JumpClientEntity } from '../../repositories/entities';
 import { JumpClientRepositoryService } from '../../repositories/services/jump-client-repository.service';
 import { RetrieveJumpClientsQuery } from '../retrieve-jump-clients.query';
 
@@ -8,7 +9,7 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
     constructor(private readonly jumpClientRepositoryService: JumpClientRepositoryService) {}
 
     public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClient[]> {
-        const jumpClientFindByQuery = <JumpClient>{};
+        const jumpClientFindByQuery = <JumpClientEntity>{};
 
         if (query.name !== undefined) {
             jumpClientFindByQuery.name = query.name;

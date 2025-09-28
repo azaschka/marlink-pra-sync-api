@@ -279,23 +279,23 @@ export class UserSchemaFactory implements BaseTenantEntitySchemaFactory<User> {
                     nullable: false,
                 },
             },
-            // relations: {
-            //     userGroupPolicies: {
-            //         type: 'one-to-many',
-            //         target: `user_group_policies_${tenantId}`,
-            //         inverseSide: 'user',
-            //     },
-            //     teamUsers: {
-            //         type: 'one-to-many',
-            //         target: `team_users_${tenantId}`,
-            //         inverseSide: 'user',
-            //     },
-            //     groupPolicyMembers: {
-            //         type: 'one-to-many',
-            //         target: `group_policy_members_${tenantId}`,
-            //         inverseSide: 'user',
-            //     },
-            // },
+            relations: {
+                userGroupPolicies: {
+                    type: 'one-to-many',
+                    target: `user_group_policies_${tenantId}`,
+                    inverseSide: 'user',
+                },
+                teamUsers: {
+                    type: 'one-to-many',
+                    target: `team_users_${tenantId}`,
+                    inverseSide: 'user',
+                },
+                groupPolicyMembers: {
+                    type: 'one-to-many',
+                    target: `group_policy_members_${tenantId}`,
+                    inverseSide: 'user',
+                },
+            },
         });
     }
 }

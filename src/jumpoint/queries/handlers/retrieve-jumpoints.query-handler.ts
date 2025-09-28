@@ -34,7 +34,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
             return btJumpoints.map((btJumpoint) => this.createJumpointEntity(btJumpoint));
         }
 
-        const jumpointFindByQuery = <FindOptionsWhere<Jumpoint>>{};
+        const jumpointFindByQuery = <FindOptionsWhere<JumpointEntity>>{};
 
         if (query.name !== undefined) {
             jumpointFindByQuery.name = query.name;

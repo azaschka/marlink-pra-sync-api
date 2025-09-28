@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { User } from '../../models';
+import { UserEntity } from '../../repositories/entities';
 import { UserRepositoryService } from '../../repositories/services/user-repository.service';
 import { RetrieveUsersQuery } from '../retrieve-users.query';
 
@@ -8,7 +9,7 @@ export class RetrieveUsersQueryHandler implements IQueryHandler<RetrieveUsersQue
     constructor(private readonly userRepositoryService: UserRepositoryService) {}
 
     public async execute(query: RetrieveUsersQuery): Promise<User[]> {
-        const userFindByQuery = <User>{};
+        const userFindByQuery = <UserEntity>{};
 
         if (query.securityProviderId !== undefined) {
             userFindByQuery.securityProviderId = query.securityProviderId;

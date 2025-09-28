@@ -22,10 +22,10 @@ export class TeamEntity implements Team {
     public lastSyncDate!: Date;
 
     @OneToMany(() => TeamUserEntity, (teamUser) => teamUser.team)
-    public teamUsers!: TeamUserEntity[];
+    public teamUsers?: TeamUserEntity[];
 
     @OneToMany(() => GroupPolicyTeamEntity, (groupPolicyTeam) => groupPolicyTeam.team)
-    public groupPolicyTeams!: GroupPolicyTeamEntity[];
+    public groupPolicyTeams?: GroupPolicyTeamEntity[];
 
     public static create(id: number, name: string, codeName?: string, comments?: string | null): TeamEntity {
         const entity = new TeamEntity();

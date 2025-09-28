@@ -18,11 +18,11 @@ export class GroupPolicyTeamEntity implements GroupPolicyTeam {
 
     @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyTeams, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_policy_id' })
-    public groupPolicy!: GroupPolicyEntity;
+    public groupPolicy?: GroupPolicyEntity;
 
     @ManyToOne(() => TeamEntity, (team) => team.groupPolicyTeams, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'team_id' })
-    public team!: TeamEntity;
+    public team?: TeamEntity;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;

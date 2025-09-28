@@ -20,10 +20,13 @@ export class BaseTenantRepositoryService<T> {
         ) {
             this.dataSource.options.entities.push(entitySchema);
 
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            await this.dataSource.buildMetadatas();
-            await this.dataSource.synchronize(false); // dropBeforeSync = false
+            // Since we're using 1 db = 1 data source, we can safely check relations for all entities here.
+            if (this.canBuildMetadataAndSync()) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                await this.dataSource.buildMetadatas();
+                await this.dataSource.synchronize(false); // dropBeforeSync = false
+            }
         }
 
         return { tableName: entitySchema.options.name };
@@ -140,6 +143,17 @@ export class BaseTenantRepositoryService<T> {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    private canBuildMetadataAndSync(): boolean {
+        const entities = (this.dataSource.options.entities as EntitySchema[]).filter(
+            (entity) => entity.options !== undefined,
+        );
+        const entityRelations = entities.flatMap((entity) => Object.values(entity.options.relations ?? {}));
+        const allRelationTargets = entityRelations.map((relation) => relation?.target as string);
+        const allEntityNames = entities.map((entity) => entity.options.name);
+
+        return allRelationTargets.every((target) => allEntityNames.includes(target));
     }
 
     private getTenantRepository(tenantId: number) {

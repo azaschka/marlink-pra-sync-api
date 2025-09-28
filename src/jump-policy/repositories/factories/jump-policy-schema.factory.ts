@@ -159,38 +159,38 @@ export class JumpPolicySchemaFactory implements BaseTenantEntitySchemaFactory<Ju
                     nullable: false,
                 },
             },
-            // relations: {
-            //     protocolTunnelJumps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_protocol_tunnel_jumps_${tenantId}`,
-            //         inverseSide: 'jumpPolicy',
-            //     },
-            //     remoteRdps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_remote_rdps_${tenantId}`,
-            //         inverseSide: 'jumpPolicy',
-            //     },
-            //     remoteVncs: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_remote_vncs_${tenantId}`,
-            //         inverseSide: 'jumpPolicy',
-            //     },
-            //     shellJumps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_shell_jumps_${tenantId}`,
-            //         inverseSide: 'jumpPolicy',
-            //     },
-            //     webJumps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_web_jumps_${tenantId}`,
-            //         inverseSide: 'jumpPolicy',
-            //     },
-            //     jumpClients: {
-            //         type: 'one-to-many',
-            //         target: `jump_clients_${tenantId}`,
-            //         inverseSide: 'jumpPolicy',
-            //     },
-            // },
+            relations: {
+                protocolTunnelJumps: {
+                    type: 'one-to-many',
+                    target: `jump_item_protocol_tunnel_jumps_${tenantId}`,
+                    inverseSide: 'jumpPolicy',
+                },
+                remoteRdps: {
+                    type: 'one-to-many',
+                    target: `jump_item_remote_rdps_${tenantId}`,
+                    inverseSide: 'jumpPolicy',
+                },
+                remoteVncs: {
+                    type: 'one-to-many',
+                    target: `jump_item_remote_vncs_${tenantId}`,
+                    inverseSide: 'jumpPolicy',
+                },
+                shellJumps: {
+                    type: 'one-to-many',
+                    target: `jump_item_shell_jumps_${tenantId}`,
+                    inverseSide: 'jumpPolicy',
+                },
+                webJumps: {
+                    type: 'one-to-many',
+                    target: `jump_item_web_jumps_${tenantId}`,
+                    inverseSide: 'jumpPolicy',
+                },
+                jumpClients: {
+                    type: 'one-to-many',
+                    target: `jump_clients_${tenantId}`,
+                    inverseSide: 'jumpPolicy',
+                },
+            },
         });
     }
 }

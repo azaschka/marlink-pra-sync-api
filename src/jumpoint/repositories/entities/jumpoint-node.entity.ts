@@ -33,7 +33,7 @@ export class JumpointNodeEntity implements JumpointNode {
         onDelete: 'CASCADE',
     })
     @JoinColumn({ name: 'jumpoint_id' })
-    public jumpoint!: JumpointEntity;
+    public jumpoint?: JumpointEntity;
 
     public static create(
         id: number,

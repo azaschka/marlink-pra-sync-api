@@ -39,18 +39,18 @@ export class TeamSchemaFactory implements BaseTenantEntitySchemaFactory<Team> {
                     nullable: false,
                 },
             },
-            // relations: {
-            //     teamUsers: {
-            //         type: 'one-to-many',
-            //         target: `team_users_${tenantId}`,
-            //         inverseSide: 'team',
-            //     },
-            //     groupPolicyTeams: {
-            //         type: 'one-to-many',
-            //         target: `group_policy_teams_${tenantId}`,
-            //         inverseSide: 'team',
-            //     },
-            // },
+            relations: {
+                teamUsers: {
+                    type: 'one-to-many',
+                    target: `team_users_${tenantId}`,
+                    inverseSide: 'team',
+                },
+                groupPolicyTeams: {
+                    type: 'one-to-many',
+                    target: `group_policy_teams_${tenantId}`,
+                    inverseSide: 'team',
+                },
+            },
         });
     }
 }

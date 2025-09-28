@@ -52,17 +52,17 @@ export class JumpointNodeSchemaFactory implements BaseTenantEntitySchemaFactory<
                     nullable: false,
                 },
             },
-            // relations: {
-            //     jumpoint: {
-            //         type: 'many-to-one',
-            //         target: `jumpoints_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'jumpoint_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //     },
-            // },
+            relations: {
+                jumpoint: {
+                    type: 'many-to-one',
+                    target: `jumpoints_${tenantId}`,
+                    joinColumn: {
+                        name: 'jumpoint_id',
+                    },
+                    inverseSide: 'jumpointNodes',
+                    onDelete: 'CASCADE',
+                },
+            },
         });
     }
 }

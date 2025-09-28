@@ -34,27 +34,27 @@ export class TeamUserSchemaFactory implements BaseTenantEntitySchemaFactory<Team
                     nullable: false,
                 },
             },
-            // relations: {
-            //     team: {
-            //         type: 'many-to-one',
-            //         target: `teams_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'team_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //     },
-            //     user: {
-            //         type: 'many-to-one',
-            //         target: `users_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'user_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //         eager: true,
-            //     },
-            // },
+            relations: {
+                team: {
+                    type: 'many-to-one',
+                    target: `teams_${tenantId}`,
+                    joinColumn: {
+                        name: 'team_id',
+                    },
+                    inverseSide: 'teamUsers',
+                    onDelete: 'CASCADE',
+                },
+                user: {
+                    type: 'many-to-one',
+                    target: `users_${tenantId}`,
+                    joinColumn: {
+                        name: 'user_id',
+                    },
+                    inverseSide: 'teamUsers',
+                    onDelete: 'CASCADE',
+                    eager: true,
+                },
+            },
         });
     }
 }

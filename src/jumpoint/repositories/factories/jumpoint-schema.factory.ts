@@ -127,43 +127,43 @@ export class JumpointSchemaFactory implements BaseTenantEntitySchemaFactory<Jump
                     nullable: false,
                 },
             },
-            // relations: {
-            //     groupPolicyJumpoints: {
-            //         type: 'one-to-many',
-            //         target: `group_policy_jumpoints_${tenantId}`,
-            //         inverseSide: 'jumpoint',
-            //     },
-            //     protocolTunnelJumps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_protocol_tunnel_jumps_${tenantId}`,
-            //         inverseSide: 'jumpoint',
-            //     },
-            //     remoteRdps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_remote_rdps_${tenantId}`,
-            //         inverseSide: 'jumpoint',
-            //     },
-            //     remoteVncs: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_remote_vncs_${tenantId}`,
-            //         inverseSide: 'jumpoint',
-            //     },
-            //     shellJumps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_shell_jumps_${tenantId}`,
-            //         inverseSide: 'jumpoint',
-            //     },
-            //     webJumps: {
-            //         type: 'one-to-many',
-            //         target: `jump_item_web_jumps_${tenantId}`,
-            //         inverseSide: 'jumpoint',
-            //     },
-            //     jumpointNodes: {
-            //         type: 'one-to-many',
-            //         target: `jumpoint_nodes_${tenantId}`,
-            //         inverseSide: 'jumpoint',
-            //     },
-            // },
+            relations: {
+                groupPolicyJumpoints: {
+                    type: 'one-to-many',
+                    target: `group_policy_jumpoints_${tenantId}`,
+                    inverseSide: 'jumpoint',
+                },
+                protocolTunnelJumps: {
+                    type: 'one-to-many',
+                    target: `jump_item_protocol_tunnel_jumps_${tenantId}`,
+                    inverseSide: 'jumpoint',
+                },
+                remoteRdps: {
+                    type: 'one-to-many',
+                    target: `jump_item_remote_rdps_${tenantId}`,
+                    inverseSide: 'jumpoint',
+                },
+                remoteVncs: {
+                    type: 'one-to-many',
+                    target: `jump_item_remote_vncs_${tenantId}`,
+                    inverseSide: 'jumpoint',
+                },
+                shellJumps: {
+                    type: 'one-to-many',
+                    target: `jump_item_shell_jumps_${tenantId}`,
+                    inverseSide: 'jumpoint',
+                },
+                webJumps: {
+                    type: 'one-to-many',
+                    target: `jump_item_web_jumps_${tenantId}`,
+                    inverseSide: 'jumpoint',
+                },
+                jumpointNodes: {
+                    type: 'one-to-many',
+                    target: `jumpoint_nodes_${tenantId}`,
+                    inverseSide: 'jumpoint',
+                },
+            },
         });
     }
 }

@@ -22,11 +22,11 @@ export class TeamUserEntity implements TeamUser {
 
     @ManyToOne(() => TeamEntity, (team) => team.teamUsers, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'team_id' })
-    public team!: TeamEntity;
+    public team?: TeamEntity;
 
     @ManyToOne(() => UserEntity, (user) => user.teamUsers, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
-    public user!: UserEntity;
+    public user?: UserEntity;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;

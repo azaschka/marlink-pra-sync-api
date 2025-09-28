@@ -14,11 +14,11 @@ export class GroupPolicyJumpointEntity implements GroupPolicyJumpoint {
 
     @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyJumpoints, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'group_policy_id' })
-    public groupPolicy!: GroupPolicyEntity;
+    public groupPolicy?: GroupPolicyEntity;
 
     @ManyToOne(() => JumpointEntity, (jumpoint) => jumpoint.groupPolicyJumpoints, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn({ name: 'jumpoint_id' })
-    public jumpoint!: JumpointEntity;
+    public jumpoint?: JumpointEntity;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;

@@ -63,6 +63,32 @@ describe('BaseTenantRepositoryService', () => {
             expect(dataSourceSynchronizeMethod).not.toHaveBeenCalled();
             expect(result).toStrictEqual({ tableName: 'mock-table-name' });
         });
+
+        it('should not build the metadata and synchronize the db when not all relation targets are registered as entities', async () => {
+            const incompleteEntitySchema = {
+                options: {
+                    name: 'incomplete-entity',
+                    relations: {
+                        relation1: {
+                            target: 'non_existing_entity',
+                        },
+                    },
+                },
+            } as unknown as EntitySchema<MockData>;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            dataSource.options.entities = [TestHelper.mockEntitySchema(), incompleteEntitySchema];
+            const { dataSourceBuildMetadatasMethod, dataSourceSynchronizeMethod } = spyDataSource(dataSource);
+            const tenantEntitySchemaFactoryCreateMethod = jest.spyOn(tenantEntitySchemaFactory, 'create');
+
+            const result = await service.createAndConnectTable(123);
+
+            expect(tenantEntitySchemaFactoryCreateMethod).toHaveBeenCalledWith(123);
+            expect(dataSource.options.entities).toContainEqual(TestHelper.mockEntitySchema());
+            expect(dataSourceBuildMetadatasMethod).not.toHaveBeenCalled();
+            expect(dataSourceSynchronizeMethod).not.toHaveBeenCalled();
+            expect(result).toStrictEqual({ tableName: 'mock-table-name' });
+        });
     });
 
     describe('create', () => {

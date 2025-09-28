@@ -37,40 +37,24 @@ export class GroupPolicyJumpGroupSchemaFactory implements BaseTenantEntitySchema
                     nullable: false,
                 },
             },
-            // relations: {
-            //     groupPolicy: {
-            //         type: 'many-to-one',
-            //         target: `group_policies_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            //     jumpGroup: {
-            //         type: 'many-to-one',
-            //         target: `jump_groups_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'jump_group_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            //     jumpItemRole: {
-            //         type: 'many-to-one',
-            //         target: `jump_item_roles_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'jump_item_role_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            //     jumpPolicy: {
-            //         type: 'many-to-one',
-            //         target: `jump_policies_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'jump_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            // },
+            relations: {
+                groupPolicy: {
+                    type: 'many-to-one',
+                    target: `group_policies_${tenantId}`,
+                    joinColumn: {
+                        name: 'group_policy_id',
+                    },
+                    inverseSide: 'groupPolicyJumpGroups',
+                },
+                jumpGroup: {
+                    type: 'many-to-one',
+                    target: `jump_groups_${tenantId}`,
+                    joinColumn: {
+                        name: 'jump_group_id',
+                    },
+                    inverseSide: 'groupPolicyJumpGroups',
+                },
+            },
         });
     }
 }

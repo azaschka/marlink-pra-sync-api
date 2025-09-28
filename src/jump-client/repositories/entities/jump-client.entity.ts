@@ -104,7 +104,7 @@ export class JumpClientEntity implements JumpClient {
         eager: true,
     })
     @JoinColumn({ name: 'jump_group_id' })
-    public jumpGroup!: JumpGroupEntity;
+    public jumpGroup?: JumpGroupEntity;
 
     @ManyToOne(() => JumpPolicyEntity, (jumpPolicy) => jumpPolicy.jumpClients, {
         onDelete: 'SET NULL',

@@ -86,19 +86,19 @@ export class GroupPolicyEntity implements GroupPolicy {
     public lastSyncDate!: Date;
 
     @OneToMany(() => UserGroupPolicyEntity, (userGroupPolicy) => userGroupPolicy.groupPolicy)
-    public userGroupPolicies!: UserGroupPolicyEntity[];
+    public userGroupPolicies?: UserGroupPolicyEntity[];
 
     @OneToMany(() => GroupPolicyJumpointEntity, (groupPolicyJumpoint) => groupPolicyJumpoint.groupPolicy)
-    public groupPolicyJumpoints!: GroupPolicyJumpointEntity[];
+    public groupPolicyJumpoints?: GroupPolicyJumpointEntity[];
 
     @OneToMany(() => GroupPolicyJumpGroupEntity, (groupPolicyJumpGroup) => groupPolicyJumpGroup.groupPolicy)
-    public groupPolicyJumpGroups!: GroupPolicyJumpGroupEntity[];
+    public groupPolicyJumpGroups?: GroupPolicyJumpGroupEntity[];
 
     @OneToMany(() => GroupPolicyMemberEntity, (groupPolicyMember) => groupPolicyMember.groupPolicy)
-    public groupPolicyMembers!: GroupPolicyMemberEntity[];
+    public groupPolicyMembers?: GroupPolicyMemberEntity[];
 
     @OneToMany(() => GroupPolicyTeamEntity, (groupPolicyTeam) => groupPolicyTeam.groupPolicy)
-    public groupPolicyTeams!: GroupPolicyTeamEntity[];
+    public groupPolicyTeams?: GroupPolicyTeamEntity[];
 
     public static create(
         id: number,

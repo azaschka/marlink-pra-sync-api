@@ -47,26 +47,27 @@ export class GroupPolicyMemberSchemaFactory implements BaseTenantEntitySchemaFac
                     nullable: false,
                 },
             },
-            // relations: {
-            //     groupPolicy: {
-            //         type: 'many-to-one',
-            //         target: `group_policies_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //     },
-            //     user: {
-            //         type: 'many-to-one',
-            //         target: `users_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'user_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         eager: true,
-            //     },
-            // },
+            relations: {
+                groupPolicy: {
+                    type: 'many-to-one',
+                    target: `group_policies_${tenantId}`,
+                    joinColumn: {
+                        name: 'group_policy_id',
+                    },
+                    inverseSide: 'groupPolicyMembers',
+                    onDelete: 'CASCADE',
+                },
+                user: {
+                    type: 'many-to-one',
+                    target: `users_${tenantId}`,
+                    joinColumn: {
+                        name: 'user_id',
+                    },
+                    inverseSide: 'groupPolicyMembers',
+                    onDelete: 'CASCADE',
+                    eager: true,
+                },
+            },
         });
     }
 }

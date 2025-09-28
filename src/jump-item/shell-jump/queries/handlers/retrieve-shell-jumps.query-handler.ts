@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { ShellJump } from '../../models';
+import { ShellJumpEntity } from '../../repositories/entities';
 import { ShellJumpRepositoryService } from '../../repositories/services/shell-jump-repository.service';
 import { RetrieveShellJumpsQuery } from '../retrieve-shell-jumps.query';
 
@@ -8,7 +9,7 @@ export class RetrieveShellJumpsQueryHandler implements IQueryHandler<RetrieveShe
     constructor(private readonly shellJumpRepositoryService: ShellJumpRepositoryService) {}
 
     public async execute(query: RetrieveShellJumpsQuery): Promise<ShellJump[]> {
-        const shellJumpsFindByQuery = <ShellJump>{};
+        const shellJumpsFindByQuery = <ShellJumpEntity>{};
 
         if (query.name) {
             shellJumpsFindByQuery.name = query.name;

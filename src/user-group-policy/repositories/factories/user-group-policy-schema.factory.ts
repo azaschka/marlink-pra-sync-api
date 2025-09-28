@@ -27,27 +27,27 @@ export class UserGroupPolicySchemaFactory implements BaseTenantEntitySchemaFacto
                     nullable: false,
                 },
             },
-            // relations: {
-            //     user: {
-            //         type: 'many-to-one',
-            //         target: `users_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'user_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //     },
-            //     groupPolicy: {
-            //         type: 'many-to-one',
-            //         target: `group_policies_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //         eager: true,
-            //     },
-            // },
+            relations: {
+                user: {
+                    type: 'many-to-one',
+                    target: `users_${tenantId}`,
+                    joinColumn: {
+                        name: 'user_id',
+                    },
+                    inverseSide: 'userGroupPolicies',
+                    onDelete: 'CASCADE',
+                },
+                groupPolicy: {
+                    type: 'many-to-one',
+                    target: `group_policies_${tenantId}`,
+                    joinColumn: {
+                        name: 'group_policy_id',
+                    },
+                    inverseSide: 'userGroupPolicies',
+                    onDelete: 'CASCADE',
+                    eager: true,
+                },
+            },
         });
     }
 }

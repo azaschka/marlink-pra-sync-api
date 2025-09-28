@@ -84,22 +84,22 @@ export class JumpointEntity implements Jumpoint {
     public lastSyncDate!: Date;
 
     @OneToMany(() => GroupPolicyJumpointEntity, (groupPolicyJumpoint) => groupPolicyJumpoint.jumpoint)
-    public groupPolicyJumpoints!: GroupPolicyJumpointEntity[];
+    public groupPolicyJumpoints?: GroupPolicyJumpointEntity[];
 
     @OneToMany(() => ProtocolTunnelJumpEntity, (protocolTunnelJumpEntity) => protocolTunnelJumpEntity.jumpoint)
-    public protocolTunnelJumps!: ProtocolTunnelJumpEntity[];
+    public protocolTunnelJumps?: ProtocolTunnelJumpEntity[];
 
     @OneToMany(() => RemoteRdpEntity, (remoteRdpEntity) => remoteRdpEntity.jumpoint)
-    public remoteRdps!: RemoteRdpEntity[];
+    public remoteRdps?: RemoteRdpEntity[];
 
     @OneToMany(() => RemoteVncEntity, (remoteVncEntity) => remoteVncEntity.jumpoint)
-    public remoteVncs!: RemoteVncEntity[];
+    public remoteVncs?: RemoteVncEntity[];
 
     @OneToMany(() => ShellJumpEntity, (shellJumpEntity) => shellJumpEntity.jumpoint)
-    public shellJumps!: ShellJumpEntity[];
+    public shellJumps?: ShellJumpEntity[];
 
     @OneToMany(() => WebJumpEntity, (webJumpEntity) => webJumpEntity.jumpoint)
-    public webJumps!: WebJumpEntity[];
+    public webJumps?: WebJumpEntity[];
 
     @OneToMany(() => JumpointNodeEntity, (jumpointNode) => jumpointNode.jumpoint)
     public jumpointNodes?: JumpointNodeEntity[];

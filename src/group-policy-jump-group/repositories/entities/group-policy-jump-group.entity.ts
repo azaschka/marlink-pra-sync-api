@@ -22,14 +22,14 @@ export class GroupPolicyJumpGroupEntity implements GroupPolicyJumpGroup {
         onDelete: 'CASCADE',
     })
     @JoinColumn({ name: 'group_policy_id' })
-    public groupPolicy!: GroupPolicyEntity;
+    public groupPolicy?: GroupPolicyEntity;
 
     @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.groupPolicyJumpGroups, {
         eager: true,
         onDelete: 'CASCADE',
     })
     @JoinColumn({ name: 'jump_group_id' })
-    public jumpGroup!: JumpGroupEntity;
+    public jumpGroup?: JumpGroupEntity;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;

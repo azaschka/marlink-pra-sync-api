@@ -118,22 +118,22 @@ export class JumpPolicyEntity implements JumpPolicy {
     public lastSyncDate!: Date;
 
     @OneToMany(() => ProtocolTunnelJumpEntity, (protocolTunnelJumpEntity) => protocolTunnelJumpEntity.jumpPolicy)
-    public protocolTunnelJumps!: ProtocolTunnelJumpEntity[];
+    public protocolTunnelJumps?: ProtocolTunnelJumpEntity[];
 
     @OneToMany(() => RemoteRdpEntity, (remoteRdpEntity) => remoteRdpEntity.jumpPolicy)
-    public remoteRdps!: RemoteRdpEntity[];
+    public remoteRdps?: RemoteRdpEntity[];
 
     @OneToMany(() => RemoteVncEntity, (remoteVncEntity) => remoteVncEntity.jumpPolicy)
-    public remoteVncs!: RemoteVncEntity[];
+    public remoteVncs?: RemoteVncEntity[];
 
     @OneToMany(() => ShellJumpEntity, (shellJumpEntity) => shellJumpEntity.jumpPolicy)
-    public shellJumps!: ShellJumpEntity[];
+    public shellJumps?: ShellJumpEntity[];
 
     @OneToMany(() => WebJumpEntity, (webJumpEntity) => webJumpEntity.jumpPolicy)
-    public webJumps!: WebJumpEntity[];
+    public webJumps?: WebJumpEntity[];
 
     @OneToMany(() => JumpClientEntity, (jumpClientEntity) => jumpClientEntity.jumpPolicy)
-    public jumpClients!: JumpClientEntity[];
+    public jumpClients?: JumpClientEntity[];
 
     public static create(
         id: number,

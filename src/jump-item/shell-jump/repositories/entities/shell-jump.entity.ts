@@ -61,14 +61,14 @@ export class ShellJumpEntity implements ShellJump {
         eager: true,
     })
     @JoinColumn({ name: 'jumpoint_id' })
-    public jumpoint!: JumpointEntity;
+    public jumpoint?: JumpointEntity;
 
     @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.shellJumps, {
         onDelete: 'CASCADE',
         eager: true,
     })
     @JoinColumn({ name: 'jump_group_id' })
-    public jumpGroup!: JumpGroupEntity;
+    public jumpGroup?: JumpGroupEntity;
 
     @ManyToOne(() => JumpPolicyEntity, (jumpPolicy) => jumpPolicy.shellJumps, {
         onDelete: 'SET NULL',

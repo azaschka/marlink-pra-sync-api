@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GroupPolicyJumpoint } from '../../models';
+import { GroupPolicyJumpointEntity } from '../../repositories/entities';
 import { GroupPolicyJumpointRepositoryService } from '../../repositories/services/group-policy-jumpoint-repository.service';
 import { RetrieveGroupPolicyJumpointsQuery } from '../retrieve-group-policy-jumpoints.query';
 
@@ -8,7 +9,7 @@ export class RetrieveGroupPolicyJumpointsQueryHandler implements IQueryHandler<R
     constructor(private readonly groupPolicyJumpointRepositoryService: GroupPolicyJumpointRepositoryService) {}
 
     public async execute(query: RetrieveGroupPolicyJumpointsQuery): Promise<GroupPolicyJumpoint[]> {
-        const groupPolicyJumpointFindByQuery = <GroupPolicyJumpoint>{};
+        const groupPolicyJumpointFindByQuery = <GroupPolicyJumpointEntity>{};
         groupPolicyJumpointFindByQuery.groupPolicyId = query.groupPolicyId;
 
         const groupPolicyJumpoints = await this.groupPolicyJumpointRepositoryService.findBy(

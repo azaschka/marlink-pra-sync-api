@@ -27,27 +27,27 @@ export class GroupPolicyJumpointSchemaFactory implements BaseTenantEntitySchemaF
                     nullable: false,
                 },
             },
-            // relations: {
-            //     groupPolicy: {
-            //         type: 'many-to-one',
-            //         target: `group_policies_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //     },
-            //     jumpoint: {
-            //         type: 'many-to-one',
-            //         target: `jumpoints_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'jumpoint_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         eager: true,
-            //         onDelete: 'CASCADE',
-            //     },
-            // },
+            relations: {
+                groupPolicy: {
+                    type: 'many-to-one',
+                    target: `group_policies_${tenantId}`,
+                    joinColumn: {
+                        name: 'group_policy_id',
+                    },
+                    inverseSide: 'groupPolicyJumpoints',
+                    onDelete: 'CASCADE',
+                },
+                jumpoint: {
+                    type: 'many-to-one',
+                    target: `jumpoints_${tenantId}`,
+                    joinColumn: {
+                        name: 'jumpoint_id',
+                    },
+                    inverseSide: 'groupPolicyJumpoints',
+                    eager: true,
+                    onDelete: 'CASCADE',
+                },
+            },
         });
     }
 }

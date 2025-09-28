@@ -49,14 +49,14 @@ export class RemoteVncEntity implements RemoteVnc {
         eager: true,
     })
     @JoinColumn({ name: 'jumpoint_id' })
-    public jumpoint!: JumpointEntity;
+    public jumpoint?: JumpointEntity;
 
     @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.remoteVncs, {
         onDelete: 'CASCADE',
         eager: true,
     })
     @JoinColumn({ name: 'jump_group_id' })
-    public jumpGroup!: JumpGroupEntity;
+    public jumpGroup?: JumpGroupEntity;
 
     @ManyToOne(() => JumpPolicyEntity, (jumpPolicy) => jumpPolicy.remoteVncs, {
         onDelete: 'SET NULL',

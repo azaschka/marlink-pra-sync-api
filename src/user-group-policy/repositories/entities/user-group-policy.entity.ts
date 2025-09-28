@@ -14,14 +14,14 @@ export class UserGroupPolicyEntity implements UserGroupPolicy {
 
     @ManyToOne(() => UserEntity, (user) => user.userGroupPolicies, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'user_id' })
-    public user!: UserEntity;
+    public user?: UserEntity;
 
     @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.userGroupPolicies, {
         eager: true,
         onDelete: 'CASCADE',
     })
     @JoinColumn({ name: 'group_policy_id' })
-    public groupPolicy!: GroupPolicyEntity;
+    public groupPolicy?: GroupPolicyEntity;
 
     @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;

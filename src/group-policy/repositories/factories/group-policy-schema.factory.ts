@@ -139,48 +139,33 @@ export class GroupPolicySchemaFactory implements BaseTenantEntitySchemaFactory<G
                     nullable: false,
                 },
             },
-            // relations: {
-            //     userGroupPolicies: {
-            //         type: 'one-to-many',
-            //         target: `user_group_policies_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            //     groupPolicyJumpoints: {
-            //         type: 'one-to-many',
-            //         target: `group_policy_jumpoints_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            //     groupPolicyJumpGroups: {
-            //         type: 'one-to-many',
-            //         target: `group_policy_jump_groups_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            //     groupPolicyMembers: {
-            //         type: 'one-to-many',
-            //         target: `group_policy_members_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            //     groupPolicyTeams: {
-            //         type: 'one-to-many',
-            //         target: `group_policy_teams_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'group_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //     },
-            // },
+            relations: {
+                userGroupPolicies: {
+                    type: 'one-to-many',
+                    target: `user_group_policies_${tenantId}`,
+                    inverseSide: 'groupPolicy',
+                },
+                groupPolicyJumpoints: {
+                    type: 'one-to-many',
+                    target: `group_policy_jumpoints_${tenantId}`,
+                    inverseSide: 'groupPolicy',
+                },
+                groupPolicyJumpGroups: {
+                    type: 'one-to-many',
+                    target: `group_policy_jump_groups_${tenantId}`,
+                    inverseSide: 'groupPolicy',
+                },
+                groupPolicyMembers: {
+                    type: 'one-to-many',
+                    target: `group_policy_members_${tenantId}`,
+                    inverseSide: 'groupPolicy',
+                },
+                groupPolicyTeams: {
+                    type: 'one-to-many',
+                    target: `group_policy_teams_${tenantId}`,
+                    inverseSide: 'groupPolicy',
+                },
+            },
         });
     }
 }

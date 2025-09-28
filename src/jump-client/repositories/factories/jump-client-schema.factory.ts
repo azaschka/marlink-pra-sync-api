@@ -161,28 +161,29 @@ export class JumpClientSchemaFactory implements BaseTenantEntitySchemaFactory<Ju
                     nullable: false,
                 },
             },
-            // relations: {
-            //     jumpGroup: {
-            //         type: 'many-to-one',
-            //         target: `jump_groups_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'jump_group_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'CASCADE',
-            //         eager: true,
-            //     },
-            //     jumpPolicy: {
-            //         type: 'many-to-one',
-            //         target: `jump_policies_${tenantId}`,
-            //         joinColumn: {
-            //             name: 'jump_policy_id',
-            //             referencedColumnName: 'id',
-            //         },
-            //         onDelete: 'SET NULL',
-            //         eager: true,
-            //     },
-            // },
+            relations: {
+                jumpGroup: {
+                    type: 'many-to-one',
+                    target: `jump_groups_${tenantId}`,
+                    joinColumn: {
+                        name: 'jump_group_id',
+                    },
+                    inverseSide: 'jumpClients',
+                    onDelete: 'CASCADE',
+                    eager: true,
+                },
+                jumpPolicy: {
+                    type: 'many-to-one',
+                    target: `jump_policies_${tenantId}`,
+                    joinColumn: {
+                        name: 'jump_policy_id',
+                    },
+                    inverseSide: 'jumpClients',
+                    onDelete: 'SET NULL',
+                    eager: true,
+                    nullable: true,
+                },
+            },
         });
     }
 }

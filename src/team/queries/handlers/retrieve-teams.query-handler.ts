@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Team } from '../../models';
+import { TeamEntity } from '../../repositories/entities';
 import { TeamRepositoryService } from '../../repositories/services/team-repository.service';
 import { RetrieveTeamsQuery } from '../retrieve-teams.query';
 
@@ -8,7 +9,7 @@ export class RetrieveTeamsQueryHandler implements IQueryHandler<RetrieveTeamsQue
     constructor(private readonly teamRepositoryService: TeamRepositoryService) {}
 
     public async execute(query: RetrieveTeamsQuery): Promise<Team[]> {
-        const teamsFindByQuery = <Team>{};
+        const teamsFindByQuery = <TeamEntity>{};
 
         if (query.name) {
             teamsFindByQuery.name = query.name;

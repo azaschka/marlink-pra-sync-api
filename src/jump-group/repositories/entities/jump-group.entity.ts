@@ -27,25 +27,25 @@ export class JumpGroupEntity implements JumpGroup {
     public lastSyncDate!: Date;
 
     @OneToMany(() => GroupPolicyJumpGroupEntity, (groupPolicyJumpGroup) => groupPolicyJumpGroup.jumpGroup)
-    public groupPolicyJumpGroups!: GroupPolicyJumpGroupEntity[];
+    public groupPolicyJumpGroups?: GroupPolicyJumpGroupEntity[];
 
     @OneToMany(() => ProtocolTunnelJumpEntity, (protocolTunnelJumpEntity) => protocolTunnelJumpEntity.jumpGroup)
-    public protocolTunnelJumps!: ProtocolTunnelJumpEntity[];
+    public protocolTunnelJumps?: ProtocolTunnelJumpEntity[];
 
     @OneToMany(() => RemoteRdpEntity, (remoteRdpEntity) => remoteRdpEntity.jumpGroup)
-    public remoteRdps!: RemoteRdpEntity[];
+    public remoteRdps?: RemoteRdpEntity[];
 
     @OneToMany(() => RemoteVncEntity, (remoteVncEntity) => remoteVncEntity.jumpGroup)
-    public remoteVncs!: RemoteVncEntity[];
+    public remoteVncs?: RemoteVncEntity[];
 
     @OneToMany(() => ShellJumpEntity, (shellJumpEntity) => shellJumpEntity.jumpGroup)
-    public shellJumps!: ShellJumpEntity[];
+    public shellJumps?: ShellJumpEntity[];
 
     @OneToMany(() => WebJumpEntity, (webJumpEntity) => webJumpEntity.jumpGroup)
-    public webJumps!: WebJumpEntity[];
+    public webJumps?: WebJumpEntity[];
 
     @OneToMany(() => JumpClientEntity, (jumpClientEntity) => jumpClientEntity.jumpGroup)
-    public jumpClients!: JumpClientEntity[];
+    public jumpClients?: JumpClientEntity[];
 
     public static create(id: number, name: string, codeName?: string, comments?: string | null): JumpGroupEntity {
         const entity = new JumpGroupEntity();

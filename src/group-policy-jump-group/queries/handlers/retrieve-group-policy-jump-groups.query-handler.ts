@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GroupPolicyJumpGroup } from '../../models';
+import { GroupPolicyJumpGroupEntity } from '../../repositories/entities';
 import { GroupPolicyJumpGroupRepositoryService } from '../../repositories/services/group-policy-jump-group-repository.service';
 import { RetrieveGroupPolicyJumpGroupsQuery } from '../retrieve-group-policy-jump-groups.query';
 
@@ -8,7 +9,7 @@ export class RetrieveGroupPolicyJumpGroupsQueryHandler implements IQueryHandler<
     constructor(private readonly groupPolicyJumpGroupRepositoryService: GroupPolicyJumpGroupRepositoryService) {}
 
     public async execute(query: RetrieveGroupPolicyJumpGroupsQuery): Promise<GroupPolicyJumpGroup[]> {
-        const groupPolicyJumpGroupFindByQuery = <GroupPolicyJumpGroup>{};
+        const groupPolicyJumpGroupFindByQuery = <GroupPolicyJumpGroupEntity>{};
         groupPolicyJumpGroupFindByQuery.groupPolicyId = query.groupPolicyId;
 
         const groupPolicyJumpGroups = await this.groupPolicyJumpGroupRepositoryService.findBy(
