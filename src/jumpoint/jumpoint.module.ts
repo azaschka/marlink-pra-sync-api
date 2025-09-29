@@ -1,6 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../app-config/app-config.module';
 import { BeyondtrustInstance } from '../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../beyondtrust-instance/queries';
@@ -9,13 +8,12 @@ import { CommandHandlers } from './commands/handlers';
 import { JumpointController } from './controllers/jumpoint.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { JumpointEntity, JumpointNodeEntity } from './repositories/entities';
 import { JumpointNodeRepositoryService } from './repositories/services/jumpoint-node-repository.service';
 import { JumpointRepositoryService } from './repositories/services/jumpoint-repository.service';
 import { JumpointNodesSaga } from './sagas';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([JumpointEntity, JumpointNodeEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [JumpointController],
     providers: [
         ...QueryHandlers,

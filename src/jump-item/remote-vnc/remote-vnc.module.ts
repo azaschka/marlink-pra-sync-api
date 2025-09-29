@@ -1,6 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../../app-config/app-config.module';
 import { BeyondtrustInstance } from '../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../../beyondtrust-instance/queries';
@@ -9,11 +8,10 @@ import { CommandHandlers } from './commands/handlers';
 import { RemoteVncController } from './controllers/remote-vnc.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { RemoteVncEntity } from './repositories/entities';
 import { RemoteVncRepositoryService } from './repositories/services/remote-vnc-repository.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([RemoteVncEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [RemoteVncController],
     providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, RemoteVncRepositoryService],
 })

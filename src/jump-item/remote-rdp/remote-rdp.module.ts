@@ -1,6 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../../app-config/app-config.module';
 import { BeyondtrustInstance } from '../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../../beyondtrust-instance/queries';
@@ -9,11 +8,10 @@ import { CommandHandlers } from './commands/handlers';
 import { RemoteRdpController } from './controllers/remote-rdp.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { RemoteRdpEntity } from './repositories/entities';
 import { RemoteRdpRepositoryService } from './repositories/services/remote-rdp-repository.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([RemoteRdpEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [RemoteRdpController],
     providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, RemoteRdpRepositoryService],
 })

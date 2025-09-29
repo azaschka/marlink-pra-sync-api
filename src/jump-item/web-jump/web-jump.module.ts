@@ -1,6 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../../app-config/app-config.module';
 import { BeyondtrustInstance } from '../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../../beyondtrust-instance/queries';
@@ -9,11 +8,10 @@ import { CommandHandlers } from './commands/handlers';
 import { WebJumpController } from './controllers/web-jump.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { WebJumpEntity } from './repositories/entities';
 import { WebJumpRepositoryService } from './repositories/services/web-jump-repository.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([WebJumpEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [WebJumpController],
     providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, WebJumpRepositoryService],
 })

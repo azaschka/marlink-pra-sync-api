@@ -1,6 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../app-config/app-config.module';
 import { BeyondtrustInstance } from '../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../beyondtrust-instance/queries';
@@ -9,11 +8,10 @@ import { CommandHandlers } from './commands/handlers';
 import { TeamController } from './controllers/team.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { TeamEntity } from './repositories/entities';
 import { TeamRepositoryService } from './repositories/services/team-repository.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([TeamEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [TeamController],
     providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, TeamRepositoryService],
 })

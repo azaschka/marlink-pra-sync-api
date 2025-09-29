@@ -1,6 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../app-config/app-config.module';
 import { BeyondtrustInstance } from '../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../beyondtrust-instance/queries';
@@ -9,11 +8,10 @@ import { CommandHandlers } from './commands/handlers';
 import { GroupPolicyController } from './controllers/group-policy.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { GroupPolicyEntity } from './repositories/entities';
 import { GroupPolicyRepositoryService } from './repositories/services/group-policy-repository.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([GroupPolicyEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [GroupPolicyController],
     providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, GroupPolicyRepositoryService],
 })

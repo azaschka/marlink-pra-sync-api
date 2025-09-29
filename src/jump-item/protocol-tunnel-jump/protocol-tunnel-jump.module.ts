@@ -1,6 +1,5 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigModule } from '../../app-config/app-config.module';
 import { BeyondtrustInstance } from '../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../../beyondtrust-instance/queries';
@@ -9,11 +8,10 @@ import { CommandHandlers } from './commands/handlers';
 import { ProtocolTunnelJumpController } from './controllers/protocol-tunnel-jump.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { ProtocolTunnelJumpEntity } from './repositories/entities';
 import { ProtocolTunnelJumpRepositoryService } from './repositories/services/protocol-tunnel-jump-repository.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([ProtocolTunnelJumpEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [ProtocolTunnelJumpController],
     providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, ProtocolTunnelJumpRepositoryService],
 })

@@ -1,30 +1,15 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { TeamEntity } from '../../../team/repositories/entities';
 import { GroupPolicyTeamRoleType } from '../../enums';
 import { GroupPolicyTeam } from '../../models';
 
-@Entity({ name: 'group_policy_teams' })
 export class GroupPolicyTeamEntity implements GroupPolicyTeam {
-    @PrimaryColumn({ name: 'group_policy_id', type: 'int' })
     public groupPolicyId!: number;
-
-    @PrimaryColumn({ name: 'team_id', type: 'int' })
     public teamId!: number;
-
-    @Column({ name: 'role_type', type: 'enum', enum: GroupPolicyTeamRoleType, nullable: true })
     public roleType?: GroupPolicyTeamRoleType;
-
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyTeams, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'group_policy_id' })
     public groupPolicy?: GroupPolicyEntity;
-
-    @ManyToOne(() => TeamEntity, (team) => team.groupPolicyTeams, { eager: true, onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'team_id' })
     public team?: TeamEntity;
-
-    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
 
     public static create(
