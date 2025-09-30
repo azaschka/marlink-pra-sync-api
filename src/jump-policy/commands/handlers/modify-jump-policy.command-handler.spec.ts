@@ -143,6 +143,7 @@ describe('ModifyJumpPolicyCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyJumpPolicyCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.displayName,
                         command.codeName,

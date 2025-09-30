@@ -26,7 +26,7 @@ describe('DeleteJumpPolicyCommandHandler', () => {
 
         await handler.execute(new DeleteJumpPolicyCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 100, 123));
         expect(jumpPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<JumpPolicyDeletedEvent>{
@@ -50,7 +50,7 @@ describe('DeleteJumpPolicyCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 100, 123));
         expect(jumpPolicyRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -70,7 +70,7 @@ describe('DeleteJumpPolicyCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpPolicyCommand('transaction-1', 100, 123));
         expect(jumpPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(

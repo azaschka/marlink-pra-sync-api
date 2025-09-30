@@ -26,7 +26,7 @@ describe('DeleteRemoteRdpCommandHandler', () => {
 
         await handler.execute(new DeleteRemoteRdpCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 100, 123));
         expect(remoteRdpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<RemoteRdpDeletedEvent>{
@@ -50,7 +50,7 @@ describe('DeleteRemoteRdpCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 100, 123));
         expect(remoteRdpRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -70,7 +70,7 @@ describe('DeleteRemoteRdpCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 100, 123));
         expect(remoteRdpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(

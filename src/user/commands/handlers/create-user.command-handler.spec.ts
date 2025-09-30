@@ -144,6 +144,7 @@ describe('CreateUserCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateUserCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.publicDisplayName,
                         command.username,
                         command.password,

@@ -118,6 +118,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateGroupPolicyCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.hasEndpointsAccessPermission,
                         command.accessPermissionStatusType as unknown as BTAccessPermissionStatusType,

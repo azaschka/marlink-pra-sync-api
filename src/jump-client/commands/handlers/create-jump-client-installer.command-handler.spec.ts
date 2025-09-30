@@ -127,6 +127,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateJumpClientInstallerCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.jumpGroupId,
                         command.name,
                         command.jumpGroupType,

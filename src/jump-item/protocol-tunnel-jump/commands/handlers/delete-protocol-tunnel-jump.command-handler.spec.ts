@@ -30,7 +30,7 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
         await handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 100, 123));
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 123),
+            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 100, 123),
         );
         expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -59,7 +59,7 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 123),
+            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 100, 123),
         );
         expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 123),
+            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 100, 123),
         );
         expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);

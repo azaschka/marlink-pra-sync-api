@@ -26,7 +26,7 @@ describe('DeleteUserCommandHandler', () => {
 
         await handler.execute(new DeleteUserCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 100, 123));
         expect(userRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<UserDeletedEvent>{
@@ -48,7 +48,7 @@ describe('DeleteUserCommandHandler', () => {
 
         await expect(handler.execute(new DeleteUserCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 100, 123));
         expect(userRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -66,7 +66,7 @@ describe('DeleteUserCommandHandler', () => {
 
         await expect(handler.execute(new DeleteUserCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 100, 123));
         expect(userRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(

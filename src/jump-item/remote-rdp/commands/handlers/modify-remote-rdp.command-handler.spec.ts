@@ -132,6 +132,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyRemoteRdpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.jumpointId,

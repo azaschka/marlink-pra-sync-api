@@ -74,7 +74,12 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTAddJumpGroupToGroupPolicyCommand(command.transactionId, command.id, command.jumpGroupId),
+                    new BTAddJumpGroupToGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpGroupId,
+                    ),
                 );
                 expect(groupPolicyJumpGroupEntityCreateMethod).toHaveBeenCalledWith(
                     command.id,

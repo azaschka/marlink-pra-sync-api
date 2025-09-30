@@ -114,6 +114,7 @@ describe('ModifyWebJumpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyWebJumpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.jumpointId,

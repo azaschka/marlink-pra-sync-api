@@ -85,6 +85,7 @@ describe('CreateUserCommandHandler', () => {
             {
                 command: new CreateUserCommand(
                     'transaction-1',
+                    123,
                     'display-name-1',
                     'user-1',
                     'password-1',
@@ -110,7 +111,7 @@ describe('CreateUserCommandHandler', () => {
                 },
             },
             {
-                command: new CreateUserCommand('transaction-2', 'display-name-2', 'user-2'),
+                command: new CreateUserCommand('transaction-2', 123, 'display-name-2', 'user-2'),
                 expectedHttpClientBody: {
                     publicDisplayName: 'display-name-2',
                     username: 'user-2',
@@ -125,7 +126,9 @@ describe('CreateUserCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/user',
+                    command.transactionId,
+                    123,
+                    '/user',
                     expectedHttpClientBody,
                 );
 
@@ -146,9 +149,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                user: {
-                    path: 'user',
+                config: {
+                    user: {
+                        path: 'user',
+                    },
                 },
             },
         },

@@ -149,6 +149,7 @@ describe('ModifyUserCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyUserCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.publicDisplayName,
                         command.username,

@@ -20,10 +20,12 @@ describe('DeleteRemoteVncCommandHandler', () => {
         it('should call HttpClientService with correct url and return the result', async () => {
             const httpClientServiceDeleteMethod = jest.spyOn(httpClientService, 'delete');
 
-            await handler.execute(new DeleteRemoteVncCommand('transaction-1', 123));
+            await handler.execute(new DeleteRemoteVncCommand('transaction-1', 100, 123));
 
             expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith(
-                'https://api.example.com/jump-item/remote-vnc/123',
+                'transaction-1',
+                100,
+                '/jump-item/remote-vnc/123',
             );
         });
     });
@@ -40,10 +42,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteVnc: {
-                        path: 'jump-item/remote-vnc',
+                config: {
+                    jumpItem: {
+                        remoteVnc: {
+                            path: 'jump-item/remote-vnc',
+                        },
                     },
                 },
             },

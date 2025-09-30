@@ -85,6 +85,7 @@ describe('ModifyUserCommandHandler', () => {
             {
                 command: new ModifyUserCommand(
                     'transaction-1',
+                    123,
                     1,
                     'display-name-1',
                     'user-1',
@@ -111,7 +112,7 @@ describe('ModifyUserCommandHandler', () => {
                 },
             },
             {
-                command: new ModifyUserCommand('transaction-2', 2, 'display-name-2', 'user-2'),
+                command: new ModifyUserCommand('transaction-2', 123, 2, 'display-name-2', 'user-2'),
                 expectedHttpClientBody: {
                     publicDisplayName: 'display-name-2',
                     username: 'user-2',
@@ -126,7 +127,9 @@ describe('ModifyUserCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/user/${command.id}`,
+                    command.transactionId,
+                    123,
+                    `/user/${command.id}`,
                     expectedHttpClientBody,
                 );
 
@@ -147,9 +150,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                user: {
-                    path: 'user',
+                config: {
+                    user: {
+                        path: 'user',
+                    },
                 },
             },
         },

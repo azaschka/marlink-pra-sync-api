@@ -26,7 +26,7 @@ describe('DeleteShellJumpCommandHandler', () => {
 
         await handler.execute(new DeleteShellJumpCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteShellJumpCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteShellJumpCommand('transaction-1', 100, 123));
         expect(shellJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<ShellJumpDeletedEvent>{
@@ -50,7 +50,7 @@ describe('DeleteShellJumpCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteShellJumpCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteShellJumpCommand('transaction-1', 100, 123));
         expect(shellJumpRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -70,7 +70,7 @@ describe('DeleteShellJumpCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteShellJumpCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteShellJumpCommand('transaction-1', 100, 123));
         expect(shellJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(

@@ -26,7 +26,7 @@ describe('DeleteRemoteVncCommandHandler', () => {
 
         await handler.execute(new DeleteRemoteVncCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 100, 123));
         expect(remoteVncRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<RemoteVncDeletedEvent>{
@@ -50,7 +50,7 @@ describe('DeleteRemoteVncCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 100, 123));
         expect(remoteVncRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -70,7 +70,7 @@ describe('DeleteRemoteVncCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 100, 123));
         expect(remoteVncRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(

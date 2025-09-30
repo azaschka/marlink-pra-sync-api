@@ -33,11 +33,13 @@ describe('RetrieveProtocolTunnelJumpByIdQueryHandler', () => {
         it('should call HttpClientService with correct parameters and get the result', async () => {
             const httpClientServiceGetMethod = jest.spyOn(httpClientService, 'get');
 
-            const result = await handler.execute(new RetrieveProtocolTunnelJumpByIdQuery('transaction-1', 1));
+            const result = await handler.execute(new RetrieveProtocolTunnelJumpByIdQuery('transaction-1', 123, 1));
 
             expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                'https://api.example.com/jump-item/protocol-tunnel-jump/1',
+                'transaction-1',
+                123,
+                '/jump-item/protocol-tunnel-jump/1',
             );
 
             expect(result).toStrictEqual(TestHelper.mockedProtocolTunnelJumpRetrievedDtoOutput);
@@ -56,10 +58,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    protocolTunnelJump: {
-                        path: 'jump-item/protocol-tunnel-jump',
+                config: {
+                    jumpItem: {
+                        protocolTunnelJump: {
+                            path: 'jump-item/protocol-tunnel-jump',
+                        },
                     },
                 },
             },

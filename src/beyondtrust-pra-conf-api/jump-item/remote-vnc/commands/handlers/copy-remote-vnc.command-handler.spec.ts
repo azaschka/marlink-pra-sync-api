@@ -33,12 +33,14 @@ describe('CopyRemoteVncCommandHandler', () => {
             const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
-                new CopyRemoteVncCommand('transaction-1', 1, 2, JumpGroupType.Personal, 'remote-vnc-1'),
+                new CopyRemoteVncCommand('transaction-1', 123, 1, 2, JumpGroupType.Personal, 'remote-vnc-1'),
             );
 
             expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/remote-vnc/1/copy`,
+                'transaction-1',
+                123,
+                `/jump-item/remote-vnc/1/copy`,
                 {
                     name: 'remote-vnc-1',
                     jumpGroupId: 2,
@@ -62,11 +64,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteVnc: {
-                        path: 'jump-item/remote-vnc',
-                        copy: 'copy',
+                config: {
+                    jumpItem: {
+                        remoteVnc: {
+                            path: 'jump-item/remote-vnc',
+                            copy: 'copy',
+                        },
                     },
                 },
             },

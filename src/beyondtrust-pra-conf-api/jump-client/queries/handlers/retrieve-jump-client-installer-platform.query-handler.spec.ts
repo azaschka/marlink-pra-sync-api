@@ -27,12 +27,15 @@ describe('RetrieveJumpClientInstallerPlatformQueryHandler', () => {
 
             const result = await handler.execute(<RetrieveJumpClientInstallerPlatformQuery>{
                 transactionId: 'transaction-1',
+                beyondtrustInstanceId: 100,
                 installerId: 'installer-1',
                 platform: JumpClientInstallerPlatformType.Windows64,
             });
 
             expect(httpClientServiceStreamMethod).toHaveBeenCalledWith(
-                `https://api.example.com/jump-client/installer/installer-1/${JumpClientInstallerPlatformType.Windows64}`,
+                'transaction-1',
+                100,
+                `/jump-client/installer/installer-1/${JumpClientInstallerPlatformType.Windows64}`,
             );
 
             expect(result).toBe(expectedResult);
@@ -51,11 +54,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
-                    installer: {
-                        path: 'installer',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                        installer: {
+                            path: 'installer',
+                        },
                     },
                 },
             },

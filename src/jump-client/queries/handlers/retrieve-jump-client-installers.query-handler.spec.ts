@@ -155,6 +155,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
             expect(queryBusExecuteMethod).toHaveBeenCalledWith(
                 new BTRetrieveJumpClientInstallersQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'jump-client-1',

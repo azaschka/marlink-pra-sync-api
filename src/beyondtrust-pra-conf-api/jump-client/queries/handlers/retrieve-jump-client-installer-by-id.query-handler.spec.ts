@@ -37,11 +37,13 @@ describe('RetrieveJumpClientInstallerByIdQueryHandler', () => {
         it('should call HttpClientService with correct parameters and get the result', async () => {
             const httpClientServiceGetMethod = jest.spyOn(httpClientService, 'get');
 
-            const result = await handler.execute(new RetrieveJumpClientInstallerByIdQuery('transaction-1', 123));
+            const result = await handler.execute(new RetrieveJumpClientInstallerByIdQuery('transaction-1', 100, 123));
 
             expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                'https://api.example.com/jump-client/installer/123',
+                'transaction-1',
+                100,
+                `/jump-client/installer/123`,
             );
 
             expect(result).toStrictEqual(TestHelper.mockedJumpClientInstallerRetrievedDtoOutput);
@@ -60,11 +62,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
-                    installer: {
-                        path: 'installer',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                        installer: {
+                            path: 'installer',
+                        },
                     },
                 },
             },

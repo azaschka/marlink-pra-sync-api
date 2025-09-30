@@ -49,7 +49,12 @@ describe('RemoveUserFromTeamCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveUserFromTeamCommand(command.transactionId, command.id, command.userId),
+                    new BTRemoveUserFromTeamCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.userId,
+                    ),
                 );
                 expect(teamUserRepositoryServiceDeleteByTeamIdAndUserIdMethod).toHaveBeenCalledWith(
                     123,

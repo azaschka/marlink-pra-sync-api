@@ -34,7 +34,7 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
         await handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 100, 123));
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteJumpClientInstallerCommand('transaction-1', 123),
+            new BTDeleteJumpClientInstallerCommand('transaction-1', 100, 123),
         );
         expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -63,7 +63,7 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteJumpClientInstallerCommand('transaction-1', 123),
+            new BTDeleteJumpClientInstallerCommand('transaction-1', 100, 123),
         );
         expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
@@ -85,7 +85,7 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteJumpClientInstallerCommand('transaction-1', 123),
+            new BTDeleteJumpClientInstallerCommand('transaction-1', 100, 123),
         );
         expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);

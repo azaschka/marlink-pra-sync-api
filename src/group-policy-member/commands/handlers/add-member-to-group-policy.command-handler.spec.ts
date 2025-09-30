@@ -75,6 +75,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTAddMemberToGroupPolicyCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.userId,
                         command.securityProviderId,

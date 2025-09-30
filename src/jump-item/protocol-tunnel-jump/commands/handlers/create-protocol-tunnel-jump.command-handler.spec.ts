@@ -133,6 +133,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateProtocolTunnelJumpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.jumpointId,
                         command.hostname,

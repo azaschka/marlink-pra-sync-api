@@ -44,6 +44,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveWebJumpsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'web-jump-1',
@@ -67,6 +68,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveWebJumpsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                     name: 'web-jump-2',
@@ -86,7 +88,9 @@ describe('RetrieveWebJumpsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-item/web-jump',
+                    inputQuery.transactionId,
+                    123,
+                    '/jump-item/web-jump',
                     expectedHttpClientParams,
                 );
 
@@ -107,10 +111,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    webJump: {
-                        path: 'jump-item/web-jump',
+                config: {
+                    jumpItem: {
+                        webJump: {
+                            path: 'jump-item/web-jump',
+                        },
                     },
                 },
             },

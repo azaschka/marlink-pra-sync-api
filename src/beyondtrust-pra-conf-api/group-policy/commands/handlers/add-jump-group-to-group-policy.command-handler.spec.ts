@@ -28,7 +28,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
     describe('execute', () => {
         it.each([
             {
-                command: new AddJumpGroupToGroupPolicyCommand('transaction-1', 1, 2, 3, 4),
+                command: new AddJumpGroupToGroupPolicyCommand('transaction-1', 123, 1, 2, 3, 4),
                 expectedHttpClientBody: {
                     jumpGroupId: 2,
                     jumpItemRoleId: 3,
@@ -44,7 +44,9 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/group-policy/1/jump-group',
+                    'transaction-1',
+                    123,
+                    '/group-policy/1/jump-group',
                     expectedHttpClientBody,
                 );
 
@@ -65,11 +67,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
-                    jumpGroup: {
-                        path: 'jump-group',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                        jumpGroup: {
+                            path: 'jump-group',
+                        },
                     },
                 },
             },

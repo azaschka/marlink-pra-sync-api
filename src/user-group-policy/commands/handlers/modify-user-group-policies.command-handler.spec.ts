@@ -85,7 +85,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6]),
+                new BTModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6]),
             );
             expect(userGroupPolicyEntityCreateMethod).toHaveBeenCalledWith(123, [1, 2, 3]);
             expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenCalledWith(100, 123);

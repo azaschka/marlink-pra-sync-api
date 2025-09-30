@@ -26,12 +26,11 @@ describe('RetrieveJumpointInstallerQueryHandler', () => {
 
             const result = await handler.execute(<RetrieveJumpointInstallerQuery>{
                 transactionId: 'transaction-1',
+                beyondtrustInstanceId: 100,
                 jumpointId: 123,
             });
 
-            expect(httpClientServiceStreamMethod).toHaveBeenCalledWith(
-                `https://api.example.com/jumpoint/123/installer`,
-            );
+            expect(httpClientServiceStreamMethod).toHaveBeenCalledWith('transaction-1', 100, `/jumpoint/123/installer`);
 
             expect(result).toBe(expectedResult);
         });
@@ -49,11 +48,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpoint: {
-                    path: 'jumpoint',
-                    installer: {
-                        path: 'installer',
+                config: {
+                    jumpoint: {
+                        path: 'jumpoint',
+                        installer: {
+                            path: 'installer',
+                        },
                     },
                 },
             },

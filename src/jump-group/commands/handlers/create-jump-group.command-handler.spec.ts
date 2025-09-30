@@ -70,6 +70,7 @@ describe('CreateJumpGroupCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateJumpGroupCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.codeName,
                         command.comments,

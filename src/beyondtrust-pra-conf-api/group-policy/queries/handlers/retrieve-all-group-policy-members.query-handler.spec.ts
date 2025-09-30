@@ -31,17 +31,18 @@ describe('RetrieveAllGroupPolicyMembersQueryHandler', () => {
 
             const result = await handler.execute(<RetrieveAllGroupPolicyMembersQuery>{
                 transactionId: 'transaction-1',
+                beyondtrustInstanceId: 123,
                 id: 1,
             });
 
             expect(queryBusExecuteMethod).toHaveBeenCalledTimes(2);
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 1,
-                new RetrieveGroupPolicyMembersQuery('transaction-1', appConfigService.sync.maxBatchSize, 1, 1),
+                new RetrieveGroupPolicyMembersQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 1, 1),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 2,
-                new RetrieveGroupPolicyMembersQuery('transaction-1', appConfigService.sync.maxBatchSize, 2, 1),
+                new RetrieveGroupPolicyMembersQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 2, 1),
             );
 
             expect(result).toStrictEqual([
@@ -66,21 +67,22 @@ describe('RetrieveAllGroupPolicyMembersQueryHandler', () => {
 
             const result = await handler.execute(<RetrieveAllGroupPolicyMembersQuery>{
                 transactionId: 'transaction-1',
+                beyondtrustInstanceId: 123,
                 id: 1,
             });
 
             expect(queryBusExecuteMethod).toHaveBeenCalledTimes(3);
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 1,
-                new RetrieveGroupPolicyMembersQuery('transaction-1', appConfigService.sync.maxBatchSize, 1, 1),
+                new RetrieveGroupPolicyMembersQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 1, 1),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 2,
-                new RetrieveGroupPolicyMembersQuery('transaction-1', appConfigService.sync.maxBatchSize, 2, 1),
+                new RetrieveGroupPolicyMembersQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 2, 1),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 3,
-                new RetrieveGroupPolicyMembersQuery('transaction-1', appConfigService.sync.maxBatchSize, 3, 1),
+                new RetrieveGroupPolicyMembersQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 3, 1),
             );
 
             expect(result).toStrictEqual([

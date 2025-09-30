@@ -128,6 +128,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyJumpClientCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.jumpGroupId,
                         command.jumpGroupType,

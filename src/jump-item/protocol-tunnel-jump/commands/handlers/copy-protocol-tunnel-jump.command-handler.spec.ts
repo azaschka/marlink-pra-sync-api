@@ -106,6 +106,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                 new BTCopyProtocolTunnelJumpCommand(
                     'transaction-1',
+                    123,
                     1,
                     3,
                     JumpGroupType.Personal,

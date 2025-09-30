@@ -88,7 +88,7 @@ describe('CopyRemoteVncCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyRemoteVncCommand('transaction-1', 1, 3, JumpGroupType.Personal, 'remote-vnc-1'),
+                new BTCopyRemoteVncCommand('transaction-1', 123, 1, 3, JumpGroupType.Personal, 'remote-vnc-1'),
             );
             expect(remoteVncEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedRemoteVncRetrievedDtoOutput.id,

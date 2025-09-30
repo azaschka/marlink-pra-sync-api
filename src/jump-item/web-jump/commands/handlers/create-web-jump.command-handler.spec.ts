@@ -129,6 +129,7 @@ describe('CreateWebJumpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateWebJumpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.jumpointId,
                         command.url,

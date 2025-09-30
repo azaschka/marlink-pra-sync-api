@@ -54,6 +54,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
             {
                 command: new CreateGroupPolicyCommand(
                     'transaction-1',
+                    123,
                     'group-policy-1',
                     true,
                     AccessPermissionStatusType.Final,
@@ -105,7 +106,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
                 },
             },
             {
-                command: new CreateGroupPolicyCommand('transaction-2', 'group-policy-2', false),
+                command: new CreateGroupPolicyCommand('transaction-2', 123, 'group-policy-2', false),
                 expectedHttpClientBody: {
                     name: 'group-policy-2',
                     permAccessAllowed: false,
@@ -120,7 +121,9 @@ describe('CreateGroupPolicyCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/group-policy',
+                    command.transactionId,
+                    123,
+                    '/group-policy',
                     expectedHttpClientBody,
                 );
 
@@ -141,9 +144,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                    },
                 },
             },
         },

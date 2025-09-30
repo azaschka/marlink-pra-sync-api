@@ -35,6 +35,7 @@ describe('ModifyRemoteVncCommandHandler', () => {
             {
                 command: new ModifyRemoteVncCommand(
                     'transaction-1',
+                    123,
                     1,
                     'remote-vnc-1',
                     1,
@@ -61,7 +62,7 @@ describe('ModifyRemoteVncCommandHandler', () => {
                 },
             },
             {
-                command: new ModifyRemoteVncCommand('transaction-2', 1, 'remote-vnc-2', 1, 'hostname-2', 22, 2),
+                command: new ModifyRemoteVncCommand('transaction-2', 123, 1, 'remote-vnc-2', 1, 'hostname-2', 22, 2),
                 expectedHttpClientBody: {
                     name: 'remote-vnc-2',
                     jumpointId: 1,
@@ -79,7 +80,9 @@ describe('ModifyRemoteVncCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/jump-item/remote-vnc/${command.id}`,
+                    command.transactionId,
+                    123,
+                    `/jump-item/remote-vnc/${command.id}`,
                     expectedHttpClientBody,
                 );
 
@@ -100,10 +103,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteVnc: {
-                        path: 'jump-item/remote-vnc',
+                config: {
+                    jumpItem: {
+                        remoteVnc: {
+                            path: 'jump-item/remote-vnc',
+                        },
                     },
                 },
             },

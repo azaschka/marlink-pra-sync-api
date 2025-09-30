@@ -26,7 +26,7 @@ describe('DeleteGroupPolicyCommandHandler', () => {
 
         await handler.execute(new DeleteGroupPolicyCommand('transaction-1', 1, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 1, 123));
         expect(groupPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(1, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<GroupPolicyDeletedEvent>{
@@ -50,7 +50,7 @@ describe('DeleteGroupPolicyCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 1, 123));
         expect(groupPolicyRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -70,7 +70,7 @@ describe('DeleteGroupPolicyCommandHandler', () => {
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 1, 123));
         expect(groupPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(1, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(

@@ -20,10 +20,12 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
         it('should call HttpClientService with correct url and return the result', async () => {
             const httpClientServiceDeleteMethod = jest.spyOn(httpClientService, 'delete');
 
-            await handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 123));
+            await handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 100, 123));
 
             expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith(
-                'https://api.example.com/jump-item/protocol-tunnel-jump/123',
+                'transaction-1',
+                100,
+                '/jump-item/protocol-tunnel-jump/123',
             );
         });
     });
@@ -40,10 +42,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    protocolTunnelJump: {
-                        path: 'jump-item/protocol-tunnel-jump',
+                config: {
+                    jumpItem: {
+                        protocolTunnelJump: {
+                            path: 'jump-item/protocol-tunnel-jump',
+                        },
                     },
                 },
             },

@@ -72,7 +72,12 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTAddJumpointToGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+                    new BTAddJumpointToGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpointId,
+                    ),
                 );
                 expect(groupPolicyJumpointEntityCreateMethod).toHaveBeenCalledWith(
                     command.id,

@@ -26,7 +26,7 @@ describe('DeleteTeamCommandHandler', () => {
 
         await handler.execute(new DeleteTeamCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 100, 123));
         expect(teamRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<TeamDeletedEvent>{
@@ -48,7 +48,7 @@ describe('DeleteTeamCommandHandler', () => {
 
         await expect(handler.execute(new DeleteTeamCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 100, 123));
         expect(teamRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -66,7 +66,7 @@ describe('DeleteTeamCommandHandler', () => {
 
         await expect(handler.execute(new DeleteTeamCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteTeamCommand('transaction-1', 100, 123));
         expect(teamRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(

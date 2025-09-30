@@ -100,7 +100,7 @@ describe('CopyShellJumpCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyShellJumpCommand('transaction-1', 1, 3, JumpGroupType.Personal, 'shell-jump-1'),
+                new BTCopyShellJumpCommand('transaction-1', 123, 1, 3, JumpGroupType.Personal, 'shell-jump-1'),
             );
             expect(shellJumpEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedShellJumpRetrievedDtoOutput.id,

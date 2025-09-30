@@ -98,7 +98,7 @@ describe('CopyWebJumpCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyWebJumpCommand('transaction-1', 1, 3, JumpGroupType.Personal, 'web-jump-1'),
+                new BTCopyWebJumpCommand('transaction-1', 123, 1, 3, JumpGroupType.Personal, 'web-jump-1'),
             );
             expect(webJumpEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedWebJumpRetrievedDtoOutput.id,

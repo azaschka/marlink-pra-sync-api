@@ -120,7 +120,7 @@ describe('CopyJumpClientCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyJumpClientCommand('transaction-1', 1, 3, JumpClientGroupType.Personal, 'jump-client-1'),
+                new BTCopyJumpClientCommand('transaction-1', 123, 1, 3, JumpClientGroupType.Personal, 'jump-client-1'),
             );
             expect(jumpClientEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedJumpClientRetrievedDtoOutput.id,

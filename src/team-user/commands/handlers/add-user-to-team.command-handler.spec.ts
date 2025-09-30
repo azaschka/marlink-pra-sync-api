@@ -70,7 +70,13 @@ describe('AddUserToTeamCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTAddUserToTeamCommand(command.transactionId, command.id, command.userId, command.roleType),
+                    new BTAddUserToTeamCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.userId,
+                        command.roleType,
+                    ),
                 );
                 expect(teamUserEntityCreateMethod).toHaveBeenCalledWith(
                     command.id,

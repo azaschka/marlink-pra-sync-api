@@ -119,6 +119,7 @@ describe('CreateJumpointCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateJumpointCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.platformType,
                         command.codeName,

@@ -53,7 +53,12 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveJumpointFromGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+                    new BTRemoveJumpointFromGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpointId,
+                    ),
                 );
                 expect(
                     groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdAndJumpointIdMethod,

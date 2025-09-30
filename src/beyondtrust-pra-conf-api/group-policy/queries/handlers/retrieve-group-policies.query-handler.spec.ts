@@ -78,6 +78,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
             {
                 inputQuery: <RetrieveGroupPoliciesQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'group-policy-1',
@@ -91,6 +92,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
             {
                 inputQuery: <RetrieveGroupPoliciesQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                 },
@@ -108,7 +110,9 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/group-policy',
+                    inputQuery.transactionId,
+                    123,
+                    '/group-policy',
                     expectedHttpClientParams,
                 );
 
@@ -129,9 +133,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                    },
                 },
             },
         },

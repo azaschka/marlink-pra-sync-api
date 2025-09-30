@@ -66,7 +66,13 @@ describe('CreateTeamCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTCreateTeamCommand(command.transactionId, command.name, command.codeName, command.comments),
+                    new BTCreateTeamCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.name,
+                        command.codeName,
+                        command.comments,
+                    ),
                 );
                 expect(teamEntityCreateMethod).toHaveBeenCalledWith(
                     TestHelper.mockedTeamCreatedDtoOutput.id,

@@ -72,7 +72,12 @@ describe('AddTeamToGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTAddTeamToGroupPolicyCommand(command.transactionId, command.id, command.teamId),
+                    new BTAddTeamToGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.teamId,
+                    ),
                 );
                 expect(groupPolicyTeamEntityCreateMethod).toHaveBeenCalledWith(
                     command.id,

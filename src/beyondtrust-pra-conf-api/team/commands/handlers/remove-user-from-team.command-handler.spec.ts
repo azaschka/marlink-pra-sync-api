@@ -20,9 +20,9 @@ describe('RemoveUserFromTeamCommandHandler', () => {
         it('should call HttpClientService with correct url and return the result', async () => {
             const httpClientServiceDeleteMethod = jest.spyOn(httpClientService, 'delete');
 
-            await handler.execute(new RemoveUserFromTeamCommand('transaction-1', 1, 2));
+            await handler.execute(new RemoveUserFromTeamCommand('transaction-1', 123, 1, 2));
 
-            expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith('https://api.example.com/team/1/user/2');
+            expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith('transaction-1', 123, '/team/1/user/2');
         });
     });
 });
@@ -38,11 +38,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                team: {
-                    path: 'team',
-                    user: {
-                        path: 'user',
+                config: {
+                    team: {
+                        path: 'team',
+                        user: {
+                            path: 'user',
+                        },
                     },
                 },
             },

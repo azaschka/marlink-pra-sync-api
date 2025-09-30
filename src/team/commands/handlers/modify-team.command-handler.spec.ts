@@ -73,6 +73,7 @@ describe('ModifyTeamCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyTeamCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.codeName,

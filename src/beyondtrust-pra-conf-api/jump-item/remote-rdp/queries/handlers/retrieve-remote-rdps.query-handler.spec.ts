@@ -44,6 +44,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveRemoteRdpsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'remote-rdp-1',
@@ -69,6 +70,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveRemoteRdpsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                     name: 'remote-rdp-2',
@@ -88,7 +90,9 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-item/remote-rdp',
+                    inputQuery.transactionId,
+                    123,
+                    '/jump-item/remote-rdp',
                     expectedHttpClientParams,
                 );
 
@@ -109,10 +113,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteRdp: {
-                        path: 'jump-item/remote-rdp',
+                config: {
+                    jumpItem: {
+                        remoteRdp: {
+                            path: 'jump-item/remote-rdp',
+                        },
                     },
                 },
             },

@@ -123,6 +123,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyGroupPolicyCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.hasEndpointsAccessPermission,

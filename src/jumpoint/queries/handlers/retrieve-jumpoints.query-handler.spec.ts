@@ -66,6 +66,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
             expect(queryBusExecuteMethod).toHaveBeenCalledWith(
                 new BTRetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',

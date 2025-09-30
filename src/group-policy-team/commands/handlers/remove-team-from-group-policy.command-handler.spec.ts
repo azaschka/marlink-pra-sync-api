@@ -49,7 +49,12 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveTeamFromGroupPolicyCommand(command.transactionId, command.id, command.teamId),
+                    new BTRemoveTeamFromGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.teamId,
+                    ),
                 );
                 expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdAndTeamIdMethod).toHaveBeenCalledWith(
                     command.tenantId,

@@ -53,7 +53,12 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveJumpGroupFromGroupPolicyCommand(command.transactionId, command.id, command.jumpGroupId),
+                    new BTRemoveJumpGroupFromGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpGroupId,
+                    ),
                 );
                 expect(
                     groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdAndJumpGroupIdMethod,

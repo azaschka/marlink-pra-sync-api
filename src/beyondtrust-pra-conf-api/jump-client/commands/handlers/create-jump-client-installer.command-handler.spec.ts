@@ -38,6 +38,7 @@ describe('CreateJumpClientCommandHandler', () => {
             {
                 command: new CreateJumpClientInstallerCommand(
                     'transaction-1',
+                    123,
                     1,
                     'jump-client-1',
                     JumpClientGroupType.Personal,
@@ -81,6 +82,7 @@ describe('CreateJumpClientCommandHandler', () => {
             {
                 command: new CreateJumpClientInstallerCommand(
                     'transaction-2',
+                    123,
                     2,
                     'jump-client-2',
                     JumpClientGroupType.Shared,
@@ -100,7 +102,9 @@ describe('CreateJumpClientCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-client/installer',
+                    command.transactionId,
+                    123,
+                    `/jump-client/installer`,
                     expectedHttpClientBody,
                 );
 
@@ -121,11 +125,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
-                    installer: {
-                        path: 'installer',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                        installer: {
+                            path: 'installer',
+                        },
                     },
                 },
             },

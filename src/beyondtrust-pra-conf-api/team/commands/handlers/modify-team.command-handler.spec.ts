@@ -31,7 +31,7 @@ describe('ModifyTeamCommandHandler', () => {
     describe('execute', () => {
         it.each([
             {
-                command: new ModifyTeamCommand('transaction-1', 1, 'team-1', 'team-code-1', 'team-comments-1'),
+                command: new ModifyTeamCommand('transaction-1', 123, 1, 'team-1', 'team-code-1', 'team-comments-1'),
                 expectedHttpClientBody: {
                     name: 'team-1',
                     codeName: 'team-code-1',
@@ -39,7 +39,7 @@ describe('ModifyTeamCommandHandler', () => {
                 },
             },
             {
-                command: new ModifyTeamCommand('transaction-2', 2, 'team-2'),
+                command: new ModifyTeamCommand('transaction-2', 123, 2, 'team-2'),
                 expectedHttpClientBody: {
                     name: 'team-2',
                 },
@@ -53,7 +53,9 @@ describe('ModifyTeamCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/team/${command.id}`,
+                    command.transactionId,
+                    123,
+                    `/team/${command.id}`,
                     expectedHttpClientBody,
                 );
 
@@ -74,9 +76,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                team: {
-                    path: 'team',
+                config: {
+                    team: {
+                        path: 'team',
+                    },
                 },
             },
         },

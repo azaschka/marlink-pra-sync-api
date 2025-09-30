@@ -109,7 +109,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyRemoteRdpCommand('transaction-1', 1, 3, JumpGroupType.Personal, 'remote-rdp-1'),
+                new BTCopyRemoteRdpCommand('transaction-1', 123, 1, 3, JumpGroupType.Personal, 'remote-rdp-1'),
             );
             expect(remoteRdpEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedRemoteRdpRetrievedDtoOutput.id,

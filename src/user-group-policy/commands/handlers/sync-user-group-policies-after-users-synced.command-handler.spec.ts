@@ -80,7 +80,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
             for (let n = 1; n <= 4; n++) {
                 expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                     n,
-                    new BTRetrieveUserGroupPoliciesQuery('transaction-1', n),
+                    new BTRetrieveUserGroupPoliciesQuery('transaction-1', 123, n),
                 );
                 expect(userGroupPolicyEntityCreateMethod).toHaveBeenNthCalledWith(n, n, [1, 2, 3]);
                 expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenNthCalledWith(n, 123, n);
