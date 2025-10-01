@@ -1,4 +1,5 @@
 import { EventBus } from '@nestjs/cqrs';
+import { BillingType } from '../../enums';
 import { BeyondtrustInstanceCreatedEvent } from '../../events';
 import { BeyondtrustInstanceEntity } from '../../repositories/entities';
 import { BeyondtrustInstanceRepositoryService } from '../../repositories/services/beyondtrust-instance-repository.service';
@@ -38,7 +39,7 @@ describe('CreateBeyondtrustInstanceCommandHandler', () => {
                     'auth-client-secret-1',
                     'https://oauth2.example.com/token',
                     'https://api.example.com',
-                    'https://backup-api.example.com',
+                    BillingType.Asset,
                 ),
             );
 
@@ -49,7 +50,7 @@ describe('CreateBeyondtrustInstanceCommandHandler', () => {
                 'auth-client-secret-1',
                 'https://oauth2.example.com/token',
                 'https://api.example.com',
-                'https://backup-api.example.com',
+                BillingType.Asset,
             );
             expect(beyondtrustInstanceRepositoryServiceCreateMethod).toHaveBeenCalledWith(
                 beyondtrustInstanceEntityToBeCreated,
