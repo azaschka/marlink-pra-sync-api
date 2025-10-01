@@ -4,6 +4,7 @@ export interface JumpointsSyncedEventPayload {
     createdJumpointIds: number[];
     updatedJumpointIds: number[];
     deletedJumpointIds: number[];
+    tenantId: number;
 }
 
 export class JumpointsSyncedEvent extends BaseEvent {

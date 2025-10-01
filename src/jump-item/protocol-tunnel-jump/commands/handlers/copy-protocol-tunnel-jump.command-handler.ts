@@ -27,12 +27,15 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
         const protocolTunnelJumpEntity = this.createProtocolTunnelJumpEntity(btProtocolTunnelJump);
 
         try {
-            const createdProtocolTunnelJump =
-                await this.protocolTunnelJumpRepositoryService.create(protocolTunnelJumpEntity);
+            const createdProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.create(
+                command.tenantId,
+                protocolTunnelJumpEntity,
+            );
 
             this.eventBus.publish(
                 new ProtocolTunnelJumpCopiedEvent(command.transactionId, {
                     protocolTunnelJump: createdProtocolTunnelJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -42,6 +45,7 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
                 new ProtocolTunnelJumpCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     protocolTunnelJump: protocolTunnelJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -56,6 +60,7 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
         >(
             new BTCopyProtocolTunnelJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -64,7 +69,7 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
         );
 
         return await this.queryBus.execute<BTRetrieveProtocolTunnelJumpByIdQuery, ProtocolTunnelJumpRetrievedDtoOutput>(
-            new BTRetrieveProtocolTunnelJumpByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveProtocolTunnelJumpByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

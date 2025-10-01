@@ -42,6 +42,7 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
         }
 
         const jumpClientInstallers = await this.jumpClientInstallerRepositoryService.findBy(
+            query.tenantId,
             jumpClientInstallerFindByQuery,
             query.pageNumber,
             query.pageSize,
@@ -57,6 +58,7 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
         >(
             new BTRetrieveJumpClientInstallersQuery(
                 query.transactionId,
+                query.tenantId,
                 query.pageSize,
                 query.pageNumber,
                 query.name,

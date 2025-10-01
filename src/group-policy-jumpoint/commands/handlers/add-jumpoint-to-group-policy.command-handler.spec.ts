@@ -37,11 +37,13 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
         it.each([
             <AddJumpointToGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpointId: 2,
             },
             <AddJumpointToGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 jumpointId: 4,
             },
@@ -55,6 +57,7 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
                 const groupPolicyJumpointEntityToBeCreated = {
                     groupPolicyId: 100,
                     jumpointId: 101,
+                    lastSyncDate: new Date('2025-01-01T00:00:00Z'),
                 } as GroupPolicyJumpointEntity;
                 const groupPolicyJumpointEntityCreateMethod = jest
                     .spyOn(GroupPolicyJumpointEntity, 'create')
@@ -69,13 +72,19 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTAddJumpointToGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+                    new BTAddJumpointToGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpointId,
+                    ),
                 );
                 expect(groupPolicyJumpointEntityCreateMethod).toHaveBeenCalledWith(
                     command.id,
                     TestHelper.mockedJumpointAddedToGroupPolicyDtoOutput.jumpointId,
                 );
                 expect(groupPolicyJumpointRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     groupPolicyJumpointEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -84,12 +93,14 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyJumpointAddedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicyJumpoint: result,
+                            tenantId: 123,
                         },
                     }),
                 );
                 expect(result).toStrictEqual({
                     groupPolicyId: groupPolicyJumpointEntityToBeCreated.groupPolicyId,
                     jumpointId: groupPolicyJumpointEntityToBeCreated.jumpointId,
+                    lastSyncDate: groupPolicyJumpointEntityToBeCreated.lastSyncDate,
                 });
             },
         );
@@ -134,6 +145,7 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     jumpointId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -150,6 +162,7 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
                             groupPolicyId: groupPolicyJumpointEntityToBeCreated.groupPolicyId,
                             jumpointId: groupPolicyJumpointEntityToBeCreated.jumpointId,
                         },
+                        tenantId: 123,
                     },
                 }),
             );

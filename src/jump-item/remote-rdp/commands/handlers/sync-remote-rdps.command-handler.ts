@@ -27,14 +27,21 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
             const updatedRemoteRdpIds: number[] = [];
             const deletedRemoteRdpIds: number[] = [];
 
-            await this.syncBTToDbRemoteRdpsPerPage(command.transactionId, 1, createdRemoteRdpIds, updatedRemoteRdpIds);
-            await this.syncDbToBTRemoteRdpsPerPage(1, startSyncUtcDate, deletedRemoteRdpIds);
+            await this.syncBTToDbRemoteRdpsPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdRemoteRdpIds,
+                updatedRemoteRdpIds,
+            );
+            await this.syncDbToBTRemoteRdpsPerPage(command.tenantId, 1, startSyncUtcDate, deletedRemoteRdpIds);
 
             this.eventBus.publish(
                 new RemoteRdpsSyncedEvent(command.transactionId, {
                     createdRemoteRdpIds,
                     updatedRemoteRdpIds,
                     deletedRemoteRdpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -47,6 +54,7 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
             this.eventBus.publish(
                 new RemoteRdpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -56,13 +64,14 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
 
     private async syncBTToDbRemoteRdpsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdRemoteRdpIds: number[],
         updatedRemoteRdpIds: number[],
     ) {
         // Retrieve remote rdps from BeyondTrust
         const btRemoteRdps = await this.queryBus.execute<RetrieveRemoteRdpsQuery, RemoteRdpRetrievedDtoOutput[]>(
-            new RetrieveRemoteRdpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveRemoteRdpsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -77,14 +86,15 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
 
         // Retrieve existing remote rdps from the DB using BeyondTrust remote rdp IDs
         const dbRemoteRdps = await this.remoteRdpRepositoryService.findByIds(
+            tenantId,
             btRemoteRdps.map((remoteRdp) => remoteRdp.id).filter((id) => id !== undefined),
         );
 
         const remoteRdpsToBeCreated = this.findAllRemoteRdpsToBeCreated(btRemoteRdps, dbRemoteRdps);
         const remoteRdpsToBeUpdated = this.findAllRemoteRdpsToBeUpdatedOrUpdateLastSyncDate(btRemoteRdps, dbRemoteRdps);
 
-        const createdRemoteRdps = await this.createOrUpdateByIds(transactionId, remoteRdpsToBeCreated);
-        const updatedRemoteRdps = await this.createOrUpdateByIds(transactionId, remoteRdpsToBeUpdated);
+        const createdRemoteRdps = await this.createOrUpdateByIds(transactionId, tenantId, remoteRdpsToBeCreated);
+        const updatedRemoteRdps = await this.createOrUpdateByIds(transactionId, tenantId, remoteRdpsToBeUpdated);
 
         // Collect created and updated remote rdp IDs
         createdRemoteRdpIds.push(...createdRemoteRdps.map((remoteRdp) => remoteRdp.id));
@@ -94,15 +104,23 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
             return;
         }
 
-        await this.syncBTToDbRemoteRdpsPerPage(transactionId, pageNumber + 1, createdRemoteRdpIds, updatedRemoteRdpIds);
+        await this.syncBTToDbRemoteRdpsPerPage(
+            transactionId,
+            tenantId,
+            pageNumber + 1,
+            createdRemoteRdpIds,
+            updatedRemoteRdpIds,
+        );
     }
 
     private async syncDbToBTRemoteRdpsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTRemoteRdps: Date,
         deletedRemoteRdpIds: number[],
     ) {
         const dbRemoteRdps = await this.remoteRdpRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTRemoteRdps,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -110,7 +128,7 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
         const remoteRdpIds = dbRemoteRdps.map((dbRemoteRdp) => dbRemoteRdp.id);
 
         if (remoteRdpIds.length > 0) {
-            await this.remoteRdpRepositoryService.deleteByIds(remoteRdpIds);
+            await this.remoteRdpRepositoryService.deleteByIds(tenantId, remoteRdpIds);
         }
 
         // Collect deleted remote rdp IDs
@@ -120,7 +138,12 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
             return;
         }
 
-        await this.syncDbToBTRemoteRdpsPerPage(pageNumber + 1, dateBeforeSyncingBTRemoteRdps, deletedRemoteRdpIds);
+        await this.syncDbToBTRemoteRdpsPerPage(
+            tenantId,
+            pageNumber + 1,
+            dateBeforeSyncingBTRemoteRdps,
+            deletedRemoteRdpIds,
+        );
     }
 
     private findAllRemoteRdpsToBeCreated(btRemoteRdps: RemoteRdpRetrievedDtoOutput[], dbRemoteRdps: RemoteRdpEntity[]) {
@@ -169,6 +192,7 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
 
     private async createOrUpdateByIds(
         transactionId: string,
+        tenantId: number,
         remoteRdps: RemoteRdpEntity[],
     ): Promise<RemoteRdpEntity[]> {
         const createdOrUpdatedEntities: RemoteRdpEntity[] = [];
@@ -179,12 +203,13 @@ export class SyncRemoteRdpsCommandHandler implements ICommandHandler<SyncRemoteR
 
         for (const remoteRdp of remoteRdps) {
             try {
-                await this.remoteRdpRepositoryService.createOrUpdateById(remoteRdp);
+                await this.remoteRdpRepositoryService.createOrUpdateById(tenantId, remoteRdp);
                 createdOrUpdatedEntities.push(remoteRdp);
             } catch (error) {
                 this.eventBus.publish(
                     new RemoteRdpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing remote RDP with id ${remoteRdp.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

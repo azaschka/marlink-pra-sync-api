@@ -26,14 +26,21 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
             const updatedJumpGroupIds: number[] = [];
             const deletedJumpGroupIds: number[] = [];
 
-            await this.syncBTToDbJumpGroupsPerPage(command.transactionId, 1, createdJumpGroupIds, updatedJumpGroupIds);
-            await this.syncDbToBTJumpGroupsPerPage(1, startSyncUtcDate, deletedJumpGroupIds);
+            await this.syncBTToDbJumpGroupsPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdJumpGroupIds,
+                updatedJumpGroupIds,
+            );
+            await this.syncDbToBTJumpGroupsPerPage(command.tenantId, 1, startSyncUtcDate, deletedJumpGroupIds);
 
             this.eventBus.publish(
                 new JumpGroupsSyncedEvent(command.transactionId, {
                     createdJumpGroupIds,
                     updatedJumpGroupIds,
                     deletedJumpGroupIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +53,7 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
             this.eventBus.publish(
                 new JumpGroupsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -55,13 +63,14 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
 
     private async syncBTToDbJumpGroupsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdJumpGroupIds: number[],
         updatedJumpGroupIds: number[],
     ) {
         // Retrieve jump groups from BeyondTrust
         const btJumpGroups = await this.queryBus.execute<RetrieveJumpGroupsQuery, JumpGroupRetrievedDtoOutput[]>(
-            new RetrieveJumpGroupsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveJumpGroupsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -76,6 +85,7 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
 
         // Retrieve existing jump groups from the DB using BeyondTrust jump group IDs
         const dbJumpGroups = await this.jumpGroupRepositoryService.findByIds(
+            tenantId,
             btJumpGroups.map((jumpGroup) => jumpGroup.id).filter((id) => id !== undefined),
         );
 
@@ -83,11 +93,11 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
         const jumpGroupsToBeUpdated = this.findAllJumpGroupsToBeUpdatedOrUpdateLastSyncDate(btJumpGroups, dbJumpGroups);
 
         if (jumpGroupsToBeCreated.length > 0) {
-            await this.jumpGroupRepositoryService.createOrUpdateByIds(jumpGroupsToBeCreated);
+            await this.jumpGroupRepositoryService.createOrUpdateByIds(tenantId, jumpGroupsToBeCreated);
         }
 
         if (jumpGroupsToBeUpdated.length > 0) {
-            await this.jumpGroupRepositoryService.createOrUpdateByIds(jumpGroupsToBeUpdated);
+            await this.jumpGroupRepositoryService.createOrUpdateByIds(tenantId, jumpGroupsToBeUpdated);
         }
 
         // Collect created and updated jump group IDs
@@ -98,15 +108,23 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
             return;
         }
 
-        await this.syncBTToDbJumpGroupsPerPage(transactionId, pageNumber + 1, createdJumpGroupIds, updatedJumpGroupIds);
+        await this.syncBTToDbJumpGroupsPerPage(
+            transactionId,
+            tenantId,
+            pageNumber + 1,
+            createdJumpGroupIds,
+            updatedJumpGroupIds,
+        );
     }
 
     private async syncDbToBTJumpGroupsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTJumpGroups: Date,
         deletedJumpGroupIds: number[],
     ) {
         const dbJumpGroups = await this.jumpGroupRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTJumpGroups,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -114,7 +132,7 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
         const jumpGroupIds = dbJumpGroups.map((dbJumpGroup) => dbJumpGroup.id);
 
         if (jumpGroupIds.length > 0) {
-            await this.jumpGroupRepositoryService.deleteByIds(jumpGroupIds);
+            await this.jumpGroupRepositoryService.deleteByIds(tenantId, jumpGroupIds);
         }
 
         // Collect deleted jump group IDs
@@ -124,7 +142,12 @@ export class SyncJumpGroupsCommandHandler implements ICommandHandler<SyncJumpGro
             return;
         }
 
-        await this.syncDbToBTJumpGroupsPerPage(pageNumber + 1, dateBeforeSyncingBTJumpGroups, deletedJumpGroupIds);
+        await this.syncDbToBTJumpGroupsPerPage(
+            tenantId,
+            pageNumber + 1,
+            dateBeforeSyncingBTJumpGroups,
+            deletedJumpGroupIds,
+        );
     }
 
     private findAllJumpGroupsToBeCreated(btJumpGroups: JumpGroupRetrievedDtoOutput[], dbJumpGroups: JumpGroupEntity[]) {

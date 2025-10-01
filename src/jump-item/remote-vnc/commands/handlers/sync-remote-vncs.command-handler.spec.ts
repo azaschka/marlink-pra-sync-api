@@ -59,7 +59,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncRemoteVncsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncRemoteVncsCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<RemoteVncsSyncFailedEvent>{
@@ -67,6 +67,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -207,13 +208,13 @@ describe('SyncRemoteVncsCommandHandler', () => {
                 const remoteVncRepositoryServiceDeleteByIds = jest.spyOn(remoteVncRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncRemoteVncsCommand('transaction-1'));
+                const result = await handler.execute(new SyncRemoteVncsCommand('transaction-1', 123));
 
                 expect(remoteVncRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedRemoteVncRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedRemoteVncRepositoryServiceFindByIdsCall) {
-                    expect(remoteVncRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(remoteVncRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(remoteVncRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
@@ -222,6 +223,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
                 for (const item of expectedRemoteVncRepositoryServiceCreateOrUpdateByIdCall) {
                     expect(remoteVncRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -230,7 +232,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
                     expectedRemoteVncRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedRemoteVncRepositoryServiceDeleteByIdsCall) {
-                    expect(remoteVncRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(remoteVncRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);
@@ -243,6 +245,7 @@ describe('SyncRemoteVncsCommandHandler', () => {
                             createdRemoteVncIds: expectedResult.createdRemoteVncIds,
                             updatedRemoteVncIds: expectedResult.updatedRemoteVncIds,
                             deletedRemoteVncIds: expectedResult.deletedRemoteVncIds,
+                            tenantId: 123,
                         },
                     }),
                 );

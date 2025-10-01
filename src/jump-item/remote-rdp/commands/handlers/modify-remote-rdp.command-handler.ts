@@ -29,11 +29,12 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
         const remoteRdpEntity = this.createRemoteRdpEntity(btRemoteRdp);
 
         try {
-            const updatedRemoteRdp = await this.updateRemoteRdp(remoteRdpEntity);
+            const updatedRemoteRdp = await this.updateRemoteRdp(command.tenantId, remoteRdpEntity);
 
             this.eventBus.publish(
                 new RemoteRdpModifiedEvent(command.transactionId, {
                     remoteRdp: updatedRemoteRdp,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -43,6 +44,7 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
                 new RemoteRdpModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteRdp: remoteRdpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -54,6 +56,7 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
         return await this.commandBus.execute<BTModifyRemoteRdpCommand, RemoteRdpModifiedDtoOutput>(
             new BTModifyRemoteRdpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,
@@ -110,10 +113,13 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
         );
     }
 
-    private async updateRemoteRdp(remoteRdpEntity: RemoteRdpEntity) {
-        await this.remoteRdpRepositoryService.createOrUpdateById(remoteRdpEntity);
+    private async updateRemoteRdp(tenantId: number, remoteRdpEntity: RemoteRdpEntity) {
+        await this.remoteRdpRepositoryService.createOrUpdateById(tenantId, remoteRdpEntity);
 
-        const createdOrUpdatedRemoteRdp = await this.remoteRdpRepositoryService.findOneById(remoteRdpEntity.id);
+        const createdOrUpdatedRemoteRdp = await this.remoteRdpRepositoryService.findOneById(
+            tenantId,
+            remoteRdpEntity.id,
+        );
 
         if (!createdOrUpdatedRemoteRdp) {
             throw new Error('Remote rdp has been created or updated but could not be retrieved.');

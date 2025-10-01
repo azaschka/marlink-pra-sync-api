@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { RemoteVnc } from '../../models';
+import { RemoteVncEntity } from '../../repositories/entities';
 import { RemoteVncRepositoryService } from '../../repositories/services/remote-vnc-repository.service';
 import { RetrieveRemoteVncsQuery } from '../retrieve-remote-vncs.query';
 
@@ -8,7 +9,7 @@ export class RetrieveRemoteVncsQueryHandler implements IQueryHandler<RetrieveRem
     constructor(private readonly remoteVncRepositoryService: RemoteVncRepositoryService) {}
 
     public async execute(query: RetrieveRemoteVncsQuery): Promise<RemoteVnc[]> {
-        const remoteVncsFindByQuery = <RemoteVnc>{};
+        const remoteVncsFindByQuery = <RemoteVncEntity>{};
 
         if (query.name) {
             remoteVncsFindByQuery.name = query.name;
@@ -35,6 +36,7 @@ export class RetrieveRemoteVncsQueryHandler implements IQueryHandler<RetrieveRem
         }
 
         const remoteVncs = await this.remoteVncRepositoryService.findBy(
+            query.tenantId,
             remoteVncsFindByQuery,
             query.pageNumber,
             query.pageSize,

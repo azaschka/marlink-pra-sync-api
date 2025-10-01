@@ -3,6 +3,7 @@ import { JumpPolicy } from '../models';
 
 export interface JumpPolicyCreatedEventPayload {
     jumpPolicy: JumpPolicy;
+    tenantId: number;
 }
 
 export class JumpPolicyCreatedEvent extends BaseEvent {

@@ -2,7 +2,6 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { firstValueFrom, map } from 'rxjs';
-import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { DateUtility } from '../../../shared/utilities';
 import { AuthTokenDtoInput } from '../dtos/inputs';
 import { AuthTokenDtoOutput } from '../dtos/outputs';
@@ -11,47 +10,67 @@ import { AuthToken } from '../models';
 
 @Injectable()
 export class AuthTokenService {
-    private inMemoryAuthToken: AuthToken | null = null;
-    private inMemoryAuthTokenExpirationDate: Date | null = null;
+    private readonly authTokensCache: Map<string, AuthToken> = new Map();
 
-    constructor(
-        private readonly appConfigService: AppConfigService,
-        private readonly httpService: HttpService,
-    ) {}
+    constructor(private readonly httpService: HttpService) {}
 
-    public async getAuthToken(): Promise<AuthToken> {
-        if (
-            this.inMemoryAuthToken &&
-            this.inMemoryAuthTokenExpirationDate &&
-            this.inMemoryAuthTokenExpirationDate > new Date()
-        ) {
-            return this.inMemoryAuthToken;
-        }
-
-        this.inMemoryAuthToken = await this.generateAuthToken();
-        this.inMemoryAuthTokenExpirationDate = DateUtility.addSeconds(
-            new Date(),
-            this.inMemoryAuthToken.expiresInSeconds,
+    public async getAuthToken(
+        beyondtrustInstanceId: number,
+        clientId: string,
+        clientSecret: string,
+        oauth2TokenUrl: string,
+    ): Promise<AuthToken> {
+        const authTokenCacheKey = this.generateAuthTokenCacheKey(
+            beyondtrustInstanceId,
+            clientId,
+            clientSecret,
+            oauth2TokenUrl,
         );
 
-        return this.inMemoryAuthToken;
+        const cachedAuthToken = this.authTokensCache.get(authTokenCacheKey);
+
+        if (cachedAuthToken && cachedAuthToken.expirationDate > new Date()) {
+            return cachedAuthToken;
+        }
+
+        const newAuthToken = await this.generateAuthToken(clientId, clientSecret, oauth2TokenUrl);
+        this.authTokensCache.set(authTokenCacheKey, newAuthToken);
+
+        return newAuthToken;
     }
 
-    public invalidateAuthToken(): void {
-        this.inMemoryAuthToken = null;
-        this.inMemoryAuthTokenExpirationDate = null;
+    public invalidateAuthToken(
+        beyondtrustInstanceId: number,
+        clientId: string,
+        clientSecret: string,
+        oauth2TokenUrl: string,
+    ): void {
+        const authTokenCacheKey = this.generateAuthTokenCacheKey(
+            beyondtrustInstanceId,
+            clientId,
+            clientSecret,
+            oauth2TokenUrl,
+        );
+
+        if (this.authTokensCache.has(authTokenCacheKey)) {
+            this.authTokensCache.delete(authTokenCacheKey);
+        }
     }
 
-    private async generateAuthToken(): Promise<AuthToken> {
+    private async generateAuthToken(
+        clientId: string,
+        clientSecret: string,
+        oauth2TokenUrl: string,
+    ): Promise<AuthToken> {
         const result = await firstValueFrom(
             this.httpService
                 .post<AuthTokenDtoOutput>(
-                    this.appConfigService.beyondTrust.auth.oauth2TokenUrl,
+                    oauth2TokenUrl,
                     {
                         ...instanceToPlain(AuthTokenDtoInput.create(AuthTokenGrantType.ClientCredentials)),
                     },
                     {
-                        headers: this.composeHeaders(),
+                        headers: this.composeHeaders(clientId, clientSecret),
                     },
                 )
                 .pipe(map((response) => plainToInstance(AuthTokenDtoOutput, response.data))),
@@ -60,17 +79,24 @@ export class AuthTokenService {
         return {
             type: result.tokenType,
             accessToken: result.accessToken,
-            expiresInSeconds: result.expiresInSeconds,
+            expirationDate: DateUtility.addSeconds(new Date(), result.expiresInSeconds),
         };
     }
 
-    private composeHeaders() {
-        const base64AuthHeader = Buffer.from(
-            `${this.appConfigService.beyondTrust.auth.clientId}:${this.appConfigService.beyondTrust.auth.secret}`,
-        ).toString('base64');
+    private composeHeaders(clientId: string, clientSecret: string) {
+        const base64AuthHeader = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 
         return {
             Authorization: `Basic ${base64AuthHeader}`,
         };
+    }
+
+    private generateAuthTokenCacheKey(
+        beyondtrustInstanceId: number,
+        clientId: string,
+        clientSecret: string,
+        oauth2TokenUrl: string,
+    ): string {
+        return `${beyondtrustInstanceId}-${clientId}-${clientSecret}-${oauth2TokenUrl}`;
     }
 }

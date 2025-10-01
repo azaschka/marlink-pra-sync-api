@@ -17,12 +17,13 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
         await this.removeBTTeamUser(command);
 
         try {
-            await this.removeTeamUser(command.id, command.userId);
+            await this.removeTeamUser(command.tenantId, command.id, command.userId);
 
             this.eventBus.publish(
                 new TeamUserRemovedEvent(command.transactionId, {
                     teamId: command.id,
                     userId: command.userId,
+                    tenantId: command.tenantId,
                 }),
             );
         } catch (error) {
@@ -31,6 +32,7 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     teamId: command.id,
                     userId: command.userId,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -40,11 +42,11 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
 
     private async removeBTTeamUser(command: RemoveUserFromTeamCommand) {
         await this.commandBus.execute<BTRemoveUserFromTeamCommand, void>(
-            new BTRemoveUserFromTeamCommand(command.transactionId, command.id, command.userId),
+            new BTRemoveUserFromTeamCommand(command.transactionId, command.tenantId, command.id, command.userId),
         );
     }
 
-    private async removeTeamUser(teamId: number, userId: number): Promise<void> {
-        await this.teamUserRepositoryService.deleteByTeamIdAndUserId(teamId, userId);
+    private async removeTeamUser(tenantId: number, teamId: number, userId: number): Promise<void> {
+        await this.teamUserRepositoryService.deleteByTeamIdAndUserId(tenantId, teamId, userId);
     }
 }

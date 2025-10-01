@@ -1,5 +1,5 @@
 export interface AuthToken {
     type: string;
-    expiresInSeconds: number;
+    expirationDate: Date;
     accessToken: string;
 }

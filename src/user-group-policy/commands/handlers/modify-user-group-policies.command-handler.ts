@@ -26,11 +26,16 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         const userGroupPolicyEntities = this.createUserGroupPolicyEntities(command.userId, btUserGroupPolicies);
 
         try {
-            const userGroupPolicies = await this.replaceUserGroupPolicies(command.userId, userGroupPolicyEntities);
+            const userGroupPolicies = await this.replaceUserGroupPolicies(
+                command.tenantId,
+                command.userId,
+                userGroupPolicyEntities,
+            );
 
             this.eventBus.publish(
                 new UserGroupPoliciesModifiedEvent(command.transactionId, {
                     userGroupPolicies: userGroupPolicies,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -42,6 +47,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
                     userId: command.userId,
                     groupPolicyIdsToAdd: command.groupPolicyIdsToAdd,
                     groupPolicyIdsToRemove: command.groupPolicyIdsToRemove,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -53,6 +59,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         await this.commandBus.execute<BTModifyUserGroupPoliciesCommand, UserGroupPoliciesModifiedDtoOutput>(
             new BTModifyUserGroupPoliciesCommand(
                 command.transactionId,
+                command.tenantId,
                 command.userId,
                 command.groupPolicyIdsToAdd,
                 command.groupPolicyIdsToRemove,
@@ -60,7 +67,7 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
         );
 
         return await this.queryBus.execute<RetrieveUserGroupPoliciesQuery, UserGroupPolicyRetrievedDtoOutput[]>(
-            new RetrieveUserGroupPoliciesQuery(command.transactionId, command.userId),
+            new RetrieveUserGroupPoliciesQuery(command.transactionId, command.tenantId, command.userId),
         );
     }
 
@@ -72,18 +79,23 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
     }
 
     private async replaceUserGroupPolicies(
+        tenantId: number,
         userId: number,
         userGroupPolicyEntities: UserGroupPolicyEntity[],
     ): Promise<UserGroupPolicy[]> {
         // Delete all existing user group policies
-        await this.userGroupPolicyRepositoryService.deleteByUserId(userId);
+        await this.userGroupPolicyRepositoryService.deleteByUserId(tenantId, userId);
 
         // Recreate the user group policies
-        await this.userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId(userGroupPolicyEntities);
+        await this.userGroupPolicyRepositoryService.createOrUpdateByUserIdAndGroupPolicyId(
+            tenantId,
+            userGroupPolicyEntities,
+        );
 
         return userGroupPolicyEntities.map((entity) => ({
             userId: userId,
             groupPolicyId: entity.groupPolicyId,
+            lastSyncDate: entity.lastSyncDate,
         }));
     }
 }

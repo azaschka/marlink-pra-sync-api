@@ -13,15 +13,17 @@ export class RetrieveWebJumpByIdQueryHandler implements IQueryHandler<RetrieveWe
     ) {}
 
     public async execute(query: RetrieveWebJumpByIdQuery): Promise<WebJumpRetrievedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.webJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.webJump.path,
             query.id.toString(),
         );
 
         return await this.httpClientService.get<WebJumpRetrievedDtoOutput, WebJumpRetrievedDtoOutput>(
             WebJumpRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
         );
     }
 }

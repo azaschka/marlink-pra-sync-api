@@ -2,7 +2,7 @@ import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/c
 import { ModifyGroupPolicyCommand as BTModifyGroupPolicyCommand } from '../../../beyondtrust-pra-conf-api/group-policy/commands';
 import { GroupPolicyModifiedDtoOutput } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { GroupPolicyModifiedEvent, GroupPolicyModificationFailedEvent } from '../../events';
+import { GroupPolicyModificationFailedEvent, GroupPolicyModifiedEvent } from '../../events';
 import { mapFromBTAccessPermissionStatusType, mapToBTAccessPermissionStatusType } from '../../mappers';
 import { GroupPolicy } from '../../models';
 import { GroupPolicyEntity } from '../../repositories/entities';
@@ -22,11 +22,12 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
         const groupPolicyEntity = this.createGroupPolicyEntity(btGroupPolicy);
 
         try {
-            const updatedGroupPolicy = await this.updateGroupPolicy(groupPolicyEntity);
+            const updatedGroupPolicy = await this.updateGroupPolicy(command.tenantId, groupPolicyEntity);
 
             this.eventBus.publish(
                 new GroupPolicyModifiedEvent(command.transactionId, {
                     groupPolicy: updatedGroupPolicy,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -36,6 +37,7 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
                 new GroupPolicyModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicy: groupPolicyEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -47,6 +49,7 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
         return await this.commandBus.execute<BTModifyGroupPolicyCommand, GroupPolicyModifiedDtoOutput>(
             new BTModifyGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.hasEndpointsAccessPermission,
@@ -108,10 +111,13 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
         );
     }
 
-    private async updateGroupPolicy(groupPolicyEntity: GroupPolicyEntity) {
-        await this.groupPolicyRepositoryService.createOrUpdateById(groupPolicyEntity);
+    private async updateGroupPolicy(tenantId: number, groupPolicyEntity: GroupPolicyEntity) {
+        await this.groupPolicyRepositoryService.createOrUpdateById(tenantId, groupPolicyEntity);
 
-        const createdOrUpdatedGroupPolicy = await this.groupPolicyRepositoryService.findOneById(groupPolicyEntity.id);
+        const createdOrUpdatedGroupPolicy = await this.groupPolicyRepositoryService.findOneById(
+            tenantId,
+            groupPolicyEntity.id,
+        );
 
         if (!createdOrUpdatedGroupPolicy) {
             throw new Error('Group policy has been created or updated but could not be retrieved.');

@@ -31,11 +31,12 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
         const jumpPolicyEntity = this.createJumpPolicyEntity(btJumpPolicy);
 
         try {
-            const createdJumpPolicy = await this.jumpPolicyRepositoryService.create(jumpPolicyEntity);
+            const createdJumpPolicy = await this.jumpPolicyRepositoryService.create(command.tenantId, jumpPolicyEntity);
 
             this.eventBus.publish(
                 new JumpPolicyCreatedEvent(command.transactionId, {
                     jumpPolicy: createdJumpPolicy,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -45,6 +46,7 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
                 new JumpPolicyCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpPolicy: jumpPolicyEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -56,6 +58,7 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
         return await this.commandBus.execute<BTCreateJumpPolicyCommand, JumpPolicyCreatedDtoOutput>(
             new BTCreateJumpPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.displayName,
                 command.codeName,
                 command.description,

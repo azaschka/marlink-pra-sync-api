@@ -15,18 +15,21 @@ export class DeleteUserCommandHandler implements ICommandHandler<DeleteUserComma
 
     public async execute(command: DeleteUserCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteUserCommand, void>(
-            new BTDeleteUserCommand(command.transactionId, command.id),
+            new BTDeleteUserCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.userRepositoryService.deleteById(command.id);
+            await this.userRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new UserDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new UserDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new UserDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

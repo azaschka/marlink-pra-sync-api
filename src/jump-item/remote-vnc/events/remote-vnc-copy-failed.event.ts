@@ -4,6 +4,7 @@ import { RemoteVnc } from '../models';
 export interface RemoteVncCopyFailedEventPayload {
     errorMessage: string;
     remoteVnc: RemoteVnc;
+    tenantId: number;
 }
 
 export class RemoteVncCopyFailedEvent extends BaseEvent {

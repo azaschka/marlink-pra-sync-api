@@ -20,9 +20,9 @@ describe('DeleteJumpClientCommandHandler', () => {
         it('should call HttpClientService with correct url and return the result', async () => {
             const httpClientServiceDeleteMethod = jest.spyOn(httpClientService, 'delete');
 
-            await handler.execute(new DeleteJumpClientCommand('transaction-1', 123));
+            await handler.execute(new DeleteJumpClientCommand('transaction-1', 100, 123));
 
-            expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith('https://api.example.com/jump-client/123');
+            expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith('transaction-1', 100, `/jump-client/123`);
         });
     });
 });
@@ -38,9 +38,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                    },
                 },
             },
         },

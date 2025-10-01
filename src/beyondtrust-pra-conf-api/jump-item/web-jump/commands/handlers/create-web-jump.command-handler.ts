@@ -14,14 +14,16 @@ export class CreateWebJumpCommandHandler implements ICommandHandler<CreateWebJum
     ) {}
 
     public async execute(command: CreateWebJumpCommand): Promise<WebJumpCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.webJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.webJump.path,
         );
 
         return await this.httpClientService.post<WebJumpCreatedDtoOutput, WebJumpCreatedDtoOutput>(
             WebJumpCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateWebJumpDtoInput.create(
                 command.name,
                 command.jumpointId,

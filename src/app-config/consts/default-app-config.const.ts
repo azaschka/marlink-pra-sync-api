@@ -11,6 +11,8 @@ export abstract class DefaultAppConfig {
     private static readonly DB_RETRY_ATTEMPTS = 60;
     private static readonly DB_RETRY_DELAY_IN_MS = 8000; // 8 seconds
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
+    private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
+    private static readonly THROTTLE_LIMIT = 500; // 500 requests per TTL
 
     public static get port(): number {
         return DefaultAppConfig.PORT_NUMBER;
@@ -33,6 +35,12 @@ export abstract class DefaultAppConfig {
     public static get beyondTrust() {
         return {
             api: {
+                backup: {
+                    path: '/backup',
+                },
+                config: {
+                    path: '/config/v1',
+                },
                 user: {
                     path: '/user',
                     groupPolicies: {
@@ -128,6 +136,13 @@ export abstract class DefaultAppConfig {
             cronJobExpressions: DefaultAppConfig.SYNC_CRON_JOB_EXPRESSION,
             cronJobRetryAttempts: 5,
             cronJobRetryDelayInMs: 10000,
+        };
+    }
+
+    public static get throttle() {
+        return {
+            ttlInMs: DefaultAppConfig.THROTTLE_TTL_IN_MS,
+            limit: DefaultAppConfig.THROTTLE_LIMIT,
         };
     }
 }

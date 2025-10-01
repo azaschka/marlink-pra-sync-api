@@ -32,11 +32,12 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
         const remoteRdpEntity = this.createRemoteRdpEntity(btRemoteRdp);
 
         try {
-            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(remoteRdpEntity);
+            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(command.tenantId, remoteRdpEntity);
 
             this.eventBus.publish(
                 new RemoteRdpCopiedEvent(command.transactionId, {
                     remoteRdp: createdRemoteRdp,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
                 new RemoteRdpCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteRdp: remoteRdpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -57,6 +59,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
         const response = await this.commandBus.execute<BTCopyRemoteRdpCommand, RemoteRdpCopiedDtoOutput>(
             new BTCopyRemoteRdpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -65,7 +68,7 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
         );
 
         return await this.queryBus.execute<BTRetrieveRemoteRdpByIdQuery, RemoteRdpRetrievedDtoOutput>(
-            new BTRetrieveRemoteRdpByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveRemoteRdpByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

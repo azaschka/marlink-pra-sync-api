@@ -15,18 +15,21 @@ export class DeleteRemoteVncCommandHandler implements ICommandHandler<DeleteRemo
 
     public async execute(command: DeleteRemoteVncCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteRemoteVncCommand, void>(
-            new BTDeleteRemoteVncCommand(command.transactionId, command.id),
+            new BTDeleteRemoteVncCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.remoteVncRepositoryService.deleteById(command.id);
+            await this.remoteVncRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new RemoteVncDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new RemoteVncDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new RemoteVncDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

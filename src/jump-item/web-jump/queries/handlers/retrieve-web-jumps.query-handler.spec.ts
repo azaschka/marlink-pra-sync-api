@@ -20,10 +20,10 @@ describe('RetrieveWebJumpsQueryHandler', () => {
                 .spyOn(webJumpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedWebJumps);
 
-            const result = await handler.execute(new RetrieveWebJumpsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveWebJumpsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedWebJumps);
-            expect(webJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(webJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -35,6 +35,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveWebJumpsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'web-jump-1',
@@ -48,6 +49,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
 
             expect(result).toBe(expectedWebJumps);
             expect(webJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                123,
                 {
                     name: 'web-jump-1',
                     url: 'url-1',

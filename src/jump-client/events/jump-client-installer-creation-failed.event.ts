@@ -4,6 +4,7 @@ import { JumpClientInstaller } from '../models';
 export interface JumpClientInstallerCreationFailedEventPayload {
     errorMessage: string;
     jumpClientInstaller: JumpClientInstaller;
+    tenantId: number;
 }
 
 export class JumpClientInstallerCreationFailedEvent extends BaseEvent {

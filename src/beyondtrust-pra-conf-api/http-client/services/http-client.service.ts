@@ -1,9 +1,13 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { AxiosError, AxiosResponse, HttpStatusCode } from 'axios';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
 import { catchError, defer, firstValueFrom, map, retry, switchMap, throwError, timer } from 'rxjs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { BeyondtrustInstance } from '../../../beyondtrust-instance/models';
+import { RetrieveBeyondtrustInstanceByIdQuery } from '../../../beyondtrust-instance/queries';
+import { UrlUtility } from '../../../shared/utilities';
 import { ErrorProcessorUtility } from '../../../shared/utilities/error-processor.utility';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
 
@@ -22,14 +26,23 @@ export class HttpClientService {
         private readonly appConfigService: AppConfigService,
         private readonly httpService: HttpService,
         private readonly authTokenService: AuthTokenService,
+        private readonly queryBus: QueryBus,
     ) {}
 
-    public async get<C, O>(cls: ClassConstructor<C>, url: string, params?: unknown): Promise<O> {
+    public async get<C, O>(
+        cls: ClassConstructor<C>,
+        transactionId: string,
+        beyondtrustInstanceId: number,
+        urlPath: string,
+        params?: unknown,
+    ): Promise<O> {
+        const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
+
         const result = await firstValueFrom(
             defer(async () =>
-                this.httpService.get<O>(url, {
+                this.httpService.get<O>(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
                     headers: {
-                        Authorization: await this.getAuthHeader(),
+                        Authorization: await this.getAuthHeader(beyondtrustInstance),
                     },
                     params: instanceToPlain(params),
                 }),
@@ -51,7 +64,7 @@ export class HttpClientService {
                     delay: (error) => {
                         if (error instanceof AxiosError) {
                             if (error.status === HttpStatusCode.Unauthorized) {
-                                this.authTokenService.invalidateAuthToken(); // token will refresh next attempt
+                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
                             }
 
                             if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
@@ -73,14 +86,26 @@ export class HttpClientService {
         return result as O;
     }
 
-    public async post<C, O>(cls: ClassConstructor<C>, url: string, body?: unknown): Promise<O> {
+    public async post<C, O>(
+        cls: ClassConstructor<C>,
+        transactionId: string,
+        beyondtrustInstanceId: number,
+        urlPath: string,
+        body?: unknown,
+    ): Promise<O> {
+        const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
+
         const result = await firstValueFrom(
             defer(async () =>
-                this.httpService.post<O>(url, instanceToPlain(body), {
-                    headers: {
-                        Authorization: await this.getAuthHeader(),
+                this.httpService.post<O>(
+                    UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath),
+                    instanceToPlain(body),
+                    {
+                        headers: {
+                            Authorization: await this.getAuthHeader(beyondtrustInstance),
+                        },
                     },
-                }),
+                ),
             ).pipe(
                 switchMap((response) => response),
                 catchError((error) => {
@@ -97,7 +122,7 @@ export class HttpClientService {
                     delay: (error) => {
                         if (error instanceof AxiosError) {
                             if (error.status === HttpStatusCode.Unauthorized) {
-                                this.authTokenService.invalidateAuthToken(); // token will refresh next attempt
+                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
                             }
 
                             if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
@@ -119,14 +144,26 @@ export class HttpClientService {
         return result as O;
     }
 
-    public async patch<C, O>(cls: ClassConstructor<C>, url: string, body?: unknown): Promise<O> {
+    public async patch<C, O>(
+        cls: ClassConstructor<C>,
+        transactionId: string,
+        beyondtrustInstanceId: number,
+        urlPath: string,
+        body?: unknown,
+    ): Promise<O> {
+        const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
+
         const result = await firstValueFrom(
             defer(async () =>
-                this.httpService.patch<O>(url, instanceToPlain(body), {
-                    headers: {
-                        Authorization: await this.getAuthHeader(),
+                this.httpService.patch<O>(
+                    UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath),
+                    instanceToPlain(body),
+                    {
+                        headers: {
+                            Authorization: await this.getAuthHeader(beyondtrustInstance),
+                        },
                     },
-                }),
+                ),
             ).pipe(
                 switchMap((response) => response),
                 catchError((error) => {
@@ -143,7 +180,7 @@ export class HttpClientService {
                     delay: (error) => {
                         if (error instanceof AxiosError) {
                             if (error.status === HttpStatusCode.Unauthorized) {
-                                this.authTokenService.invalidateAuthToken(); // token will refresh next attempt
+                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
                             }
 
                             if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
@@ -165,12 +202,19 @@ export class HttpClientService {
         return result as O;
     }
 
-    public async delete(url: string, params?: unknown): Promise<void> {
+    public async delete(
+        transactionId: string,
+        beyondtrustInstanceId: number,
+        urlPath: string,
+        params?: unknown,
+    ): Promise<void> {
+        const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
+
         await firstValueFrom(
             defer(async () =>
-                this.httpService.delete(url, {
+                this.httpService.delete(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
                     headers: {
-                        Authorization: await this.getAuthHeader(),
+                        Authorization: await this.getAuthHeader(beyondtrustInstance),
                     },
                     params: instanceToPlain(params),
                 }),
@@ -192,7 +236,7 @@ export class HttpClientService {
                     delay: (error) => {
                         if (error instanceof AxiosError) {
                             if (error.status === HttpStatusCode.Unauthorized) {
-                                this.authTokenService.invalidateAuthToken(); // token will refresh next attempt
+                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
                             }
 
                             if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
@@ -211,12 +255,19 @@ export class HttpClientService {
         );
     }
 
-    public async stream(url: string, params?: unknown): Promise<AxiosResponse<NodeJS.ReadableStream>> {
+    public async stream(
+        transactionId: string,
+        beyondtrustInstanceId: number,
+        urlPath: string,
+        params?: unknown,
+    ): Promise<AxiosResponse<NodeJS.ReadableStream>> {
+        const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
+
         return firstValueFrom(
             this.httpService
-                .get<NodeJS.ReadableStream>(url, {
+                .get<NodeJS.ReadableStream>(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
                     headers: {
-                        Authorization: await this.getAuthHeader(),
+                        Authorization: await this.getAuthHeader(beyondtrustInstance),
                     },
                     params: params ? instanceToPlain(params) : undefined,
                     responseType: 'stream',
@@ -237,9 +288,35 @@ export class HttpClientService {
         );
     }
 
-    private async getAuthHeader(): Promise<string> {
-        const authToken = await this.authTokenService.getAuthToken();
+    private async getBeyondtrustInstance(
+        transactionId: string,
+        beyondtrustInstanceId: number,
+    ): Promise<BeyondtrustInstance> {
+        const beyondtrustInstance = await this.queryBus.execute<
+            RetrieveBeyondtrustInstanceByIdQuery,
+            BeyondtrustInstance
+        >(new RetrieveBeyondtrustInstanceByIdQuery(transactionId, beyondtrustInstanceId));
+
+        return beyondtrustInstance;
+    }
+
+    private async getAuthHeader(beyondtrustInstance: BeyondtrustInstance): Promise<string> {
+        const authToken = await this.authTokenService.getAuthToken(
+            beyondtrustInstance.id,
+            beyondtrustInstance.authClientId,
+            beyondtrustInstance.authClientSecret,
+            beyondtrustInstance.oauth2TokenUrl,
+        );
 
         return `Bearer ${authToken.accessToken}`;
+    }
+
+    private invalidateAuthHeader(beyondtrustInstance: BeyondtrustInstance): void {
+        this.authTokenService.invalidateAuthToken(
+            beyondtrustInstance.id,
+            beyondtrustInstance.authClientId,
+            beyondtrustInstance.authClientSecret,
+            beyondtrustInstance.oauth2TokenUrl,
+        );
     }
 }

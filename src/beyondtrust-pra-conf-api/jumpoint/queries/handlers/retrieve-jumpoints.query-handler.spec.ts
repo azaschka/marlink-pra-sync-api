@@ -53,6 +53,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpointsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 100,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'jumpoint-1',
@@ -74,6 +75,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpointsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 100,
                     pageSize: 20,
                     pageNumber: 2,
                     name: 'jumpoint-2',
@@ -93,7 +95,9 @@ describe('RetrieveJumpointsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jumpoint',
+                    inputQuery.transactionId,
+                    inputQuery.beyondtrustInstanceId,
+                    '/jumpoint',
                     expectedHttpClientParams,
                 );
 
@@ -114,9 +118,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpoint: {
-                    path: 'jumpoint',
+                config: {
+                    jumpoint: {
+                        path: 'jumpoint',
+                    },
                 },
             },
         },

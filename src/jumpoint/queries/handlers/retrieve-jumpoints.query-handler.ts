@@ -20,6 +20,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
             const btJumpoints = await this.queryBus.execute<BTRetrieveJumpointsQuery, JumpointRetrievedDtoOutput[]>(
                 new BTRetrieveJumpointsQuery(
                     query.transactionId,
+                    query.tenantId,
                     query.pageSize,
                     query.pageNumber,
                     query.name,
@@ -33,7 +34,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
             return btJumpoints.map((btJumpoint) => this.createJumpointEntity(btJumpoint));
         }
 
-        const jumpointFindByQuery = <FindOptionsWhere<Jumpoint>>{};
+        const jumpointFindByQuery = <FindOptionsWhere<JumpointEntity>>{};
 
         if (query.name !== undefined) {
             jumpointFindByQuery.name = query.name;
@@ -48,6 +49,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
         }
 
         const jumpoints = await this.jumpointRepositoryService.findBy(
+            query.tenantId,
             jumpointFindByQuery,
             query.pageNumber,
             query.pageSize,

@@ -35,6 +35,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
             {
                 command: new CreateRemoteRdpCommand(
                     'transaction-1',
+                    123,
                     'remote-rdp-1',
                     1,
                     'hostname-1',
@@ -84,7 +85,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
                 },
             },
             {
-                command: new CreateRemoteRdpCommand('transaction-2', 'remote-rdp-2', 1, 'hostname-2', 2),
+                command: new CreateRemoteRdpCommand('transaction-2', 123, 'remote-rdp-2', 1, 'hostname-2', 2),
                 expectedHttpClientBody: {
                     name: 'remote-rdp-2',
                     jumpointId: 1,
@@ -101,7 +102,9 @@ describe('CreateRemoteRdpCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-item/remote-rdp',
+                    command.transactionId,
+                    123,
+                    '/jump-item/remote-rdp',
                     expectedHttpClientBody,
                 );
 
@@ -122,10 +125,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteRdp: {
-                        path: 'jump-item/remote-rdp',
+                config: {
+                    jumpItem: {
+                        remoteRdp: {
+                            path: 'jump-item/remote-rdp',
+                        },
                     },
                 },
             },

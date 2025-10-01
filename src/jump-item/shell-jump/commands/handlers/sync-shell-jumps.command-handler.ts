@@ -27,14 +27,21 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
             const updatedShellJumpIds: number[] = [];
             const deletedShellJumpIds: number[] = [];
 
-            await this.syncBTToDbShellJumpsPerPage(command.transactionId, 1, createdShellJumpIds, updatedShellJumpIds);
-            await this.syncDbToBTShellJumpsPerPage(1, startSyncUtcDate, deletedShellJumpIds);
+            await this.syncBTToDbShellJumpsPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdShellJumpIds,
+                updatedShellJumpIds,
+            );
+            await this.syncDbToBTShellJumpsPerPage(command.tenantId, 1, startSyncUtcDate, deletedShellJumpIds);
 
             this.eventBus.publish(
                 new ShellJumpsSyncedEvent(command.transactionId, {
                     createdShellJumpIds,
                     updatedShellJumpIds,
                     deletedShellJumpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -47,6 +54,7 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
             this.eventBus.publish(
                 new ShellJumpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -56,13 +64,14 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
 
     private async syncBTToDbShellJumpsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdShellJumpIds: number[],
         updatedShellJumpIds: number[],
     ) {
         // Retrieve shell jumps from BeyondTrust
         const btShellJumps = await this.queryBus.execute<RetrieveShellJumpsQuery, ShellJumpRetrievedDtoOutput[]>(
-            new RetrieveShellJumpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveShellJumpsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -77,14 +86,15 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
 
         // Retrieve existing shell jumps from the DB using BeyondTrust shell jump IDs
         const dbShellJumps = await this.shellJumpRepositoryService.findByIds(
+            tenantId,
             btShellJumps.map((shellJump) => shellJump.id).filter((id) => id !== undefined),
         );
 
         const shellJumpsToBeCreated = this.findAllShellJumpsToBeCreated(btShellJumps, dbShellJumps);
         const shellJumpsToBeUpdated = this.findAllShellJumpsToBeUpdatedOrUpdateLastSyncDate(btShellJumps, dbShellJumps);
 
-        const createdShellJumps = await this.createOrUpdateByIds(transactionId, shellJumpsToBeCreated);
-        const updatedShellJumps = await this.createOrUpdateByIds(transactionId, shellJumpsToBeUpdated);
+        const createdShellJumps = await this.createOrUpdateByIds(transactionId, tenantId, shellJumpsToBeCreated);
+        const updatedShellJumps = await this.createOrUpdateByIds(transactionId, tenantId, shellJumpsToBeUpdated);
 
         // Collect created and updated shell jump IDs
         createdShellJumpIds.push(...createdShellJumps.map((shellJump) => shellJump.id));
@@ -94,15 +104,23 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
             return;
         }
 
-        await this.syncBTToDbShellJumpsPerPage(transactionId, pageNumber + 1, createdShellJumpIds, updatedShellJumpIds);
+        await this.syncBTToDbShellJumpsPerPage(
+            transactionId,
+            tenantId,
+            pageNumber + 1,
+            createdShellJumpIds,
+            updatedShellJumpIds,
+        );
     }
 
     private async syncDbToBTShellJumpsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTShellJumps: Date,
         deletedShellJumpIds: number[],
     ) {
         const dbShellJumps = await this.shellJumpRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTShellJumps,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -110,7 +128,7 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
         const shellJumpIds = dbShellJumps.map((dbShellJump) => dbShellJump.id);
 
         if (shellJumpIds.length > 0) {
-            await this.shellJumpRepositoryService.deleteByIds(shellJumpIds);
+            await this.shellJumpRepositoryService.deleteByIds(tenantId, shellJumpIds);
         }
 
         // Collect deleted shell jump IDs
@@ -120,7 +138,12 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
             return;
         }
 
-        await this.syncDbToBTShellJumpsPerPage(pageNumber + 1, dateBeforeSyncingBTShellJumps, deletedShellJumpIds);
+        await this.syncDbToBTShellJumpsPerPage(
+            tenantId,
+            pageNumber + 1,
+            dateBeforeSyncingBTShellJumps,
+            deletedShellJumpIds,
+        );
     }
 
     private findAllShellJumpsToBeCreated(btShellJumps: ShellJumpRetrievedDtoOutput[], dbShellJumps: ShellJumpEntity[]) {
@@ -160,6 +183,7 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
 
     private async createOrUpdateByIds(
         transactionId: string,
+        tenantId: number,
         shellJumps: ShellJumpEntity[],
     ): Promise<ShellJumpEntity[]> {
         const createdOrUpdatedEntities: ShellJumpEntity[] = [];
@@ -170,12 +194,13 @@ export class SyncShellJumpsCommandHandler implements ICommandHandler<SyncShellJu
 
         for (const shellJump of shellJumps) {
             try {
-                await this.shellJumpRepositoryService.createOrUpdateById(shellJump);
+                await this.shellJumpRepositoryService.createOrUpdateById(tenantId, shellJump);
                 createdOrUpdatedEntities.push(shellJump);
             } catch (error) {
                 this.eventBus.publish(
                     new ShellJumpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing shell jump with id ${shellJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

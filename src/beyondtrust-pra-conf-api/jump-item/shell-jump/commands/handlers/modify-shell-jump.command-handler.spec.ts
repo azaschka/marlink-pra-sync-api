@@ -36,6 +36,7 @@ describe('ModifyShellJumpCommandHandler', () => {
             {
                 command: new ModifyShellJumpCommand(
                     'transaction-1',
+                    123,
                     1,
                     'shell-jump-1',
                     1,
@@ -72,6 +73,7 @@ describe('ModifyShellJumpCommandHandler', () => {
             {
                 command: new ModifyShellJumpCommand(
                     'transaction-2',
+                    123,
                     1,
                     'shell-jump-2',
                     1,
@@ -98,7 +100,9 @@ describe('ModifyShellJumpCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/jump-item/shell-jump/${command.id}`,
+                    command.transactionId,
+                    123,
+                    `/jump-item/shell-jump/${command.id}`,
                     expectedHttpClientBody,
                 );
 
@@ -119,10 +123,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    shellJump: {
-                        path: 'jump-item/shell-jump',
+                config: {
+                    jumpItem: {
+                        shellJump: {
+                            path: 'jump-item/shell-jump',
+                        },
                     },
                 },
             },

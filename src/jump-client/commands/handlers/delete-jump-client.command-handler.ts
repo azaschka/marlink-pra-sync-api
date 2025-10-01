@@ -15,18 +15,21 @@ export class DeleteJumpClientCommandHandler implements ICommandHandler<DeleteJum
 
     public async execute(command: DeleteJumpClientCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteJumpClientCommand, void>(
-            new BTDeleteJumpClientCommand(command.transactionId, command.id),
+            new BTDeleteJumpClientCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.jumpClientRepositoryService.deleteById(command.id);
+            await this.jumpClientRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new JumpClientDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new JumpClientDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new JumpClientDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

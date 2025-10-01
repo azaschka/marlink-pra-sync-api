@@ -1,5 +1,5 @@
 import { DataSource, In } from 'typeorm';
-import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { TeamEntity } from '../../../team/repositories/entities';
 import { GroupPolicyTeamEntity } from '../entities';
@@ -18,13 +18,13 @@ describe('GroupPolicyTeamRepositoryService', () => {
 
     describe('createOrUpdateByGroupPolicyIdAndTeamId', () => {
         it('should not call createOrUpdate if entities are empty', async () => {
-            const baseRepositoryCreateOrUpdateMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'createOrUpdate')
+            const baseTenantRepositoryCreateOrUpdateMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'createOrUpdate')
                 .mockResolvedValue(Promise.resolve());
 
-            await service.createOrUpdateByGroupPolicyIdAndTeamId([]);
+            await service.createOrUpdateByGroupPolicyIdAndTeamId(123, []);
 
-            expect(baseRepositoryCreateOrUpdateMethod).not.toHaveBeenCalled();
+            expect(baseTenantRepositoryCreateOrUpdateMethod).not.toHaveBeenCalled();
         });
 
         it('should call createOrUpdate with the correct parameters when entities are provided', async () => {
@@ -45,11 +45,14 @@ describe('GroupPolicyTeamRepositoryService', () => {
                 },
             ];
             const expectedConflictPaths = ['groupPolicyId', 'teamId'];
-            const baseRepositoryCreateOrUpdateMethod = jest.spyOn(BaseRepositoryService.prototype, 'createOrUpdate');
+            const baseTenantRepositoryCreateOrUpdateMethod = jest.spyOn(
+                BaseTenantRepositoryService.prototype,
+                'createOrUpdate',
+            );
 
-            await service.createOrUpdateByGroupPolicyIdAndTeamId(entities);
+            await service.createOrUpdateByGroupPolicyIdAndTeamId(123, entities);
 
-            expect(baseRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(entities, expectedConflictPaths);
+            expect(baseTenantRepositoryCreateOrUpdateMethod).toHaveBeenCalledWith(123, entities, expectedConflictPaths);
         });
     });
 
@@ -57,13 +60,13 @@ describe('GroupPolicyTeamRepositoryService', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const id = 1;
             const expectedWhere = { groupPolicyId: id };
-            const baseRepositoryDeleteByMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'deleteBy')
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteByGroupPolicyId(id);
+            await service.deleteByGroupPolicyId(123, id);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
         });
     });
 
@@ -72,33 +75,33 @@ describe('GroupPolicyTeamRepositoryService', () => {
             const groupPolicyId = 1;
             const teamId = 2;
             const expectedWhere = { groupPolicyId: groupPolicyId, teamId: teamId };
-            const baseRepositoryDeleteByMethod = jest
-                .spyOn(BaseRepositoryService.prototype, 'deleteBy')
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteByGroupPolicyIdAndTeamId(groupPolicyId, teamId);
+            await service.deleteByGroupPolicyIdAndTeamId(123, groupPolicyId, teamId);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
         });
     });
 
     describe('deleteByGroupPolicyIds', () => {
         it('should not call deleteBy if ids are empty', async () => {
-            const baseRepositoryDeleteByMethod = jest.spyOn(BaseRepositoryService.prototype, 'deleteBy');
+            const baseTenantRepositoryDeleteByMethod = jest.spyOn(BaseTenantRepositoryService.prototype, 'deleteBy');
 
-            await service.deleteByGroupPolicyIds([]);
+            await service.deleteByGroupPolicyIds(123, []);
 
-            expect(baseRepositoryDeleteByMethod).not.toHaveBeenCalled();
+            expect(baseTenantRepositoryDeleteByMethod).not.toHaveBeenCalled();
         });
 
         it('should call deleteBy with the correct parameters when ids are provided', async () => {
             const ids = [1, 2, 3];
             const expectedWhere = { groupPolicyId: In(ids) };
-            const baseRepositoryDeleteByMethod = jest.spyOn(BaseRepositoryService.prototype, 'deleteBy');
+            const baseTenantRepositoryDeleteByMethod = jest.spyOn(BaseTenantRepositoryService.prototype, 'deleteBy');
 
-            await service.deleteByGroupPolicyIds(ids);
+            await service.deleteByGroupPolicyIds(123, ids);
 
-            expect(baseRepositoryDeleteByMethod).toHaveBeenCalledWith(expectedWhere);
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
         });
     });
 });

@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface JumpGroupDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class JumpGroupDeletedEvent extends BaseEvent {

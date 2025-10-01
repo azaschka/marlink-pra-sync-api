@@ -35,6 +35,7 @@ describe('ModifyWebJumpCommandHandler', () => {
             {
                 command: new ModifyWebJumpCommand(
                     'transaction-1',
+                    123,
                     1,
                     'web-jump-1',
                     1,
@@ -71,7 +72,7 @@ describe('ModifyWebJumpCommandHandler', () => {
                 },
             },
             {
-                command: new ModifyWebJumpCommand('transaction-2', 1, 'web-jump-2', 1, 'url-2', 2),
+                command: new ModifyWebJumpCommand('transaction-2', 123, 1, 'web-jump-2', 1, 'url-2', 2),
                 expectedHttpClientBody: {
                     name: 'web-jump-2',
                     jumpointId: 1,
@@ -88,7 +89,9 @@ describe('ModifyWebJumpCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/jump-item/web-jump/${command.id}`,
+                    command.transactionId,
+                    123,
+                    `/jump-item/web-jump/${command.id}`,
                     expectedHttpClientBody,
                 );
 
@@ -109,10 +112,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    webJump: {
-                        path: 'jump-item/web-jump',
+                config: {
+                    jumpItem: {
+                        webJump: {
+                            path: 'jump-item/web-jump',
+                        },
                     },
                 },
             },

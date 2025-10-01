@@ -14,16 +14,18 @@ export class CopyWebJumpCommandHandler implements ICommandHandler<CopyWebJumpCom
     ) {}
 
     public async execute(command: CopyWebJumpCommand): Promise<WebJumpCopiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.webJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.webJump.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.jumpItem.webJump.copy,
+            this.appConfigService.beyondTrust.api.config.jumpItem.webJump.copy,
         );
 
         return await this.httpClientService.post<WebJumpCopiedDtoOutput, WebJumpCopiedDtoOutput>(
             WebJumpCopiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CopyWebJumpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),
         );
     }

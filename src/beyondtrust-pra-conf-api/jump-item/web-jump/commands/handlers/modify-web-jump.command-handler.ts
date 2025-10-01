@@ -14,15 +14,17 @@ export class ModifyWebJumpCommandHandler implements ICommandHandler<ModifyWebJum
     ) {}
 
     public async execute(command: ModifyWebJumpCommand): Promise<WebJumpModifiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.webJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.webJump.path,
             command.id.toString(),
         );
 
         return await this.httpClientService.patch<WebJumpModifiedDtoOutput, WebJumpModifiedDtoOutput>(
             WebJumpModifiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyWebJumpDtoInput.create(
                 command.name,
                 command.jumpointId,

@@ -4,6 +4,7 @@ export interface TeamsSyncedEventPayload {
     createdTeamIds: number[];
     updatedTeamIds: number[];
     deletedTeamIds: number[];
+    tenantId: number;
 }
 
 export class TeamsSyncedEvent extends BaseEvent {

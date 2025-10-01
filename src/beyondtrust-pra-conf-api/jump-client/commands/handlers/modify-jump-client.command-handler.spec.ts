@@ -62,6 +62,7 @@ describe('ModifyJumpClientCommandHandler', () => {
             {
                 command: new ModifyJumpClientCommand(
                     'transaction-1',
+                    100,
                     1,
                     123,
                     JumpClientGroupType.Personal,
@@ -86,7 +87,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                 },
             },
             {
-                command: new ModifyJumpClientCommand('transaction-2', 1, 123, JumpClientGroupType.Personal),
+                command: new ModifyJumpClientCommand('transaction-2', 100, 1, 123, JumpClientGroupType.Personal),
                 expectedHttpClientBody: {
                     jumpGroupId: 123,
                     jumpGroupType: JumpClientGroupType.Personal,
@@ -101,7 +102,9 @@ describe('ModifyJumpClientCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/jump-client/${command.id}`,
+                    command.transactionId,
+                    100,
+                    `/jump-client/${command.id}`,
                     expectedHttpClientBody,
                 );
 
@@ -122,9 +125,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                    },
                 },
             },
         },

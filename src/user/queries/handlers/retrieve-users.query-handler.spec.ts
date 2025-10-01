@@ -19,10 +19,10 @@ describe('RetrieveUsersQueryHandler', () => {
                 .spyOn(userRepositoryService, 'findBy')
                 .mockResolvedValue(expectedUsers);
 
-            const result = await handler.execute(new RetrieveUsersQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveUsersQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedUsers);
-            expect(userRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(userRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -32,11 +32,12 @@ describe('RetrieveUsersQueryHandler', () => {
                 .mockResolvedValue(expectedUsers);
 
             const result = await handler.execute(
-                new RetrieveUsersQuery('transaction-2', 10, 1, 123, 'user1', 'user1@email.com'),
+                new RetrieveUsersQuery('transaction-2', 123, 10, 1, 123, 'user1', 'user1@email.com'),
             );
 
             expect(result).toBe(expectedUsers);
             expect(userRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                123,
                 { securityProviderId: 123, username: 'user1', email: 'user1@email.com' },
                 1,
                 10,

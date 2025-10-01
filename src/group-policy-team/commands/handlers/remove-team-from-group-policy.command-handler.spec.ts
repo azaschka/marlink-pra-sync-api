@@ -23,11 +23,13 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
         it.each([
             <RemoveTeamFromGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 teamId: 2,
             },
             <RemoveTeamFromGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 teamId: 4,
             },
@@ -47,9 +49,15 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveTeamFromGroupPolicyCommand(command.transactionId, command.id, command.teamId),
+                    new BTRemoveTeamFromGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.teamId,
+                    ),
                 );
                 expect(groupPolicyTeamRepositoryServiceDeleteByGroupPolicyIdAndTeamIdMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     command.id,
                     command.teamId,
                 );
@@ -60,6 +68,7 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
                         payload: {
                             groupPolicyId: command.id,
                             teamId: command.teamId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -99,6 +108,7 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     teamId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -112,6 +122,7 @@ describe('RemoveTeamFromGroupPolicyCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         groupPolicyId: 3,
                         teamId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

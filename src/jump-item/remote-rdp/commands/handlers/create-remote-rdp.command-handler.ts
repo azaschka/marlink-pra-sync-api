@@ -26,17 +26,18 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
     ) {}
 
     public async execute(command: CreateRemoteRdpCommand): Promise<RemoteRdp> {
-        await this.validateRemoteRdpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+        await this.validateRemoteRdpDoesNotExist(command.tenantId, command.name, command.jumpGroupId, command.tag);
 
         const btRemoteRdp = await this.createBTRemoteRdp(command);
         const remoteRdpEntity = this.createRemoteRdpEntity(btRemoteRdp);
 
         try {
-            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(remoteRdpEntity);
+            const createdRemoteRdp = await this.remoteRdpRepositoryService.create(command.tenantId, remoteRdpEntity);
 
             this.eventBus.publish(
                 new RemoteRdpCreatedEvent(command.transactionId, {
                     remoteRdp: createdRemoteRdp,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
                 new RemoteRdpCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteRdp: remoteRdpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -53,8 +55,8 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
         }
     }
 
-    private async validateRemoteRdpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
-        const existingRemoteRdp = await this.remoteRdpRepositoryService.findOneBy({
+    private async validateRemoteRdpDoesNotExist(tenantId: number, name: string, jumpGroupId: number, tag?: string) {
+        const existingRemoteRdp = await this.remoteRdpRepositoryService.findOneBy(tenantId, {
             name,
             jumpGroupId,
             tag,
@@ -69,6 +71,7 @@ export class CreateRemoteRdpCommandHandler implements ICommandHandler<CreateRemo
         return await this.commandBus.execute<BTCreateRemoteRdpCommand, RemoteRdpCreatedDtoOutput>(
             new BTCreateRemoteRdpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.hostname,

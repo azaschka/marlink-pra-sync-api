@@ -13,15 +13,17 @@ export class RetrieveRemoteRdpByIdQueryHandler implements IQueryHandler<Retrieve
     ) {}
 
     public async execute(query: RetrieveRemoteRdpByIdQuery): Promise<RemoteRdpRetrievedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.remoteRdp.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteRdp.path,
             query.id.toString(),
         );
 
         return await this.httpClientService.get<RemoteRdpRetrievedDtoOutput, RemoteRdpRetrievedDtoOutput>(
             RemoteRdpRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
         );
     }
 }

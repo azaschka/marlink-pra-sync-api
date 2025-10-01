@@ -3,6 +3,7 @@ export class CreateUserCommand {
 
     constructor(
         public readonly transactionId: string,
+        public readonly beyondtrustInstanceId: number,
         public readonly publicDisplayName: string,
         public readonly username: string,
         public readonly password?: string,

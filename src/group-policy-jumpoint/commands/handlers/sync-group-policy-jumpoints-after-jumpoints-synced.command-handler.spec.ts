@@ -51,7 +51,13 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
 
             // Act
             await handler.execute(
-                new SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommand('transaction-1', [1, 2], [3, 4], [5, 6]),
+                new SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommand(
+                    'transaction-1',
+                    123,
+                    [1, 2],
+                    [3, 4],
+                    [5, 6],
+                ),
             );
 
             // Assert
@@ -66,32 +72,32 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
             expect(groupPolicyJumpointEntityCreateMethod).toHaveBeenNthCalledWith(5, 2, 5);
             expect(groupPolicyJumpointEntityCreateMethod).toHaveBeenNthCalledWith(6, 4, 6);
             expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenCalledTimes(4);
-            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 1);
-            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 2);
-            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 3);
-            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 4);
+            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 123, 1);
+            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 123, 2);
+            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 123, 3);
+            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 123, 4);
             expect(
                 groupPolicyJumpointRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpointIdMethod,
             ).toHaveBeenCalledTimes(4);
             expect(
                 groupPolicyJumpointRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpointIdMethod,
-            ).toHaveBeenNthCalledWith(1, [
+            ).toHaveBeenNthCalledWith(1, 123, [
                 { groupPolicyId: 1, jumpointId: 1 },
                 { groupPolicyId: 1, jumpointId: 2 },
                 { groupPolicyId: 1, jumpointId: 3 },
             ]);
             expect(
                 groupPolicyJumpointRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpointIdMethod,
-            ).toHaveBeenNthCalledWith(2, [
+            ).toHaveBeenNthCalledWith(2, 123, [
                 { groupPolicyId: 2, jumpointId: 4 },
                 { groupPolicyId: 2, jumpointId: 5 },
             ]);
             expect(
                 groupPolicyJumpointRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpointIdMethod,
-            ).toHaveBeenNthCalledWith(3, []);
+            ).toHaveBeenNthCalledWith(3, 123, []);
             expect(
                 groupPolicyJumpointRepositoryServiceCreateOrUpdateByGroupPolicyIdAndJumpointIdMethod,
-            ).toHaveBeenNthCalledWith(4, [{ groupPolicyId: 4, jumpointId: 6 }]);
+            ).toHaveBeenNthCalledWith(4, 123, [{ groupPolicyId: 4, jumpointId: 6 }]);
             expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
@@ -104,6 +110,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                             { groupPolicyId: 1, jumpointId: 2 },
                             { groupPolicyId: 1, jumpointId: 3 },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -117,6 +124,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                             { groupPolicyId: 2, jumpointId: 4 },
                             { groupPolicyId: 2, jumpointId: 5 },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -132,13 +140,14 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                                 jumpointId: 6,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
 
             // deletedGroupPolicyIds: [5, 6]
             expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledTimes(1);
-            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith([5, 6]);
+            expect(groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith(123, [5, 6]);
         });
 
         it('should publish an event and not throw error when failure occurs', async () => {
@@ -154,6 +163,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
             await handler.execute(
                 new SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommand(
                     'transaction-1',
+                    123,
                     [1, 2],
                     [3, 4, 5],
                     [5, 6, 7, 8],
@@ -167,6 +177,7 @@ describe('SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler', () =>
                     eventType: GroupPolicyJumpointsSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

@@ -64,6 +64,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
         it.each([
             <ModifyGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 name: 'group-policy-1',
                 hasEndpointsAccessPermission: true,
@@ -91,6 +92,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
             },
             <ModifyGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 2,
                 name: 'group-policy-2',
             },
@@ -121,6 +123,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyGroupPolicyCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.hasEndpointsAccessPermission,
@@ -174,9 +177,11 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                     TestHelper.mockedGroupPolicyModifiedDtoOutput.unassignedJumpItemRoleId,
                 );
                 expect(groupPolicyRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    123,
                     groupPolicyEntityToBeUpdated,
                 );
                 expect(groupPolicyRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(
+                    123,
                     groupPolicyEntityToBeUpdated.id,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -185,6 +190,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyModifiedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicy: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -230,6 +236,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                 handler.execute(<ModifyGroupPolicyCommand>{
                     transactionId: 'transaction-1',
                     name: 'group-policy-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -244,6 +251,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         groupPolicy: groupPolicyEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -270,6 +278,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                 handler.execute(<ModifyGroupPolicyCommand>{
                     transactionId: 'transaction-1',
                     name: 'group-policy-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -283,6 +292,7 @@ describe('ModifyGroupPolicyCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         groupPolicy: groupPolicyEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

@@ -31,11 +31,12 @@ export class ModifyJumpPolicyCommandHandler implements ICommandHandler<ModifyJum
         const jumpPolicyEntity = this.createJumpPolicyEntity(btJumpPolicy);
 
         try {
-            const updatedJumpPolicy = await this.updateJumpPolicy(jumpPolicyEntity);
+            const updatedJumpPolicy = await this.updateJumpPolicy(command.tenantId, jumpPolicyEntity);
 
             this.eventBus.publish(
                 new JumpPolicyModifiedEvent(command.transactionId, {
                     jumpPolicy: updatedJumpPolicy,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -45,6 +46,7 @@ export class ModifyJumpPolicyCommandHandler implements ICommandHandler<ModifyJum
                 new JumpPolicyModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpPolicy: jumpPolicyEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -56,6 +58,7 @@ export class ModifyJumpPolicyCommandHandler implements ICommandHandler<ModifyJum
         return await this.commandBus.execute<BTModifyJumpPolicyCommand, JumpPolicyModifiedDtoOutput>(
             new BTModifyJumpPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.displayName,
                 command.codeName,
@@ -125,10 +128,13 @@ export class ModifyJumpPolicyCommandHandler implements ICommandHandler<ModifyJum
         );
     }
 
-    private async updateJumpPolicy(jumpPolicyEntity: JumpPolicyEntity) {
-        await this.jumpPolicyRepositoryService.createOrUpdateById(jumpPolicyEntity);
+    private async updateJumpPolicy(tenantId: number, jumpPolicyEntity: JumpPolicyEntity) {
+        await this.jumpPolicyRepositoryService.createOrUpdateById(tenantId, jumpPolicyEntity);
 
-        const createdOrUpdatedJumpPolicy = await this.jumpPolicyRepositoryService.findOneById(jumpPolicyEntity.id);
+        const createdOrUpdatedJumpPolicy = await this.jumpPolicyRepositoryService.findOneById(
+            tenantId,
+            jumpPolicyEntity.id,
+        );
 
         if (!createdOrUpdatedJumpPolicy) {
             throw new Error('Jump policy has been created or updated but could not be retrieved.');

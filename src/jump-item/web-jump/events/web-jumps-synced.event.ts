@@ -4,6 +4,7 @@ export interface WebJumpsSyncedEventPayload {
     createdWebJumpIds: number[];
     updatedWebJumpIds: number[];
     deletedWebJumpIds: number[];
+    tenantId: number;
 }
 
 export class WebJumpsSyncedEvent extends BaseEvent {

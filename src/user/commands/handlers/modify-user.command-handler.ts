@@ -27,11 +27,12 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
         const userEntity = this.createUserEntity(btUser);
 
         try {
-            const updatedUser = await this.updateUser(userEntity);
+            const updatedUser = await this.updateUser(command.tenantId, userEntity);
 
             this.eventBus.publish(
                 new UserModifiedEvent(command.transactionId, {
                     user: updatedUser,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -41,6 +42,7 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
                 new UserModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     user: userEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -52,6 +54,7 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
         return await this.commandBus.execute<BTModifyUserCommand, UserModifiedDtoOutput>(
             new BTModifyUserCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.publicDisplayName,
                 command.username,
@@ -128,10 +131,10 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
         );
     }
 
-    private async updateUser(userEntity: UserEntity) {
-        await this.userRepositoryService.createOrUpdateById(userEntity);
+    private async updateUser(tenantId: number, userEntity: UserEntity) {
+        await this.userRepositoryService.createOrUpdateById(tenantId, userEntity);
 
-        const createdOrUpdatedUser = await this.userRepositoryService.findOneById(userEntity.id);
+        const createdOrUpdatedUser = await this.userRepositoryService.findOneById(tenantId, userEntity.id);
 
         if (!createdOrUpdatedUser) {
             throw new Error('User has been created or updated but could not be retrieved.');

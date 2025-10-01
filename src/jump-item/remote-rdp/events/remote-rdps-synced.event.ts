@@ -4,6 +4,7 @@ export interface RemoteRdpsSyncedEventPayload {
     createdRemoteRdpIds: number[];
     updatedRemoteRdpIds: number[];
     deletedRemoteRdpIds: number[];
+    tenantId: number;
 }
 
 export class RemoteRdpsSyncedEvent extends BaseEvent {

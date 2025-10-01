@@ -34,17 +34,19 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
 
             await this.syncBTToDbJumpPoliciesPerPage(
                 command.transactionId,
+                command.tenantId,
                 1,
                 createdJumpPolicyIds,
                 updatedJumpPolicyIds,
             );
-            await this.syncDbToBTJumpPoliciesPerPage(1, startSyncUtcDate, deletedJumpPolicyIds);
+            await this.syncDbToBTJumpPoliciesPerPage(command.tenantId, 1, startSyncUtcDate, deletedJumpPolicyIds);
 
             this.eventBus.publish(
                 new JumpPoliciesSyncedEvent(command.transactionId, {
                     createdJumpPolicyIds,
                     updatedJumpPolicyIds,
                     deletedJumpPolicyIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -57,6 +59,7 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
             this.eventBus.publish(
                 new JumpPoliciesSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -66,13 +69,14 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
 
     private async syncBTToDbJumpPoliciesPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdJumpPolicyIds: number[],
         updatedJumpPolicyIds: number[],
     ) {
         // Retrieve jump policies from BeyondTrust
         const btJumpPolicies = await this.queryBus.execute<RetrieveJumpPoliciesQuery, JumpPolicyRetrievedDtoOutput[]>(
-            new RetrieveJumpPoliciesQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveJumpPoliciesQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -87,6 +91,7 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
 
         // Retrieve existing jump policies from the DB using BeyondTrust jump policy IDs
         const dbJumpPolicies = await this.jumpPolicyRepositoryService.findByIds(
+            tenantId,
             btJumpPolicies.map((policy) => policy.id).filter((id) => id !== undefined),
         );
 
@@ -97,11 +102,11 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
         );
 
         if (jumpPoliciesToBeCreated.length > 0) {
-            await this.jumpPolicyRepositoryService.createOrUpdateByIds(jumpPoliciesToBeCreated);
+            await this.jumpPolicyRepositoryService.createOrUpdateByIds(tenantId, jumpPoliciesToBeCreated);
         }
 
         if (jumpPoliciesToBeUpdated.length > 0) {
-            await this.jumpPolicyRepositoryService.createOrUpdateByIds(jumpPoliciesToBeUpdated);
+            await this.jumpPolicyRepositoryService.createOrUpdateByIds(tenantId, jumpPoliciesToBeUpdated);
         }
 
         // Collect created and updated jump policy IDs
@@ -114,6 +119,7 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
 
         await this.syncBTToDbJumpPoliciesPerPage(
             transactionId,
+            tenantId,
             pageNumber + 1,
             createdJumpPolicyIds,
             updatedJumpPolicyIds,
@@ -121,11 +127,13 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
     }
 
     private async syncDbToBTJumpPoliciesPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTJumpPolicies: Date,
         deletedJumpPolicyIds: number[],
     ) {
         const dbJumpPolicies = await this.jumpPolicyRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTJumpPolicies,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -133,7 +141,7 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
         const jumpPolicyIds = dbJumpPolicies.map((dbJumpPolicy) => dbJumpPolicy.id);
 
         if (jumpPolicyIds.length > 0) {
-            await this.jumpPolicyRepositoryService.deleteByIds(jumpPolicyIds);
+            await this.jumpPolicyRepositoryService.deleteByIds(tenantId, jumpPolicyIds);
         }
 
         // Collect deleted jump policy IDs
@@ -143,7 +151,12 @@ export class SyncJumpPoliciesCommandHandler implements ICommandHandler<SyncJumpP
             return;
         }
 
-        await this.syncDbToBTJumpPoliciesPerPage(pageNumber + 1, dateBeforeSyncingBTJumpPolicies, deletedJumpPolicyIds);
+        await this.syncDbToBTJumpPoliciesPerPage(
+            tenantId,
+            pageNumber + 1,
+            dateBeforeSyncingBTJumpPolicies,
+            deletedJumpPolicyIds,
+        );
     }
 
     private findAllJumpPoliciesToBeCreated(

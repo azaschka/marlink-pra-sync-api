@@ -1,6 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindOptionsWhere, Like } from 'typeorm';
 import { GroupPolicy } from '../../models';
+import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { RetrieveGroupPoliciesQuery } from '../retrieve-group-policies.query';
 
@@ -9,7 +10,7 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
     constructor(private readonly groupPolicyRepositoryService: GroupPolicyRepositoryService) {}
 
     public async execute(query: RetrieveGroupPoliciesQuery): Promise<GroupPolicy[]> {
-        const groupPoliciesFindByQuery = <FindOptionsWhere<GroupPolicy>>{};
+        const groupPoliciesFindByQuery = <FindOptionsWhere<GroupPolicyEntity>>{};
 
         if (query.name) {
             groupPoliciesFindByQuery.name = query.name;
@@ -20,6 +21,7 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
         }
 
         const groupPolicies = await this.groupPolicyRepositoryService.findBy(
+            query.tenantId,
             groupPoliciesFindByQuery,
             query.pageNumber,
             query.pageSize,

@@ -20,10 +20,10 @@ describe('RetrieveShellJumpsQueryHandler', () => {
                 .spyOn(shellJumpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedShellJumps);
 
-            const result = await handler.execute(new RetrieveShellJumpsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveShellJumpsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedShellJumps);
-            expect(shellJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(shellJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -35,6 +35,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveShellJumpsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'shell-jump-1',
@@ -48,6 +49,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
 
             expect(result).toBe(expectedShellJumps);
             expect(shellJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                123,
                 {
                     name: 'shell-jump-1',
                     hostname: 'host-1',

@@ -64,6 +64,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
             // Arrange
             const command = <CreateProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'protocol-tunnel-jump-1',
                 jumpointId: 2,
                 hostname: 'hostname-1',
@@ -82,6 +83,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
         it.each([
             <CreateProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'protocol-tunnel-jump-1',
                 jumpointId: 1,
                 hostname: 'hostname-1',
@@ -101,6 +103,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
             },
             <CreateProtocolTunnelJumpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'protocol-tunnel-jump-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -130,6 +133,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateProtocolTunnelJumpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.jumpointId,
                         command.hostname,
@@ -168,6 +172,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                     TestHelper.mockedProtocolTunnelJumpCreatedDtoOutput.caCertificates,
                 );
                 expect(protocolTunnelJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    123,
                     protocolTunnelJumpEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -176,6 +181,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                         eventType: ProtocolTunnelJumpCreatedEvent.EVENT_TYPE,
                         payload: {
                             protocolTunnelJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -221,6 +227,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                 handler.execute(<CreateProtocolTunnelJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'protocol-tunnel-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -234,6 +241,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         protocolTunnelJump: protocolTunnelJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

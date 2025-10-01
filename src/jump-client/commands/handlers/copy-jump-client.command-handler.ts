@@ -34,11 +34,12 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
         const jumpClientEntity = this.createJumpClientEntity(btJumpClient);
 
         try {
-            const createdJumpClient = await this.jumpClientRepositoryService.create(jumpClientEntity);
+            const createdJumpClient = await this.jumpClientRepositoryService.create(command.tenantId, jumpClientEntity);
 
             this.eventBus.publish(
                 new JumpClientCopiedEvent(command.transactionId, {
                     jumpClient: createdJumpClient,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -48,6 +49,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
                 new JumpClientCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpClient: jumpClientEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -59,6 +61,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
         const response = await this.commandBus.execute<BTCopyJumpClientCommand, JumpClientCopiedDtoOutput>(
             new BTCopyJumpClientCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpClientGroupType(command.jumpGroupType),
@@ -67,7 +70,7 @@ export class CopyJumpClientCommandHandler implements ICommandHandler<CopyJumpCli
         );
 
         return await this.queryBus.execute<BTRetrieveJumpClientByIdQuery, JumpClientRetrievedDtoOutput>(
-            new BTRetrieveJumpClientByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveJumpClientByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

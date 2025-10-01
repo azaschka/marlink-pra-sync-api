@@ -1,16 +1,61 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { AppConfigModule } from '../app-config/app-config.module';
+import { BeyondtrustInstance } from '../beyondtrust-instance/models';
+import { RetrieveBeyondtrustInstancesQuery } from '../beyondtrust-instance/queries';
+import { ErrorProcessorUtility, PaginationUtility, UuidUtility } from '../shared/utilities';
 import { CommandHandlers } from './commands/handlers';
 import { UserGroupPolicyController } from './controllers/user-group-policy.controller';
+import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
-import { UserGroupPolicyEntity } from './repositories/entities';
 import { UserGroupPolicyRepositoryService } from './repositories/services/user-group-policy-repository.service';
 import { UserGroupPoliciesSaga } from './sagas';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UserGroupPolicyEntity]), AppConfigModule],
+    imports: [AppConfigModule],
     controllers: [UserGroupPolicyController],
-    providers: [...CommandHandlers, ...QueryHandlers, UserGroupPolicyRepositoryService, UserGroupPoliciesSaga],
+    providers: [
+        ...CommandHandlers,
+        ...QueryHandlers,
+        ...EventHandlers,
+        UserGroupPolicyRepositoryService,
+        UserGroupPoliciesSaga,
+    ],
 })
-export class UserGroupPolicyModule {}
+export class UserGroupPolicyModule implements OnApplicationBootstrap {
+    private static readonly MAX_PAGE_SIZE = 50;
+
+    constructor(
+        private readonly queryBus: QueryBus,
+        private readonly userGroupPolicyRepositoryService: UserGroupPolicyRepositoryService,
+    ) {}
+
+    public async onApplicationBootstrap() {
+        try {
+            const btInstances = await PaginationUtility.queryUntilLastPage((pageNumber) => {
+                return this.queryBus.execute<RetrieveBeyondtrustInstancesQuery, BeyondtrustInstance[]>(
+                    new RetrieveBeyondtrustInstancesQuery(
+                        UuidUtility.generate(),
+                        UserGroupPolicyModule.MAX_PAGE_SIZE,
+                        pageNumber,
+                    ),
+                );
+            });
+
+            for (const btInstance of btInstances) {
+                try {
+                    const { tableName } = await this.userGroupPolicyRepositoryService.createAndConnectTable(
+                        btInstance.id,
+                    );
+                    console.log(`[DB_TABLE][BT_ID][CONNECTION]: ${tableName} | ${btInstance.id} | SUCCESS`);
+                } catch (error) {
+                    console.error(
+                        `[DB_TABLE][BT_ID][CONNECTION]: (User Group Policy) | ${btInstance.id} | FAILED (${ErrorProcessorUtility.stringify(error)})`,
+                    );
+                }
+            }
+        } catch (error) {
+            console.error(`Failed to retrieve BeyondTrust instances: ${ErrorProcessorUtility.stringify(error)}`);
+        }
+    }
+}

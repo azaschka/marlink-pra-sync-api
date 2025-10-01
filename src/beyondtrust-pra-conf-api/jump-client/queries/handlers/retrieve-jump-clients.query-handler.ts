@@ -14,14 +14,16 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
     ) {}
 
     public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClientRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpClient.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.path,
         );
 
         return await this.httpClientService.get<JumpClientRetrievedDtoOutput, JumpClientRetrievedDtoOutput[]>(
             JumpClientRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveJumpClientsDtoInput.create(
                 query.pageSize,
                 query.pageNumber,

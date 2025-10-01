@@ -27,11 +27,12 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
         const userEntity = this.createUserEntity(btUser);
 
         try {
-            const createdUser = await this.userRepositoryService.create(userEntity);
+            const createdUser = await this.userRepositoryService.create(command.tenantId, userEntity);
 
             this.eventBus.publish(
                 new UserCreatedEvent(command.transactionId, {
                     user: createdUser,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -41,6 +42,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
                 new UserCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     user: userEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -52,6 +54,7 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
         return await this.commandBus.execute<BTCreateUserCommand, UserCreatedDtoOutput>(
             new BTCreateUserCommand(
                 command.transactionId,
+                command.tenantId,
                 command.publicDisplayName,
                 command.username,
                 command.password,

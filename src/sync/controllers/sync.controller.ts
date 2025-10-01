@@ -2,6 +2,7 @@ import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AppConfigService } from '../../app-config/services/app-config.service';
+import { ApiTenantIdHeader, TenantIdHeader } from '../../core/decorators';
 import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
 import { GroupPoliciesSyncResult } from '../../group-policy/models';
 import { SyncJumpClientInstallersCommand, SyncJumpClientsCommand } from '../../jump-client/commands';
@@ -29,6 +30,7 @@ import { SyncUsersCommand } from '../../user/commands';
 import { UsersSyncResult } from '../../user/models';
 import { SyncResultDtoOutput } from '../dtos/outputs';
 
+@ApiTenantIdHeader()
 @ApiTags('Sync')
 @Controller('sync')
 export class SyncController {
@@ -40,21 +42,21 @@ export class SyncController {
     @Post()
     @ApiOkResponse()
     @HttpCode(HttpStatus.OK)
-    public async syncAll(): Promise<unknown> {
+    public async syncAll(@TenantIdHeader() tenantId: number): Promise<unknown> {
         const syncOrders = [
-            { name: 'jump-policies', func: () => this.syncJumpPolicies() }, // Required dependency for jump assets
-            { name: 'jump-groups', func: () => this.syncJumpGroups() }, // Required dependency for jump assets
-            { name: 'jumpoints', func: () => this.syncJumpoints() }, // Required dependency for jump assets
-            { name: 'protocol-tunnel-jumps', func: () => this.syncJumpItemsProtocolTunnelJumps() },
-            { name: 'remote-rdps', func: () => this.syncJumpItemsRemoteRdps() },
-            { name: 'remote-vncs', func: () => this.syncJumpItemsRemoteVncs() },
-            { name: 'shell-jumps', func: () => this.syncJumpItemsShellJumps() },
-            { name: 'web-jumps', func: () => this.syncJumpItemsWebJumps() },
-            { name: 'jump-clients', func: () => this.syncJumpClients() },
-            { name: 'jump-client-installers', func: () => this.syncJumpClientInstallers() },
-            { name: 'users', func: () => this.syncUsers() }, // Automatically trigger sync for relational data with group policies after group policies are synced
-            { name: 'teams', func: () => this.syncTeams() }, // Automatically trigger sync for relational data with users
-            { name: 'group-policies', func: () => this.syncGroupPolicies() }, // Automatically trigger sync for relational data with jump groups, jumpoints, users, teams
+            { name: 'jump-policies', func: () => this.syncJumpPolicies(tenantId) }, // Required dependency for jump assets
+            { name: 'jump-groups', func: () => this.syncJumpGroups(tenantId) }, // Required dependency for jump assets
+            { name: 'jumpoints', func: () => this.syncJumpoints(tenantId) }, // Required dependency for jump assets
+            { name: 'protocol-tunnel-jumps', func: () => this.syncJumpItemsProtocolTunnelJumps(tenantId) },
+            { name: 'remote-rdps', func: () => this.syncJumpItemsRemoteRdps(tenantId) },
+            { name: 'remote-vncs', func: () => this.syncJumpItemsRemoteVncs(tenantId) },
+            { name: 'shell-jumps', func: () => this.syncJumpItemsShellJumps(tenantId) },
+            { name: 'web-jumps', func: () => this.syncJumpItemsWebJumps(tenantId) },
+            { name: 'jump-clients', func: () => this.syncJumpClients(tenantId) },
+            { name: 'jump-client-installers', func: () => this.syncJumpClientInstallers(tenantId) },
+            { name: 'users', func: () => this.syncUsers(tenantId) }, // Automatically trigger sync for relational data with group policies after group policies are synced
+            { name: 'teams', func: () => this.syncTeams(tenantId) }, // Automatically trigger sync for relational data with users
+            { name: 'group-policies', func: () => this.syncGroupPolicies(tenantId) }, // Automatically trigger sync for relational data with jump groups, jumpoints, users, teams
         ];
 
         const syncResults = [];
@@ -86,9 +88,9 @@ export class SyncController {
     @Post('users')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncUsers(): Promise<SyncResultDtoOutput> {
+    public async syncUsers(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncUsersCommand, UsersSyncResult>(
-            new SyncUsersCommand(UuidUtility.generate()),
+            new SyncUsersCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -101,9 +103,9 @@ export class SyncController {
     @Post('teams')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncTeams(): Promise<SyncResultDtoOutput> {
+    public async syncTeams(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncTeamsCommand, TeamsSyncResult>(
-            new SyncTeamsCommand(UuidUtility.generate()),
+            new SyncTeamsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -116,9 +118,9 @@ export class SyncController {
     @Post('jump-clients')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpClients(): Promise<SyncResultDtoOutput> {
+    public async syncJumpClients(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncJumpClientsCommand, JumpClientsSyncResult>(
-            new SyncJumpClientsCommand(UuidUtility.generate()),
+            new SyncJumpClientsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -131,9 +133,9 @@ export class SyncController {
     @Post('jump-clients/installers')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpClientInstallers(): Promise<SyncResultDtoOutput> {
+    public async syncJumpClientInstallers(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncJumpClientInstallersCommand, JumpClientInstallersSyncResult>(
-            new SyncJumpClientInstallersCommand(UuidUtility.generate()),
+            new SyncJumpClientInstallersCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -146,9 +148,9 @@ export class SyncController {
     @Post('group-policies')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncGroupPolicies(): Promise<SyncResultDtoOutput> {
+    public async syncGroupPolicies(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncGroupPoliciesCommand, GroupPoliciesSyncResult>(
-            new SyncGroupPoliciesCommand(UuidUtility.generate()),
+            new SyncGroupPoliciesCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -161,9 +163,9 @@ export class SyncController {
     @Post('jump-policies')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpPolicies(): Promise<SyncResultDtoOutput> {
+    public async syncJumpPolicies(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncJumpPoliciesCommand, JumpPoliciesSyncResult>(
-            new SyncJumpPoliciesCommand(UuidUtility.generate()),
+            new SyncJumpPoliciesCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -176,9 +178,9 @@ export class SyncController {
     @Post('jump-groups')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpGroups(): Promise<SyncResultDtoOutput> {
+    public async syncJumpGroups(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncJumpGroupsCommand, JumpGroupsSyncResult>(
-            new SyncJumpGroupsCommand(UuidUtility.generate()),
+            new SyncJumpGroupsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -191,9 +193,9 @@ export class SyncController {
     @Post('jumpoints')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpoints(): Promise<SyncResultDtoOutput> {
+    public async syncJumpoints(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncJumpointsCommand, JumpointsSyncResult>(
-            new SyncJumpointsCommand(UuidUtility.generate()),
+            new SyncJumpointsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -206,9 +208,9 @@ export class SyncController {
     @Post('jump-items/protocol-tunnel-jumps')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsProtocolTunnelJumps(): Promise<SyncResultDtoOutput> {
+    public async syncJumpItemsProtocolTunnelJumps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncProtocolTunnelJumpsCommand, ProtocolTunnelJumpsSyncResult>(
-            new SyncProtocolTunnelJumpsCommand(UuidUtility.generate()),
+            new SyncProtocolTunnelJumpsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -221,9 +223,9 @@ export class SyncController {
     @Post('jump-items/remote-rdps')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsRemoteRdps(): Promise<SyncResultDtoOutput> {
+    public async syncJumpItemsRemoteRdps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncRemoteRdpsCommand, RemoteRdpsSyncResult>(
-            new SyncRemoteRdpsCommand(UuidUtility.generate()),
+            new SyncRemoteRdpsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -236,9 +238,9 @@ export class SyncController {
     @Post('jump-items/remote-vncs')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsRemoteVncs(): Promise<SyncResultDtoOutput> {
+    public async syncJumpItemsRemoteVncs(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncRemoteVncsCommand, RemoteVncsSyncResult>(
-            new SyncRemoteVncsCommand(UuidUtility.generate()),
+            new SyncRemoteVncsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -251,9 +253,9 @@ export class SyncController {
     @Post('jump-items/shell-jumps')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsShellJumps(): Promise<SyncResultDtoOutput> {
+    public async syncJumpItemsShellJumps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncShellJumpsCommand, ShellJumpsSyncResult>(
-            new SyncShellJumpsCommand(UuidUtility.generate()),
+            new SyncShellJumpsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {
@@ -266,9 +268,9 @@ export class SyncController {
     @Post('jump-items/web-jumps')
     @ApiOkResponse({ type: SyncResultDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsWebJumps(): Promise<SyncResultDtoOutput> {
+    public async syncJumpItemsWebJumps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
         const result = await this.commandBus.execute<SyncWebJumpsCommand, WebJumpsSyncResult>(
-            new SyncWebJumpsCommand(UuidUtility.generate()),
+            new SyncWebJumpsCommand(UuidUtility.generate(), tenantId),
         );
 
         return {

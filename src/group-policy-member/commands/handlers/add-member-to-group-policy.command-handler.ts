@@ -21,11 +21,12 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
         const groupPolicyMemberEntity = this.createGroupPolicyMemberEntity(command.id, btGroupPolicyMember);
 
         try {
-            const groupPolicyMember = await this.addGroupPolicyMember(groupPolicyMemberEntity);
+            const groupPolicyMember = await this.addGroupPolicyMember(command.tenantId, groupPolicyMemberEntity);
 
             this.eventBus.publish(
                 new GroupPolicyMemberAddedEvent(command.transactionId, {
                     groupPolicyMember: groupPolicyMember,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
                 new GroupPolicyMemberAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyMember: groupPolicyMemberEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +48,7 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
         return await this.commandBus.execute<BTAddMemberToGroupPolicyCommand, MemberAddedToGroupPolicyDtoOutput>(
             new BTAddMemberToGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.userId,
                 command.securityProviderId,
@@ -69,8 +72,11 @@ export class AddMemberToGroupPolicyCommandHandler implements ICommandHandler<Add
         );
     }
 
-    private async addGroupPolicyMember(groupPolicyMemberEntity: GroupPolicyMemberEntity): Promise<GroupPolicyMember> {
-        await this.groupPolicyMemberRepositoryService.create(groupPolicyMemberEntity);
+    private async addGroupPolicyMember(
+        tenantId: number,
+        groupPolicyMemberEntity: GroupPolicyMemberEntity,
+    ): Promise<GroupPolicyMember> {
+        await this.groupPolicyMemberRepositoryService.create(tenantId, groupPolicyMemberEntity);
 
         return {
             groupPolicyId: groupPolicyMemberEntity.groupPolicyId,

@@ -26,17 +26,18 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
     ) {}
 
     public async execute(command: CreateShellJumpCommand): Promise<ShellJump> {
-        await this.validateShellJumpDoesNotExist(command.name, command.jumpGroupId, command.tag);
+        await this.validateShellJumpDoesNotExist(command.tenantId, command.name, command.jumpGroupId, command.tag);
 
         const btShellJump = await this.createBTShellJump(command);
         const shellJumpEntity = this.createShellJumpEntity(btShellJump);
 
         try {
-            const createdShellJump = await this.shellJumpRepositoryService.create(shellJumpEntity);
+            const createdShellJump = await this.shellJumpRepositoryService.create(command.tenantId, shellJumpEntity);
 
             this.eventBus.publish(
                 new ShellJumpCreatedEvent(command.transactionId, {
                     shellJump: createdShellJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +47,7 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
                 new ShellJumpCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     shellJump: shellJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -53,8 +55,8 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
         }
     }
 
-    private async validateShellJumpDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
-        const existingShellJump = await this.shellJumpRepositoryService.findOneBy({
+    private async validateShellJumpDoesNotExist(tenantId: number, name: string, jumpGroupId: number, tag?: string) {
+        const existingShellJump = await this.shellJumpRepositoryService.findOneBy(tenantId, {
             name,
             jumpGroupId,
             tag,
@@ -69,6 +71,7 @@ export class CreateShellJumpCommandHandler implements ICommandHandler<CreateShel
         return await this.commandBus.execute<BTCreateShellJumpCommand, ShellJumpCreatedDtoOutput>(
             new BTCreateShellJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.hostname,

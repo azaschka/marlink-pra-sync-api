@@ -27,14 +27,21 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
             const updatedRemoteVncIds: number[] = [];
             const deletedRemoteVncIds: number[] = [];
 
-            await this.syncBTToDbRemoteVncsPerPage(command.transactionId, 1, createdRemoteVncIds, updatedRemoteVncIds);
-            await this.syncDbToBTRemoteVncsPerPage(1, startSyncUtcDate, deletedRemoteVncIds);
+            await this.syncBTToDbRemoteVncsPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdRemoteVncIds,
+                updatedRemoteVncIds,
+            );
+            await this.syncDbToBTRemoteVncsPerPage(command.tenantId, 1, startSyncUtcDate, deletedRemoteVncIds);
 
             this.eventBus.publish(
                 new RemoteVncsSyncedEvent(command.transactionId, {
                     createdRemoteVncIds,
                     updatedRemoteVncIds,
                     deletedRemoteVncIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -47,6 +54,7 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
             this.eventBus.publish(
                 new RemoteVncsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -56,13 +64,14 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
 
     private async syncBTToDbRemoteVncsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdRemoteVncIds: number[],
         updatedRemoteVncIds: number[],
     ) {
         // Retrieve remote vncs from BeyondTrust
         const btRemoteVncs = await this.queryBus.execute<RetrieveRemoteVncsQuery, RemoteVncRetrievedDtoOutput[]>(
-            new RetrieveRemoteVncsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveRemoteVncsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -77,14 +86,15 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
 
         // Retrieve existing remote vncs from the DB using BeyondTrust remote vnc IDs
         const dbRemoteVncs = await this.remoteVncRepositoryService.findByIds(
+            tenantId,
             btRemoteVncs.map((remoteVnc) => remoteVnc.id).filter((id) => id !== undefined),
         );
 
         const remoteVncsToBeCreated = this.findAllRemoteVncsToBeCreated(btRemoteVncs, dbRemoteVncs);
         const remoteVncsToBeUpdated = this.findAllRemoteVncsToBeUpdatedOrUpdateLastSyncDate(btRemoteVncs, dbRemoteVncs);
 
-        const createdRemoteVncs = await this.createOrUpdateByIds(transactionId, remoteVncsToBeCreated);
-        const updatedRemoteVncs = await this.createOrUpdateByIds(transactionId, remoteVncsToBeUpdated);
+        const createdRemoteVncs = await this.createOrUpdateByIds(transactionId, tenantId, remoteVncsToBeCreated);
+        const updatedRemoteVncs = await this.createOrUpdateByIds(transactionId, tenantId, remoteVncsToBeUpdated);
 
         // Collect created and updated remote vnc IDs
         createdRemoteVncIds.push(...createdRemoteVncs.map((remoteVnc) => remoteVnc.id));
@@ -94,15 +104,23 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
             return;
         }
 
-        await this.syncBTToDbRemoteVncsPerPage(transactionId, pageNumber + 1, createdRemoteVncIds, updatedRemoteVncIds);
+        await this.syncBTToDbRemoteVncsPerPage(
+            transactionId,
+            tenantId,
+            pageNumber + 1,
+            createdRemoteVncIds,
+            updatedRemoteVncIds,
+        );
     }
 
     private async syncDbToBTRemoteVncsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTRemoteVncs: Date,
         deletedRemoteVncIds: number[],
     ) {
         const dbRemoteVncs = await this.remoteVncRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTRemoteVncs,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -110,7 +128,7 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
         const remoteVncIds = dbRemoteVncs.map((dbRemoteVnc) => dbRemoteVnc.id);
 
         if (remoteVncIds.length > 0) {
-            await this.remoteVncRepositoryService.deleteByIds(remoteVncIds);
+            await this.remoteVncRepositoryService.deleteByIds(tenantId, remoteVncIds);
         }
 
         // Collect deleted remote vnc IDs
@@ -120,7 +138,12 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
             return;
         }
 
-        await this.syncDbToBTRemoteVncsPerPage(pageNumber + 1, dateBeforeSyncingBTRemoteVncs, deletedRemoteVncIds);
+        await this.syncDbToBTRemoteVncsPerPage(
+            tenantId,
+            pageNumber + 1,
+            dateBeforeSyncingBTRemoteVncs,
+            deletedRemoteVncIds,
+        );
     }
 
     private findAllRemoteVncsToBeCreated(btRemoteVncs: RemoteVncRetrievedDtoOutput[], dbRemoteVncs: RemoteVncEntity[]) {
@@ -156,6 +179,7 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
 
     private async createOrUpdateByIds(
         transactionId: string,
+        tenantId: number,
         remoteVncs: RemoteVncEntity[],
     ): Promise<RemoteVncEntity[]> {
         const createdOrUpdatedEntities: RemoteVncEntity[] = [];
@@ -166,12 +190,13 @@ export class SyncRemoteVncsCommandHandler implements ICommandHandler<SyncRemoteV
 
         for (const remoteVnc of remoteVncs) {
             try {
-                await this.remoteVncRepositoryService.createOrUpdateById(remoteVnc);
+                await this.remoteVncRepositoryService.createOrUpdateById(tenantId, remoteVnc);
                 createdOrUpdatedEntities.push(remoteVnc);
             } catch (error) {
                 this.eventBus.publish(
                     new RemoteVncsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing remote VNC with id ${remoteVnc.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

@@ -14,14 +14,16 @@ export class RetrieveUsersQueryHandler implements IQueryHandler<RetrieveUsersQue
     ) {}
 
     public async execute(query: RetrieveUsersQuery): Promise<UserRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.user.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.user.path,
         );
 
         return await this.httpClientService.get<UserRetrievedDtoOutput, UserRetrievedDtoOutput[]>(
             UserRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveUsersDtoInput.create(
                 query.pageSize,
                 query.pageNumber,

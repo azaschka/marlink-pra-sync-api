@@ -3,6 +3,7 @@ import { User } from '../models';
 
 export interface UserModifiedEventPayload {
     user: User;
+    tenantId: number;
 }
 
 export class UserModifiedEvent extends BaseEvent {

@@ -30,10 +30,10 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
                 .spyOn(jumpClientInstallerRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpClients);
 
-            const result = await handler.execute(new RetrieveJumpClientInstallersQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveJumpClientInstallersQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpClients);
-            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -45,6 +45,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpClientInstallersQuery(
                     'transaction-2',
+                    100,
                     10,
                     1,
                     'jump-client-1',
@@ -59,6 +60,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
 
             expect(result).toBe(expectedJumpClients);
             expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                100,
                 {
                     name: 'jump-client-1',
                     tag: 'tag-1',
@@ -113,6 +115,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpClientInstallersQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'jump-client-1',
@@ -152,6 +155,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
             expect(queryBusExecuteMethod).toHaveBeenCalledWith(
                 new BTRetrieveJumpClientInstallersQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'jump-client-1',

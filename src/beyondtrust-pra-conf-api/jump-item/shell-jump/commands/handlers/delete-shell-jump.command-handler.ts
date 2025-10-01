@@ -12,12 +12,12 @@ export class DeleteShellJumpCommandHandler implements ICommandHandler<DeleteShel
     ) {}
 
     public async execute(command: DeleteShellJumpCommand): Promise<void> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.shellJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.shellJump.path,
             command.id.toString(),
         );
 
-        return await this.httpClientService.delete(url);
+        return await this.httpClientService.delete(command.transactionId, command.beyondtrustInstanceId, urlPath);
     }
 }

@@ -3,6 +3,7 @@ import { WebJump } from '../models';
 
 export interface WebJumpCreatedEventPayload {
     webJump: WebJump;
+    tenantId: number;
 }
 
 export class WebJumpCreatedEvent extends BaseEvent {

@@ -20,19 +20,19 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
                 .spyOn(groupPolicyRepositoryService, 'findBy')
                 .mockResolvedValue(expectedGroupPolicies);
 
-            const result = await handler.execute(new RetrieveGroupPoliciesQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveGroupPoliciesQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedGroupPolicies);
-            expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it.each([
             {
-                query: new RetrieveGroupPoliciesQuery('transaction-2', 10, 1, 'group-policy-1'),
+                query: new RetrieveGroupPoliciesQuery('transaction-2', 123, 10, 1, 'group-policy-1'),
                 expectedFindByQuery: { name: 'group-policy-1' },
             },
             {
-                query: new RetrieveGroupPoliciesQuery('transaction-2', 10, 1, undefined, 'group-policy%'),
+                query: new RetrieveGroupPoliciesQuery('transaction-2', 123, 10, 1, undefined, 'group-policy%'),
                 expectedFindByQuery: { name: Like('group-policy%') },
             },
         ])(
@@ -46,7 +46,7 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
                 const result = await handler.execute(query);
 
                 expect(result).toBe(expectedGroupPolicies);
-                expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(expectedFindByQuery, 1, 10);
+                expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, expectedFindByQuery, 1, 10);
             },
         );
     });

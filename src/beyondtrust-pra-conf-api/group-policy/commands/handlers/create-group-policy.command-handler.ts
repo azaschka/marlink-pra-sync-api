@@ -14,14 +14,16 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
     ) {}
 
     public async execute(command: CreateGroupPolicyCommand): Promise<GroupPolicyCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
         );
 
         return await this.httpClientService.post<GroupPolicyCreatedDtoOutput, GroupPolicyCreatedDtoOutput>(
             GroupPolicyCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateGroupPolicyDtoInput.create(
                 command.name,
                 command.hasEndpointsAccessPermission,

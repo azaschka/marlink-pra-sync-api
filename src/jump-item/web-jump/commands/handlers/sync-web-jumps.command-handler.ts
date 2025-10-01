@@ -27,14 +27,21 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
             const updatedWebJumpIds: number[] = [];
             const deletedWebJumpIds: number[] = [];
 
-            await this.syncBTToDbWebJumpsPerPage(command.transactionId, 1, createdWebJumpIds, updatedWebJumpIds);
-            await this.syncDbToBTWebJumpsPerPage(1, startSyncUtcDate, deletedWebJumpIds);
+            await this.syncBTToDbWebJumpsPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdWebJumpIds,
+                updatedWebJumpIds,
+            );
+            await this.syncDbToBTWebJumpsPerPage(command.tenantId, 1, startSyncUtcDate, deletedWebJumpIds);
 
             this.eventBus.publish(
                 new WebJumpsSyncedEvent(command.transactionId, {
                     createdWebJumpIds,
                     updatedWebJumpIds,
                     deletedWebJumpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -47,6 +54,7 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
             this.eventBus.publish(
                 new WebJumpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -56,13 +64,14 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
 
     private async syncBTToDbWebJumpsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdWebJumpIds: number[],
         updatedWebJumpIds: number[],
     ) {
         // Retrieve web jumps from BeyondTrust
         const btWebJumps = await this.queryBus.execute<RetrieveWebJumpsQuery, WebJumpRetrievedDtoOutput[]>(
-            new RetrieveWebJumpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveWebJumpsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -77,14 +86,15 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
 
         // Retrieve existing web jumps from the DB using BeyondTrust web jump IDs
         const dbWebJumps = await this.webJumpRepositoryService.findByIds(
+            tenantId,
             btWebJumps.map((webJump) => webJump.id).filter((id) => id !== undefined),
         );
 
         const webJumpsToBeCreated = this.findAllWebJumpsToBeCreated(btWebJumps, dbWebJumps);
         const webJumpsToBeUpdated = this.findAllWebJumpsToBeUpdatedOrUpdateLastSyncDate(btWebJumps, dbWebJumps);
 
-        const createdWebJumps = await this.createOrUpdateByIds(transactionId, webJumpsToBeCreated);
-        const updatedWebJumps = await this.createOrUpdateByIds(transactionId, webJumpsToBeUpdated);
+        const createdWebJumps = await this.createOrUpdateByIds(transactionId, tenantId, webJumpsToBeCreated);
+        const updatedWebJumps = await this.createOrUpdateByIds(transactionId, tenantId, webJumpsToBeUpdated);
 
         // Collect created and updated web jump IDs
         createdWebJumpIds.push(...createdWebJumps.map((webJump) => webJump.id));
@@ -94,15 +104,23 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
             return;
         }
 
-        await this.syncBTToDbWebJumpsPerPage(transactionId, pageNumber + 1, createdWebJumpIds, updatedWebJumpIds);
+        await this.syncBTToDbWebJumpsPerPage(
+            transactionId,
+            tenantId,
+            pageNumber + 1,
+            createdWebJumpIds,
+            updatedWebJumpIds,
+        );
     }
 
     private async syncDbToBTWebJumpsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTWebJumps: Date,
         deletedWebJumpIds: number[],
     ) {
         const dbWebJumps = await this.webJumpRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTWebJumps,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -110,7 +128,7 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
         const webJumpIds = dbWebJumps.map((dbWebJump) => dbWebJump.id);
 
         if (webJumpIds.length > 0) {
-            await this.webJumpRepositoryService.deleteByIds(webJumpIds);
+            await this.webJumpRepositoryService.deleteByIds(tenantId, webJumpIds);
         }
 
         // Collect deleted web jump IDs
@@ -120,7 +138,7 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
             return;
         }
 
-        await this.syncDbToBTWebJumpsPerPage(pageNumber + 1, dateBeforeSyncingBTWebJumps, deletedWebJumpIds);
+        await this.syncDbToBTWebJumpsPerPage(tenantId, pageNumber + 1, dateBeforeSyncingBTWebJumps, deletedWebJumpIds);
     }
 
     private findAllWebJumpsToBeCreated(btWebJumps: WebJumpRetrievedDtoOutput[], dbWebJumps: WebJumpEntity[]) {
@@ -159,7 +177,11 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
         );
     }
 
-    private async createOrUpdateByIds(transactionId: string, webJumps: WebJumpEntity[]): Promise<WebJumpEntity[]> {
+    private async createOrUpdateByIds(
+        transactionId: string,
+        tenantId: number,
+        webJumps: WebJumpEntity[],
+    ): Promise<WebJumpEntity[]> {
         const createdOrUpdatedEntities: WebJumpEntity[] = [];
 
         if (webJumps.length === 0) {
@@ -168,12 +190,13 @@ export class SyncWebJumpsCommandHandler implements ICommandHandler<SyncWebJumpsC
 
         for (const webJump of webJumps) {
             try {
-                await this.webJumpRepositoryService.createOrUpdateById(webJump);
+                await this.webJumpRepositoryService.createOrUpdateById(tenantId, webJump);
                 createdOrUpdatedEntities.push(webJump);
             } catch (error) {
                 this.eventBus.publish(
                     new WebJumpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing web jump with id ${webJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

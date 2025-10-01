@@ -31,18 +31,19 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
             'deleteById',
         );
 
-        await handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 123));
+        await handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 100, 123));
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteJumpClientInstallerCommand('transaction-1', 123),
+            new BTDeleteJumpClientInstallerCommand('transaction-1', 100, 123),
         );
-        expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<JumpClientInstallerDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: JumpClientInstallerDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -57,12 +58,12 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
             'deleteById',
         );
 
-        await expect(handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 123))).rejects.toThrow(
+        await expect(handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 100, 123))).rejects.toThrow(
             expectedError,
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteJumpClientInstallerCommand('transaction-1', 123),
+            new BTDeleteJumpClientInstallerCommand('transaction-1', 100, 123),
         );
         expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
@@ -79,14 +80,14 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 123))).rejects.toThrow(
+        await expect(handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 100, 123))).rejects.toThrow(
             expectedError,
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteJumpClientInstallerCommand('transaction-1', 123),
+            new BTDeleteJumpClientInstallerCommand('transaction-1', 100, 123),
         );
-        expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(jumpClientInstallerRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -95,6 +96,7 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

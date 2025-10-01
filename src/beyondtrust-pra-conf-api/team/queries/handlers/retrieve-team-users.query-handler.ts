@@ -14,16 +14,18 @@ export class RetrieveTeamUsersQueryHandler implements IQueryHandler<RetrieveTeam
     ) {}
 
     public async execute(query: RetrieveTeamUsersQuery): Promise<TeamUserRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.team.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.team.path,
             query.id.toString(),
-            this.appConfigService.beyondTrust.api.team.user.path,
+            this.appConfigService.beyondTrust.api.config.team.user.path,
         );
 
         return await this.httpClientService.get<TeamUserRetrievedDtoOutput, TeamUserRetrievedDtoOutput[]>(
             TeamUserRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveTeamUsersDtoInput.create(query.pageSize, query.pageNumber),
         );
     }

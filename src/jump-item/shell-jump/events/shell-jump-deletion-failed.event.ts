@@ -3,6 +3,7 @@ import { BaseEvent } from '../../../core/events';
 export interface ShellJumpDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class ShellJumpDeletionFailedEvent extends BaseEvent {

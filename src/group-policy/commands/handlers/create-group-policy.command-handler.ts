@@ -22,11 +22,15 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
         const groupPolicyEntity = this.createGroupPolicyEntity(btGroupPolicy);
 
         try {
-            const createdGroupPolicy = await this.groupPolicyRepositoryService.create(groupPolicyEntity);
+            const createdGroupPolicy = await this.groupPolicyRepositoryService.create(
+                command.tenantId,
+                groupPolicyEntity,
+            );
 
             this.eventBus.publish(
                 new GroupPolicyCreatedEvent(command.transactionId, {
                     groupPolicy: createdGroupPolicy,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -36,6 +40,7 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
                 new GroupPolicyCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicy: groupPolicyEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -47,6 +52,7 @@ export class CreateGroupPolicyCommandHandler implements ICommandHandler<CreateGr
         return await this.commandBus.execute<BTCreateGroupPolicyCommand, GroupPolicyCreatedDtoOutput>(
             new BTCreateGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.hasEndpointsAccessPermission,
                 command.accessPermissionStatusType

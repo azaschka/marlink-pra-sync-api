@@ -3,6 +3,7 @@ export class CreateBackupCommand {
 
     constructor(
         public readonly transactionId: string,
+        public readonly beyondtrustInstanceId: number,
         public readonly password?: string,
     ) {}
 }

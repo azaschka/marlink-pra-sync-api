@@ -26,11 +26,12 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
         const jumpointEntity = this.createJumpointEntity(btJumpoint);
 
         try {
-            const updatedJumpoint = await this.updateJumpoint(jumpointEntity);
+            const updatedJumpoint = await this.updateJumpoint(command.tenantId, jumpointEntity);
 
             this.eventBus.publish(
                 new JumpointModifiedEvent(command.transactionId, {
                     jumpoint: updatedJumpoint,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -40,6 +41,7 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
                 new JumpointModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpoint: jumpointEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -51,6 +53,7 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
         return await this.commandBus.execute<BTModifyJumpointCommand, JumpointModifiedDtoOutput>(
             new BTModifyJumpointCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.codeName,
@@ -101,10 +104,10 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
         );
     }
 
-    private async updateJumpoint(jumpointEntity: JumpointEntity) {
-        await this.jumpointRepositoryService.createOrUpdateById(jumpointEntity);
+    private async updateJumpoint(tenantId: number, jumpointEntity: JumpointEntity) {
+        await this.jumpointRepositoryService.createOrUpdateById(tenantId, jumpointEntity);
 
-        const createdOrUpdatedJumpoint = await this.jumpointRepositoryService.findOneById(jumpointEntity.id);
+        const createdOrUpdatedJumpoint = await this.jumpointRepositoryService.findOneById(tenantId, jumpointEntity.id);
 
         if (!createdOrUpdatedJumpoint) {
             throw new Error('Jumpoint has been created or updated but could not be retrieved.');

@@ -55,7 +55,7 @@ describe('SyncJumpPoliciesCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncJumpPoliciesCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncJumpPoliciesCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<JumpPoliciesSyncFailedEvent>{
@@ -63,6 +63,7 @@ describe('SyncJumpPoliciesCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -203,13 +204,13 @@ describe('SyncJumpPoliciesCommandHandler', () => {
                 const jumpPolicyRepositoryServiceDeleteByIds = jest.spyOn(jumpPolicyRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncJumpPoliciesCommand('transaction-1'));
+                const result = await handler.execute(new SyncJumpPoliciesCommand('transaction-1', 123));
 
                 expect(jumpPolicyRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedJumpPolicyRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedJumpPolicyRepositoryServiceFindByIdsCall) {
-                    expect(jumpPolicyRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpPolicyRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(jumpPolicyRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
@@ -218,6 +219,7 @@ describe('SyncJumpPoliciesCommandHandler', () => {
                 for (const item of expectedJumpPolicyRepositoryServiceCreateOrUpdateByIdsCall) {
                     expect(jumpPolicyRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -226,7 +228,7 @@ describe('SyncJumpPoliciesCommandHandler', () => {
                     expectedJumpPolicyRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedJumpPolicyRepositoryServiceDeleteByIdsCall) {
-                    expect(jumpPolicyRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpPolicyRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);
@@ -239,6 +241,7 @@ describe('SyncJumpPoliciesCommandHandler', () => {
                             createdJumpPolicyIds: expectedResult.createdJumpPolicyIds,
                             updatedJumpPolicyIds: expectedResult.updatedJumpPolicyIds,
                             deletedJumpPolicyIds: expectedResult.deletedJumpPolicyIds,
+                            tenantId: 123,
                         },
                     }),
                 );

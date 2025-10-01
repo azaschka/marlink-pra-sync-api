@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface RemoteRdpsSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class RemoteRdpsSyncFailedEvent extends BaseEvent {

@@ -13,15 +13,17 @@ export class RetrieveJumpClientByIdQueryHandler implements IQueryHandler<Retriev
     ) {}
 
     public async execute(query: RetrieveJumpClientByIdQuery): Promise<JumpClientRetrievedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpClient.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.path,
             query.id.toString(),
         );
 
         return await this.httpClientService.get<JumpClientRetrievedDtoOutput, JumpClientRetrievedDtoOutput>(
             JumpClientRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
         );
     }
 }

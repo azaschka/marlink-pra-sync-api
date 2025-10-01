@@ -23,6 +23,7 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
             try {
                 const btGroupPolicyJumpoints = await this.retrieveAllBTGroupPolicyJumpoints(
                     command.transactionId,
+                    command.tenantId,
                     groupPolicyId,
                 );
                 const groupPolicyJumpointEntities = this.createGroupPolicyJumpointEntities(
@@ -30,6 +31,7 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
                     btGroupPolicyJumpoints,
                 );
                 const groupPolicyJumpoints = await this.replaceGroupPolicyJumpoints(
+                    command.tenantId,
                     groupPolicyId,
                     groupPolicyJumpointEntities,
                 );
@@ -41,33 +43,39 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
                 this.eventBus.publish(
                     new GroupPolicyJumpointsSyncedEvent(command.transactionId, {
                         groupPolicyJumpoints: groupPolicyJumpoints,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new GroupPolicyJumpointsSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for group policy "${groupPolicyId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
         }
 
         try {
-            await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyIds(command.deletedGroupPolicyIds);
+            await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyIds(
+                command.tenantId,
+                command.deletedGroupPolicyIds,
+            );
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyJumpointsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }
     }
 
-    private async retrieveAllBTGroupPolicyJumpoints(transactionId: string, groupPolicyId: number) {
+    private async retrieveAllBTGroupPolicyJumpoints(transactionId: string, tenantId: number, groupPolicyId: number) {
         return await this.queryBus.execute<
             BTRetrieveAllGroupPolicyJumpointsQuery,
             GroupPolicyJumpointRetrievedDtoOutput[]
-        >(new BTRetrieveAllGroupPolicyJumpointsQuery(transactionId, groupPolicyId));
+        >(new BTRetrieveAllGroupPolicyJumpointsQuery(transactionId, tenantId, groupPolicyId));
     }
 
     private createGroupPolicyJumpointEntities(
@@ -80,14 +88,16 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
     }
 
     private async replaceGroupPolicyJumpoints(
+        tenantId: number,
         groupPolicyId: number,
         groupPolicyJumpointEntities: GroupPolicyJumpointEntity[],
     ): Promise<GroupPolicyJumpoint[]> {
         // Delete all existing group policy jumpoints
-        await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyId(groupPolicyId);
+        await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyId(tenantId, groupPolicyId);
 
         // Recreate the group policy jumpoints
         await this.groupPolicyJumpointRepositoryService.createOrUpdateByGroupPolicyIdAndJumpointId(
+            tenantId,
             groupPolicyJumpointEntities,
         );
 
@@ -95,6 +105,7 @@ export class SyncGroupPolicyJumpointsAfterGroupPoliciesSyncedCommandHandler
             return {
                 groupPolicyId: entity.groupPolicyId,
                 jumpointId: entity.jumpointId,
+                lastSyncDate: entity.lastSyncDate,
             };
         });
     }

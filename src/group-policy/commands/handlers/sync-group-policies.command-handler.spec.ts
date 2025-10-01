@@ -59,7 +59,7 @@ describe('SyncGroupPoliciesCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncGroupPoliciesCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncGroupPoliciesCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<GroupPoliciesSyncFailedEvent>{
@@ -67,6 +67,7 @@ describe('SyncGroupPoliciesCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -207,13 +208,13 @@ describe('SyncGroupPoliciesCommandHandler', () => {
                 const groupPolicyRepositoryServiceDeleteByIds = jest.spyOn(groupPolicyRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncGroupPoliciesCommand('transaction-1'));
+                const result = await handler.execute(new SyncGroupPoliciesCommand('transaction-1', 123));
 
                 expect(groupPolicyRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedGroupPolicyRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedGroupPolicyRepositoryServiceFindByIdsCall) {
-                    expect(groupPolicyRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(groupPolicyRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(groupPolicyRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
@@ -222,6 +223,7 @@ describe('SyncGroupPoliciesCommandHandler', () => {
                 for (const item of expectedGroupPolicyRepositoryServiceCreateOrUpdateByIdsCall) {
                     expect(groupPolicyRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -230,7 +232,7 @@ describe('SyncGroupPoliciesCommandHandler', () => {
                     expectedGroupPolicyRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedGroupPolicyRepositoryServiceDeleteByIdsCall) {
-                    expect(groupPolicyRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(groupPolicyRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);
@@ -240,6 +242,7 @@ describe('SyncGroupPoliciesCommandHandler', () => {
                         eventType: GroupPoliciesSyncedEvent.EVENT_TYPE,
                         transactionId: 'transaction-1',
                         payload: {
+                            tenantId: 123,
                             createdGroupPolicyIds: expectedResult.createdGroupPolicyIds,
                             updatedGroupPolicyIds: expectedResult.updatedGroupPolicyIds,
                             deletedGroupPolicyIds: expectedResult.deletedGroupPolicyIds,

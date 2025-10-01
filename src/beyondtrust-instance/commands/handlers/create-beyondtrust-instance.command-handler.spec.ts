@@ -55,13 +55,13 @@ describe('CreateBeyondtrustInstanceCommandHandler', () => {
                 beyondtrustInstanceEntityToBeCreated,
             );
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
-                expect.objectContaining(<BeyondtrustInstanceCreatedEvent>{
+                expect.objectContaining(<BeyondtrustInstanceCreatedEvent>(<unknown>{
                     transactionId: 'transaction-1',
                     eventType: BeyondtrustInstanceCreatedEvent.EVENT_TYPE,
                     payload: {
                         beyondtrustInstance: expectedResult,
                     },
-                }),
+                })),
             );
             expect(result).toBe(expectedResult);
         });

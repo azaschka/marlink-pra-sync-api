@@ -71,7 +71,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
 
             // Act
             await handler.execute(
-                new SyncUserGroupPoliciesAfterUsersSyncedCommand('transaction-1', [1, 2], [3, 4], [5, 6]),
+                new SyncUserGroupPoliciesAfterUsersSyncedCommand('transaction-1', 123, [1, 2], [3, 4], [5, 6]),
             );
 
             // Assert
@@ -80,13 +80,13 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
             for (let n = 1; n <= 4; n++) {
                 expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                     n,
-                    new BTRetrieveUserGroupPoliciesQuery('transaction-1', n),
+                    new BTRetrieveUserGroupPoliciesQuery('transaction-1', 123, n),
                 );
                 expect(userGroupPolicyEntityCreateMethod).toHaveBeenNthCalledWith(n, n, [1, 2, 3]);
-                expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenNthCalledWith(n, n);
+                expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenNthCalledWith(n, 123, n);
                 expect(
                     userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod,
-                ).toHaveBeenCalledWith(userGroupPolicyEntitiesToBeReplaced);
+                ).toHaveBeenCalledWith(123, userGroupPolicyEntitiesToBeReplaced);
                 expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                     n,
                     expect.objectContaining(<UserGroupPoliciesSyncedEvent>{
@@ -107,6 +107,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
                                     groupPolicyId: 3,
                                 },
                             ],
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -114,7 +115,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
 
             // deletedUserIds: [5, 6]
             expect(userGroupPolicyRepositoryServiceDeleteByUserIdsMethod).toHaveBeenCalledTimes(1);
-            expect(userGroupPolicyRepositoryServiceDeleteByUserIdsMethod).toHaveBeenCalledWith([5, 6]);
+            expect(userGroupPolicyRepositoryServiceDeleteByUserIdsMethod).toHaveBeenCalledWith(123, [5, 6]);
         });
 
         it('should publish an event and not throw error when failure occurs', async () => {
@@ -126,7 +127,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
 
             // Act
             await handler.execute(
-                new SyncUserGroupPoliciesAfterUsersSyncedCommand('transaction-1', [1, 2], [3, 4, 5], [5, 6, 7, 8]),
+                new SyncUserGroupPoliciesAfterUsersSyncedCommand('transaction-1', 123, [1, 2], [3, 4, 5], [5, 6, 7, 8]),
             );
 
             // Assert
@@ -136,6 +137,7 @@ describe('SyncUserGroupPoliciesAfterUsersSyncedCommandHandler', () => {
                     eventType: UserGroupPoliciesSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

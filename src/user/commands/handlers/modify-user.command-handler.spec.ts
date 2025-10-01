@@ -104,6 +104,7 @@ describe('ModifyUserCommandHandler', () => {
         it.each([
             <ModifyUserCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 100,
                 id: 123,
                 publicDisplayName: 'display-name-1',
                 username: 'user-1',
@@ -118,6 +119,7 @@ describe('ModifyUserCommandHandler', () => {
             },
             <ModifyUserCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 100,
                 id: 456,
                 publicDisplayName: 'display-name-2',
                 username: 'user-2',
@@ -147,6 +149,7 @@ describe('ModifyUserCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyUserCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.publicDisplayName,
                         command.username,
@@ -212,14 +215,15 @@ describe('ModifyUserCommandHandler', () => {
                     TestHelper.mockedUserModifiedDtoOutput.permVault,
                     TestHelper.mockedUserModifiedDtoOutput.permEndpointAutomation,
                 );
-                expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated);
-                expect(userRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(userEntityToBeUpdated.id);
+                expect(userRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(100, userEntityToBeUpdated);
+                expect(userRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(100, userEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<UserModifiedEvent>{
                         transactionId: command.transactionId,
                         eventType: UserModifiedEvent.EVENT_TYPE,
                         payload: {
                             user: result,
+                            tenantId: 100,
                         },
                     }),
                 );
@@ -265,6 +269,7 @@ describe('ModifyUserCommandHandler', () => {
                 handler.execute(<ModifyUserCommand>{
                     transactionId: 'transaction-1',
                     publicDisplayName: 'user-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -279,6 +284,7 @@ describe('ModifyUserCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         user: userEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -304,6 +310,7 @@ describe('ModifyUserCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 123,
                     publicDisplayName: 'user-1',
+                    tenantId: 100,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -317,6 +324,7 @@ describe('ModifyUserCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         user: userEntityToBeCreated,
+                        tenantId: 100,
                     },
                 }),
             );

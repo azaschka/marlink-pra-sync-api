@@ -26,11 +26,18 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
             const updatedTeamIds: number[] = [];
             const deletedTeamIds: number[] = [];
 
-            await this.syncBTToDbTeamsPerPage(command.transactionId, 1, createdTeamIds, updatedTeamIds);
-            await this.syncDbToBTTeamsPerPage(1, startSyncUtcDate, deletedTeamIds);
+            await this.syncBTToDbTeamsPerPage(
+                command.transactionId,
+                command.tenantId,
+                1,
+                createdTeamIds,
+                updatedTeamIds,
+            );
+            await this.syncDbToBTTeamsPerPage(command.tenantId, 1, startSyncUtcDate, deletedTeamIds);
 
             this.eventBus.publish(
                 new TeamsSyncedEvent(command.transactionId, {
+                    tenantId: command.tenantId,
                     createdTeamIds,
                     updatedTeamIds,
                     deletedTeamIds,
@@ -46,6 +53,7 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
             this.eventBus.publish(
                 new TeamsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -55,13 +63,14 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
 
     private async syncBTToDbTeamsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdTeamIds: number[],
         updatedTeamIds: number[],
     ) {
         // Retrieve teams from BeyondTrust
         const btTeams = await this.queryBus.execute<RetrieveTeamsQuery, TeamRetrievedDtoOutput[]>(
-            new RetrieveTeamsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveTeamsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -76,6 +85,7 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
 
         // Retrieve existing teams from the DB using BeyondTrust team IDs
         const dbTeams = await this.teamRepositoryService.findByIds(
+            tenantId,
             btTeams.map((team) => team.id).filter((id) => id !== undefined),
         );
 
@@ -83,11 +93,11 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
         const teamsToBeUpdated = this.findAllTeamsToBeUpdatedOrUpdateLastSyncDate(btTeams, dbTeams);
 
         if (teamsToBeCreated.length > 0) {
-            await this.teamRepositoryService.createOrUpdateByIds(teamsToBeCreated);
+            await this.teamRepositoryService.createOrUpdateByIds(tenantId, teamsToBeCreated);
         }
 
         if (teamsToBeUpdated.length > 0) {
-            await this.teamRepositoryService.createOrUpdateByIds(teamsToBeUpdated);
+            await this.teamRepositoryService.createOrUpdateByIds(tenantId, teamsToBeUpdated);
         }
 
         // Collect created and updated team IDs
@@ -98,11 +108,17 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
             return;
         }
 
-        await this.syncBTToDbTeamsPerPage(transactionId, pageNumber + 1, createdTeamIds, updatedTeamIds);
+        await this.syncBTToDbTeamsPerPage(transactionId, tenantId, pageNumber + 1, createdTeamIds, updatedTeamIds);
     }
 
-    private async syncDbToBTTeamsPerPage(pageNumber: number, dateBeforeSyncingBTTeams: Date, deletedTeamIds: number[]) {
+    private async syncDbToBTTeamsPerPage(
+        tenantId: number,
+        pageNumber: number,
+        dateBeforeSyncingBTTeams: Date,
+        deletedTeamIds: number[],
+    ) {
         const dbTeams = await this.teamRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTTeams,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -110,7 +126,7 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
         const teamIds = dbTeams.map((dbTeam) => dbTeam.id);
 
         if (teamIds.length > 0) {
-            await this.teamRepositoryService.deleteByIds(teamIds);
+            await this.teamRepositoryService.deleteByIds(tenantId, teamIds);
         }
 
         // Collect deleted team IDs
@@ -120,7 +136,7 @@ export class SyncTeamsCommandHandler implements ICommandHandler<SyncTeamsCommand
             return;
         }
 
-        await this.syncDbToBTTeamsPerPage(pageNumber + 1, dateBeforeSyncingBTTeams, deletedTeamIds);
+        await this.syncDbToBTTeamsPerPage(tenantId, pageNumber + 1, dateBeforeSyncingBTTeams, deletedTeamIds);
     }
 
     private findAllTeamsToBeCreated(btTeams: TeamRetrievedDtoOutput[], dbTeams: TeamEntity[]) {

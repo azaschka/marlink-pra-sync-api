@@ -53,7 +53,7 @@ describe('SyncJumpClientsCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncJumpClientsCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncJumpClientsCommand('transaction-1', 123))).rejects.toThrow(error);
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<JumpClientsSyncFailedEvent>{
@@ -61,6 +61,7 @@ describe('SyncJumpClientsCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -201,13 +202,13 @@ describe('SyncJumpClientsCommandHandler', () => {
                 const jumpClientRepositoryServiceDeleteByIds = jest.spyOn(jumpClientRepositoryService, 'deleteByIds');
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncJumpClientsCommand('transaction-1'));
+                const result = await handler.execute(new SyncJumpClientsCommand('transaction-1', 123));
 
                 expect(jumpClientRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedJumpClientRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedJumpClientRepositoryServiceFindByIdsCall) {
-                    expect(jumpClientRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpClientRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(jumpClientRepositoryServiceCreateOrUpdateById).toHaveBeenCalledTimes(
@@ -216,6 +217,7 @@ describe('SyncJumpClientsCommandHandler', () => {
                 for (const item of expectedJumpClientRepositoryServiceCreateOrUpdateByIdCall) {
                     expect(jumpClientRepositoryServiceCreateOrUpdateById).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -224,7 +226,7 @@ describe('SyncJumpClientsCommandHandler', () => {
                     expectedJumpClientRepositoryServiceDeleteByIdsCall.length,
                 );
                 for (const item of expectedJumpClientRepositoryServiceDeleteByIdsCall) {
-                    expect(jumpClientRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpClientRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(item.iter, 123, item.ids);
                 }
 
                 expect(result).toEqual(expectedResult);
@@ -237,6 +239,7 @@ describe('SyncJumpClientsCommandHandler', () => {
                             createdJumpClientIds: expectedResult.createdJumpClientIds,
                             updatedJumpClientIds: expectedResult.updatedJumpClientIds,
                             deletedJumpClientIds: expectedResult.deletedJumpClientIds,
+                            tenantId: 123,
                         },
                     }),
                 );

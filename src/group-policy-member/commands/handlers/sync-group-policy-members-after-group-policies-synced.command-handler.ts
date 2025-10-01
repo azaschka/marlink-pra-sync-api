@@ -23,6 +23,7 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
             try {
                 const btGroupPolicyMembers = await this.retrieveAllBTGroupPolicyMembers(
                     command.transactionId,
+                    command.tenantId,
                     groupPolicyId,
                 );
                 const groupPolicyMemberEntities = this.createGroupPolicyMemberEntities(
@@ -30,6 +31,7 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
                     btGroupPolicyMembers,
                 );
                 const groupPolicyMembers = await this.replaceGroupPolicyMembers(
+                    command.tenantId,
                     groupPolicyId,
                     groupPolicyMemberEntities,
                 );
@@ -41,31 +43,37 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
                 this.eventBus.publish(
                     new GroupPolicyMembersSyncedEvent(command.transactionId, {
                         groupPolicyMembers: groupPolicyMembers,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new GroupPolicyMembersSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for group policy "${groupPolicyId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
         }
 
         try {
-            await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyIds(command.deletedGroupPolicyIds);
+            await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyIds(
+                command.tenantId,
+                command.deletedGroupPolicyIds,
+            );
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyMembersSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }
     }
 
-    private async retrieveAllBTGroupPolicyMembers(transactionId: string, groupPolicyId: number) {
+    private async retrieveAllBTGroupPolicyMembers(transactionId: string, tenantId: number, groupPolicyId: number) {
         return await this.queryBus.execute<BTRetrieveAllGroupPolicyMembersQuery, GroupPolicyMemberRetrievedDtoOutput[]>(
-            new BTRetrieveAllGroupPolicyMembersQuery(transactionId, groupPolicyId),
+            new BTRetrieveAllGroupPolicyMembersQuery(transactionId, tenantId, groupPolicyId),
         );
     }
 
@@ -88,14 +96,16 @@ export class SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler
     }
 
     private async replaceGroupPolicyMembers(
+        tenantId: number,
         groupPolicyId: number,
         groupPolicyMemberEntities: GroupPolicyMemberEntity[],
     ): Promise<GroupPolicyMember[]> {
         // Delete all existing group policy members
-        await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyId(groupPolicyId);
+        await this.groupPolicyMemberRepositoryService.deleteByGroupPolicyId(tenantId, groupPolicyId);
 
         // Recreate the group policy members
         await this.groupPolicyMemberRepositoryService.createOrUpdateByGroupPolicyIdAndMemberId(
+            tenantId,
             groupPolicyMemberEntities,
         );
 

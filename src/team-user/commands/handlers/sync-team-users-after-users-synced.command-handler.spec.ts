@@ -55,7 +55,9 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                 .mockResolvedValue(Promise.resolve());
 
             // Act
-            await handler.execute(new SyncTeamUsersAfterTeamsSyncedCommand('transaction-1', [1, 2], [3, 4], [5, 6]));
+            await handler.execute(
+                new SyncTeamUsersAfterTeamsSyncedCommand('transaction-1', 123, [1, 2], [3, 4], [5, 6]),
+            );
 
             // Assert
             // createdUserIds: [1, 2]
@@ -69,22 +71,22 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
             expect(teamUserEntityCreateMethod).toHaveBeenNthCalledWith(5, 2, 5, UserTeamRoleType.Lead);
             expect(teamUserEntityCreateMethod).toHaveBeenNthCalledWith(6, 4, 6, UserTeamRoleType.Member);
             expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenCalledTimes(4);
-            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(1, 1);
-            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(2, 2);
-            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(3, 3);
-            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(4, 4);
+            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(1, 123, 1);
+            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(2, 123, 2);
+            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(3, 123, 3);
+            expect(teamUserRepositoryServiceDeleteByTeamIdMethod).toHaveBeenNthCalledWith(4, 123, 4);
             expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenCalledTimes(4);
-            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(1, [
+            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(1, 123, [
                 { teamId: 1, userId: 1, roleType: UserTeamRoleType.Manager },
                 { teamId: 1, userId: 2, roleType: UserTeamRoleType.Lead },
                 { teamId: 1, userId: 3, roleType: UserTeamRoleType.Member },
             ]);
-            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(2, [
+            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(2, 123, [
                 { teamId: 2, userId: 4, roleType: UserTeamRoleType.Manager },
                 { teamId: 2, userId: 5, roleType: UserTeamRoleType.Lead },
             ]);
-            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(3, []);
-            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(4, [
+            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(3, 123, []);
+            expect(teamUserRepositoryServiceCreateOrUpdateByTeamIdAndUserIdMethod).toHaveBeenNthCalledWith(4, 123, [
                 { teamId: 4, userId: 6, roleType: UserTeamRoleType.Member },
             ]);
             expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
@@ -111,6 +113,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                                 roleType: UserTeamRoleType.Member,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -132,6 +135,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                                 roleType: UserTeamRoleType.Lead,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -148,13 +152,14 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                                 roleType: UserTeamRoleType.Member,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
 
             // deletedUserIds: [5, 6]
             expect(teamUserRepositoryServiceDeleteByTeamIdsMethod).toHaveBeenCalledTimes(1);
-            expect(teamUserRepositoryServiceDeleteByTeamIdsMethod).toHaveBeenCalledWith([5, 6]);
+            expect(teamUserRepositoryServiceDeleteByTeamIdsMethod).toHaveBeenCalledWith(123, [5, 6]);
         });
 
         it('should publish an event and not throw error when failure occurs', async () => {
@@ -166,7 +171,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
 
             // Act
             await handler.execute(
-                new SyncTeamUsersAfterTeamsSyncedCommand('transaction-1', [1, 2], [3, 4, 5], [5, 6, 7, 8]),
+                new SyncTeamUsersAfterTeamsSyncedCommand('transaction-1', 123, [1, 2], [3, 4, 5], [5, 6, 7, 8]),
             );
 
             // Assert
@@ -176,6 +181,7 @@ describe('SyncTeamUsersAfterTeamsSyncedCommandHandler', () => {
                     eventType: TeamUsersSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

@@ -12,12 +12,12 @@ export class DeleteGroupPolicyCommandHandler implements ICommandHandler<DeleteGr
     ) {}
 
     public async execute(command: DeleteGroupPolicyCommand): Promise<void> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
             command.id.toString(),
         );
 
-        return await this.httpClientService.delete(url);
+        return await this.httpClientService.delete(command.transactionId, command.beyondtrustInstanceId, urlPath);
     }
 }

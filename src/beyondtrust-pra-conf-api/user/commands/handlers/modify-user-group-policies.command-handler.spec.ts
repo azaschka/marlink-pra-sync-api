@@ -28,7 +28,7 @@ describe('ModifyUserGroupPoliciesHandler', () => {
     describe('execute', () => {
         it.each([
             {
-                command: new ModifyUserGroupPoliciesCommand('transaction-1', 10, [1, 2], [3, 4]),
+                command: new ModifyUserGroupPoliciesCommand('transaction-1', 123, 10, [1, 2], [3, 4]),
                 expectedHttpClientBody: {
                     added: [1, 2],
                     removed: [3, 4],
@@ -43,7 +43,9 @@ describe('ModifyUserGroupPoliciesHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/user/10/change-group-policies',
+                    command.transactionId,
+                    123,
+                    '/user/10/change-group-policies',
                     expectedHttpClientBody,
                 );
 
@@ -64,11 +66,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                user: {
-                    path: 'user',
-                    groupPolicies: {
-                        change: 'change-group-policies',
+                config: {
+                    user: {
+                        path: 'user',
+                        groupPolicies: {
+                            change: 'change-group-policies',
+                        },
                     },
                 },
             },

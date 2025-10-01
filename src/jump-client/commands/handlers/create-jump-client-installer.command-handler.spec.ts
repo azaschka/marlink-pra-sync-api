@@ -77,6 +77,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
         it.each([
             <CreateJumpClientInstallerCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 jumpGroupId: 1,
                 name: 'jump-client-1',
                 jumpGroupType: JumpClientGroupType.Personal,
@@ -98,6 +99,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
             },
             <CreateJumpClientInstallerCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 jumpGroupId: 2,
                 name: 'jump-client-2',
             },
@@ -125,6 +127,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateJumpClientInstallerCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.jumpGroupId,
                         command.name,
                         command.jumpGroupType,
@@ -170,6 +173,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
                     TestHelper.mockedJumpClientInstallerCreatedDtoOutput.jumpointProxy,
                 );
                 expect(jumpClientInstallerRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     jumpClientInstallerEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -178,6 +182,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
                         eventType: JumpClientInstallerCreatedEvent.EVENT_TYPE,
                         payload: {
                             jumpClientInstaller: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -224,6 +229,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
                 handler.execute(<CreateJumpClientInstallerCommand>{
                     transactionId: 'transaction-1',
                     jumpGroupId: 1,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -237,6 +243,7 @@ describe('CreateJumpClientInstallerCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpClientInstaller: jumpClientInstallerEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

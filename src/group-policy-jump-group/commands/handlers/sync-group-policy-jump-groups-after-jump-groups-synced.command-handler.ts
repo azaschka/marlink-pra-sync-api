@@ -23,6 +23,7 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
             try {
                 const btGroupPolicyJumpGroups = await this.retrieveAllBTGroupPolicyJumpGroups(
                     command.transactionId,
+                    command.tenantId,
                     groupPolicyId,
                 );
                 const groupPolicyJumpGroupEntities = this.createGroupPolicyJumpGroupEntities(
@@ -30,6 +31,7 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
                     btGroupPolicyJumpGroups,
                 );
                 const groupPolicyJumpGroups = await this.replaceGroupPolicyJumpGroups(
+                    command.tenantId,
                     groupPolicyId,
                     groupPolicyJumpGroupEntities,
                 );
@@ -41,33 +43,39 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
                 this.eventBus.publish(
                     new GroupPolicyJumpGroupsSyncedEvent(command.transactionId, {
                         groupPolicyJumpGroups: groupPolicyJumpGroups,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new GroupPolicyJumpGroupsSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for group policy "${groupPolicyId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
         }
 
         try {
-            await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyIds(command.deletedGroupPolicyIds);
+            await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyIds(
+                command.tenantId,
+                command.deletedGroupPolicyIds,
+            );
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyJumpGroupsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }
     }
 
-    private async retrieveAllBTGroupPolicyJumpGroups(transactionId: string, groupPolicyId: number) {
+    private async retrieveAllBTGroupPolicyJumpGroups(transactionId: string, tenantId: number, groupPolicyId: number) {
         return await this.queryBus.execute<
             BTRetrieveAllGroupPolicyJumpGroupsQuery,
             GroupPolicyJumpGroupRetrievedDtoOutput[]
-        >(new BTRetrieveAllGroupPolicyJumpGroupsQuery(transactionId, groupPolicyId));
+        >(new BTRetrieveAllGroupPolicyJumpGroupsQuery(transactionId, tenantId, groupPolicyId));
     }
 
     private createGroupPolicyJumpGroupEntities(
@@ -85,14 +93,16 @@ export class SyncGroupPolicyJumpGroupsAfterGroupPoliciesSyncedCommandHandler
     }
 
     private async replaceGroupPolicyJumpGroups(
+        tenantId: number,
         groupPolicyId: number,
         groupPolicyJumpGroupEntities: GroupPolicyJumpGroupEntity[],
     ): Promise<GroupPolicyJumpGroup[]> {
         // Delete all existing group policy jump groups
-        await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyId(groupPolicyId);
+        await this.groupPolicyJumpGroupRepositoryService.deleteByGroupPolicyId(tenantId, groupPolicyId);
 
         // Recreate the group policy jump groups
         await this.groupPolicyJumpGroupRepositoryService.createOrUpdateByGroupPolicyIdAndJumpGroupId(
+            tenantId,
             groupPolicyJumpGroupEntities,
         );
 

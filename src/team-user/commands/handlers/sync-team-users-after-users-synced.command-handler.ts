@@ -22,9 +22,9 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
     public async execute(command: SyncTeamUsersAfterTeamsSyncedCommand): Promise<void> {
         for (const teamId of [...command.createdTeamIds, ...command.updatedTeamIds]) {
             try {
-                const btTeamUsers = await this.retrieveAllBTTeamUsers(command.transactionId, teamId);
+                const btTeamUsers = await this.retrieveAllBTTeamUsers(command.transactionId, command.tenantId, teamId);
                 const teamUserEntities = this.createTeamUserEntities(btTeamUsers);
-                const teamUsers = await this.replaceTeamUsers(teamId, teamUserEntities);
+                const teamUsers = await this.replaceTeamUsers(command.tenantId, teamId, teamUserEntities);
 
                 if (teamUsers.length === 0) {
                     continue;
@@ -33,31 +33,34 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
                 this.eventBus.publish(
                     new TeamUsersSyncedEvent(command.transactionId, {
                         teamUsers: teamUsers,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new TeamUsersSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for team "${teamId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
         }
 
         try {
-            await this.teamUserRepositoryService.deleteByTeamIds(command.deletedTeamIds);
+            await this.teamUserRepositoryService.deleteByTeamIds(command.tenantId, command.deletedTeamIds);
         } catch (error) {
             this.eventBus.publish(
                 new TeamUsersSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }
     }
 
-    private async retrieveAllBTTeamUsers(transactionId: string, teamId: number) {
+    private async retrieveAllBTTeamUsers(transactionId: string, tenantId: number, teamId: number) {
         return await this.queryBus.execute<BTRetrieveAllTeamUsersQuery, TeamUserRetrievedDtoOutput[]>(
-            new BTRetrieveAllTeamUsersQuery(transactionId, teamId),
+            new BTRetrieveAllTeamUsersQuery(transactionId, tenantId, teamId),
         );
     }
 
@@ -67,17 +70,22 @@ export class SyncTeamUsersAfterTeamsSyncedCommandHandler
         );
     }
 
-    private async replaceTeamUsers(teamId: number, teamUserEntities: TeamUserEntity[]): Promise<TeamUser[]> {
+    private async replaceTeamUsers(
+        tenantId: number,
+        teamId: number,
+        teamUserEntities: TeamUserEntity[],
+    ): Promise<TeamUser[]> {
         // Delete all existing team users
-        await this.teamUserRepositoryService.deleteByTeamId(teamId);
+        await this.teamUserRepositoryService.deleteByTeamId(tenantId, teamId);
 
         // Recreate the team users
-        await this.teamUserRepositoryService.createOrUpdateByTeamIdAndUserId(teamUserEntities);
+        await this.teamUserRepositoryService.createOrUpdateByTeamIdAndUserId(tenantId, teamUserEntities);
 
         return teamUserEntities.map((entity) => ({
             teamId: teamId,
             userId: entity.userId,
             roleType: entity.roleType,
+            lastSyncDate: entity.lastSyncDate,
         }));
     }
 }

@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { WebJump } from '../../models';
+import { WebJumpEntity } from '../../repositories/entities';
 import { WebJumpRepositoryService } from '../../repositories/services/web-jump-repository.service';
 import { RetrieveWebJumpsQuery } from '../retrieve-web-jumps.query';
 
@@ -8,7 +9,7 @@ export class RetrieveWebJumpsQueryHandler implements IQueryHandler<RetrieveWebJu
     constructor(private readonly webJumpRepositoryService: WebJumpRepositoryService) {}
 
     public async execute(query: RetrieveWebJumpsQuery): Promise<WebJump[]> {
-        const webJumpsFindByQuery = <WebJump>{};
+        const webJumpsFindByQuery = <WebJumpEntity>{};
 
         if (query.name) {
             webJumpsFindByQuery.name = query.name;
@@ -35,6 +36,7 @@ export class RetrieveWebJumpsQueryHandler implements IQueryHandler<RetrieveWebJu
         }
 
         const webJumps = await this.webJumpRepositoryService.findBy(
+            query.tenantId,
             webJumpsFindByQuery,
             query.pageNumber,
             query.pageSize,

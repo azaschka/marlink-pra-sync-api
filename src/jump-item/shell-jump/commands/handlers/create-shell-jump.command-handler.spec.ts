@@ -80,6 +80,7 @@ describe('CreateShellJumpCommandHandler', () => {
         it.each([
             <CreateShellJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'shell-jump-1',
                 jumpointId: 2,
                 hostname: 'hostname-1',
@@ -97,6 +98,7 @@ describe('CreateShellJumpCommandHandler', () => {
             },
             <CreateShellJumpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'shell-jump-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -127,6 +129,7 @@ describe('CreateShellJumpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateShellJumpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.jumpointId,
                         command.hostname,
@@ -160,13 +163,14 @@ describe('CreateShellJumpCommandHandler', () => {
                     TestHelper.mockedShellJumpCreatedDtoOutput.username,
                     TestHelper.mockedShellJumpCreatedDtoOutput.sessionPolicyId,
                 );
-                expect(shellJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(shellJumpEntityToBeCreated);
+                expect(shellJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, shellJumpEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<ShellJumpCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: ShellJumpCreatedEvent.EVENT_TYPE,
                         payload: {
                             shellJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -209,6 +213,7 @@ describe('CreateShellJumpCommandHandler', () => {
                 handler.execute(<CreateShellJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'shell-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -222,6 +227,7 @@ describe('CreateShellJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         shellJump: shellJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

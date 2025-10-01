@@ -17,14 +17,14 @@ export class RetrieveJumpClientInstallerPlatformQueryHandler
     public async execute(
         query: RetrieveJumpClientInstallerPlatformQuery,
     ): Promise<AxiosResponse<NodeJS.ReadableStream>> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpClient.path,
-            this.appConfigService.beyondTrust.api.jumpClient.installer.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.installer.path,
             query.installerId,
             query.platform,
         );
 
-        return this.httpClientService.stream(url);
+        return this.httpClientService.stream(query.transactionId, query.beyondtrustInstanceId, urlPath);
     }
 }

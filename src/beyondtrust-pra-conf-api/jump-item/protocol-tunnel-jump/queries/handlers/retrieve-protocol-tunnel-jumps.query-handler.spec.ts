@@ -44,6 +44,7 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveProtocolTunnelJumpsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'protocol-tunnel-jump-1',
@@ -67,6 +68,7 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveProtocolTunnelJumpsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                     name: 'protocol-tunnel-jump-2',
@@ -86,7 +88,9 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-item/protocol-tunnel-jump',
+                    inputQuery.transactionId,
+                    inputQuery.beyondtrustInstanceId,
+                    '/jump-item/protocol-tunnel-jump',
                     expectedHttpClientParams,
                 );
 
@@ -107,10 +111,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    protocolTunnelJump: {
-                        path: 'jump-item/protocol-tunnel-jump',
+                config: {
+                    jumpItem: {
+                        protocolTunnelJump: {
+                            path: 'jump-item/protocol-tunnel-jump',
+                        },
                     },
                 },
             },

@@ -104,6 +104,7 @@ describe('CreateUserCommandHandler', () => {
         it.each([
             <CreateUserCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 publicDisplayName: 'display-name-1',
                 username: 'user-1',
                 password: 'password-1',
@@ -117,6 +118,7 @@ describe('CreateUserCommandHandler', () => {
             },
             <CreateUserCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 publicDisplayName: 'display-name-2',
                 username: 'user-2',
             },
@@ -142,6 +144,7 @@ describe('CreateUserCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateUserCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.publicDisplayName,
                         command.username,
                         command.password,
@@ -206,13 +209,14 @@ describe('CreateUserCommandHandler', () => {
                     TestHelper.mockedUserCreatedDtoOutput.permVault,
                     TestHelper.mockedUserCreatedDtoOutput.permEndpointAutomation,
                 );
-                expect(userRepositoryServiceCreateMethod).toHaveBeenCalledWith(userEntityToBeCreated);
+                expect(userRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, userEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<UserCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: UserCreatedEvent.EVENT_TYPE,
                         payload: {
                             user: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -254,6 +258,7 @@ describe('CreateUserCommandHandler', () => {
                 handler.execute(<CreateUserCommand>{
                     transactionId: 'transaction-1',
                     publicDisplayName: 'user-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -267,6 +272,7 @@ describe('CreateUserCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         user: userEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

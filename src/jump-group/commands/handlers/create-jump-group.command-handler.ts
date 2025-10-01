@@ -21,11 +21,12 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
         const jumpGroupEntity = this.createJumpGroupEntity(btJumpGroup);
 
         try {
-            const createdJumpGroup = await this.jumpGroupRepositoryService.create(jumpGroupEntity);
+            const createdJumpGroup = await this.jumpGroupRepositoryService.create(command.tenantId, jumpGroupEntity);
 
             this.eventBus.publish(
                 new JumpGroupCreatedEvent(command.transactionId, {
                     jumpGroup: createdJumpGroup,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
                 new JumpGroupCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     jumpGroup: jumpGroupEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -44,7 +46,13 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
 
     private async createBTJumpGroup(command: CreateJumpGroupCommand) {
         return await this.commandBus.execute<BTCreateJumpGroupCommand, JumpGroupCreatedDtoOutput>(
-            new BTCreateJumpGroupCommand(command.transactionId, command.name, command.codeName, command.comments),
+            new BTCreateJumpGroupCommand(
+                command.transactionId,
+                command.tenantId,
+                command.name,
+                command.codeName,
+                command.comments,
+            ),
         );
     }
 

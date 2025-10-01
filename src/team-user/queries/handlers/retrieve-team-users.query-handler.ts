@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { TeamUser } from '../../models';
+import { TeamUserEntity } from '../../repositories/entities';
 import { TeamUserRepositoryService } from '../../repositories/services/team-user-repository.service';
 import { RetrieveTeamUsersQuery } from '../retrieve-team-users.query';
 
@@ -8,10 +9,11 @@ export class RetrieveTeamUsersQueryHandler implements IQueryHandler<RetrieveTeam
     constructor(private readonly teamUserRepositoryService: TeamUserRepositoryService) {}
 
     public async execute(query: RetrieveTeamUsersQuery): Promise<TeamUser[]> {
-        const teamUserFindByQuery = <TeamUser>{};
+        const teamUserFindByQuery = <TeamUserEntity>{};
         teamUserFindByQuery.teamId = query.teamId;
 
         const teamUsers = await this.teamUserRepositoryService.findBy(
+            query.tenantId,
             teamUserFindByQuery,
             query.pageNumber,
             query.pageSize,

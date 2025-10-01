@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -34,7 +33,11 @@ export class CreateBeyondtrustInstanceBackupCommandHandler
         );
 
         try {
-            const relativeFilePath = await this.downloadBackupFile(command.transactionId, command.password);
+            const relativeFilePath = await this.downloadBackupFile(
+                command.transactionId,
+                command.beyondtrustInstanceId,
+                command.password,
+            );
             const beyondTrustInstanceEntity = BeyondtrustInstanceBackupEntity.createWithoutId(
                 beyondtrustInstance.id,
                 relativeFilePath,
@@ -67,17 +70,17 @@ export class CreateBeyondtrustInstanceBackupCommandHandler
     ): Promise<BeyondtrustInstance> {
         const beyondtrustInstance = await this.queryBus.execute<
             RetrieveBeyondtrustInstanceByIdQuery,
-            BeyondtrustInstance | null
+            BeyondtrustInstance
         >(new RetrieveBeyondtrustInstanceByIdQuery(transactionId, beyondtrustInstanceId));
-
-        if (!beyondtrustInstance) {
-            throw new NotFoundException(`Beyondtrust instance with ID ${beyondtrustInstanceId} not found.`);
-        }
 
         return beyondtrustInstance;
     }
 
-    private async downloadBackupFile(transactionId: string, password?: string): Promise<string> {
+    private async downloadBackupFile(
+        transactionId: string,
+        beyondtrustInstanceId: number,
+        password?: string,
+    ): Promise<string> {
         const relativeFilePath = UrlUtility.join(
             this.appConfigService.storage.beyondTrustBackupPath,
             `${transactionId}-${Date.now()}${CreateBeyondtrustInstanceBackupCommandHandler.BACKUP_FILE_EXTENSION}`,
@@ -88,7 +91,7 @@ export class CreateBeyondtrustInstanceBackupCommandHandler
         fs.mkdirSync(path.dirname(absoluteFilePath), { recursive: true });
 
         const backupFileBuffer = await this.commandBus.execute<CreateBackupCommand, Buffer>(
-            new CreateBackupCommand(transactionId, password),
+            new CreateBackupCommand(transactionId, beyondtrustInstanceId, password),
         );
 
         return new Promise((resolve, reject) => {

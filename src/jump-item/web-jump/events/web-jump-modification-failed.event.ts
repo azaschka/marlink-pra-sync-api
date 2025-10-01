@@ -4,6 +4,7 @@ import { WebJump } from '../models';
 export interface WebJumpModificationFailedEventPayload {
     errorMessage: string;
     webJump: WebJump;
+    tenantId: number;
 }
 
 export class WebJumpModificationFailedEvent extends BaseEvent {

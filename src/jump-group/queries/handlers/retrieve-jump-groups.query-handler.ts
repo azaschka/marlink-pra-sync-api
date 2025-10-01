@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { JumpGroup } from '../../models';
+import { JumpGroupEntity } from '../../repositories/entities';
 import { JumpGroupRepositoryService } from '../../repositories/services/jump-group-repository.service';
 import { RetrieveJumpGroupsQuery } from '../retrieve-jump-groups.query';
 
@@ -8,7 +9,7 @@ export class RetrieveJumpGroupsQueryHandler implements IQueryHandler<RetrieveJum
     constructor(private readonly jumpGroupRepositoryService: JumpGroupRepositoryService) {}
 
     public async execute(query: RetrieveJumpGroupsQuery): Promise<JumpGroup[]> {
-        const jumpGroupsFindByQuery = <JumpGroup>{};
+        const jumpGroupsFindByQuery = <JumpGroupEntity>{};
 
         if (query.name) {
             jumpGroupsFindByQuery.name = query.name;
@@ -19,6 +20,7 @@ export class RetrieveJumpGroupsQueryHandler implements IQueryHandler<RetrieveJum
         }
 
         const jumpGroups = await this.jumpGroupRepositoryService.findBy(
+            query.tenantId,
             jumpGroupsFindByQuery,
             query.pageNumber,
             query.pageSize,

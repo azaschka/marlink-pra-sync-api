@@ -15,18 +15,21 @@ export class DeleteTeamCommandHandler implements ICommandHandler<DeleteTeamComma
 
     public async execute(command: DeleteTeamCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteTeamCommand, void>(
-            new BTDeleteTeamCommand(command.transactionId, command.id),
+            new BTDeleteTeamCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.teamRepositoryService.deleteById(command.id);
+            await this.teamRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new TeamDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new TeamDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new TeamDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

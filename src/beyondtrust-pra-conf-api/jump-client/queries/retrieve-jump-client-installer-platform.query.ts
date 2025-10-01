@@ -5,6 +5,7 @@ export class RetrieveJumpClientInstallerPlatformQuery {
 
     constructor(
         public readonly transactionId: string,
+        public readonly beyondtrustInstanceId: number,
         public readonly installerId: string,
         public readonly platform: JumpClientInstallerPlatformType,
     ) {}

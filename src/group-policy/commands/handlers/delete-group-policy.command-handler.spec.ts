@@ -24,16 +24,17 @@ describe('DeleteGroupPolicyCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const groupPolicyRepositoryServiceDeleteByIdMethod = jest.spyOn(groupPolicyRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteGroupPolicyCommand('transaction-1', 123));
+        await handler.execute(new DeleteGroupPolicyCommand('transaction-1', 1, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 123));
-        expect(groupPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 1, 123));
+        expect(groupPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(1, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<GroupPolicyDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: GroupPolicyDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 1,
                 },
             }),
         );
@@ -45,11 +46,11 @@ describe('DeleteGroupPolicyCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const groupPolicyRepositoryServiceDeleteByIdMethod = jest.spyOn(groupPolicyRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteGroupPolicyCommand('transaction-1', 123))).rejects.toThrow(
+        await expect(handler.execute(new DeleteGroupPolicyCommand('transaction-1', 1, 123))).rejects.toThrow(
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 1, 123));
         expect(groupPolicyRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -65,12 +66,12 @@ describe('DeleteGroupPolicyCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteGroupPolicyCommand('transaction-1', 123))).rejects.toThrow(
+        await expect(handler.execute(new DeleteGroupPolicyCommand('transaction-1', 1, 123))).rejects.toThrow(
             expectedError,
         );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 123));
-        expect(groupPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteGroupPolicyCommand('transaction-1', 1, 123));
+        expect(groupPolicyRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(1, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -79,6 +80,7 @@ describe('DeleteGroupPolicyCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 1,
                 },
             }),
         );

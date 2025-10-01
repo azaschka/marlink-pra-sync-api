@@ -44,6 +44,7 @@ describe('RetrieveRemoteVncsQueryHandler', () => {
             {
                 inputQuery: <RetrieveRemoteVncsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'remote-vnc-1',
@@ -67,6 +68,7 @@ describe('RetrieveRemoteVncsQueryHandler', () => {
             {
                 inputQuery: <RetrieveRemoteVncsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                     name: 'remote-vnc-2',
@@ -86,7 +88,9 @@ describe('RetrieveRemoteVncsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-item/remote-vnc',
+                    inputQuery.transactionId,
+                    inputQuery.beyondtrustInstanceId,
+                    '/jump-item/remote-vnc',
                     expectedHttpClientParams,
                 );
 
@@ -107,10 +111,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteVnc: {
-                        path: 'jump-item/remote-vnc',
+                config: {
+                    jumpItem: {
+                        remoteVnc: {
+                            path: 'jump-item/remote-vnc',
+                        },
                     },
                 },
             },

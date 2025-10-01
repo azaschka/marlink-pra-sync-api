@@ -38,6 +38,7 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpPoliciesQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 100,
                     pageSize: 10,
                     pageNumber: 1,
                     codeName: 'code-name-1',
@@ -51,6 +52,7 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpPoliciesQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 100,
                     pageSize: 20,
                     pageNumber: 2,
                 },
@@ -68,7 +70,9 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-policy',
+                    inputQuery.transactionId,
+                    inputQuery.beyondtrustInstanceId,
+                    '/jump-policy',
                     expectedHttpClientParams,
                 );
 
@@ -89,9 +93,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpPolicy: {
-                    path: 'jump-policy',
+                config: {
+                    jumpPolicy: {
+                        path: 'jump-policy',
+                    },
                 },
             },
         },

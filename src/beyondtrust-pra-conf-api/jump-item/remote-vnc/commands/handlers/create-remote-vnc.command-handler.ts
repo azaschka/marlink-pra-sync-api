@@ -14,14 +14,16 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
     ) {}
 
     public async execute(command: CreateRemoteVncCommand): Promise<RemoteVncCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.remoteVnc.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteVnc.path,
         );
 
         return await this.httpClientService.post<RemoteVncCreatedDtoOutput, RemoteVncCreatedDtoOutput>(
             RemoteVncCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateRemoteVncDtoInput.create(
                 command.name,
                 command.jumpointId,

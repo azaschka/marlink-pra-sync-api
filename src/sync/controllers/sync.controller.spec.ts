@@ -50,7 +50,7 @@ describe('SyncController', () => {
                 .spyOn(controller, 'syncJumpItemsWebJumps')
                 .mockResolvedValue(expectedResult);
 
-            await controller.syncAll();
+            await controller.syncAll(123123);
 
             expect(syncUsersMethod).toHaveBeenCalledTimes(1);
             expect(syncTeamsMethod).toHaveBeenCalledTimes(1);
@@ -78,7 +78,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncUsers();
+            const result = await controller.syncUsers(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdUserIds,
@@ -98,7 +98,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncTeams();
+            const result = await controller.syncTeams(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdTeamIds,
@@ -118,7 +118,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpClients();
+            const result = await controller.syncJumpClients(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdJumpClientIds,
@@ -138,7 +138,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpClientInstallers();
+            const result = await controller.syncJumpClientInstallers(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdJumpClientInstallerIds,
@@ -158,7 +158,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncGroupPolicies();
+            const result = await controller.syncGroupPolicies(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdGroupPolicyIds,
@@ -178,7 +178,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpPolicies();
+            const result = await controller.syncJumpPolicies(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdJumpPolicyIds,
@@ -198,7 +198,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpGroups();
+            const result = await controller.syncJumpGroups(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdJumpGroupIds,
@@ -218,7 +218,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpoints();
+            const result = await controller.syncJumpoints(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdJumpointIds,
@@ -238,7 +238,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpItemsProtocolTunnelJumps();
+            const result = await controller.syncJumpItemsProtocolTunnelJumps(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdProtocolTunnelJumpIds,
@@ -258,7 +258,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpItemsRemoteRdps();
+            const result = await controller.syncJumpItemsRemoteRdps(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdRemoteRdpIds,
@@ -278,7 +278,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpItemsRemoteVncs();
+            const result = await controller.syncJumpItemsRemoteVncs(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdRemoteVncIds,
@@ -298,7 +298,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpItemsShellJumps();
+            const result = await controller.syncJumpItemsShellJumps(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdShellJumpIds,
@@ -318,7 +318,7 @@ describe('SyncController', () => {
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
-            const result = await controller.syncJumpItemsWebJumps();
+            const result = await controller.syncJumpItemsWebJumps(123);
 
             expect(result).toEqual({
                 createdIds: expectedResult.createdWebJumpIds,

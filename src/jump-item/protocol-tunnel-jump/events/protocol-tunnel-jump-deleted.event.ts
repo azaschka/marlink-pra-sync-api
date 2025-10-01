@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface ProtocolTunnelJumpDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class ProtocolTunnelJumpDeletedEvent extends BaseEvent {

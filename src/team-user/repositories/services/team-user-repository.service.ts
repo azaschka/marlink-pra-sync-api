@@ -1,35 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, In } from 'typeorm';
-import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { TeamUserEntity } from '../entities';
+import { TeamUserSchemaFactory } from '../factories';
 
 @Injectable()
-export class TeamUserRepositoryService extends BaseRepositoryService<TeamUserEntity> {
+export class TeamUserRepositoryService extends BaseTenantRepositoryService<TeamUserEntity> {
     constructor(dataSource: DataSource) {
-        super(dataSource, TeamUserEntity);
+        super(dataSource, new TeamUserSchemaFactory());
     }
 
-    public async createOrUpdateByTeamIdAndUserId(entities: Partial<TeamUserEntity>[]): Promise<void> {
+    public async createOrUpdateByTeamIdAndUserId(tenantId: number, entities: Partial<TeamUserEntity>[]): Promise<void> {
         if (entities.length === 0) {
             return;
         }
 
-        await super.createOrUpdate(entities, ['teamId', 'userId']);
+        await super.createOrUpdate(tenantId, entities, ['teamId', 'userId']);
     }
 
-    public async deleteByTeamId(teamId: number): Promise<void> {
-        await super.deleteBy({ teamId: teamId });
+    public async deleteByTeamId(tenantId: number, teamId: number): Promise<void> {
+        await super.deleteBy(tenantId, { teamId: teamId });
     }
 
-    public async deleteByTeamIdAndUserId(teamId: number, userId: number): Promise<void> {
-        await super.deleteBy({ teamId: teamId, userId: userId });
+    public async deleteByTeamIdAndUserId(tenantId: number, teamId: number, userId: number): Promise<void> {
+        await super.deleteBy(tenantId, { teamId: teamId, userId: userId });
     }
 
-    public async deleteByTeamIds(teamIds: number[]): Promise<void> {
+    public async deleteByTeamIds(tenantId: number, teamIds: number[]): Promise<void> {
         if (teamIds.length === 0) {
             return;
         }
 
-        await super.deleteBy({ teamId: In(teamIds) });
+        await super.deleteBy(tenantId, { teamId: In(teamIds) });
     }
 }

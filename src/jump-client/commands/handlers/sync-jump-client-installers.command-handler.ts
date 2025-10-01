@@ -36,17 +36,24 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
 
             await this.syncBTToDbJumpClientInstallersPerPage(
                 command.transactionId,
+                command.tenantId,
                 1,
                 createdJumpClientInstallerIds,
                 updatedJumpClientInstallerIds,
             );
-            await this.syncDbToBTJumpClientInstallersPerPage(1, startSyncUtcDate, deletedJumpClientInstallerIds);
+            await this.syncDbToBTJumpClientInstallersPerPage(
+                command.tenantId,
+                1,
+                startSyncUtcDate,
+                deletedJumpClientInstallerIds,
+            );
 
             this.eventBus.publish(
                 new JumpClientInstallersSyncedEvent(command.transactionId, {
                     createdJumpClientInstallerIds,
                     updatedJumpClientInstallerIds,
                     deletedJumpClientInstallerIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -59,6 +66,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
             this.eventBus.publish(
                 new JumpClientInstallersSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -68,6 +76,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
 
     private async syncBTToDbJumpClientInstallersPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdJumpClientInstallerIds: number[],
         updatedJumpClientInstallerIds: number[],
@@ -76,14 +85,21 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
         const btJumpClientInstallers = await this.queryBus.execute<
             RetrieveJumpClientInstallersQuery,
             JumpClientInstallerRetrievedDtoOutput[]
-        >(new RetrieveJumpClientInstallersQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber));
+        >(
+            new RetrieveJumpClientInstallersQuery(
+                transactionId,
+                tenantId,
+                this.appConfigService.sync.maxBatchSize,
+                pageNumber,
+            ),
+        );
 
         // Populate keyInfo for each jump client installer since the previous query does not include it.
         for (const btJumpClientInstaller of btJumpClientInstallers) {
             const moreDetailedBTJumpClientInstaller = await this.queryBus.execute<
                 RetrieveJumpClientInstallerByIdQuery,
                 JumpClientInstallerRetrievedDtoOutput
-            >(new RetrieveJumpClientInstallerByIdQuery(transactionId, btJumpClientInstaller.id));
+            >(new RetrieveJumpClientInstallerByIdQuery(transactionId, tenantId, btJumpClientInstaller.id));
 
             btJumpClientInstaller.keyInfo = moreDetailedBTJumpClientInstaller.keyInfo;
         }
@@ -100,6 +116,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
 
         // Retrieve existing jump client installers from the DB using BeyondTrust jump client installer IDs
         const dbJumpClientInstallers = await this.jumpClientInstallerRepositoryService.findByIds(
+            tenantId,
             btJumpClientInstallers
                 .map((jumpClientInstaller) => jumpClientInstaller.id)
                 .filter((id) => id !== undefined),
@@ -115,11 +132,17 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
         );
 
         if (jumpClientInstallersToBeCreated.length > 0) {
-            await this.jumpClientInstallerRepositoryService.createOrUpdateByIds(jumpClientInstallersToBeCreated);
+            await this.jumpClientInstallerRepositoryService.createOrUpdateByIds(
+                tenantId,
+                jumpClientInstallersToBeCreated,
+            );
         }
 
         if (jumpClientInstallersToBeUpdated.length > 0) {
-            await this.jumpClientInstallerRepositoryService.createOrUpdateByIds(jumpClientInstallersToBeUpdated);
+            await this.jumpClientInstallerRepositoryService.createOrUpdateByIds(
+                tenantId,
+                jumpClientInstallersToBeUpdated,
+            );
         }
 
         // Collect created and updated jump client installer IDs
@@ -136,6 +159,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
 
         await this.syncBTToDbJumpClientInstallersPerPage(
             transactionId,
+            tenantId,
             pageNumber + 1,
             createdJumpClientInstallerIds,
             updatedJumpClientInstallerIds,
@@ -143,11 +167,13 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
     }
 
     private async syncDbToBTJumpClientInstallersPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTJumpClientInstallers: Date,
         deletedJumpClientInstallerIds: number[],
     ) {
         const dbJumpClientInstallers = await this.jumpClientInstallerRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTJumpClientInstallers,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -155,7 +181,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
         const jumpClientInstallerIds = dbJumpClientInstallers.map((dbJumpClientInstaller) => dbJumpClientInstaller.id);
 
         if (jumpClientInstallerIds.length > 0) {
-            await this.jumpClientInstallerRepositoryService.deleteByIds(jumpClientInstallerIds);
+            await this.jumpClientInstallerRepositoryService.deleteByIds(tenantId, jumpClientInstallerIds);
         }
 
         // Collect deleted jump client installer IDs
@@ -166,6 +192,7 @@ export class SyncJumpClientInstallersCommandHandler implements ICommandHandler<S
         }
 
         await this.syncDbToBTJumpClientInstallersPerPage(
+            tenantId,
             pageNumber + 1,
             dateBeforeSyncingBTJumpClientInstallers,
             deletedJumpClientInstallerIds,

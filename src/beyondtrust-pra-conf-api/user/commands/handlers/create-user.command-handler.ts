@@ -14,14 +14,16 @@ export class CreateUserCommandHandler implements ICommandHandler<CreateUserComma
     ) {}
 
     public async execute(command: CreateUserCommand): Promise<UserCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.user.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.user.path,
         );
 
         return await this.httpClientService.post<UserCreatedDtoOutput, UserCreatedDtoOutput>(
             UserCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateUserDtoInput.create(
                 command.publicDisplayName,
                 command.username,

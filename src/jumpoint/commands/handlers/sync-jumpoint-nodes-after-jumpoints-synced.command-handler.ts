@@ -21,9 +21,17 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
     public async execute(command: SyncJumpointNodesAfterJumpointsSyncedCommand): Promise<void> {
         for (const jumpointId of [...command.createdJumpointIds, ...command.updatedJumpointIds]) {
             try {
-                const btJumpointNodes = await this.retrieveAllBTJumpointNodes(command.transactionId, jumpointId);
+                const btJumpointNodes = await this.retrieveAllBTJumpointNodes(
+                    command.transactionId,
+                    command.tenantId,
+                    jumpointId,
+                );
                 const jumpointNodeEntities = this.createJumpointNodeEntities(jumpointId, btJumpointNodes);
-                const jumpointNodes = await this.replaceJumpointNodes(jumpointId, jumpointNodeEntities);
+                const jumpointNodes = await this.replaceJumpointNodes(
+                    command.tenantId,
+                    jumpointId,
+                    jumpointNodeEntities,
+                );
 
                 if (jumpointNodes.length === 0) {
                     continue;
@@ -32,31 +40,34 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
                 this.eventBus.publish(
                     new JumpointNodesSyncedEvent(command.transactionId, {
                         jumpointNodes: jumpointNodes,
+                        tenantId: command.tenantId,
                     }),
                 );
             } catch (error) {
                 this.eventBus.publish(
                     new JumpointNodesSyncFailedEvent(command.transactionId, {
                         errorMessage: `Failed to sync for jumpoint "${jumpointId}": ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: command.tenantId,
                     }),
                 );
             }
         }
 
         try {
-            await this.jumpointNodeRepositoryService.deleteByJumpointIds(command.deletedJumpointIds);
+            await this.jumpointNodeRepositoryService.deleteByJumpointIds(command.tenantId, command.deletedJumpointIds);
         } catch (error) {
             this.eventBus.publish(
                 new JumpointNodesSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
         }
     }
 
-    private async retrieveAllBTJumpointNodes(transactionId: string, jumpointId: number) {
+    private async retrieveAllBTJumpointNodes(transactionId: string, tenantId: number, jumpointId: number) {
         return await this.queryBus.execute<BTRetrieveJumpointNodesQuery, JumpointNodeRetrievedDtoOutput[]>(
-            new BTRetrieveJumpointNodesQuery(transactionId, jumpointId),
+            new BTRetrieveJumpointNodesQuery(transactionId, tenantId, jumpointId),
         );
     }
 
@@ -75,14 +86,15 @@ export class SyncJumpointNodesAfterJumpointsSyncedCommandHandler
     }
 
     private async replaceJumpointNodes(
+        tenantId: number,
         jumpointId: number,
         jumpointNodeEntities: JumpointNodeEntity[],
     ): Promise<JumpointNode[]> {
         // Delete all existing jumpoint nodes
-        await this.jumpointNodeRepositoryService.deleteByJumpointId(jumpointId);
+        await this.jumpointNodeRepositoryService.deleteByJumpointId(tenantId, jumpointId);
 
         // Recreate the jumpoint nodes
-        await this.jumpointNodeRepositoryService.createOrUpdateByIdAndJumpointId(jumpointNodeEntities);
+        await this.jumpointNodeRepositoryService.createOrUpdateByIdAndJumpointId(tenantId, jumpointNodeEntities);
 
         return jumpointNodeEntities.map((entity) => {
             return {

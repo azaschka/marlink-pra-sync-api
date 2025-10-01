@@ -10,6 +10,7 @@ export class CreateJumpPolicyCommand {
 
     constructor(
         public readonly transactionId: string,
+        public readonly beyondtrustInstanceId: number,
         public readonly displayName: string,
         public readonly codeName?: string,
         public readonly description?: string,

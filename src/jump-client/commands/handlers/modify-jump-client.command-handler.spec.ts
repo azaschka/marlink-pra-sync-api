@@ -83,6 +83,7 @@ describe('ModifyJumpClientCommandHandler', () => {
         it.each([
             <ModifyJumpClientCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 100,
                 id: 1,
                 jumpGroupId: 123,
                 jumpGroupType: JumpClientGroupType.Personal,
@@ -96,6 +97,7 @@ describe('ModifyJumpClientCommandHandler', () => {
             },
             <ModifyJumpClientCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 100,
                 id: 2,
                 jumpGroupId: 123,
             },
@@ -126,6 +128,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyJumpClientCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.jumpGroupId,
                         command.jumpGroupType,
@@ -167,15 +170,20 @@ describe('ModifyJumpClientCommandHandler', () => {
                     TestHelper.mockedJumpClientModifiedDtoOutput.jumpointProxy,
                 );
                 expect(jumpClientRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     jumpClientEntityToBeUpdated,
                 );
-                expect(jumpClientRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(jumpClientEntityToBeUpdated.id);
+                expect(jumpClientRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(
+                    command.tenantId,
+                    jumpClientEntityToBeUpdated.id,
+                );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpClientModifiedEvent>{
                         transactionId: command.transactionId,
                         eventType: JumpClientModifiedEvent.EVENT_TYPE,
                         payload: {
                             jumpClient: result,
+                            tenantId: 100,
                         },
                     }),
                 );
@@ -221,6 +229,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                 handler.execute(<ModifyJumpClientCommand>{
                     transactionId: 'transaction-1',
                     id: 123,
+                    tenantId: 100,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -235,6 +244,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpClient: jumpClientEntityToBeCreated,
+                        tenantId: 100,
                     },
                 }),
             );
@@ -261,6 +271,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                 handler.execute(<ModifyJumpClientCommand>{
                     transactionId: 'transaction-1',
                     id: 123,
+                    tenantId: 100,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -274,6 +285,7 @@ describe('ModifyJumpClientCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpClient: jumpClientEntityToBeCreated,
+                        tenantId: 100,
                     },
                 }),
             );

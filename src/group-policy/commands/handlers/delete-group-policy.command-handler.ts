@@ -15,18 +15,21 @@ export class DeleteGroupPolicyCommandHandler implements ICommandHandler<DeleteGr
 
     public async execute(command: DeleteGroupPolicyCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteGroupPolicyCommand, void>(
-            new BTDeleteGroupPolicyCommand(command.transactionId, command.id),
+            new BTDeleteGroupPolicyCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.groupPolicyRepositoryService.deleteById(command.id);
+            await this.groupPolicyRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new GroupPolicyDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new GroupPolicyDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new GroupPolicyDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

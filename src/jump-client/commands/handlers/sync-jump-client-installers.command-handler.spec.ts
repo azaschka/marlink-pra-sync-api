@@ -58,7 +58,9 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
 
             queryBus.execute = jest.fn().mockRejectedValue(error);
 
-            await expect(handler.execute(new SyncJumpClientInstallersCommand('transaction-1'))).rejects.toThrow(error);
+            await expect(handler.execute(new SyncJumpClientInstallersCommand('transaction-1', 123))).rejects.toThrow(
+                error,
+            );
 
             expect(eventBusPublish).toHaveBeenCalledWith(
                 expect.objectContaining(<JumpClientInstallersSyncFailedEvent>{
@@ -66,6 +68,7 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
                     transactionId: 'transaction-1',
                     payload: {
                         errorMessage: 'Test error',
+                        tenantId: 123,
                     },
                 }),
             );
@@ -209,13 +212,17 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
                 );
                 const eventBusPublish = jest.spyOn(eventBus, 'publish');
 
-                const result = await handler.execute(new SyncJumpClientInstallersCommand('transaction-1'));
+                const result = await handler.execute(new SyncJumpClientInstallersCommand('transaction-1', 123));
 
                 expect(jumpClientInstallerRepositoryServiceFindByIds).toHaveBeenCalledTimes(
                     expectedJumpClientInstallerRepositoryServiceFindByIdsCall.length,
                 );
                 for (const item of expectedJumpClientInstallerRepositoryServiceFindByIdsCall) {
-                    expect(jumpClientInstallerRepositoryServiceFindByIds).toHaveBeenNthCalledWith(item.iter, item.ids);
+                    expect(jumpClientInstallerRepositoryServiceFindByIds).toHaveBeenNthCalledWith(
+                        item.iter,
+                        123,
+                        item.ids,
+                    );
                 }
 
                 expect(jumpClientInstallerRepositoryServiceCreateOrUpdateByIds).toHaveBeenCalledTimes(
@@ -224,6 +231,7 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
                 for (const item of expectedJumpClientInstallerRepositoryServiceCreateOrUpdateByIdsCall) {
                     expect(jumpClientInstallerRepositoryServiceCreateOrUpdateByIds).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.entity,
                     );
                 }
@@ -234,6 +242,7 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
                 for (const item of expectedJumpClientInstallerRepositoryServiceDeleteByIdsCall) {
                     expect(jumpClientInstallerRepositoryServiceDeleteByIds).toHaveBeenNthCalledWith(
                         item.iter,
+                        123,
                         item.ids,
                     );
                 }
@@ -248,6 +257,7 @@ describe('SyncJumpClientInstallersCommandHandler', () => {
                             createdJumpClientInstallerIds: expectedResult.createdJumpClientInstallerIds,
                             updatedJumpClientInstallerIds: expectedResult.updatedJumpClientInstallerIds,
                             deletedJumpClientInstallerIds: expectedResult.deletedJumpClientInstallerIds,
+                            tenantId: 123,
                         },
                     }),
                 );

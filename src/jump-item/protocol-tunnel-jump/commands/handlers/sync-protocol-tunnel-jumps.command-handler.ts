@@ -29,17 +29,24 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
 
             await this.syncBTToDbProtocolTunnelJumpsPerPage(
                 command.transactionId,
+                command.tenantId,
                 1,
                 createdProtocolTunnelJumpIds,
                 updatedProtocolTunnelJumpIds,
             );
-            await this.syncDbToBTProtocolTunnelJumpsPerPage(1, startSyncUtcDate, deletedProtocolTunnelJumpIds);
+            await this.syncDbToBTProtocolTunnelJumpsPerPage(
+                command.tenantId,
+                1,
+                startSyncUtcDate,
+                deletedProtocolTunnelJumpIds,
+            );
 
             this.eventBus.publish(
                 new ProtocolTunnelJumpsSyncedEvent(command.transactionId, {
                     createdProtocolTunnelJumpIds,
                     updatedProtocolTunnelJumpIds,
                     deletedProtocolTunnelJumpIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -52,6 +59,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
             this.eventBus.publish(
                 new ProtocolTunnelJumpsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -61,6 +69,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
 
     private async syncBTToDbProtocolTunnelJumpsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdProtocolTunnelJumpIds: number[],
         updatedProtocolTunnelJumpIds: number[],
@@ -69,7 +78,14 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
         const btProtocolTunnelJumps = await this.queryBus.execute<
             RetrieveProtocolTunnelJumpsQuery,
             ProtocolTunnelJumpRetrievedDtoOutput[]
-        >(new RetrieveProtocolTunnelJumpsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber));
+        >(
+            new RetrieveProtocolTunnelJumpsQuery(
+                transactionId,
+                tenantId,
+                this.appConfigService.sync.maxBatchSize,
+                pageNumber,
+            ),
+        );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
         if (
@@ -83,6 +99,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
 
         // Retrieve existing protocol tunnel jumps from the DB using BeyondTrust protocol tunnel jump IDs
         const dbProtocolTunnelJumps = await this.protocolTunnelJumpRepositoryService.findByIds(
+            tenantId,
             btProtocolTunnelJumps.map((protocolTunnelJump) => protocolTunnelJump.id).filter((id) => id !== undefined),
         );
 
@@ -97,10 +114,12 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
 
         const createdProtocolTunnelJumps = await this.createOrUpdateByIds(
             transactionId,
+            tenantId,
             protocolTunnelJumpsToBeCreated,
         );
         const updatedProtocolTunnelJumps = await this.createOrUpdateByIds(
             transactionId,
+            tenantId,
             protocolTunnelJumpsToBeUpdated,
         );
 
@@ -118,6 +137,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
 
         await this.syncBTToDbProtocolTunnelJumpsPerPage(
             transactionId,
+            tenantId,
             pageNumber + 1,
             createdProtocolTunnelJumpIds,
             updatedProtocolTunnelJumpIds,
@@ -125,11 +145,13 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
     }
 
     private async syncDbToBTProtocolTunnelJumpsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTProtocolTunnelJumps: Date,
         deletedProtocolTunnelJumpIds: number[],
     ) {
         const dbProtocolTunnelJumps = await this.protocolTunnelJumpRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTProtocolTunnelJumps,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -137,7 +159,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
         const protocolTunnelJumpIds = dbProtocolTunnelJumps.map((dbProtocolTunnelJump) => dbProtocolTunnelJump.id);
 
         if (protocolTunnelJumpIds.length > 0) {
-            await this.protocolTunnelJumpRepositoryService.deleteByIds(protocolTunnelJumpIds);
+            await this.protocolTunnelJumpRepositoryService.deleteByIds(tenantId, protocolTunnelJumpIds);
         }
 
         // Collect deleted protocol tunnel jump IDs
@@ -148,6 +170,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
         }
 
         await this.syncDbToBTProtocolTunnelJumpsPerPage(
+            tenantId,
             pageNumber + 1,
             dateBeforeSyncingBTProtocolTunnelJumps,
             deletedProtocolTunnelJumpIds,
@@ -205,6 +228,7 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
 
     private async createOrUpdateByIds(
         transactionId: string,
+        tenantId: number,
         protocolTunnelJumps: ProtocolTunnelJumpEntity[],
     ): Promise<ProtocolTunnelJumpEntity[]> {
         const createdOrUpdatedEntities: ProtocolTunnelJumpEntity[] = [];
@@ -215,12 +239,13 @@ export class SyncProtocolTunnelJumpsCommandHandler implements ICommandHandler<Sy
 
         for (const protocolTunnelJump of protocolTunnelJumps) {
             try {
-                await this.protocolTunnelJumpRepositoryService.createOrUpdateById(protocolTunnelJump);
+                await this.protocolTunnelJumpRepositoryService.createOrUpdateById(tenantId, protocolTunnelJump);
                 createdOrUpdatedEntities.push(protocolTunnelJump);
             } catch (error) {
                 this.eventBus.publish(
                     new ProtocolTunnelJumpsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing protocol tunnel jump with id ${protocolTunnelJump.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }

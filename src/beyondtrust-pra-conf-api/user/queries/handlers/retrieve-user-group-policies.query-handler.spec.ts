@@ -36,11 +36,13 @@ describe('RetrieveUserGroupPoliciesQueryHandler', () => {
         it('should call HttpClientService with correct parameters and get the result', async () => {
             const httpClientServiceGetMethod = jest.spyOn(httpClientService, 'get');
 
-            const result = await handler.execute(new RetrieveUserGroupPoliciesQuery('transaction-1', 123));
+            const result = await handler.execute(new RetrieveUserGroupPoliciesQuery('transaction-1', 100, 123));
 
             expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                'https://api.example.com/user/123/group-policies',
+                'transaction-1',
+                100,
+                '/user/123/group-policies',
             );
 
             expect(result).toStrictEqual(TestHelper.mockedUserGroupPolicyRetrievedDtoOutputs);
@@ -59,11 +61,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                user: {
-                    path: 'user',
-                    groupPolicies: {
-                        path: 'group-policies',
+                config: {
+                    user: {
+                        path: 'user',
+                        groupPolicies: {
+                            path: 'group-policies',
+                        },
                     },
                 },
             },

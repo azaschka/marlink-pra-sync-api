@@ -21,11 +21,12 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
         const groupPolicyJumpointEntity = this.createGroupPolicyJumpointEntity(command.id, btGroupPolicyJumpoint);
 
         try {
-            const groupPolicyJumpoint = await this.addGroupPolicyJumpoint(groupPolicyJumpointEntity);
+            const groupPolicyJumpoint = await this.addGroupPolicyJumpoint(command.tenantId, groupPolicyJumpointEntity);
 
             this.eventBus.publish(
                 new GroupPolicyJumpointAddedEvent(command.transactionId, {
                     groupPolicyJumpoint: groupPolicyJumpoint,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
                 new GroupPolicyJumpointAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyJumpoint: groupPolicyJumpointEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -44,7 +46,12 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
 
     private async addBTGroupPolicyJumpoint(command: AddJumpointToGroupPolicyCommand) {
         return await this.commandBus.execute<BTAddJumpointToGroupPolicyCommand, JumpointAddedToGroupPolicyDtoOutput>(
-            new BTAddJumpointToGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+            new BTAddJumpointToGroupPolicyCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.jumpointId,
+            ),
         );
     }
 
@@ -56,13 +63,15 @@ export class AddJumpointToGroupPolicyCommandHandler implements ICommandHandler<A
     }
 
     private async addGroupPolicyJumpoint(
+        tenantId: number,
         groupPolicyJumpointEntity: GroupPolicyJumpointEntity,
     ): Promise<GroupPolicyJumpoint> {
-        await this.groupPolicyJumpointRepositoryService.create(groupPolicyJumpointEntity);
+        await this.groupPolicyJumpointRepositoryService.create(tenantId, groupPolicyJumpointEntity);
 
         return {
             groupPolicyId: groupPolicyJumpointEntity.groupPolicyId,
             jumpointId: groupPolicyJumpointEntity.jumpointId,
+            lastSyncDate: groupPolicyJumpointEntity.lastSyncDate,
         };
     }
 }

@@ -3,6 +3,7 @@ import { BaseEvent } from '../../../core/events';
 export interface RemoteVncDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class RemoteVncDeletionFailedEvent extends BaseEvent {

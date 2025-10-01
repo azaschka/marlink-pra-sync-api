@@ -24,16 +24,17 @@ describe('DeleteUserCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const userRepositoryServiceDeleteByIdMethod = jest.spyOn(userRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteUserCommand('transaction-1', 123));
+        await handler.execute(new DeleteUserCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 123));
-        expect(userRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 100, 123));
+        expect(userRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<UserDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: UserDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -45,9 +46,9 @@ describe('DeleteUserCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const userRepositoryServiceDeleteByIdMethod = jest.spyOn(userRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteUserCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteUserCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 100, 123));
         expect(userRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -63,10 +64,10 @@ describe('DeleteUserCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteUserCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteUserCommand('transaction-1', 100, 123))).rejects.toThrow(expectedError);
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 123));
-        expect(userRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteUserCommand('transaction-1', 100, 123));
+        expect(userRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -75,6 +76,7 @@ describe('DeleteUserCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

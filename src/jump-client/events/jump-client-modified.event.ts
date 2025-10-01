@@ -3,6 +3,7 @@ import { JumpClient } from '../models';
 
 export interface JumpClientModifiedEventPayload {
     jumpClient: JumpClient;
+    tenantId: number;
 }
 
 export class JumpClientModifiedEvent extends BaseEvent {

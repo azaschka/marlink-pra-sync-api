@@ -14,15 +14,17 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
     ) {}
 
     public async execute(command: ModifyTeamCommand): Promise<TeamModifiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.team.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.team.path,
             command.id.toString(),
         );
 
         return await this.httpClientService.patch<TeamModifiedDtoOutput, TeamModifiedDtoOutput>(
             TeamModifiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyTeamDtoInput.create(command.name, command.codeName, command.comments),
         );
     }

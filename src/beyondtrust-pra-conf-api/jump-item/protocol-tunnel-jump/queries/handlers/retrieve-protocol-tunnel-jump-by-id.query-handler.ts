@@ -13,15 +13,15 @@ export class RetrieveProtocolTunnelJumpByIdQueryHandler implements IQueryHandler
     ) {}
 
     public async execute(query: RetrieveProtocolTunnelJumpByIdQuery): Promise<ProtocolTunnelJumpRetrievedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.protocolTunnelJump.path,
             query.id.toString(),
         );
 
         return await this.httpClientService.get<
             ProtocolTunnelJumpRetrievedDtoOutput,
             ProtocolTunnelJumpRetrievedDtoOutput
-        >(ProtocolTunnelJumpRetrievedDtoOutput, url);
+        >(ProtocolTunnelJumpRetrievedDtoOutput, query.transactionId, query.beyondtrustInstanceId, urlPath);
     }
 }

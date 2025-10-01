@@ -14,6 +14,7 @@ export class TeamUsersSaga {
                 (event) =>
                     new SyncTeamUsersAfterTeamsSyncedCommand(
                         event.transactionId,
+                        (event.payload as TeamsSyncedEventPayload).tenantId,
                         (event.payload as TeamsSyncedEventPayload).createdTeamIds,
                         (event.payload as TeamsSyncedEventPayload).updatedTeamIds,
                         (event.payload as TeamsSyncedEventPayload).deletedTeamIds,

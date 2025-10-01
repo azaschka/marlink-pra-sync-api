@@ -3,6 +3,7 @@ import { RemoteVnc } from '../models';
 
 export interface RemoteVncCopiedEventPayload {
     remoteVnc: RemoteVnc;
+    tenantId: number;
 }
 
 export class RemoteVncCopiedEvent extends BaseEvent {

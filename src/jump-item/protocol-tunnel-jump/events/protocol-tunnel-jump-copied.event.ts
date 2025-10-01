@@ -3,6 +3,7 @@ import { ProtocolTunnelJump } from '../models';
 
 export interface ProtocolTunnelJumpCopiedEventPayload {
     protocolTunnelJump: ProtocolTunnelJump;
+    tenantId: number;
 }
 
 export class ProtocolTunnelJumpCopiedEvent extends BaseEvent {

@@ -29,7 +29,7 @@ describe('AddTeamToGroupPolicyCommandHandler', () => {
     describe('execute', () => {
         it.each([
             {
-                command: new AddTeamToGroupPolicyCommand('transaction-1', 1, 2, GroupPolicyTeamRoleType.Manager),
+                command: new AddTeamToGroupPolicyCommand('transaction-1', 123, 1, 2, GroupPolicyTeamRoleType.Manager),
                 expectedHttpClientBody: {
                     teamId: 2,
                     role: GroupPolicyTeamRoleType.Manager,
@@ -44,7 +44,9 @@ describe('AddTeamToGroupPolicyCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/group-policy/1/team',
+                    'transaction-1',
+                    123,
+                    '/group-policy/1/team',
                     expectedHttpClientBody,
                 );
 
@@ -65,11 +67,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
-                    team: {
-                        path: 'team',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                        team: {
+                            path: 'team',
+                        },
                     },
                 },
             },

@@ -46,6 +46,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveShellJumpsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'shell-jump-1',
@@ -69,6 +70,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
             {
                 inputQuery: <RetrieveShellJumpsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                     name: 'shell-jump-2',
@@ -88,7 +90,9 @@ describe('RetrieveShellJumpsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-item/shell-jump',
+                    inputQuery.transactionId,
+                    inputQuery.beyondtrustInstanceId,
+                    '/jump-item/shell-jump',
                     expectedHttpClientParams,
                 );
 
@@ -109,10 +113,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    shellJump: {
-                        path: 'jump-item/shell-jump',
+                config: {
+                    jumpItem: {
+                        shellJump: {
+                            path: 'jump-item/shell-jump',
+                        },
                     },
                 },
             },

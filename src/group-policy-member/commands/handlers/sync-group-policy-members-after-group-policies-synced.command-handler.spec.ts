@@ -58,7 +58,7 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
 
             // Act
             await handler.execute(
-                new SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommand('transaction-1', [1, 2], [3, 4], [5, 6]),
+                new SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommand('transaction-1', 123, [1, 2], [3, 4], [5, 6]),
             );
 
             // Assert
@@ -121,32 +121,32 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
                 undefined,
             );
             expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenCalledTimes(4);
-            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 1);
-            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 2);
-            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 3);
-            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 4);
+            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(1, 123, 1);
+            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(2, 123, 2);
+            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(3, 123, 3);
+            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdMethod).toHaveBeenNthCalledWith(4, 123, 4);
             expect(
                 groupPolicyMemberRepositoryServiceCreateOrUpdateByGroupPolicyIdAndMemberIdMethod,
             ).toHaveBeenCalledTimes(4);
             expect(
                 groupPolicyMemberRepositoryServiceCreateOrUpdateByGroupPolicyIdAndMemberIdMethod,
-            ).toHaveBeenNthCalledWith(1, [
+            ).toHaveBeenNthCalledWith(1, 123, [
                 { groupPolicyId: 1, memberId: 1 },
                 { groupPolicyId: 1, memberId: 2 },
                 { groupPolicyId: 1, memberId: 3 },
             ]);
             expect(
                 groupPolicyMemberRepositoryServiceCreateOrUpdateByGroupPolicyIdAndMemberIdMethod,
-            ).toHaveBeenNthCalledWith(2, [
+            ).toHaveBeenNthCalledWith(2, 123, [
                 { groupPolicyId: 2, memberId: 4 },
                 { groupPolicyId: 2, memberId: 5 },
             ]);
             expect(
                 groupPolicyMemberRepositoryServiceCreateOrUpdateByGroupPolicyIdAndMemberIdMethod,
-            ).toHaveBeenNthCalledWith(3, []);
+            ).toHaveBeenNthCalledWith(3, 123, []);
             expect(
                 groupPolicyMemberRepositoryServiceCreateOrUpdateByGroupPolicyIdAndMemberIdMethod,
-            ).toHaveBeenNthCalledWith(4, [{ groupPolicyId: 4, memberId: 6 }]);
+            ).toHaveBeenNthCalledWith(4, 123, [{ groupPolicyId: 4, memberId: 6 }]);
             expect(eventBusPublishMethod).toHaveBeenCalledTimes(3);
             expect(eventBusPublishMethod).toHaveBeenNthCalledWith(
                 1,
@@ -168,6 +168,7 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
                                 memberId: 3,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -187,6 +188,7 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
                                 memberId: 5,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
@@ -202,13 +204,14 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
                                 memberId: 6,
                             },
                         ],
+                        tenantId: 123,
                     },
                 }),
             );
 
             // deletedGroupPolicyIds: [5, 6]
             expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledTimes(1);
-            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith([5, 6]);
+            expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdsMethod).toHaveBeenCalledWith(123, [5, 6]);
         });
 
         it('should publish an event and not throw error when failure occurs', async () => {
@@ -222,6 +225,7 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
             await handler.execute(
                 new SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommand(
                     'transaction-1',
+                    123,
                     [1, 2],
                     [3, 4, 5],
                     [5, 6, 7, 8],
@@ -235,6 +239,7 @@ describe('SyncGroupPolicyMembersAfterGroupPoliciesSyncedCommandHandler', () => {
                     eventType: GroupPolicyMembersSyncFailedEvent.EVENT_TYPE,
                     payload: {
                         errorMessage: 'Error message',
+                        tenantId: 123,
                     },
                 }),
             );

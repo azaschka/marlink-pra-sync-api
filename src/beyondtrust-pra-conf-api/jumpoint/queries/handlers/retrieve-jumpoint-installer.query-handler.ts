@@ -13,13 +13,13 @@ export class RetrieveJumpointInstallerQueryHandler implements IQueryHandler<Retr
     ) {}
 
     public async execute(query: RetrieveJumpointInstallerQuery): Promise<AxiosResponse<NodeJS.ReadableStream>> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpoint.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpoint.path,
             query.jumpointId.toString(),
-            this.appConfigService.beyondTrust.api.jumpoint.installer.path,
+            this.appConfigService.beyondTrust.api.config.jumpoint.installer.path,
         );
 
-        return this.httpClientService.stream(url);
+        return this.httpClientService.stream(query.transactionId, query.beyondtrustInstanceId, urlPath);
     }
 }

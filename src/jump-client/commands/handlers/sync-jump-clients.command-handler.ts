@@ -35,17 +35,19 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
 
             await this.syncBTToDbJumpClientsPerPage(
                 command.transactionId,
+                command.tenantId,
                 1,
                 createdJumpClientIds,
                 updatedJumpClientIds,
             );
-            await this.syncDbToBTJumpClientsPerPage(1, startSyncUtcDate, deletedJumpClientIds);
+            await this.syncDbToBTJumpClientsPerPage(command.tenantId, 1, startSyncUtcDate, deletedJumpClientIds);
 
             this.eventBus.publish(
                 new JumpClientsSyncedEvent(command.transactionId, {
                     createdJumpClientIds,
                     updatedJumpClientIds,
                     deletedJumpClientIds,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -58,6 +60,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
             this.eventBus.publish(
                 new JumpClientsSyncFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -67,13 +70,14 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
 
     private async syncBTToDbJumpClientsPerPage(
         transactionId: string,
+        tenantId: number,
         pageNumber: number,
         createdJumpClientIds: number[],
         updatedJumpClientIds: number[],
     ) {
         // Retrieve jump clients from BeyondTrust
         const btJumpClients = await this.queryBus.execute<RetrieveJumpClientsQuery, JumpClientRetrievedDtoOutput[]>(
-            new RetrieveJumpClientsQuery(transactionId, this.appConfigService.sync.maxBatchSize, pageNumber),
+            new RetrieveJumpClientsQuery(transactionId, tenantId, this.appConfigService.sync.maxBatchSize, pageNumber),
         );
 
         // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
@@ -88,6 +92,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
 
         // Retrieve existing jump clients from the DB using BeyondTrust jump client IDs
         const dbJumpClients = await this.jumpClientRepositoryService.findByIds(
+            tenantId,
             btJumpClients.map((jumpClient) => jumpClient.id).filter((id) => id !== undefined),
         );
 
@@ -97,8 +102,8 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
             dbJumpClients,
         );
 
-        const createdJumpClients = await this.createOrUpdateByIds(transactionId, jumpClientsToBeCreated);
-        const updatedJumpClients = await this.createOrUpdateByIds(transactionId, jumpClientsToBeUpdated);
+        const createdJumpClients = await this.createOrUpdateByIds(transactionId, tenantId, jumpClientsToBeCreated);
+        const updatedJumpClients = await this.createOrUpdateByIds(transactionId, tenantId, jumpClientsToBeUpdated);
 
         // Collect created and updated jump client IDs
         createdJumpClientIds.push(...createdJumpClients.map((jumpClient) => jumpClient.id));
@@ -110,6 +115,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
 
         await this.syncBTToDbJumpClientsPerPage(
             transactionId,
+            tenantId,
             pageNumber + 1,
             createdJumpClientIds,
             updatedJumpClientIds,
@@ -117,11 +123,13 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
     }
 
     private async syncDbToBTJumpClientsPerPage(
+        tenantId: number,
         pageNumber: number,
         dateBeforeSyncingBTJumpClients: Date,
         deletedJumpClientIds: number[],
     ) {
         const dbJumpClients = await this.jumpClientRepositoryService.findByLastSyncDateBefore(
+            tenantId,
             dateBeforeSyncingBTJumpClients,
             pageNumber,
             this.appConfigService.sync.maxBatchSize,
@@ -129,7 +137,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
         const jumpClientIds = dbJumpClients.map((dbJumpClient) => dbJumpClient.id);
 
         if (jumpClientIds.length > 0) {
-            await this.jumpClientRepositoryService.deleteByIds(jumpClientIds);
+            await this.jumpClientRepositoryService.deleteByIds(tenantId, jumpClientIds);
         }
 
         // Collect deleted jump client IDs
@@ -139,7 +147,12 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
             return;
         }
 
-        await this.syncDbToBTJumpClientsPerPage(pageNumber + 1, dateBeforeSyncingBTJumpClients, deletedJumpClientIds);
+        await this.syncDbToBTJumpClientsPerPage(
+            tenantId,
+            pageNumber + 1,
+            dateBeforeSyncingBTJumpClients,
+            deletedJumpClientIds,
+        );
     }
 
     private findAllJumpClientsToBeCreated(
@@ -197,6 +210,7 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
 
     private async createOrUpdateByIds(
         transactionId: string,
+        tenantId: number,
         jumpClients: JumpClientEntity[],
     ): Promise<JumpClientEntity[]> {
         const createdOrUpdatedEntities: JumpClientEntity[] = [];
@@ -207,12 +221,13 @@ export class SyncJumpClientsCommandHandler implements ICommandHandler<SyncJumpCl
 
         for (const jumpClient of jumpClients) {
             try {
-                await this.jumpClientRepositoryService.createOrUpdateById(jumpClient);
+                await this.jumpClientRepositoryService.createOrUpdateById(tenantId, jumpClient);
                 createdOrUpdatedEntities.push(jumpClient);
             } catch (error) {
                 this.eventBus.publish(
                     new JumpClientsSyncFailedEvent(transactionId, {
                         errorMessage: `Error syncing jump client with id ${jumpClient.id}. Error: ${ErrorProcessorUtility.stringify(error)}`,
+                        tenantId: tenantId,
                     }),
                 );
             }
