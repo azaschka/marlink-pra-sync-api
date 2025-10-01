@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { BeyondtrustInstanceBackupEntity } from '../../../beyondtrust-instance-backup/repositories/entities';
+import { BillingType } from '../../enums';
 import { BeyondtrustInstance } from '../../models';
 
 @Entity({ name: 'beyondtrust_instances' })
@@ -22,8 +23,8 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
     @Column({ name: 'api_base_url', type: 'varchar' })
     public apiBaseUrl!: string;
 
-    @Column({ name: 'backup_api_url', type: 'varchar' })
-    public backupApiUrl!: string;
+    @Column({ name: 'billing_type', type: 'enum', enum: BillingType, default: BillingType.Asset })
+    public billingType!: BillingType;
 
     @CreateDateColumn({ name: 'creation_date', type: 'timestamp' })
     public creationDate!: Date;
@@ -44,7 +45,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         authClientSecret: string,
         oauth2TokenUrl: string,
         apiBaseUrl: string,
-        backupApiUrl: string,
+        billingType: BillingType,
     ): BeyondtrustInstanceEntity {
         const entity = new BeyondtrustInstanceEntity();
         entity.id = id;
@@ -53,7 +54,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         entity.authClientSecret = authClientSecret;
         entity.oauth2TokenUrl = oauth2TokenUrl;
         entity.apiBaseUrl = apiBaseUrl;
-        entity.backupApiUrl = backupApiUrl;
+        entity.billingType = billingType;
 
         return entity;
     }
@@ -64,7 +65,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         authClientSecret: string,
         oauth2TokenUrl: string,
         apiBaseUrl: string,
-        backupApiUrl: string,
+        billingType: BillingType,
     ): BeyondtrustInstanceEntity {
         const entity = new BeyondtrustInstanceEntity();
         entity.name = name;
@@ -72,7 +73,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         entity.authClientSecret = authClientSecret;
         entity.oauth2TokenUrl = oauth2TokenUrl;
         entity.apiBaseUrl = apiBaseUrl;
-        entity.backupApiUrl = backupApiUrl;
+        entity.billingType = billingType;
 
         return entity;
     }

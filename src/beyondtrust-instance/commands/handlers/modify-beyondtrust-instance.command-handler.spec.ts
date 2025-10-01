@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
+import { BillingType } from '../../enums';
 import { BeyondtrustInstanceModifiedEvent } from '../../events';
 import { BeyondtrustInstanceEntity } from '../../repositories/entities';
 import { BeyondtrustInstanceRepositoryService } from '../../repositories/services/beyondtrust-instance-repository.service';
@@ -79,7 +80,7 @@ describe('ModifyBeyondtrustInstanceCommandHandler', () => {
                     'auth-client-secret-2',
                     'https://oauth2.example2.com/token',
                     'https://api.example2.com',
-                    'https://backup-api.example2.com',
+                    BillingType.Asset,
                 ),
             );
 
@@ -92,7 +93,7 @@ describe('ModifyBeyondtrustInstanceCommandHandler', () => {
                 'auth-client-secret-2',
                 'https://oauth2.example2.com/token',
                 'https://api.example2.com',
-                'https://backup-api.example2.com',
+                BillingType.Asset,
             );
             expect(beyondtrustInstanceRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
                 beyondtrustInstanceEntityToBeCreated,
