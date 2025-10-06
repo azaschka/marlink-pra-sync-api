@@ -13,6 +13,7 @@ export abstract class DefaultAppConfig {
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
     private static readonly THROTTLE_LIMIT = 500; // 500 requests per TTL
+    private static readonly THROTTLE_IS_ENABLED = true;
 
     public static get port(): number {
         return DefaultAppConfig.PORT_NUMBER;
@@ -141,6 +142,7 @@ export abstract class DefaultAppConfig {
 
     public static get throttle() {
         return {
+            isEnabled: DefaultAppConfig.THROTTLE_IS_ENABLED,
             ttlInMs: DefaultAppConfig.THROTTLE_TTL_IN_MS,
             limit: DefaultAppConfig.THROTTLE_LIMIT,
         };

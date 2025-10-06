@@ -247,7 +247,16 @@ export class AppConfigService {
     }
 
     public get throttle() {
+        let isEnabled = DefaultAppConfig.throttle.isEnabled;
+
+        const isEnabledString = this.configService.get<string>('THROTTLE_IS_ENABLED');
+
+        if (isEnabledString !== undefined) {
+            isEnabled = JSON.parse(isEnabledString) as boolean;
+        }
+
         return {
+            isEnabled: isEnabled,
             ttlInMs: this.configService.get<number>('THROTTLE_TTL_IN_MS') ?? DefaultAppConfig.throttle.ttlInMs,
             limit: this.configService.get<number>('THROTTLE_LIMIT') ?? DefaultAppConfig.throttle.limit,
         };

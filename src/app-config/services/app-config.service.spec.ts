@@ -785,10 +785,12 @@ describe('AppConfigService', () => {
         it.each([
             {
                 input: {
+                    isEnabled: false,
                     ttlInMs: 120,
                     limit: 1000,
                 },
                 expected: {
+                    isEnabled: false,
                     ttlInMs: 120,
                     limit: 1000,
                 },
@@ -796,12 +798,17 @@ describe('AppConfigService', () => {
             {
                 input: {},
                 expected: {
+                    isEnabled: true,
                     ttlInMs: 60000,
                     limit: 500,
                 },
             },
         ])('should return the throttle configuration as expected', ({ input, expected }) => {
             configService.get = jest.fn().mockImplementation((key: string) => {
+                if (key === 'THROTTLE_IS_ENABLED') {
+                    return input.isEnabled;
+                }
+
                 if (key === 'THROTTLE_TTL_IN_MS') {
                     return input.ttlInMs;
                 }
@@ -813,6 +820,7 @@ describe('AppConfigService', () => {
             });
 
             expect(service.throttle).toEqual({
+                isEnabled: expected.isEnabled,
                 ttlInMs: expected.ttlInMs,
                 limit: expected.limit,
             });

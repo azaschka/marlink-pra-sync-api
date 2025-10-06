@@ -41,6 +41,7 @@ import { UserModule } from './user/user.module';
                 {
                     ttl: config.throttle.ttlInMs,
                     limit: config.throttle.limit,
+                    skipIf: () => !config.throttle.isEnabled,
                 },
             ],
             inject: [AppConfigService],
