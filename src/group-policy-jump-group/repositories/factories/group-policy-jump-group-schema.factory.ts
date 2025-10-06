@@ -45,6 +45,7 @@ export class GroupPolicyJumpGroupSchemaFactory implements BaseTenantEntitySchema
                         name: 'group_policy_id',
                     },
                     inverseSide: 'groupPolicyJumpGroups',
+                    onDelete: 'CASCADE',
                 },
                 jumpGroup: {
                     type: 'many-to-one',
@@ -53,6 +54,8 @@ export class GroupPolicyJumpGroupSchemaFactory implements BaseTenantEntitySchema
                         name: 'jump_group_id',
                     },
                     inverseSide: 'groupPolicyJumpGroups',
+                    onDelete: 'CASCADE',
+                    eager: true,
                 },
             },
         });
