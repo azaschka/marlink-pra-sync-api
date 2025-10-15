@@ -1,3 +1,4 @@
+import { TeamRetrievedDtoOutput as BTTeam } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
 import { GroupPolicyTeamEntity } from '../../../group-policy-team/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { TeamUserEntity } from '../../../team-user/repositories/entities';
@@ -21,5 +22,9 @@ export class TeamEntity implements Team {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btTeam: BTTeam) {
+        return TeamEntity.create(btTeam.id, btTeam.name, btTeam.codeName, btTeam.comments);
     }
 }

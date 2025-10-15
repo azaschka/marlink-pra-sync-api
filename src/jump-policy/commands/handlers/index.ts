@@ -1,11 +1,11 @@
 import { CreateJumpPolicyCommandHandler } from './create-jump-policy.command-handler';
 import { DeleteJumpPolicyCommandHandler } from './delete-jump-policy.command-handler';
+import { MarkJumpPolicyAsSyncedCommandHandler } from './mark-jump-policy-as-synced.command-handler';
 import { ModifyJumpPolicyCommandHandler } from './modify-jump-policy.command-handler';
-import { SyncJumpPoliciesCommandHandler } from './sync-jump-policies.command-handler';
 
 export const CommandHandlers = [
     CreateJumpPolicyCommandHandler,
     ModifyJumpPolicyCommandHandler,
     DeleteJumpPolicyCommandHandler,
-    SyncJumpPoliciesCommandHandler,
+    MarkJumpPolicyAsSyncedCommandHandler,
 ];

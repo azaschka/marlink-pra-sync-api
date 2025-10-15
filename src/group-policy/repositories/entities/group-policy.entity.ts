@@ -1,3 +1,4 @@
+import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
 import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
 import { GroupPolicyMemberEntity } from '../../../group-policy-member/repositories/entities';
@@ -5,6 +6,7 @@ import { GroupPolicyTeamEntity } from '../../../group-policy-team/repositories/e
 import { DateUtility } from '../../../shared/utilities';
 import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
 import { AccessPermissionStatusType } from '../../enums';
+import { mapFromBTAccessPermissionStatusType } from '../../mappers';
 import { GroupPolicy } from '../../models';
 
 export class GroupPolicyEntity implements GroupPolicy {
@@ -93,5 +95,36 @@ export class GroupPolicyEntity implements GroupPolicy {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btGroupPolicy: BTGroupPolicy) {
+        return GroupPolicyEntity.create(
+            btGroupPolicy.id,
+            btGroupPolicy.name,
+            btGroupPolicy.permAccessAllowed,
+            btGroupPolicy.accessPermStatus
+                ? mapFromBTAccessPermissionStatusType(btGroupPolicy.accessPermStatus)
+                : undefined,
+            btGroupPolicy.permShareOtherTeam,
+            btGroupPolicy.permInviteExternalUser,
+            btGroupPolicy.permSessionIdleTimeout,
+            btGroupPolicy.permExtendedAvailabilityModeAllowed,
+            btGroupPolicy.permEditExternalKey,
+            btGroupPolicy.permCollaborate,
+            btGroupPolicy.permCollaborateControl,
+            btGroupPolicy.permJumpClient,
+            btGroupPolicy.permLocalJump,
+            btGroupPolicy.permRemoteJump,
+            btGroupPolicy.permRemoteVnc,
+            btGroupPolicy.permRemoteRdp,
+            btGroupPolicy.permShellJump,
+            btGroupPolicy.permWebJump,
+            btGroupPolicy.permProtocolTunnel,
+            btGroupPolicy.permSdStaticPortForExternalTools,
+            btGroupPolicy.defaultJumpItemRoleId,
+            btGroupPolicy.privateJumpItemRoleId,
+            btGroupPolicy.inferiorJumpItemRoleId,
+            btGroupPolicy.unassignedJumpItemRoleId,
+        );
     }
 }

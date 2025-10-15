@@ -1,5 +1,11 @@
+import { JumpClientInstallerRetrievedDtoOutput as BTJumpClientInstaller } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
+import {
+    mapFromBTJumpClientConnectionType,
+    mapFromBTJumpClientGroupType,
+    mapFromBTJumpClientInstallerKeyInfo,
+} from '../../mappers';
 import { JumpClientInstaller, JumpClientInstallerKeyInfo } from '../../models';
 
 export class JumpClientInstallerEntity implements JumpClientInstaller {
@@ -77,5 +83,40 @@ export class JumpClientInstallerEntity implements JumpClientInstaller {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btJumpClientInstaller: BTJumpClientInstaller) {
+        return JumpClientInstallerEntity.create(
+            btJumpClientInstaller.id,
+            btJumpClientInstaller.jumpGroupId,
+            btJumpClientInstaller.jumpGroupType
+                ? mapFromBTJumpClientGroupType(btJumpClientInstaller.jumpGroupType)
+                : undefined,
+            btJumpClientInstaller.name,
+            btJumpClientInstaller.tag,
+            btJumpClientInstaller.comments,
+            btJumpClientInstaller.jumpPolicyId,
+            btJumpClientInstaller.sessionPolicyId,
+            btJumpClientInstaller.connectionType
+                ? mapFromBTJumpClientConnectionType(btJumpClientInstaller.connectionType)
+                : undefined,
+            btJumpClientInstaller.expirationTimestamp
+                ? new Date(btJumpClientInstaller.expirationTimestamp)
+                : btJumpClientInstaller.expirationTimestamp,
+            btJumpClientInstaller.maxOfflineMinutes,
+            btJumpClientInstaller.elevateInstall,
+            btJumpClientInstaller.elevatePrompt,
+            btJumpClientInstaller.allowOverrideJumpGroup,
+            btJumpClientInstaller.allowOverrideJumpPolicy,
+            btJumpClientInstaller.allowOverrideName,
+            btJumpClientInstaller.allowOverrideTag,
+            btJumpClientInstaller.allowOverrideComments,
+            btJumpClientInstaller.allowOverrideSessionPolicy,
+            btJumpClientInstaller.installerId,
+            btJumpClientInstaller.keyInfo
+                ? mapFromBTJumpClientInstallerKeyInfo(btJumpClientInstaller.keyInfo)
+                : undefined,
+            btJumpClientInstaller.jumpointProxy,
+        );
     }
 }

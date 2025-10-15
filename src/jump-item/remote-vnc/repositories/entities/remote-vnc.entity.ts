@@ -1,8 +1,10 @@
+import { RemoteVncRetrievedDtoOutput as BTRemoteVnc } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/dtos/outputs';
 import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpPolicyEntity } from '../../../../jump-policy/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType } from '../../enums';
+import { mapFromBTJumpGroupType } from '../../mappers';
 import { RemoteVnc } from '../../models';
 
 export class RemoteVncEntity implements RemoteVnc {
@@ -50,5 +52,21 @@ export class RemoteVncEntity implements RemoteVnc {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btRemoteVnc: BTRemoteVnc) {
+        return RemoteVncEntity.create(
+            btRemoteVnc.id,
+            btRemoteVnc.name,
+            btRemoteVnc.jumpointId,
+            btRemoteVnc.hostname,
+            btRemoteVnc.port,
+            btRemoteVnc.jumpGroupId,
+            btRemoteVnc.jumpGroupType ? mapFromBTJumpGroupType(btRemoteVnc.jumpGroupType) : undefined,
+            btRemoteVnc.tag,
+            btRemoteVnc.comments,
+            btRemoteVnc.jumpPolicyId,
+            btRemoteVnc.sessionPolicyId,
+        );
     }
 }

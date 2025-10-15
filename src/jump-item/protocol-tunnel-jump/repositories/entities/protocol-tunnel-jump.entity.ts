@@ -1,8 +1,10 @@
+import { ProtocolTunnelJumpRetrievedDtoOutput as BTProtocolTunnelJump } from '../../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/dtos/outputs';
 import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpPolicyEntity } from '../../../../jump-policy/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, TunnelType } from '../../enums';
+import { mapFromBTJumpGroupType, mapFromBTTunnelType } from '../../mappers';
 import { ProtocolTunnelJump } from '../../models';
 
 export class ProtocolTunnelJumpEntity implements ProtocolTunnelJump {
@@ -68,5 +70,27 @@ export class ProtocolTunnelJumpEntity implements ProtocolTunnelJump {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btProtocolTunnelJump: BTProtocolTunnelJump) {
+        return ProtocolTunnelJumpEntity.create(
+            btProtocolTunnelJump.id,
+            btProtocolTunnelJump.name,
+            btProtocolTunnelJump.jumpointId,
+            btProtocolTunnelJump.hostname,
+            btProtocolTunnelJump.jumpGroupId,
+            btProtocolTunnelJump.jumpGroupType ? mapFromBTJumpGroupType(btProtocolTunnelJump.jumpGroupType) : undefined,
+            btProtocolTunnelJump.tag,
+            btProtocolTunnelJump.comments,
+            btProtocolTunnelJump.jumpPolicyId,
+            btProtocolTunnelJump.sessionPolicyId,
+            btProtocolTunnelJump.tunnelListenAddress,
+            btProtocolTunnelJump.tunnelDefinitions,
+            btProtocolTunnelJump.tunnelType ? mapFromBTTunnelType(btProtocolTunnelJump.tunnelType) : undefined,
+            btProtocolTunnelJump.username,
+            btProtocolTunnelJump.database,
+            btProtocolTunnelJump.url,
+            btProtocolTunnelJump.caCertificates,
+        );
     }
 }

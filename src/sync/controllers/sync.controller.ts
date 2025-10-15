@@ -3,32 +3,11 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ApiTenantIdHeader, TenantIdHeader } from '../../core/decorators';
-import { SyncGroupPoliciesCommand } from '../../group-policy/commands';
-import { GroupPoliciesSyncResult } from '../../group-policy/models';
-import { SyncJumpClientInstallersCommand, SyncJumpClientsCommand } from '../../jump-client/commands';
-import { JumpClientInstallersSyncResult, JumpClientsSyncResult } from '../../jump-client/models';
-import { SyncJumpGroupsCommand } from '../../jump-group/commands';
-import { JumpGroupsSyncResult } from '../../jump-group/models';
-import { SyncProtocolTunnelJumpsCommand } from '../../jump-item/protocol-tunnel-jump/commands';
-import { ProtocolTunnelJumpsSyncResult } from '../../jump-item/protocol-tunnel-jump/models';
-import { SyncRemoteRdpsCommand } from '../../jump-item/remote-rdp/commands';
-import { RemoteRdpsSyncResult } from '../../jump-item/remote-rdp/models';
-import { SyncRemoteVncsCommand } from '../../jump-item/remote-vnc/commands';
-import { RemoteVncsSyncResult } from '../../jump-item/remote-vnc/models';
-import { SyncShellJumpsCommand } from '../../jump-item/shell-jump/commands';
-import { ShellJumpsSyncResult } from '../../jump-item/shell-jump/models';
-import { SyncWebJumpsCommand } from '../../jump-item/web-jump/commands';
-import { WebJumpsSyncResult } from '../../jump-item/web-jump/models';
-import { SyncJumpPoliciesCommand } from '../../jump-policy/commands';
-import { JumpPoliciesSyncResult } from '../../jump-policy/models';
-import { SyncJumpointsCommand } from '../../jumpoint/commands';
-import { JumpointsSyncResult } from '../../jumpoint/models';
 import { UuidUtility } from '../../shared/utilities';
-import { SyncTeamsCommand } from '../../team/commands';
-import { TeamsSyncResult } from '../../team/models';
-import { SyncUsersCommand } from '../../user/commands';
-import { UsersSyncResult } from '../../user/models';
-import { SyncResultDtoOutput } from '../dtos/outputs';
+import { SyncComparatorCommand } from '../commands';
+import { SyncComparisonOverviewDtoOutput } from '../dtos/outputs';
+import { SyncEntityType } from '../enums';
+import { SyncComparisonOverview } from '../models';
 
 @ApiTenantIdHeader()
 @ApiTags('Sync')
@@ -86,197 +65,123 @@ export class SyncController {
     }
 
     @Post('users')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncUsers(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncUsersCommand, UsersSyncResult>(
-            new SyncUsersCommand(UuidUtility.generate(), tenantId),
+    public async syncUsers(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.User),
         );
-
-        return {
-            createdIds: result.createdUserIds,
-            updatedIds: result.updatedUserIds,
-            deletedIds: result.deletedUserIds,
-        };
     }
 
     @Post('teams')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncTeams(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncTeamsCommand, TeamsSyncResult>(
-            new SyncTeamsCommand(UuidUtility.generate(), tenantId),
+    public async syncTeams(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.Team),
         );
-
-        return {
-            createdIds: result.createdTeamIds,
-            updatedIds: result.updatedTeamIds,
-            deletedIds: result.deletedTeamIds,
-        };
     }
 
     @Post('jump-clients')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpClients(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncJumpClientsCommand, JumpClientsSyncResult>(
-            new SyncJumpClientsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpClients(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpClient),
         );
-
-        return {
-            createdIds: result.createdJumpClientIds,
-            updatedIds: result.updatedJumpClientIds,
-            deletedIds: result.deletedJumpClientIds,
-        };
     }
 
     @Post('jump-clients/installers')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpClientInstallers(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncJumpClientInstallersCommand, JumpClientInstallersSyncResult>(
-            new SyncJumpClientInstallersCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpClientInstallers(
+        @TenantIdHeader() tenantId: number,
+    ): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpClientInstaller),
         );
-
-        return {
-            createdIds: result.createdJumpClientInstallerIds,
-            updatedIds: result.updatedJumpClientInstallerIds,
-            deletedIds: result.deletedJumpClientInstallerIds,
-        };
     }
 
     @Post('group-policies')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncGroupPolicies(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncGroupPoliciesCommand, GroupPoliciesSyncResult>(
-            new SyncGroupPoliciesCommand(UuidUtility.generate(), tenantId),
+    public async syncGroupPolicies(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.GroupPolicy),
         );
-
-        return {
-            createdIds: result.createdGroupPolicyIds,
-            updatedIds: result.updatedGroupPolicyIds,
-            deletedIds: result.deletedGroupPolicyIds,
-        };
     }
 
     @Post('jump-policies')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpPolicies(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncJumpPoliciesCommand, JumpPoliciesSyncResult>(
-            new SyncJumpPoliciesCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpPolicies(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpPolicy),
         );
-
-        return {
-            createdIds: result.createdJumpPolicyIds,
-            updatedIds: result.updatedJumpPolicyIds,
-            deletedIds: result.deletedJumpPolicyIds,
-        };
     }
 
     @Post('jump-groups')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpGroups(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncJumpGroupsCommand, JumpGroupsSyncResult>(
-            new SyncJumpGroupsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpGroups(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpGroup),
         );
-
-        return {
-            createdIds: result.createdJumpGroupIds,
-            updatedIds: result.updatedJumpGroupIds,
-            deletedIds: result.deletedJumpGroupIds,
-        };
     }
 
     @Post('jumpoints')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpoints(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncJumpointsCommand, JumpointsSyncResult>(
-            new SyncJumpointsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpoints(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.Jumpoint),
         );
-
-        return {
-            createdIds: result.createdJumpointIds,
-            updatedIds: result.updatedJumpointIds,
-            deletedIds: result.deletedJumpointIds,
-        };
     }
 
     @Post('jump-items/protocol-tunnel-jumps')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsProtocolTunnelJumps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncProtocolTunnelJumpsCommand, ProtocolTunnelJumpsSyncResult>(
-            new SyncProtocolTunnelJumpsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpItemsProtocolTunnelJumps(
+        @TenantIdHeader() tenantId: number,
+    ): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpItemProtocolTunnelJump),
         );
-
-        return {
-            createdIds: result.createdProtocolTunnelJumpIds,
-            updatedIds: result.updatedProtocolTunnelJumpIds,
-            deletedIds: result.deletedProtocolTunnelJumpIds,
-        };
     }
 
     @Post('jump-items/remote-rdps')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsRemoteRdps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncRemoteRdpsCommand, RemoteRdpsSyncResult>(
-            new SyncRemoteRdpsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpItemsRemoteRdps(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpItemRemoteRdp),
         );
-
-        return {
-            createdIds: result.createdRemoteRdpIds,
-            updatedIds: result.updatedRemoteRdpIds,
-            deletedIds: result.deletedRemoteRdpIds,
-        };
     }
 
     @Post('jump-items/remote-vncs')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsRemoteVncs(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncRemoteVncsCommand, RemoteVncsSyncResult>(
-            new SyncRemoteVncsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpItemsRemoteVncs(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpItemRemoteVnc),
         );
-
-        return {
-            createdIds: result.createdRemoteVncIds,
-            updatedIds: result.updatedRemoteVncIds,
-            deletedIds: result.deletedRemoteVncIds,
-        };
     }
 
     @Post('jump-items/shell-jumps')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsShellJumps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncShellJumpsCommand, ShellJumpsSyncResult>(
-            new SyncShellJumpsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpItemsShellJumps(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpItemShellJump),
         );
-
-        return {
-            createdIds: result.createdShellJumpIds,
-            updatedIds: result.updatedShellJumpIds,
-            deletedIds: result.deletedShellJumpIds,
-        };
     }
 
     @Post('jump-items/web-jumps')
-    @ApiOkResponse({ type: SyncResultDtoOutput })
+    @ApiOkResponse({ type: SyncComparisonOverviewDtoOutput })
     @HttpCode(HttpStatus.OK)
-    public async syncJumpItemsWebJumps(@TenantIdHeader() tenantId: number): Promise<SyncResultDtoOutput> {
-        const result = await this.commandBus.execute<SyncWebJumpsCommand, WebJumpsSyncResult>(
-            new SyncWebJumpsCommand(UuidUtility.generate(), tenantId),
+    public async syncJumpItemsWebJumps(@TenantIdHeader() tenantId: number): Promise<SyncComparisonOverviewDtoOutput> {
+        return await this.commandBus.execute<SyncComparatorCommand, SyncComparisonOverview>(
+            new SyncComparatorCommand(UuidUtility.generate(), tenantId, SyncEntityType.JumpItemWebJump),
         );
-
-        return {
-            createdIds: result.createdWebJumpIds,
-            updatedIds: result.updatedWebJumpIds,
-            deletedIds: result.deletedWebJumpIds,
-        };
     }
 }

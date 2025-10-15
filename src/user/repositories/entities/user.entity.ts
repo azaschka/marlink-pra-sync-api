@@ -1,3 +1,4 @@
+import { UserRetrievedDtoOutput as BTUser } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
 import { GroupPolicyMemberEntity } from '../../../group-policy-member/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { TeamUserEntity } from '../../../team-user/repositories/entities';
@@ -8,6 +9,12 @@ import {
     UserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType,
 } from '../../enums';
+import {
+    mapFromBTUserAllowedAccessPermissionType,
+    mapFromBTUserEndpointAutomationPermissionType,
+    mapFromBTUserViewSupportReportsPermissionType,
+    mapFromBTUserViewVaultReportsPermissionType,
+} from '../../mappers';
 import { User } from '../../models';
 
 export class UserEntity implements User {
@@ -172,5 +179,66 @@ export class UserEntity implements User {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btUser: BTUser) {
+        return UserEntity.create(
+            btUser.id,
+            btUser.publicDisplayName,
+            btUser.securityProviderId,
+            btUser.username,
+            btUser.passwordExpiration ? new Date(btUser.passwordExpiration) : btUser.passwordExpiration,
+            btUser.emailAddress,
+            btUser.preferredEmailLanguage,
+            btUser.twoFactorRequired,
+            btUser.enabled,
+            btUser.lastAuthentication ? new Date(btUser.lastAuthentication) : btUser.lastAuthentication,
+            btUser.failedLogins,
+            btUser.passwordResetNextLogin,
+            btUser.createdAt ? new Date(btUser.createdAt) : btUser.createdAt,
+            btUser.twoFactorEnabled,
+            btUser.fido2CredentialCount,
+            btUser.fido2LastUsedDate ? new Date(btUser.fido2LastUsedDate) : btUser.fido2LastUsedDate,
+            btUser.permAdmin,
+            btUser.permSetPasswords,
+            btUser.permAdminPushagents,
+            btUser.permViewSupportReports
+                ? mapFromBTUserViewSupportReportsPermissionType(btUser.permViewSupportReports)
+                : undefined,
+            btUser.permViewVaultReports
+                ? mapFromBTUserViewVaultReportsPermissionType(btUser.permViewVaultReports)
+                : undefined,
+            btUser.permViewSyslogReports,
+            btUser.permViewSdRecordings,
+            btUser.permEditJumpGroups,
+            btUser.permEditSdTeams,
+            btUser.permEditCannedScripts,
+            btUser.permEditCustomRepLinks,
+            btUser.permAccessAllowed ? mapFromBTUserAllowedAccessPermissionType(btUser.permAccessAllowed) : undefined,
+            btUser.permShareOtherTeam,
+            btUser.permInviteExternalUser,
+            btUser.permExtendedAvailabilityModeAllowed,
+            btUser.permEditExternalKey,
+            btUser.permSessionIdleTimeout,
+            btUser.permCollaborate,
+            btUser.permCollaborateControl,
+            btUser.permJumpClient,
+            btUser.permLocalJump,
+            btUser.permRemoteJump,
+            btUser.permRemoteVnc,
+            btUser.permRemoteRdp,
+            btUser.permShellJump,
+            btUser.defaultJumpItemRoleId,
+            btUser.privateJumpItemRoleId,
+            btUser.inferiorJumpItemRoleId,
+            btUser.unassignedJumpItemRoleId,
+            btUser.permWebJump,
+            btUser.permProtocolTunnel,
+            btUser.permSdStaticPortForExternalTools,
+            btUser.permVault,
+            btUser.permEndpointAutomation
+                ? mapFromBTUserEndpointAutomationPermissionType(btUser.permEndpointAutomation)
+                : undefined,
+        );
     }
 }

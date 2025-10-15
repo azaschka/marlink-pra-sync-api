@@ -1,3 +1,4 @@
+import { JumpPolicyRetrievedDtoOutput as BTJumpPolicy } from '../../../beyondtrust-pra-conf-api/jump-policy/dtos/outputs';
 import { JumpClientEntity } from '../../../jump-client/repositories/entities';
 import { ProtocolTunnelJumpEntity } from '../../../jump-item/protocol-tunnel-jump/repositories/entities';
 import { RemoteRdpEntity } from '../../../jump-item/remote-rdp/repositories/entities';
@@ -11,6 +12,12 @@ import {
     SimultaneousJumpsRdpType,
     SimultaneousJumpsType,
 } from '../../enums';
+import {
+    mapFromBTApprovalApproverScopeType,
+    mapFromBTApprovalScopeType,
+    mapFromBTSimultaneousJumpsRdpType,
+    mapFromBTSimultaneousJumpsType,
+} from '../../mappers';
 import { JumpPolicy } from '../../models';
 
 export class JumpPolicyEntity implements JumpPolicy {
@@ -106,5 +113,40 @@ export class JumpPolicyEntity implements JumpPolicy {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btJumpPolicy: BTJumpPolicy) {
+        return JumpPolicyEntity.create(
+            btJumpPolicy.id,
+            btJumpPolicy.displayName,
+            btJumpPolicy.codeName,
+            btJumpPolicy.description,
+            btJumpPolicy.scheduleEnabled,
+            btJumpPolicy.simultaneousJumps ? mapFromBTSimultaneousJumpsType(btJumpPolicy.simultaneousJumps) : undefined,
+            btJumpPolicy.simultaneousJumpBehaviorAppliesToCopies,
+            btJumpPolicy.simultaneousJumpsRdp
+                ? mapFromBTSimultaneousJumpsRdpType(btJumpPolicy.simultaneousJumpsRdp)
+                : undefined,
+            btJumpPolicy.scheduleStrict,
+            btJumpPolicy.ticketIdRequired,
+            btJumpPolicy.twoFactorChallengeRequired,
+            btJumpPolicy.sessionStartNotification,
+            btJumpPolicy.sessionEndNotification,
+            btJumpPolicy.notificationEmailAddresses,
+            btJumpPolicy.notificationDisplayName,
+            btJumpPolicy.notificationEmailLanguage,
+            btJumpPolicy.approvalRequired,
+            btJumpPolicy.approvalMaxDuration,
+            btJumpPolicy.approvalScope ? mapFromBTApprovalScopeType(btJumpPolicy.approvalScope) : undefined,
+            btJumpPolicy.approvalEmailAddresses,
+            btJumpPolicy.approvalUserIds,
+            btJumpPolicy.approvalTeamIds,
+            btJumpPolicy.approvalDisplayName,
+            btJumpPolicy.approvalEmailLanguage,
+            btJumpPolicy.approvalApproverScope
+                ? mapFromBTApprovalApproverScopeType(btJumpPolicy.approvalApproverScope)
+                : undefined,
+            btJumpPolicy.recordingsDisabled,
+        );
     }
 }

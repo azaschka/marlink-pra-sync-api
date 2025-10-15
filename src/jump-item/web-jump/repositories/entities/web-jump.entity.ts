@@ -1,8 +1,10 @@
+import { WebJumpRetrievedDtoOutput as BTWebJump } from '../../../../beyondtrust-pra-conf-api/jump-item/web-jump/dtos/outputs';
 import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpPolicyEntity } from '../../../../jump-policy/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, WebJumpUsernameFormatType } from '../../enums';
+import { mapFromBTJumpGroupType, mapFromBTWebJumpUsernameFormatType } from '../../mappers';
 import { WebJump } from '../../models';
 
 export class WebJumpEntity implements WebJump {
@@ -65,5 +67,26 @@ export class WebJumpEntity implements WebJump {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btWebJump: BTWebJump) {
+        return WebJumpEntity.create(
+            btWebJump.id,
+            btWebJump.name,
+            btWebJump.jumpointId,
+            btWebJump.url,
+            btWebJump.jumpGroupId,
+            btWebJump.jumpGroupType ? mapFromBTJumpGroupType(btWebJump.jumpGroupType) : undefined,
+            btWebJump.usernameFormat ? mapFromBTWebJumpUsernameFormatType(btWebJump.usernameFormat) : undefined,
+            btWebJump.verifyCertificate,
+            btWebJump.authenticationTimeout,
+            btWebJump.tag,
+            btWebJump.comments,
+            btWebJump.jumpPolicyId,
+            btWebJump.usernameField,
+            btWebJump.passwordField,
+            btWebJump.submitField,
+            btWebJump.sessionPolicyId,
+        );
     }
 }

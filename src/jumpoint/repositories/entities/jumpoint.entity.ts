@@ -1,3 +1,4 @@
+import { JumpointRetrievedDtoOutput as BTJumpoint } from '../../../beyondtrust-pra-conf-api/jumpoint/dtos/outputs';
 import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
 import { ProtocolTunnelJumpEntity } from '../../../jump-item/protocol-tunnel-jump/repositories/entities';
 import { RemoteRdpEntity } from '../../../jump-item/remote-rdp/repositories/entities';
@@ -6,6 +7,7 @@ import { ShellJumpEntity } from '../../../jump-item/shell-jump/repositories/enti
 import { WebJumpEntity } from '../../../jump-item/web-jump/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpointPlatformType, JzpClientAddressRestrictionsType } from '../../enums';
+import { mapFromBTJumpointPlatformType, mapFromBTJzpClientAddressRestrictionsType } from '../../mappers';
 import { Jumpoint, JumpointIpRange } from '../../models';
 import { JumpointNodeEntity } from './jumpoint-node.entity';
 
@@ -88,5 +90,33 @@ export class JumpointEntity implements Jumpoint {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btJumpoint: BTJumpoint) {
+        return JumpointEntity.create(
+            btJumpoint.id,
+            btJumpoint.name,
+            mapFromBTJumpointPlatformType(btJumpoint.platform),
+            btJumpoint.codeName,
+            btJumpoint.comments,
+            btJumpoint.enabled,
+            btJumpoint.connected,
+            btJumpoint.clustered,
+            btJumpoint.shellJumpEnabled,
+            btJumpoint.externalJumpItemNetworkId,
+            btJumpoint.protocolTunnelEnabled,
+            btJumpoint.rdpServiceAccountId,
+            btJumpoint.managedIpRanges,
+            btJumpoint.jzpEnabled,
+            btJumpoint.jzpProxyHostname,
+            btJumpoint.jzpProxyPort,
+            btJumpoint.jzpAllowHttpGet,
+            btJumpoint.jzpClientAddressRestrictionsType
+                ? mapFromBTJzpClientAddressRestrictionsType(btJumpoint.jzpClientAddressRestrictionsType)
+                : undefined,
+            btJumpoint.jzpRestrictedIps,
+            btJumpoint.dockerDeployKey,
+            btJumpoint.keyInfo,
+        );
     }
 }

@@ -1,5 +1,6 @@
 import { CommandBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../app-config/services/app-config.service';
+import { SyncEntityType } from '../enums';
 import { SyncController } from './sync.controller';
 
 describe('SyncController', () => {
@@ -18,9 +19,14 @@ describe('SyncController', () => {
     describe('syncAll', () => {
         it('should call all sync methods and return the aggregated result', async () => {
             const expectedResult = {
-                createdIds: [],
-                updatedIds: [],
-                deletedIds: [],
+                tenantId: 123123,
+                syncEntityType: SyncEntityType.GroupPolicy,
+                totalBtData: 0,
+                totalDbData: 0,
+                identicalDataIds: [],
+                onlyInBtIds: [],
+                onlyInDbIds: [],
+                differentDataIds: [],
             };
             const syncUsersMethod = jest.spyOn(controller, 'syncUsers').mockResolvedValue(expectedResult);
             const syncTeamsMethod = jest.spyOn(controller, 'syncTeams').mockResolvedValue(expectedResult);
@@ -50,7 +56,7 @@ describe('SyncController', () => {
                 .spyOn(controller, 'syncJumpItemsWebJumps')
                 .mockResolvedValue(expectedResult);
 
-            await controller.syncAll(123123);
+            const result = await controller.syncAll(123123);
 
             expect(syncUsersMethod).toHaveBeenCalledTimes(1);
             expect(syncTeamsMethod).toHaveBeenCalledTimes(1);
@@ -65,266 +71,280 @@ describe('SyncController', () => {
             expect(syncJumpItemsRemoteVncsMethod).toHaveBeenCalledTimes(1);
             expect(syncJumpItemsShellJumpsMethod).toHaveBeenCalledTimes(1);
             expect(syncJumpItemsWebJumpsMethod).toHaveBeenCalledTimes(1);
+            expect(result).toHaveLength(13);
         });
     });
 
     describe('syncUsers', () => {
-        it('should return sync result for users', async () => {
+        it('should return sync comparison overview for users', async () => {
             const expectedResult = {
-                createdUserIds: ['user1'],
-                updatedUserIds: ['user2'],
-                deletedUserIds: ['user3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.User,
+                totalBtData: 10,
+                totalDbData: 8,
+                identicalDataIds: [1, 2],
+                onlyInBtIds: [3, 4],
+                onlyInDbIds: [5],
+                differentDataIds: [6, 7],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncUsers(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdUserIds,
-                updatedIds: expectedResult.updatedUserIds,
-                deletedIds: expectedResult.deletedUserIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncTeams', () => {
-        it('should return sync result for teams', async () => {
+        it('should return sync comparison overview for teams', async () => {
             const expectedResult = {
-                createdTeamIds: ['team1'],
-                updatedTeamIds: ['team2'],
-                deletedTeamIds: ['team3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.Team,
+                totalBtData: 5,
+                totalDbData: 4,
+                identicalDataIds: [1],
+                onlyInBtIds: [2],
+                onlyInDbIds: [3],
+                differentDataIds: [4],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncTeams(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdTeamIds,
-                updatedIds: expectedResult.updatedTeamIds,
-                deletedIds: expectedResult.deletedTeamIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpClients', () => {
-        it('should return sync result for jump clients', async () => {
+        it('should return sync comparison overview for jump clients', async () => {
             const expectedResult = {
-                createdJumpClientIds: ['jumpClient1'],
-                updatedJumpClientIds: ['jumpClient2'],
-                deletedJumpClientIds: ['jumpClient3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpClient,
+                totalBtData: 3,
+                totalDbData: 2,
+                identicalDataIds: [1],
+                onlyInBtIds: [2],
+                onlyInDbIds: [],
+                differentDataIds: [3],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpClients(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdJumpClientIds,
-                updatedIds: expectedResult.updatedJumpClientIds,
-                deletedIds: expectedResult.deletedJumpClientIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpClientInstallers', () => {
-        it('should return sync result for jump client installers', async () => {
+        it('should return sync comparison overview for jump client installers', async () => {
             const expectedResult = {
-                createdJumpClientInstallerIds: ['installer1'],
-                updatedJumpClientInstallerIds: ['installer2'],
-                deletedJumpClientInstallerIds: ['installer3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpClientInstaller,
+                totalBtData: 2,
+                totalDbData: 1,
+                identicalDataIds: [1],
+                onlyInBtIds: [2],
+                onlyInDbIds: [],
+                differentDataIds: [],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpClientInstallers(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdJumpClientInstallerIds,
-                updatedIds: expectedResult.updatedJumpClientInstallerIds,
-                deletedIds: expectedResult.deletedJumpClientInstallerIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncGroupPolicies', () => {
-        it('should return sync result for group policies', async () => {
+        it('should return sync comparison overview for group policies', async () => {
             const expectedResult = {
-                createdGroupPolicyIds: ['policy1'],
-                updatedGroupPolicyIds: ['policy2'],
-                deletedGroupPolicyIds: ['policy3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.GroupPolicy,
+                totalBtData: 7,
+                totalDbData: 6,
+                identicalDataIds: [1, 2, 3],
+                onlyInBtIds: [4],
+                onlyInDbIds: [5],
+                differentDataIds: [6, 7],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncGroupPolicies(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdGroupPolicyIds,
-                updatedIds: expectedResult.updatedGroupPolicyIds,
-                deletedIds: expectedResult.deletedGroupPolicyIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpPolicies', () => {
-        it('should return sync result for jump policies', async () => {
+        it('should return sync comparison overview for jump policies', async () => {
             const expectedResult = {
-                createdJumpPolicyIds: ['jumpPolicy1'],
-                updatedJumpPolicyIds: ['jumpPolicy2'],
-                deletedJumpPolicyIds: ['jumpPolicy3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpPolicy,
+                totalBtData: 4,
+                totalDbData: 3,
+                identicalDataIds: [1, 2],
+                onlyInBtIds: [3],
+                onlyInDbIds: [],
+                differentDataIds: [4],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpPolicies(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdJumpPolicyIds,
-                updatedIds: expectedResult.updatedJumpPolicyIds,
-                deletedIds: expectedResult.deletedJumpPolicyIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpGroups', () => {
-        it('should return sync result for jump groups', async () => {
+        it('should return sync comparison overview for jump groups', async () => {
             const expectedResult = {
-                createdJumpGroupIds: ['jumpGroup1'],
-                updatedJumpGroupIds: ['jumpGroup2'],
-                deletedJumpGroupIds: ['jumpGroup3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpGroup,
+                totalBtData: 6,
+                totalDbData: 5,
+                identicalDataIds: [1, 2, 3],
+                onlyInBtIds: [4],
+                onlyInDbIds: [5],
+                differentDataIds: [6],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpGroups(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdJumpGroupIds,
-                updatedIds: expectedResult.updatedJumpGroupIds,
-                deletedIds: expectedResult.deletedJumpGroupIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpoints', () => {
-        it('should return sync result for jumpoints', async () => {
+        it('should return sync comparison overview for jumpoints', async () => {
             const expectedResult = {
-                createdJumpointIds: ['jumpoint1'],
-                updatedJumpointIds: ['jumpoint2'],
-                deletedJumpointIds: ['jumpoint3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.Jumpoint,
+                totalBtData: 8,
+                totalDbData: 7,
+                identicalDataIds: [1, 2, 3, 4],
+                onlyInBtIds: [5],
+                onlyInDbIds: [6],
+                differentDataIds: [7, 8],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpoints(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdJumpointIds,
-                updatedIds: expectedResult.updatedJumpointIds,
-                deletedIds: expectedResult.deletedJumpointIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpItemsProtocolTunnelJumps', () => {
-        it('should return sync result for jump items protocol tunnel jumps', async () => {
+        it('should return sync comparison overview for jump items protocol tunnel jumps', async () => {
             const expectedResult = {
-                createdProtocolTunnelJumpIds: ['protocolTunnelJump1'],
-                updatedProtocolTunnelJumpIds: ['protocolTunnelJump2'],
-                deletedProtocolTunnelJumpIds: ['protocolTunnelJump3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpItemProtocolTunnelJump,
+                totalBtData: 3,
+                totalDbData: 2,
+                identicalDataIds: [1],
+                onlyInBtIds: [2],
+                onlyInDbIds: [],
+                differentDataIds: [3],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpItemsProtocolTunnelJumps(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdProtocolTunnelJumpIds,
-                updatedIds: expectedResult.updatedProtocolTunnelJumpIds,
-                deletedIds: expectedResult.deletedProtocolTunnelJumpIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpItemsRemoteRdps', () => {
-        it('should return sync result for jump items remote rdps', async () => {
+        it('should return sync comparison overview for jump items remote rdps', async () => {
             const expectedResult = {
-                createdRemoteRdpIds: ['remoteRdp1'],
-                updatedRemoteRdpIds: ['remoteRdp2'],
-                deletedRemoteRdpIds: ['remoteRdp3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpItemRemoteRdp,
+                totalBtData: 5,
+                totalDbData: 4,
+                identicalDataIds: [1, 2],
+                onlyInBtIds: [3],
+                onlyInDbIds: [4],
+                differentDataIds: [5],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpItemsRemoteRdps(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdRemoteRdpIds,
-                updatedIds: expectedResult.updatedRemoteRdpIds,
-                deletedIds: expectedResult.deletedRemoteRdpIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpItemsRemoteVncs', () => {
-        it('should return sync result for jump items remote vncs', async () => {
+        it('should return sync comparison overview for jump items remote vncs', async () => {
             const expectedResult = {
-                createdRemoteVncIds: ['remoteVnc1'],
-                updatedRemoteVncIds: ['remoteVnc2'],
-                deletedRemoteVncIds: ['remoteVnc3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpItemRemoteVnc,
+                totalBtData: 2,
+                totalDbData: 1,
+                identicalDataIds: [1],
+                onlyInBtIds: [2],
+                onlyInDbIds: [],
+                differentDataIds: [],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpItemsRemoteVncs(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdRemoteVncIds,
-                updatedIds: expectedResult.updatedRemoteVncIds,
-                deletedIds: expectedResult.deletedRemoteVncIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpItemsShellJumps', () => {
-        it('should return sync result for jump items shell jumps', async () => {
+        it('should return sync comparison overview for jump items shell jumps', async () => {
             const expectedResult = {
-                createdShellJumpIds: ['shellJump1'],
-                updatedShellJumpIds: ['shellJump2'],
-                deletedShellJumpIds: ['shellJump3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpItemShellJump,
+                totalBtData: 4,
+                totalDbData: 3,
+                identicalDataIds: [1, 2],
+                onlyInBtIds: [3],
+                onlyInDbIds: [],
+                differentDataIds: [4],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpItemsShellJumps(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdShellJumpIds,
-                updatedIds: expectedResult.updatedShellJumpIds,
-                deletedIds: expectedResult.deletedShellJumpIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 
     describe('syncJumpItemsWebJumps', () => {
-        it('should return sync result for jump items web jumps', async () => {
+        it('should return sync comparison overview for jump items web jumps', async () => {
             const expectedResult = {
-                createdWebJumpIds: ['webJump1'],
-                updatedWebJumpIds: ['webJump2'],
-                deletedWebJumpIds: ['webJump3'],
+                tenantId: 123,
+                syncEntityType: SyncEntityType.JumpItemWebJump,
+                totalBtData: 6,
+                totalDbData: 5,
+                identicalDataIds: [1, 2, 3],
+                onlyInBtIds: [4],
+                onlyInDbIds: [5],
+                differentDataIds: [6],
             };
 
             commandBus.execute = jest.fn().mockResolvedValue(expectedResult);
 
             const result = await controller.syncJumpItemsWebJumps(123);
 
-            expect(result).toEqual({
-                createdIds: expectedResult.createdWebJumpIds,
-                updatedIds: expectedResult.updatedWebJumpIds,
-                deletedIds: expectedResult.deletedWebJumpIds,
-            });
+            expect(result).toEqual(expectedResult);
         });
     });
 });

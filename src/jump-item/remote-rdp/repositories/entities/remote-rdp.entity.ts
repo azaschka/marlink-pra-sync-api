@@ -1,8 +1,10 @@
+import { RemoteRdpRetrievedDtoOutput as BTRemoteRdp } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/dtos/outputs';
 import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpPolicyEntity } from '../../../../jump-policy/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, RdpQualityMode, SecureAppType } from '../../enums';
+import { mapFromBTJumpGroupType, mapFromBTRdpQualityMode, mapFromBTSecureAppType } from '../../mappers';
 import { RemoteRdp } from '../../models';
 
 export class RemoteRdpEntity implements RemoteRdp {
@@ -89,5 +91,34 @@ export class RemoteRdpEntity implements RemoteRdp {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btRemoteRdp: BTRemoteRdp) {
+        return RemoteRdpEntity.create(
+            btRemoteRdp.id,
+            btRemoteRdp.name,
+            btRemoteRdp.jumpointId,
+            btRemoteRdp.hostname,
+            btRemoteRdp.jumpGroupId,
+            btRemoteRdp.jumpGroupType ? mapFromBTJumpGroupType(btRemoteRdp.jumpGroupType) : undefined,
+            btRemoteRdp.quality ? mapFromBTRdpQualityMode(btRemoteRdp.quality) : undefined,
+            btRemoteRdp.console,
+            btRemoteRdp.ignoreUntrusted,
+            btRemoteRdp.tag,
+            btRemoteRdp.comments,
+            btRemoteRdp.rdpUsername,
+            btRemoteRdp.domain,
+            btRemoteRdp.jumpPolicyId,
+            btRemoteRdp.sessionForensics,
+            btRemoteRdp.sessionPolicyId,
+            btRemoteRdp.endpointId,
+            btRemoteRdp.secureAppType ? mapFromBTSecureAppType(btRemoteRdp.secureAppType) : undefined,
+            btRemoteRdp.remoteAppName,
+            btRemoteRdp.remoteAppParams,
+            btRemoteRdp.remoteExePath,
+            btRemoteRdp.remoteExeParams,
+            btRemoteRdp.targetSystem,
+            btRemoteRdp.credentialType,
+        );
     }
 }

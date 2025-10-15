@@ -82,6 +82,7 @@ export class UserSchemaFactory implements BaseTenantEntitySchemaFactory<User> {
                     name: 'creation_date',
                     type: 'timestamp',
                     nullable: true,
+                    precision: 3,
                 },
                 hasTwoFactorAuthEnabled: {
                     name: 'has_two_factor_auth_enabled',

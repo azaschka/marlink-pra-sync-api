@@ -1,3 +1,4 @@
+import { JumpClientRetrievedDtoOutput as BTJumpClient } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
 import { JumpGroupEntity } from '../../../jump-group/repositories/entities';
 import { JumpPolicyEntity } from '../../../jump-policy/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
@@ -8,6 +9,13 @@ import {
     JumpClientInstallMode,
     JumpClientUnavailableReasonType,
 } from '../../enums';
+import {
+    mapFromBTJumpClientConnectionType,
+    mapFromBTJumpClientEndpointAgreementPolicyType,
+    mapFromBTJumpClientGroupType,
+    mapFromBTJumpClientInstallMode,
+    mapFromBTJumpClientUnavailableReasonType,
+} from '../../mappers';
 import { JumpClient } from '../../models';
 
 export class JumpClientEntity implements JumpClient {
@@ -99,5 +107,48 @@ export class JumpClientEntity implements JumpClient {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btJumpClient: BTJumpClient) {
+        return JumpClientEntity.create(
+            btJumpClient.id,
+            btJumpClient.jumpGroupId,
+            btJumpClient.jumpGroupType ? mapFromBTJumpClientGroupType(btJumpClient.jumpGroupType) : undefined,
+            btJumpClient.name,
+            btJumpClient.hostname,
+            btJumpClient.fqdn,
+            btJumpClient.tag,
+            btJumpClient.comments,
+            btJumpClient.jumpPolicyId,
+            btJumpClient.sessionPolicyId,
+            btJumpClient.installMode ? mapFromBTJumpClientInstallMode(btJumpClient.installMode) : undefined,
+            btJumpClient.connectionType ? mapFromBTJumpClientConnectionType(btJumpClient.connectionType) : undefined,
+            btJumpClient.lastConnectTimestamp
+                ? new Date(btJumpClient.lastConnectTimestamp)
+                : btJumpClient.lastConnectTimestamp,
+            btJumpClient.lastDisconnectTimestamp
+                ? new Date(btJumpClient.lastDisconnectTimestamp)
+                : btJumpClient.lastDisconnectTimestamp,
+            btJumpClient.isLost,
+            btJumpClient.needsUpdate,
+            btJumpClient.unavailableReason
+                ? mapFromBTJumpClientUnavailableReasonType(btJumpClient.unavailableReason)
+                : undefined,
+            btJumpClient.operatingSystem,
+            btJumpClient.publicIp,
+            btJumpClient.privateIp,
+            btJumpClient.consoleUser,
+            btJumpClient.expirationTimestamp
+                ? new Date(btJumpClient.expirationTimestamp)
+                : btJumpClient.expirationTimestamp,
+            btJumpClient.maxOfflineMinutes,
+            btJumpClient.lastAccessTimestamp
+                ? new Date(btJumpClient.lastAccessTimestamp)
+                : btJumpClient.lastAccessTimestamp,
+            btJumpClient.endpointAgreementPolicy
+                ? mapFromBTJumpClientEndpointAgreementPolicyType(btJumpClient.endpointAgreementPolicy)
+                : undefined,
+            btJumpClient.jumpointProxy,
+        );
     }
 }

@@ -1,8 +1,10 @@
+import { ShellJumpRetrievedDtoOutput as BTShellJump } from '../../../../beyondtrust-pra-conf-api/jump-item/shell-jump/dtos/outputs';
 import { JumpGroupEntity } from '../../../../jump-group/repositories/entities';
 import { JumpPolicyEntity } from '../../../../jump-policy/repositories/entities';
 import { JumpointEntity } from '../../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../../shared/utilities';
 import { JumpGroupType, ShellJumpProtocolType, ShellJumpTerminalType } from '../../enums';
+import { mapFromBTJumpGroupType, mapFromBTShellJumpProtocolType, mapFromBTShellJumpTerminalType } from '../../mappers';
 import { ShellJump } from '../../models';
 
 export class ShellJumpEntity implements ShellJump {
@@ -62,5 +64,25 @@ export class ShellJumpEntity implements ShellJump {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btShellJump: BTShellJump) {
+        return ShellJumpEntity.create(
+            btShellJump.id,
+            btShellJump.name,
+            btShellJump.jumpointId,
+            btShellJump.hostname,
+            mapFromBTShellJumpProtocolType(btShellJump.protocol),
+            btShellJump.port,
+            btShellJump.jumpGroupId,
+            btShellJump.jumpGroupType ? mapFromBTJumpGroupType(btShellJump.jumpGroupType) : undefined,
+            btShellJump.terminal ? mapFromBTShellJumpTerminalType(btShellJump.terminal) : undefined,
+            btShellJump.keepAlive,
+            btShellJump.tag,
+            btShellJump.comments,
+            btShellJump.jumpPolicyId,
+            btShellJump.username,
+            btShellJump.sessionPolicyId,
+        );
     }
 }

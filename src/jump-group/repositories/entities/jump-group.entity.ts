@@ -1,3 +1,4 @@
+import { JumpGroupCreatedDtoOutput as BTJumpGroup } from '../../../beyondtrust-pra-conf-api/jump-group/dtos/outputs';
 import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
 import { JumpClientEntity } from '../../../jump-client/repositories/entities';
 import { ProtocolTunnelJumpEntity } from '../../../jump-item/protocol-tunnel-jump/repositories/entities';
@@ -31,5 +32,9 @@ export class JumpGroupEntity implements JumpGroup {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btJumpGroup: BTJumpGroup) {
+        return JumpGroupEntity.create(btJumpGroup.id, btJumpGroup.name, btJumpGroup.codeName, btJumpGroup.comments);
     }
 }
