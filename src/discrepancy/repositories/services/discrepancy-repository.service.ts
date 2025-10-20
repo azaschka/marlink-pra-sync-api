@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, LessThan } from 'typeorm';
 import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { DiscrepancyEntityType } from '../../enums';
 import { DiscrepancyEntity } from '../entities';
@@ -29,5 +29,13 @@ export class DiscrepancyRepositoryService extends BaseTenantRepositoryService<Di
 
     public async deleteById(tenantId: number, id: number): Promise<void> {
         return await super.deleteBy(tenantId, { id: id });
+    }
+
+    public async deleteByLastModificationDateBefore(
+        tenantId: number,
+        entityType: DiscrepancyEntityType,
+        date: Date,
+    ): Promise<void> {
+        return await super.deleteBy(tenantId, { entityType: entityType, lastModificationDate: LessThan(date) });
     }
 }

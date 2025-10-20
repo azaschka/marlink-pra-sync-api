@@ -100,6 +100,7 @@ export class WebJumpSchemaFactory implements BaseTenantEntitySchemaFactory<WebJu
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

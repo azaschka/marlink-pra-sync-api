@@ -278,6 +278,7 @@ export class UserSchemaFactory implements BaseTenantEntitySchemaFactory<User> {
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

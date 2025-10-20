@@ -13,7 +13,7 @@ import { RetrieveDiscrepanciesQuery } from '../queries';
 
 @ApiTenantIdHeader()
 @ApiTags('Discrepancies')
-@Controller('discrepancies/scan')
+@Controller('discrepancies')
 export class DiscrepancyScannerController {
     constructor(
         private readonly queryBus: QueryBus,
@@ -21,7 +21,28 @@ export class DiscrepancyScannerController {
         private readonly appConfigService: AppConfigService,
     ) {}
 
-    @Post('all')
+    @Get()
+    @ApiOkResponse({ type: DiscrepancyDtoOutput, isArray: true })
+    public async retrieveDiscrepancies(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
+        @Query() dtoInput: RetrieveDiscrepanciesDtoInput,
+    ): Promise<DiscrepancyDtoOutput[]> {
+        const result = await this.queryBus.execute<RetrieveDiscrepanciesQuery, Discrepancy[]>(
+            new RetrieveDiscrepanciesQuery(
+                transactionId,
+                tenantId,
+                dtoInput.pageSize,
+                dtoInput.pageNumber,
+                dtoInput.entityType,
+                dtoInput.entityId,
+            ),
+        );
+
+        return result;
+    }
+
+    @Post('/scan/all')
     @ApiOkResponse()
     @HttpCode(HttpStatus.OK)
     public async scanAllDiscrepancies(
@@ -110,7 +131,7 @@ export class DiscrepancyScannerController {
         return scanResults;
     }
 
-    @Post(':entityType')
+    @Post('/scan/:entityType')
     @ApiParam({
         name: 'entityType',
         enum: DiscrepancyEntityType,
@@ -131,26 +152,5 @@ export class DiscrepancyScannerController {
         return await this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
             new ScanDiscrepancyCommand(transactionId, tenantId, entityType),
         );
-    }
-
-    @Get()
-    @ApiOkResponse({ type: DiscrepancyDtoOutput, isArray: true })
-    public async retrieveDiscrepancies(
-        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
-        @TenantIdHeader() tenantId: number,
-        @Query() dtoInput: RetrieveDiscrepanciesDtoInput,
-    ): Promise<DiscrepancyDtoOutput[]> {
-        const result = await this.queryBus.execute<RetrieveDiscrepanciesQuery, Discrepancy[]>(
-            new RetrieveDiscrepanciesQuery(
-                transactionId,
-                tenantId,
-                dtoInput.pageSize,
-                dtoInput.pageNumber,
-                dtoInput.entityType,
-                dtoInput.entityId,
-            ),
-        );
-
-        return result;
     }
 }

@@ -105,6 +105,7 @@ export class ProtocolTunnelJumpSchemaFactory implements BaseTenantEntitySchemaFa
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

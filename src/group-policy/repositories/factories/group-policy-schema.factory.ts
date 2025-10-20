@@ -137,6 +137,7 @@ export class GroupPolicySchemaFactory implements BaseTenantEntitySchemaFactory<G
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

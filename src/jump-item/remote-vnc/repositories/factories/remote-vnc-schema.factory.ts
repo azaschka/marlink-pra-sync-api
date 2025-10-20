@@ -74,6 +74,7 @@ export class RemoteVncSchemaFactory implements BaseTenantEntitySchemaFactory<Rem
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

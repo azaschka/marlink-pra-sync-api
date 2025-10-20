@@ -125,6 +125,7 @@ export class JumpointSchemaFactory implements BaseTenantEntitySchemaFactory<Jump
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

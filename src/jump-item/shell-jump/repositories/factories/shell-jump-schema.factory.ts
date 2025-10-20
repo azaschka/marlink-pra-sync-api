@@ -96,6 +96,7 @@ export class ShellJumpSchemaFactory implements BaseTenantEntitySchemaFactory<She
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

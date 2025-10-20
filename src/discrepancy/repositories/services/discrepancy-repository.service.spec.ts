@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, LessThan } from 'typeorm';
 import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { DiscrepancyEntityType } from '../../enums';
 import { DiscrepancyRepositoryService } from './discrepancy-repository.service';
@@ -66,6 +66,21 @@ describe('DiscrepancyRepositoryService', () => {
                 .mockReturnValue(Promise.resolve());
 
             await service.deleteById(123, id);
+
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
+        });
+    });
+
+    describe('deleteByLastModificationDateBefore', () => {
+        it('should call deleteBy with the correct parameters', async () => {
+            const entityType = DiscrepancyEntityType.GroupPolicyJumpGroup;
+            const date = new Date('2024-01-01T00:00:00Z');
+            const expectedWhere = { entityType: entityType, lastModificationDate: LessThan(date) };
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
+                .mockReturnValue(Promise.resolve());
+
+            await service.deleteByLastModificationDateBefore(123, entityType, date);
 
             expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
         });

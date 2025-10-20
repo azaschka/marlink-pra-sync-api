@@ -157,6 +157,7 @@ export class JumpPolicySchemaFactory implements BaseTenantEntitySchemaFactory<Ju
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

@@ -10,6 +10,10 @@ export class JumpointNodeRepositoryService extends BaseTenantRepositoryService<J
         super(dataSource, new JumpointNodeSchemaFactory());
     }
 
+    public async createOrUpdateById(tenantId: number, entity: Partial<JumpointNodeEntity>): Promise<void> {
+        await super.createOrUpdate(tenantId, entity, ['id']);
+    }
+
     public async createOrUpdateByIdAndJumpointId(
         tenantId: number,
         entities: Partial<JumpointNodeEntity>[],
@@ -19,6 +23,10 @@ export class JumpointNodeRepositoryService extends BaseTenantRepositoryService<J
         }
 
         await super.createOrUpdate(tenantId, entities, ['id', 'jumpointId']);
+    }
+
+    public async deleteById(tenantId: number, id: number): Promise<void> {
+        return await super.deleteBy(tenantId, { id: id });
     }
 
     public async deleteByJumpointIds(tenantId: number, jumpointIds: number[]): Promise<void> {

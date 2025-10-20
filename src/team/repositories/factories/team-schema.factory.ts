@@ -37,6 +37,7 @@ export class TeamSchemaFactory implements BaseTenantEntitySchemaFactory<Team> {
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

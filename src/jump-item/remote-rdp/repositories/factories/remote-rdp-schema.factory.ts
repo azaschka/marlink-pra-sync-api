@@ -141,6 +141,7 @@ export class RemoteRdpSchemaFactory implements BaseTenantEntitySchemaFactory<Rem
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

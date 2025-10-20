@@ -37,6 +37,7 @@ export class JumpGroupSchemaFactory implements BaseTenantEntitySchemaFactory<Jum
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

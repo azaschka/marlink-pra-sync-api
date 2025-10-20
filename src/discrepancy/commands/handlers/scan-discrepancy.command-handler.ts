@@ -1,95 +1,13 @@
-import { CommandBus, CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { differenceBy, differenceWith, intersectionBy, intersectionWith, isEqual } from 'lodash';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
-import { RetrieveGroupPoliciesQuery as BTRetrieveGroupPoliciesQuery } from '../../../beyondtrust-pra-conf-api/group-policy/queries';
-import {
-    JumpClientRetrievedDtoOutput as BTJumpClient,
-    JumpClientInstallerRetrievedDtoOutput as BTJumpClientInstaller,
-} from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
-import {
-    RetrieveJumpClientInstallersQuery as BTRetrieveJumpClientInstallersQuery,
-    RetrieveJumpClientsQuery as BTRetrieveJumpClientsQuery,
-} from '../../../beyondtrust-pra-conf-api/jump-client/queries';
-import { JumpGroupRetrievedDtoOutput as BTJumpGroup } from '../../../beyondtrust-pra-conf-api/jump-group/dtos/outputs';
-import { RetrieveJumpGroupsQuery as BTRetrieveJumpGroupsQuery } from '../../../beyondtrust-pra-conf-api/jump-group/queries';
-import { ProtocolTunnelJumpRetrievedDtoOutput as BTProtocolTunnelJump } from '../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/dtos/outputs';
-import { RetrieveProtocolTunnelJumpsQuery as BTRetrieveProtocolTunnelJumpsQuery } from '../../../beyondtrust-pra-conf-api/jump-item/protocol-tunnel-jump/queries';
-import { RemoteRdpRetrievedDtoOutput as BTRemoteRdp } from '../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/dtos/outputs';
-import { RetrieveRemoteRdpsQuery as BTRetrieveRemoteRdpsQuery } from '../../../beyondtrust-pra-conf-api/jump-item/remote-rdp/queries';
-import { RemoteVncRetrievedDtoOutput as BTRemoteVnc } from '../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/dtos/outputs';
-import { RetrieveRemoteVncsQuery as BTRetrieveRemoteVncsQuery } from '../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/queries';
-import { ShellJumpRetrievedDtoOutput as BTShellJump } from '../../../beyondtrust-pra-conf-api/jump-item/shell-jump/dtos/outputs';
-import { RetrieveShellJumpsQuery as BTRetrieveShellJumpsQuery } from '../../../beyondtrust-pra-conf-api/jump-item/shell-jump/queries';
-import { WebJumpRetrievedDtoOutput as BTWebJump } from '../../../beyondtrust-pra-conf-api/jump-item/web-jump/dtos/outputs';
-import { RetrieveWebJumpsQuery as BTRetrieveWebJumpsQuery } from '../../../beyondtrust-pra-conf-api/jump-item/web-jump/queries';
-import { JumpPolicyRetrievedDtoOutput as BTJumpPolicy } from '../../../beyondtrust-pra-conf-api/jump-policy/dtos/outputs';
-import { RetrieveJumpPoliciesQuery as BTRetrieveJumpPoliciesQuery } from '../../../beyondtrust-pra-conf-api/jump-policy/queries';
-import { JumpointRetrievedDtoOutput as BTJumpoint } from '../../../beyondtrust-pra-conf-api/jumpoint/dtos/outputs';
-import { RetrieveJumpointsQuery as BTRetrieveJumpointsQuery } from '../../../beyondtrust-pra-conf-api/jumpoint/queries';
-import { TeamRetrievedDtoOutput as BTTeam } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
-import { RetrieveTeamsQuery as BTRetrieveTeamsQuery } from '../../../beyondtrust-pra-conf-api/team/queries';
-import { UserRetrievedDtoOutput as BTUser } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
-import { RetrieveUsersQuery as BTRetrieveUsersQuery } from '../../../beyondtrust-pra-conf-api/user/queries';
-import { MarkGroupPolicyAsSyncedCommand as DBMarkGroupPolicyAsSyncedCommand } from '../../../group-policy/commands';
 import { GroupPolicy as DBGroupPolicy } from '../../../group-policy/models';
-import { RetrieveGroupPoliciesQuery as DBRetrieveGroupPoliciesQuery } from '../../../group-policy/queries';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
-import {
-    MarkJumpClientAsSyncedCommand as DBMarkJumpClientAsSyncedCommand,
-    MarkJumpClientInstallerAsSyncedCommand as DBMarkJumpClientInstallerAsSyncedCommand,
-} from '../../../jump-client/commands';
-import { JumpClient as DBJumpClient, JumpClientInstaller as DBJumpClientInstaller } from '../../../jump-client/models';
-import {
-    RetrieveJumpClientInstallersQuery as DBRetrieveJumpClientInstallersQuery,
-    RetrieveJumpClientsQuery as DBRetrieveJumpClientsQuery,
-} from '../../../jump-client/queries';
-import { JumpClientEntity, JumpClientInstallerEntity } from '../../../jump-client/repositories/entities';
-import { MarkJumpGroupAsSyncedCommand as DBMarkJumpGroupAsSyncedCommand } from '../../../jump-group/commands';
-import { JumpGroup as DBJumpGroup } from '../../../jump-group/models';
-import { RetrieveJumpGroupsQuery as DBRetrieveJumpGroupsQuery } from '../../../jump-group/queries';
-import { JumpGroupEntity } from '../../../jump-group/repositories/entities';
-import { MarkProtocolTunnelJumpAsSyncedCommand as DBMarkProtocolTunnelJumpAsSyncedCommand } from '../../../jump-item/protocol-tunnel-jump/commands';
-import { ProtocolTunnelJump as DBProtocolTunnelJump } from '../../../jump-item/protocol-tunnel-jump/models';
-import { RetrieveProtocolTunnelJumpsQuery as DBRetrieveProtocolTunnelJumpsQuery } from '../../../jump-item/protocol-tunnel-jump/queries';
-import { ProtocolTunnelJumpEntity } from '../../../jump-item/protocol-tunnel-jump/repositories/entities';
-import { MarkRemoteRdpAsSyncedCommand as DBMarkRemoteRdpAsSyncedCommand } from '../../../jump-item/remote-rdp/commands';
-import { RemoteRdp as DBRemoteRdp } from '../../../jump-item/remote-rdp/models';
-import { RetrieveRemoteRdpsQuery as DBRetrieveRemoteRdpsQuery } from '../../../jump-item/remote-rdp/queries';
-import { RemoteRdpEntity } from '../../../jump-item/remote-rdp/repositories/entities';
-import { MarkRemoteVncAsSyncedCommand as DBMarkRemoteVncAsSyncedCommand } from '../../../jump-item/remote-vnc/commands';
-import { RemoteVnc as DBRemoteVnc } from '../../../jump-item/remote-vnc/models';
-import { RetrieveRemoteVncsQuery as DBRetrieveRemoteVncsQuery } from '../../../jump-item/remote-vnc/queries';
-import { RemoteVncEntity } from '../../../jump-item/remote-vnc/repositories/entities';
-import { MarkShellJumpAsSyncedCommand as DBMarkShellJumpAsSyncedCommand } from '../../../jump-item/shell-jump/commands';
-import { ShellJump as DBShellJump } from '../../../jump-item/shell-jump/models';
-import { RetrieveShellJumpsQuery as DBRetrieveShellJumpsQuery } from '../../../jump-item/shell-jump/queries';
-import { ShellJumpEntity } from '../../../jump-item/shell-jump/repositories/entities';
-import { MarkWebJumpAsSyncedCommand as DBMarkWebJumpAsSyncedCommand } from '../../../jump-item/web-jump/commands';
-import { WebJump as DBWebJump } from '../../../jump-item/web-jump/models';
-import { RetrieveWebJumpsQuery as DBRetrieveWebJumpsQuery } from '../../../jump-item/web-jump/queries';
-import { WebJumpEntity } from '../../../jump-item/web-jump/repositories/entities';
-import { MarkJumpPolicyAsSyncedCommand as DBMarkJumpPolicyAsSyncedCommand } from '../../../jump-policy/commands';
-import { JumpPolicy as DBJumpPolicy } from '../../../jump-policy/models';
-import { RetrieveJumpPoliciesQuery as DBRetrieveJumpPoliciesQuery } from '../../../jump-policy/queries';
-import { JumpPolicyEntity } from '../../../jump-policy/repositories/entities';
-import { MarkJumpointAsSyncedCommand as DBMarkJumpointAsSyncedCommand } from '../../../jumpoint/commands';
-import { Jumpoint as DBJumpoint } from '../../../jumpoint/models';
-import { RetrieveJumpointsQuery as DBRetrieveJumpointsQuery } from '../../../jumpoint/queries';
-import { JumpointEntity } from '../../../jumpoint/repositories/entities';
 import { DateUtility, ObjectUtility, PaginationUtility } from '../../../shared/utilities';
-import { MarkTeamAsSyncedCommand as DBMarkTeamAsSyncedCommand } from '../../../team/commands';
-import { Team as DBTeam } from '../../../team/models';
-import { RetrieveTeamsQuery as DBRetrieveTeamsQuery } from '../../../team/queries';
-import { TeamEntity } from '../../../team/repositories/entities';
-import { MarkUserAsSyncedCommand as DBMarkUserAsSyncedCommand } from '../../../user/commands';
-import { User as DBUser } from '../../../user/models';
-import { RetrieveUsersQuery as DBRetrieveUsersQuery } from '../../../user/queries';
-import { UserEntity } from '../../../user/repositories/entities';
-import { DiscrepancyEntityType } from '../../enums';
-import { DiscrepancyStrategyMap } from '../../interfaces';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
+import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
 import { DiscrepancyStrategy } from '../../types';
 import { ScanDiscrepancyCommand } from '../scan-discrepancy.command';
 
@@ -97,13 +15,16 @@ import { ScanDiscrepancyCommand } from '../scan-discrepancy.command';
 export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscrepancyCommand> {
     constructor(
         private readonly appConfigService: AppConfigService,
-        private readonly commandBus: CommandBus,
-        private readonly queryBus: QueryBus,
+        private readonly discrepancyStrategyProviderService: DiscrepancyStrategyProviderService,
         private readonly discrepancyRepositoryService: DiscrepancyRepositoryService,
     ) {}
 
     public async execute(command: ScanDiscrepancyCommand): Promise<DiscrepancyOverview> {
-        const discrepancyStrategy = this.getDiscrepancyStrategy(command.entityType);
+        const startSyncUtcDate = DateUtility.getCurrentUtcDate();
+
+        const discrepancyStrategy = this.discrepancyStrategyProviderService.get(
+            command.entityType,
+        ) as DiscrepancyStrategy<BTGroupPolicy, DBGroupPolicy, GroupPolicyEntity>; // Group policy as representative type.
 
         const btData = (
             await PaginationUtility.queryUntilDuplicatePage(
@@ -213,6 +134,13 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             });
         }
 
+        // Delete obsolete discrepancies
+        await this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
+            command.tenantId,
+            command.entityType,
+            startSyncUtcDate,
+        );
+
         return {
             entityType: command.entityType,
             totalBtData: btData.length,
@@ -222,237 +150,5 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             onlyInDbIds: onlyInDb.map((d) => d.id),
             differentDataIds: differentDataPairs.map((pair) => pair.bt.id),
         };
-    }
-
-    private getDiscrepancyStrategy(entityType: DiscrepancyEntityType) {
-        const discrepanciesStrategies: DiscrepancyStrategyMap = {
-            [DiscrepancyEntityType.GroupPolicy]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveGroupPoliciesQuery, BTGroupPolicy[]>(
-                        new BTRetrieveGroupPoliciesQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => GroupPolicyEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveGroupPoliciesQuery, DBGroupPolicy[]>(
-                        new DBRetrieveGroupPoliciesQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkGroupPolicyAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: [
-                    'lastSyncDate',
-                    'userGroupPolicies',
-                    'groupPolicyJumpoints',
-                    'groupPolicyJumpGroups',
-                    'groupPolicyMembers',
-                    'groupPolicyTeams',
-                ],
-            },
-            [DiscrepancyEntityType.JumpClientInstaller]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveJumpClientInstallersQuery, BTJumpClientInstaller[]>(
-                        new BTRetrieveJumpClientInstallersQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => JumpClientInstallerEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveJumpClientInstallersQuery, DBJumpClientInstaller[]>(
-                        new DBRetrieveJumpClientInstallersQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpClientInstallerAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'keyInfo'],
-            },
-            [DiscrepancyEntityType.JumpClient]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveJumpClientsQuery, BTJumpClient[]>(
-                        new BTRetrieveJumpClientsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => JumpClientEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveJumpClientsQuery, DBJumpClient[]>(
-                        new DBRetrieveJumpClientsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpClientAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'expirationDate', 'jumpGroup', 'jumpPolicy'],
-            },
-            [DiscrepancyEntityType.JumpGroup]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveJumpGroupsQuery, BTJumpGroup[]>(
-                        new BTRetrieveJumpGroupsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => JumpGroupEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveJumpGroupsQuery, DBJumpGroup[]>(
-                        new DBRetrieveJumpGroupsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpGroupAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate'],
-            },
-            [DiscrepancyEntityType.JumpPolicy]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveJumpPoliciesQuery, BTJumpPolicy[]>(
-                        new BTRetrieveJumpPoliciesQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => JumpPolicyEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveJumpPoliciesQuery, DBJumpPolicy[]>(
-                        new DBRetrieveJumpPoliciesQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpPolicyAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: [
-                    'lastSyncDate',
-                    'protocolTunnelJumps',
-                    'remoteRdps',
-                    'remoteVncs',
-                    'shellJumps',
-                    'webJumps',
-                    'jumpClients',
-                ],
-            },
-            [DiscrepancyEntityType.Jumpoint]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveJumpointsQuery, BTJumpoint[]>(
-                        new BTRetrieveJumpointsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btOmittedPropsForDuplicateCheck: ['keyInfo'],
-                btToDbEntity: (bt) => JumpointEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveJumpointsQuery, DBJumpoint[]>(
-                        new DBRetrieveJumpointsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpointAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: [
-                    'lastSyncDate',
-                    'externalJumpItemNetworkId',
-                    'keyInfo',
-                    'groupPolicyJumpoints',
-                    'protocolTunnelJumps',
-                    'remoteRdps',
-                    'remoteVncs',
-                    'shellJumps',
-                    'webJumps',
-                    'jumpointNodes',
-                ],
-            },
-            [DiscrepancyEntityType.JumpItemProtocolTunnelJump]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveProtocolTunnelJumpsQuery, BTProtocolTunnelJump[]>(
-                        new BTRetrieveProtocolTunnelJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => ProtocolTunnelJumpEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveProtocolTunnelJumpsQuery, DBProtocolTunnelJump[]>(
-                        new DBRetrieveProtocolTunnelJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkProtocolTunnelJumpAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
-            },
-            [DiscrepancyEntityType.JumpItemRemoteRdp]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveRemoteRdpsQuery, BTRemoteRdp[]>(
-                        new BTRetrieveRemoteRdpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => RemoteRdpEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveRemoteRdpsQuery, DBRemoteRdp[]>(
-                        new DBRetrieveRemoteRdpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkRemoteRdpAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'secureAppType', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
-            },
-            [DiscrepancyEntityType.JumpItemRemoteVnc]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveRemoteVncsQuery, BTRemoteVnc[]>(
-                        new BTRetrieveRemoteVncsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => RemoteVncEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveRemoteVncsQuery, DBRemoteVnc[]>(
-                        new DBRetrieveRemoteVncsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkRemoteVncAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
-            },
-            [DiscrepancyEntityType.JumpItemShellJump]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveShellJumpsQuery, BTShellJump[]>(
-                        new BTRetrieveShellJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => ShellJumpEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveShellJumpsQuery, DBShellJump[]>(
-                        new DBRetrieveShellJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkShellJumpAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
-            },
-            [DiscrepancyEntityType.JumpItemWebJump]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveWebJumpsQuery, BTWebJump[]>(
-                        new BTRetrieveWebJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => WebJumpEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveWebJumpsQuery, DBWebJump[]>(
-                        new DBRetrieveWebJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkWebJumpAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
-            },
-            [DiscrepancyEntityType.Team]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveTeamsQuery, BTTeam[]>(
-                        new BTRetrieveTeamsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => TeamEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveTeamsQuery, DBTeam[]>(
-                        new DBRetrieveTeamsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkTeamAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: ['lastSyncDate', 'teamUsers', 'groupPolicyTeams'],
-            },
-            [DiscrepancyEntityType.User]: {
-                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<BTRetrieveUsersQuery, BTUser[]>(
-                        new BTRetrieveUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                btToDbEntity: (bt) => UserEntity.createFromBT(bt),
-                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
-                    this.queryBus.execute<DBRetrieveUsersQuery, DBUser[]>(
-                        new DBRetrieveUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber),
-                    ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkUserAsSyncedCommand(transactionId, tenantId, id)),
-                trimmedProps: [
-                    'lastSyncDate',
-                    'fido2CredentialCount',
-                    'fido2LastUsedDate',
-                    'userGroupPolicies',
-                    'teamUsers',
-                    'groupPolicyMembers',
-                ],
-            },
-        };
-
-        // use "as DiscrepancyStrategy<BTGroupPolicy, DBGroupPolicy, GroupPolicyEntity>" to avoid type issue
-        const discrepancyStrategy = discrepanciesStrategies[entityType as keyof DiscrepancyStrategyMap] as
-            | DiscrepancyStrategy<BTGroupPolicy, DBGroupPolicy, GroupPolicyEntity>
-            | undefined;
-
-        if (!discrepancyStrategy) {
-            throw new Error(`Unsupported entity type: ${entityType}`);
-        }
-
-        return discrepancyStrategy;
     }
 }
