@@ -1,5 +1,3 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-
 export abstract class DefaultAppConfig {
     private static readonly PORT_NUMBER = 9001;
     private static readonly MARLINK_HTTP_PROXY = 'http://10.10.105.19:3128';
@@ -11,6 +9,7 @@ export abstract class DefaultAppConfig {
     private static readonly DB_RETRY_ATTEMPTS = 60;
     private static readonly DB_RETRY_DELAY_IN_MS = 8000; // 8 seconds
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
+    private static readonly DB_EXTRA_MAX_CONNECTIONS = 6; // Maximum number of database connections
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
     private static readonly THROTTLE_LIMIT = 500; // 500 requests per TTL
     private static readonly THROTTLE_IS_ENABLED = true;
@@ -122,11 +121,14 @@ export abstract class DefaultAppConfig {
         };
     }
 
-    public static get database(): TypeOrmModuleOptions {
+    public static get database() {
         return {
             retryAttempts: DefaultAppConfig.DB_RETRY_ATTEMPTS,
             retryDelay: DefaultAppConfig.DB_RETRY_DELAY_IN_MS,
             maxQueryExecutionTime: DefaultAppConfig.DB_MAX_QUERY_EXECUTION_TIME_IN_MS, // Only applicable to MariaDB and MySQL
+            extra: {
+                max: DefaultAppConfig.DB_EXTRA_MAX_CONNECTIONS,
+            },
         };
     }
 

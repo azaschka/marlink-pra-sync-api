@@ -1,5 +1,6 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { differenceBy, differenceWith, intersectionBy, intersectionWith, isEqual } from 'lodash';
+import pLimit, { LimitFunction } from 'p-limit';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicy as DBGroupPolicy } from '../../../group-policy/models';
@@ -20,12 +21,16 @@ type DBRepresentative = DBGroupPolicy;
 
 @CommandHandler(ScanDiscrepancyCommand)
 export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscrepancyCommand> {
+    private readonly dbConnLimit: LimitFunction;
+
     constructor(
         private readonly appConfigService: AppConfigService,
         private readonly discrepancyStrategyProviderService: DiscrepancyStrategyProviderService,
         private readonly discrepancyRepositoryService: DiscrepancyRepositoryService,
         private readonly eventBus: EventBus,
-    ) {}
+    ) {
+        this.dbConnLimit = pLimit(this.appConfigService.databaseMaxConnections);
+    }
 
     public async execute(command: ScanDiscrepancyCommand): Promise<DiscrepancyOverview> {
         const startSyncUtcDate = DateUtility.getCurrentUtcDate();
@@ -83,64 +88,80 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             .filter((pair) => pair !== null);
 
         // Mark identical data as synced
-        for (const data of identicalData) {
-            await discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data);
-        }
+        await Promise.all(
+            identicalData.map((data) =>
+                this.dbConnLimit(() =>
+                    discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data),
+                ),
+            ),
+        );
 
         // Handle data which only exist in BT
-        for (const bt of onlyInBt) {
-            const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                command.tenantId,
-                command.entityType,
-                bt.id,
-            );
+        await Promise.all(
+            onlyInBt.map((bt) =>
+                this.dbConnLimit(async () => {
+                    const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+                        command.tenantId,
+                        command.entityType,
+                        bt.id,
+                    );
 
-            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                id: existingDiscrepancy?.id,
-                entityType: command.entityType,
-                entityId: bt.id,
-                internalData: undefined,
-                externalData: bt as unknown as Record<string, unknown>,
-                lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
-            });
-        }
+                    await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                        id: existingDiscrepancy?.id,
+                        entityType: command.entityType,
+                        entityId: bt.id,
+                        internalData: undefined,
+                        externalData: bt as unknown as Record<string, unknown>,
+                        lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
+                    });
+                }),
+            ),
+        );
 
         // Handle data which only exist in DB
-        for (const db of onlyInDb) {
-            const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                command.tenantId,
-                command.entityType,
-                db.id,
-            );
+        await Promise.all(
+            onlyInDb.map((db) =>
+                this.dbConnLimit(async () => {
+                    const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+                        command.tenantId,
+                        command.entityType,
+                        db.id,
+                    );
 
-            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                id: existingDiscrepancy?.id,
-                entityType: command.entityType,
-                entityId: db.id,
-                internalData: db as unknown as Record<string, unknown>,
-                externalData: undefined,
-                lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
-            });
-        }
+                    await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                        id: existingDiscrepancy?.id,
+                        entityType: command.entityType,
+                        entityId: db.id,
+                        internalData: db as unknown as Record<string, unknown>,
+                        externalData: undefined,
+                        lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
+                    });
+                }),
+            ),
+        );
 
         // Handle data which have different content
-        for (const pair of differentDataPairs) {
-            const entityId = pair.bt.id; // use BT id to represent the entityId
-            const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                command.tenantId,
-                command.entityType,
-                entityId,
-            );
+        await Promise.all(
+            differentDataPairs.map((pair) =>
+                this.dbConnLimit(async () => {
+                    const entityId = pair.bt.id; // use BT id to represent the entityId
+                    const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+                        command.tenantId,
+                        command.entityType,
+                        entityId,
+                    );
 
-            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                id: existingDiscrepancy?.id,
-                entityType: command.entityType,
-                entityId: entityId,
-                internalData: pair.db as unknown as Record<string, unknown>,
-                externalData: pair.bt as unknown as Record<string, unknown>,
-                lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
-            });
-        }
+                    await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                        id: existingDiscrepancy?.id,
+                        entityType: command.entityType,
+                        entityId: entityId,
+                        internalData: pair.db as unknown as Record<string, unknown>,
+                        externalData: pair.bt as unknown as Record<string, unknown>,
+                        lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
+                    });
+                }),
+            ),
+        );
 
         // Delete obsolete discrepancies
         await this.discrepancyRepositoryService.deleteByLastModificationDateBefore(

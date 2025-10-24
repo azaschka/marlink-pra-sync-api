@@ -609,6 +609,9 @@ describe('AppConfigService', () => {
                     retryAttempts: 30,
                     retryDelayInMs: 5000,
                     maxQueryExecutionTimeInMs: 1000,
+                    extra: {
+                        max: 12,
+                    },
                 },
                 expected: {
                     type: 'mysql',
@@ -623,6 +626,9 @@ describe('AppConfigService', () => {
                     retryAttempts: 30,
                     retryDelayInMs: 5000,
                     maxQueryExecutionTimeInMs: 1000,
+                    extra: {
+                        max: 12,
+                    },
                 },
             },
             {
@@ -642,6 +648,9 @@ describe('AppConfigService', () => {
                     retryAttempts: 60,
                     retryDelayInMs: 8000,
                     maxQueryExecutionTimeInMs: 15000,
+                    extra: {
+                        max: 6,
+                    },
                 },
             },
         ])('should return the database configuration as expected', ({ input, expected }) => {
@@ -667,6 +676,8 @@ describe('AppConfigService', () => {
                         return input.retryDelayInMs;
                     case 'DB_MAX_QUERY_EXECUTION_TIME_IN_MS':
                         return input.maxQueryExecutionTimeInMs;
+                    case 'DB_EXTRA_MAX_CONNECTIONS':
+                        return input.extra?.max;
                     default:
                         return undefined;
                 }
@@ -687,6 +698,9 @@ describe('AppConfigService', () => {
                 retryAttempts: expected.retryAttempts,
                 retryDelay: expected.retryDelayInMs,
                 maxQueryExecutionTime: expected.maxQueryExecutionTimeInMs,
+                extra: {
+                    max: expected.extra.max,
+                },
             });
         });
     });

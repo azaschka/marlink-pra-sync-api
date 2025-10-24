@@ -218,7 +218,14 @@ export class AppConfigService {
             maxQueryExecutionTime:
                 this.configService.get<number>('DB_MAX_QUERY_EXECUTION_TIME_IN_MS') ??
                 DefaultAppConfig.database.maxQueryExecutionTime, // Only applicable to MariaDB and MySQL
+            extra: {
+                max: this.databaseMaxConnections,
+            },
         };
+    }
+
+    public get databaseMaxConnections(): number {
+        return this.configService.get<number>('DB_EXTRA_MAX_CONNECTIONS') ?? DefaultAppConfig.database.extra.max;
     }
 
     public get storage() {
