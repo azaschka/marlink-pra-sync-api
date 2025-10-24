@@ -9,11 +9,19 @@ import { ProtocolTunnelJumpController } from './controllers/protocol-tunnel-jump
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { ProtocolTunnelJumpRepositoryService } from './repositories/services/protocol-tunnel-jump-repository.service';
+import { ProtocolTunnelJumpService } from './services/protocol-tunnel-jump.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [ProtocolTunnelJumpController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, ProtocolTunnelJumpRepositoryService],
+    providers: [
+        ...QueryHandlers,
+        ...CommandHandlers,
+        ...EventHandlers,
+        ProtocolTunnelJumpRepositoryService,
+        ProtocolTunnelJumpService,
+    ],
+    exports: [ProtocolTunnelJumpService],
 })
 export class ProtocolTunnelJumpModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

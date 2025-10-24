@@ -12,15 +12,15 @@ export class DiscrepancyOverviewDtoOutput implements DiscrepancyOverview {
     @ApiProperty({ required: true, type: Number, description: 'Total DB Data' })
     public totalDbData!: number;
 
-    @ApiProperty({ required: true, type: [Number], description: 'Identical Data IDs' })
-    public identicalDataIds!: number[];
+    @ApiProperty({ required: true, type: [Number], description: 'Identical IDs' })
+    public identicalIds!: number[];
 
-    @ApiProperty({ required: true, type: [Number], description: 'Only in BT IDs' })
-    public onlyInBtIds!: number[];
+    @ApiProperty({ required: true, type: [Number], description: 'Only in external IDs (BT)' })
+    public onlyInExternalIds!: number[];
 
-    @ApiProperty({ required: true, type: [Number], description: 'Only in DB IDs' })
-    public onlyInDbIds!: number[];
+    @ApiProperty({ required: true, type: [Number], description: 'Only in internal IDs (DB)' })
+    public onlyInInternalIds!: number[];
 
-    @ApiProperty({ required: true, type: [Number], description: 'Different Data IDs' })
-    public differentDataIds!: number[];
+    @ApiProperty({ required: true, type: [Number], description: 'Mismatched IDs' })
+    public mismatchedIds!: number[];
 }

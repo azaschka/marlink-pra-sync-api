@@ -27,6 +27,15 @@ export class DiscrepancyRepositoryService extends BaseTenantRepositoryService<Di
         return await super.findOneBy(tenantId, { entityType, entityId });
     }
 
+    public async findOneByEntityTypeEntityIdAndForeignEntityId(
+        tenantId: number,
+        entityType: DiscrepancyEntityType,
+        entityId: number,
+        foreignEntityId: number,
+    ): Promise<DiscrepancyEntity | null> {
+        return await super.findOneBy(tenantId, { entityType, entityId, foreignEntityId });
+    }
+
     public async deleteById(tenantId: number, id: number): Promise<void> {
         return await super.deleteBy(tenantId, { id: id });
     }

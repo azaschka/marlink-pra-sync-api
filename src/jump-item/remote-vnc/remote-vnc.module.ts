@@ -9,11 +9,13 @@ import { RemoteVncController } from './controllers/remote-vnc.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { RemoteVncRepositoryService } from './repositories/services/remote-vnc-repository.service';
+import { RemoteVncService } from './services/remote-vnc.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [RemoteVncController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, RemoteVncRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, RemoteVncRepositoryService, RemoteVncService],
+    exports: [RemoteVncService],
 })
 export class RemoteVncModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

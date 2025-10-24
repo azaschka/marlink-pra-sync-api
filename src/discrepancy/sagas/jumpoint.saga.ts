@@ -1,24 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { ICommand, Saga, ofType } from '@nestjs/cqrs';
-import { Observable, map } from 'rxjs';
-import { JumpointsSyncedEvent, JumpointsSyncedEventPayload } from '../../jumpoint/events';
-import { SyncJumpointNodesAfterJumpointsSyncedCommand } from '../commands';
+import { Observable, filter, mergeMap } from 'rxjs';
+import { ScanEntityRelationDiscrepancyCommand } from '../commands';
+import { DiscrepancyEntityType } from '../enums';
+import { DiscrepancyFoundEvent } from '../events';
 
 @Injectable()
 export class JumpointSaga {
     @Saga()
-    public onJumpointsSyncedEvent = (events$: Observable<JumpointsSyncedEvent>): Observable<ICommand> => {
+    public onDiscrepancyFoundEvent = (events$: Observable<DiscrepancyFoundEvent>): Observable<ICommand> => {
         return events$.pipe(
-            ofType(JumpointsSyncedEvent),
-            map(
-                (event) =>
-                    new SyncJumpointNodesAfterJumpointsSyncedCommand(
-                        event.transactionId,
-                        (event.payload as JumpointsSyncedEventPayload).tenantId,
-                        (event.payload as JumpointsSyncedEventPayload).createdJumpointIds,
-                        (event.payload as JumpointsSyncedEventPayload).updatedJumpointIds,
-                        (event.payload as JumpointsSyncedEventPayload).deletedJumpointIds,
-                    ),
+            ofType(DiscrepancyFoundEvent),
+            filter((event) => event.payload.discrepancyOverview.entityType === DiscrepancyEntityType.Jumpoint),
+            mergeMap((event) =>
+                [DiscrepancyEntityType.JumpointNode].map(
+                    (entityType) =>
+                        new ScanEntityRelationDiscrepancyCommand(
+                            event.transactionId,
+                            event.payload.tenantId,
+                            entityType,
+                            event.payload.discrepancyOverview.identicalIds,
+                            event.payload.discrepancyOverview.onlyInExternalIds,
+                            event.payload.discrepancyOverview.onlyInInternalIds,
+                            event.payload.discrepancyOverview.mismatchedIds,
+                        ),
+                ),
             ),
         );
     };

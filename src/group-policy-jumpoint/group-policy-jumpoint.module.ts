@@ -9,18 +9,12 @@ import { GroupPolicyJumpointController } from './controllers/group-policy-jumpoi
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { GroupPolicyJumpointRepositoryService } from './repositories/services/group-policy-jumpoint-repository.service';
-import { GroupPolicyJumpointsSaga } from './sagas';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [GroupPolicyJumpointController],
-    providers: [
-        ...CommandHandlers,
-        ...QueryHandlers,
-        ...EventHandlers,
-        GroupPolicyJumpointRepositoryService,
-        GroupPolicyJumpointsSaga,
-    ],
+    providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers, GroupPolicyJumpointRepositoryService],
+    exports: [],
 })
 export class GroupPolicyJumpointModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

@@ -20,4 +20,8 @@ export type DiscrepancyStrategy<BT, DB, Entity> = {
     dbDeleteFunc: (tenantId: number, id: number) => Promise<void>;
     dbMarkAsSyncedFunc: (transactionId: string, tenantId: number, id: number) => Promise<void>;
     trimmedProps: (keyof Entity)[];
+    relationalEntityComparisonProps?: {
+        parent: keyof Entity;
+        child: keyof Entity;
+    };
 };

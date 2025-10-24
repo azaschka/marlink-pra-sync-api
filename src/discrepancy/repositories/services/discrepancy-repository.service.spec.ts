@@ -57,6 +57,22 @@ describe('DiscrepancyRepositoryService', () => {
         });
     });
 
+    describe('findOneByEntityTypeEntityIdAndForeignEntityId', () => {
+        it('should call findOneBy with the correct parameters', async () => {
+            const entityType = DiscrepancyEntityType.GroupPolicyJumpGroup;
+            const entityId = 2;
+            const foreignEntityId = 3;
+            const expectedWhere = { entityType, entityId, foreignEntityId };
+            const baseTenantRepositoryFindOneByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'findOneBy')
+                .mockReturnValue(Promise.resolve());
+
+            await service.findOneByEntityTypeEntityIdAndForeignEntityId(123, entityType, entityId, foreignEntityId);
+
+            expect(baseTenantRepositoryFindOneByMethod).toHaveBeenCalledWith(123, expectedWhere);
+        });
+    });
+
     describe('deleteById', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const id = 1;

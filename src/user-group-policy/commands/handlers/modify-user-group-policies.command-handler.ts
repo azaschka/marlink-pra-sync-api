@@ -72,9 +72,8 @@ export class ModifyUserGroupPoliciesCommandHandler implements ICommandHandler<Mo
     }
 
     private createUserGroupPolicyEntities(userId: number, btUserGroupPolicies: UserGroupPolicyRetrievedDtoOutput[]) {
-        return UserGroupPolicyEntity.create(
-            userId,
-            btUserGroupPolicies.map((policy) => policy.id),
+        return btUserGroupPolicies.map((btUserGroupPolicy) =>
+            UserGroupPolicyEntity.createFromBT(userId, btUserGroupPolicy),
         );
     }
 

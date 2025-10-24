@@ -1,3 +1,4 @@
+import { TeamUserRetrievedDtoOutput as BTTeamUser } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
 import { DateUtility } from '../../../shared/utilities';
 import { TeamEntity } from '../../../team/repositories/entities';
 import { UserEntity } from '../../../user/repositories/entities';
@@ -22,5 +23,9 @@ export class TeamUserEntity implements TeamUser {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(teamId: number, btTeamUser: BTTeamUser) {
+        return TeamUserEntity.create(teamId, btTeamUser.userId, btTeamUser.role);
     }
 }

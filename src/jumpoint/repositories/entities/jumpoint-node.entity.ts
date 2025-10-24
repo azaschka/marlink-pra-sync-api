@@ -1,3 +1,4 @@
+import { JumpointNodeRetrievedDtoOutput as BTJumpointNode } from '../../../beyondtrust-pra-conf-api/jumpoint/dtos/outputs';
 import { DateUtility } from '../../../shared/utilities';
 import { JumpointNode } from '../../models';
 import { JumpointEntity } from './jumpoint.entity';
@@ -33,5 +34,17 @@ export class JumpointNodeEntity implements JumpointNode {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(jumpointId: number, btJumpointNode: BTJumpointNode) {
+        return JumpointNodeEntity.create(
+            btJumpointNode.id,
+            jumpointId,
+            btJumpointNode.lastConnectTimestamp ? new Date(btJumpointNode.lastConnectTimestamp) : null,
+            btJumpointNode.lastDisconnectTimestamp ? new Date(btJumpointNode.lastDisconnectTimestamp) : null,
+            btJumpointNode.publicIp,
+            btJumpointNode.privateIp,
+            btJumpointNode.hostname,
+        );
     }
 }

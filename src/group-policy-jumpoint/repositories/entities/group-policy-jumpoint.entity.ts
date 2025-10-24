@@ -1,3 +1,4 @@
+import { GroupPolicyJumpointRetrievedDtoOutput as BTGroupPolicyJumpoint } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { JumpointEntity } from '../../../jumpoint/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
@@ -19,5 +20,9 @@ export class GroupPolicyJumpointEntity implements GroupPolicyJumpoint {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(groupPolicyId: number, btGroupPolicyJumpoint: BTGroupPolicyJumpoint) {
+        return GroupPolicyJumpointEntity.create(groupPolicyId, btGroupPolicyJumpoint.jumpointId);
     }
 }

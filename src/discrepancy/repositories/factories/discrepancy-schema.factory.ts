@@ -28,6 +28,11 @@ export class DiscrepancySchemaFactory implements BaseTenantEntitySchemaFactory<D
                     type: 'int',
                     nullable: false,
                 },
+                foreignEntityId: {
+                    name: 'foreign_entity_id',
+                    type: 'int',
+                    nullable: true,
+                },
                 internalData: {
                     name: 'internal_data',
                     type: 'json',

@@ -9,11 +9,13 @@ import { JumpPolicyController } from './controllers/jump-policy.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { JumpPolicyRepositoryService } from './repositories/services/jump-policy-repository.service';
+import { JumpPolicyService } from './services/jump-policy.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [JumpPolicyController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, JumpPolicyRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, JumpPolicyRepositoryService, JumpPolicyService],
+    exports: [JumpPolicyService],
 })
 export class JumpPolicyModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

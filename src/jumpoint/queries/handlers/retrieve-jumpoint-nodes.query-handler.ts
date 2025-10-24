@@ -17,8 +17,8 @@ export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<Retrieve
         const jumpointNodes = await this.jumpointNodeRepositoryService.findBy(
             query.tenantId,
             jumpointNodeFindByQuery,
-            undefined,
-            undefined,
+            query.pageNumber,
+            query.pageSize,
         );
 
         if (jumpointNodes.length === 0) {

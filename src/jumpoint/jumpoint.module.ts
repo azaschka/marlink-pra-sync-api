@@ -10,7 +10,8 @@ import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { JumpointNodeRepositoryService } from './repositories/services/jumpoint-node-repository.service';
 import { JumpointRepositoryService } from './repositories/services/jumpoint-repository.service';
-import { JumpointNodesSaga } from './sagas';
+import { JumpointNodeService } from './services/jumpoint-node.service';
+import { JumpointService } from './services/jumpoint.service';
 
 @Module({
     imports: [AppConfigModule],
@@ -21,8 +22,10 @@ import { JumpointNodesSaga } from './sagas';
         ...EventHandlers,
         JumpointRepositoryService,
         JumpointNodeRepositoryService,
-        JumpointNodesSaga,
+        JumpointService,
+        JumpointNodeService,
     ],
+    exports: [JumpointService, JumpointNodeService],
 })
 export class JumpointModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

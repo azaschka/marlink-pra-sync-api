@@ -1,10 +1,11 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { differenceBy, differenceWith, intersectionBy, intersectionWith, isEqual } from 'lodash';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicy as DBGroupPolicy } from '../../../group-policy/models';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { DateUtility, ObjectUtility, PaginationUtility } from '../../../shared/utilities';
+import { DiscrepancyFoundEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
@@ -17,6 +18,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
         private readonly appConfigService: AppConfigService,
         private readonly discrepancyStrategyProviderService: DiscrepancyStrategyProviderService,
         private readonly discrepancyRepositoryService: DiscrepancyRepositoryService,
+        private readonly eventBus: EventBus,
     ) {}
 
     public async execute(command: ScanDiscrepancyCommand): Promise<DiscrepancyOverview> {
@@ -141,14 +143,29 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             startSyncUtcDate,
         );
 
-        return {
+        const discrepancyOverview: DiscrepancyOverview = {
             entityType: command.entityType,
             totalBtData: btData.length,
             totalDbData: dbData.length,
-            identicalDataIds: identicalData.map((d) => d.id),
-            onlyInBtIds: onlyInBt.map((d) => d.id),
-            onlyInDbIds: onlyInDb.map((d) => d.id),
-            differentDataIds: differentDataPairs.map((pair) => pair.bt.id),
+            identicalIds: identicalData.map((d) => d.id),
+            onlyInExternalIds: onlyInBt.map((d) => d.id),
+            onlyInInternalIds: onlyInDb.map((d) => d.id),
+            mismatchedIds: differentDataPairs.map((pair) => pair.bt.id),
         };
+
+        if (
+            discrepancyOverview.onlyInExternalIds.length > 0 ||
+            discrepancyOverview.onlyInInternalIds.length > 0 ||
+            discrepancyOverview.mismatchedIds.length > 0
+        ) {
+            this.eventBus.publish(
+                new DiscrepancyFoundEvent(command.transactionId, {
+                    tenantId: command.tenantId,
+                    discrepancyOverview: discrepancyOverview,
+                }),
+            );
+        }
+
+        return discrepancyOverview;
     }
 }

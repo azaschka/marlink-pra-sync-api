@@ -9,11 +9,13 @@ import { RemoteRdpController } from './controllers/remote-rdp.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { RemoteRdpRepositoryService } from './repositories/services/remote-rdp-repository.service';
+import { RemoteRdpService } from './services/remote-rdp.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [RemoteRdpController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, RemoteRdpRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, RemoteRdpRepositoryService, RemoteRdpService],
+    exports: [RemoteRdpService],
 })
 export class RemoteRdpModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

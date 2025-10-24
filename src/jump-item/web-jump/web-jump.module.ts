@@ -9,11 +9,13 @@ import { WebJumpController } from './controllers/web-jump.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { WebJumpRepositoryService } from './repositories/services/web-jump-repository.service';
+import { WebJumpService } from './services/web-jump.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [WebJumpController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, WebJumpRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, WebJumpRepositoryService, WebJumpService],
+    exports: [WebJumpService],
 })
 export class WebJumpModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

@@ -9,11 +9,13 @@ import { UserController } from './controllers/user.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { UserRepositoryService } from './repositories/services/user-repository.service';
+import { UserService } from './services/user.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [UserController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, UserRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, UserRepositoryService, UserService],
+    exports: [UserService],
 })
 export class UserModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

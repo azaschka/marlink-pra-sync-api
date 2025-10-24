@@ -1,3 +1,4 @@
+import { GroupPolicyJumpGroupRetrievedDtoOutput as BTGroupPolicyJumpGroup } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { JumpGroupEntity } from '../../../jump-group/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
@@ -28,5 +29,14 @@ export class GroupPolicyJumpGroupEntity implements GroupPolicyJumpGroup {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(groupPolicyId: number, btGroupPolicyJumpGroup: BTGroupPolicyJumpGroup) {
+        return GroupPolicyJumpGroupEntity.create(
+            groupPolicyId,
+            btGroupPolicyJumpGroup.jumpGroupId,
+            btGroupPolicyJumpGroup.jumpItemRoleId,
+            btGroupPolicyJumpGroup.jumpPolicyId,
+        );
     }
 }

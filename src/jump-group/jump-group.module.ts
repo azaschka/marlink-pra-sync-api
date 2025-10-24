@@ -9,11 +9,13 @@ import { JumpGroupController } from './controllers/jump-group.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { JumpGroupRepositoryService } from './repositories/services/jump-group-repository.service';
+import { JumpGroupService } from './services/jump-group.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [JumpGroupController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, JumpGroupRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, JumpGroupRepositoryService, JumpGroupService],
+    exports: [JumpGroupService],
 })
 export class JumpGroupModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

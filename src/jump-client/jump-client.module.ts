@@ -11,6 +11,8 @@ import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { JumpClientInstallerRepositoryService } from './repositories/services/jump-client-installer-repository.service';
 import { JumpClientRepositoryService } from './repositories/services/jump-client-repository.service';
+import { JumpClientInstallerService } from './services/jump-client-installer.service';
+import { JumpClientService } from './services/jump-client.service';
 
 @Module({
     imports: [AppConfigModule],
@@ -21,7 +23,10 @@ import { JumpClientRepositoryService } from './repositories/services/jump-client
         ...EventHandlers,
         JumpClientRepositoryService,
         JumpClientInstallerRepositoryService,
+        JumpClientService,
+        JumpClientInstallerService,
     ],
+    exports: [JumpClientService, JumpClientInstallerService],
 })
 export class JumpClientModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

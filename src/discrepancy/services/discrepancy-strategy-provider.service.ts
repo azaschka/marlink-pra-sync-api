@@ -5,8 +5,20 @@ import {
     DeleteGroupPolicyCommand as BTDeleteGroupPolicyCommand,
     ModifyGroupPolicyCommand as BTModifyGroupPolicyCommand,
 } from '../../beyondtrust-pra-conf-api/group-policy/commands';
-import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
-import { RetrieveGroupPoliciesQuery as BTRetrieveGroupPoliciesQuery } from '../../beyondtrust-pra-conf-api/group-policy/queries';
+import {
+    GroupPolicyRetrievedDtoOutput as BTGroupPolicy,
+    GroupPolicyJumpGroupRetrievedDtoOutput as BTGroupPolicyJumpGroup,
+    GroupPolicyJumpointRetrievedDtoOutput as BTGroupPolicyJumpoint,
+    GroupPolicyMemberRetrievedDtoOutput as BTGroupPolicyMember,
+    GroupPolicyTeamRetrievedDtoOutput as BTGroupPolicyTeam,
+} from '../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
+import {
+    RetrieveGroupPoliciesQuery as BTRetrieveGroupPoliciesQuery,
+    RetrieveGroupPolicyJumpGroupsQuery as BTRetrieveGroupPolicyJumpGroupsQuery,
+    RetrieveGroupPolicyJumpointsQuery as BTRetrieveGroupPolicyJumpointsQuery,
+    RetrieveGroupPolicyMembersQuery as BTRetrieveGroupPolicyMembersQuery,
+    RetrieveGroupPolicyTeamsQuery as BTRetrieveGroupPolicyTeamsQuery,
+} from '../../beyondtrust-pra-conf-api/group-policy/queries';
 import {
     CreateJumpClientInstallerCommand as BTCreateJumpClientInstallerCommand,
     DeleteJumpClientCommand as BTDeleteJumpClientCommand,
@@ -75,22 +87,56 @@ import {
     DeleteJumpointCommand as BTDeleteJumpointCommand,
     ModifyJumpointCommand as BTModifyJumpointCommand,
 } from '../../beyondtrust-pra-conf-api/jumpoint/commands';
-import { JumpointRetrievedDtoOutput as BTJumpoint } from '../../beyondtrust-pra-conf-api/jumpoint/dtos/outputs';
-import { RetrieveJumpointsQuery as BTRetrieveJumpointsQuery } from '../../beyondtrust-pra-conf-api/jumpoint/queries';
+import {
+    JumpointRetrievedDtoOutput as BTJumpoint,
+    JumpointNodeRetrievedDtoOutput as BTJumpointNode,
+} from '../../beyondtrust-pra-conf-api/jumpoint/dtos/outputs';
+import {
+    RetrieveJumpointNodesQuery as BTRetrieveJumpointNodesQuery,
+    RetrieveJumpointsQuery as BTRetrieveJumpointsQuery,
+} from '../../beyondtrust-pra-conf-api/jumpoint/queries';
 import {
     CreateTeamCommand as BTCreateTeamCommand,
     DeleteTeamCommand as BTDeleteTeamCommand,
     ModifyTeamCommand as BTModifyTeamCommand,
 } from '../../beyondtrust-pra-conf-api/team/commands';
-import { TeamRetrievedDtoOutput as BTTeam } from '../../beyondtrust-pra-conf-api/team/dtos/outputs';
-import { RetrieveTeamsQuery as BTRetrieveTeamsQuery } from '../../beyondtrust-pra-conf-api/team/queries';
+import {
+    TeamRetrievedDtoOutput as BTTeam,
+    TeamUserRetrievedDtoOutput as BTTeamUser,
+} from '../../beyondtrust-pra-conf-api/team/dtos/outputs';
+import {
+    RetrieveTeamsQuery as BTRetrieveTeamsQuery,
+    RetrieveTeamUsersQuery as BTRetrieveTeamUsersQuery,
+} from '../../beyondtrust-pra-conf-api/team/queries';
 import {
     CreateUserCommand as BTCreateUserCommand,
     DeleteUserCommand as BTDeleteUserCommand,
     ModifyUserCommand as BTModifyUserCommand,
 } from '../../beyondtrust-pra-conf-api/user/commands';
-import { UserRetrievedDtoOutput as BTUser } from '../../beyondtrust-pra-conf-api/user/dtos/outputs';
-import { RetrieveUsersQuery as BTRetrieveUsersQuery } from '../../beyondtrust-pra-conf-api/user/queries';
+import {
+    UserRetrievedDtoOutput as BTUser,
+    UserGroupPolicyRetrievedDtoOutput as BTUserGroupPolicy,
+} from '../../beyondtrust-pra-conf-api/user/dtos/outputs';
+import {
+    RetrieveUserGroupPoliciesQuery as BTRetrieveUserGroupPoliciesQuery,
+    RetrieveUsersQuery as BTRetrieveUsersQuery,
+} from '../../beyondtrust-pra-conf-api/user/queries';
+import { MarkGroupPolicyJumpGroupAsSyncedCommand as DBMarkGroupPolicyJumpGroupAsSyncedCommand } from '../../group-policy-jump-group/commands';
+import { GroupPolicyJumpGroup as DBGroupPolicyJumpGroup } from '../../group-policy-jump-group/models';
+import { RetrieveGroupPolicyJumpGroupsQuery as DBRetrieveGroupPolicyJumpGroupsQuery } from '../../group-policy-jump-group/queries';
+import { GroupPolicyJumpGroupEntity } from '../../group-policy-jump-group/repositories/entities';
+import { MarkGroupPolicyJumpointAsSyncedCommand as DBMarkGroupPolicyJumpointAsSyncedCommand } from '../../group-policy-jumpoint/commands';
+import { GroupPolicyJumpoint as DBGroupPolicyJumpoint } from '../../group-policy-jumpoint/models';
+import { RetrieveGroupPolicyJumpointsQuery as DBRetrieveGroupPolicyJumpointsQuery } from '../../group-policy-jumpoint/queries';
+import { GroupPolicyJumpointEntity } from '../../group-policy-jumpoint/repositories/entities';
+import { MarkGroupPolicyMemberAsSyncedCommand as DBMarkGroupPolicyMemberAsSyncedCommand } from '../../group-policy-member/commands';
+import { GroupPolicyMember as DBGroupPolicyMember } from '../../group-policy-member/models';
+import { RetrieveGroupPolicyMembersQuery as DBRetrieveGroupPolicyMembersQuery } from '../../group-policy-member/queries';
+import { GroupPolicyMemberEntity } from '../../group-policy-member/repositories/entities';
+import { MarkGroupPolicyTeamAsSyncedCommand as DBMarkGroupPolicyTeamAsSyncedCommand } from '../../group-policy-team/commands';
+import { GroupPolicyTeam as DBGroupPolicyTeam } from '../../group-policy-team/models';
+import { RetrieveGroupPolicyTeamsQuery as DBRetrieveGroupPolicyTeamsQuery } from '../../group-policy-team/queries';
+import { GroupPolicyTeamEntity } from '../../group-policy-team/repositories/entities';
 import { MarkGroupPolicyAsSyncedCommand as DBMarkGroupPolicyAsSyncedCommand } from '../../group-policy/commands';
 import { mapToBTAccessPermissionStatusType } from '../../group-policy/mappers';
 import { GroupPolicy as DBGroupPolicy } from '../../group-policy/models';
@@ -155,17 +201,31 @@ import { JumpPolicy as DBJumpPolicy } from '../../jump-policy/models';
 import { RetrieveJumpPoliciesQuery as DBRetrieveJumpPoliciesQuery } from '../../jump-policy/queries';
 import { JumpPolicyEntity } from '../../jump-policy/repositories/entities';
 import { JumpPolicyService } from '../../jump-policy/services/jump-policy.service';
-import { MarkJumpointAsSyncedCommand as DBMarkJumpointAsSyncedCommand } from '../../jumpoint/commands';
+import {
+    MarkJumpointAsSyncedCommand as DBMarkJumpointAsSyncedCommand,
+    MarkJumpointNodeAsSyncedCommand as DBMarkJumpointNodeAsSyncedCommand,
+} from '../../jumpoint/commands';
 import { mapToBTJumpointPlatformType, mapToBTJzpClientAddressRestrictionsType } from '../../jumpoint/mappers';
-import { Jumpoint as DBJumpoint } from '../../jumpoint/models';
-import { RetrieveJumpointsQuery as DBRetrieveJumpointsQuery } from '../../jumpoint/queries';
-import { JumpointEntity } from '../../jumpoint/repositories/entities';
+import { Jumpoint as DBJumpoint, JumpointNode as DBJumpointNode } from '../../jumpoint/models';
+import {
+    RetrieveJumpointNodesQuery as DBRetrieveJumpointNodesQuery,
+    RetrieveJumpointsQuery as DBRetrieveJumpointsQuery,
+} from '../../jumpoint/queries';
+import { JumpointEntity, JumpointNodeEntity } from '../../jumpoint/repositories/entities';
 import { JumpointService } from '../../jumpoint/services/jumpoint.service';
+import { MarkTeamUserAsSyncedCommand as DBMarkTeamUserAsSyncedCommand } from '../../team-user/commands';
+import { TeamUser as DBTeamUser } from '../../team-user/models';
+import { RetrieveTeamUsersQuery as DBRetrieveTeamUsersQuery } from '../../team-user/queries';
+import { TeamUserEntity } from '../../team-user/repositories/entities';
 import { MarkTeamAsSyncedCommand as DBMarkTeamAsSyncedCommand } from '../../team/commands';
 import { Team as DBTeam } from '../../team/models';
 import { RetrieveTeamsQuery as DBRetrieveTeamsQuery } from '../../team/queries';
 import { TeamEntity } from '../../team/repositories/entities';
 import { TeamService } from '../../team/services/team.service';
+import { MarkUserGroupPolicyAsSyncedCommand as DBMarkUserGroupPolicyAsSyncedCommand } from '../../user-group-policy/commands';
+import { UserGroupPolicy as DBUserGroupPolicy } from '../../user-group-policy/models';
+import { RetrieveUserGroupPoliciesQuery as DBRetrieveUserGroupPoliciesQuery } from '../../user-group-policy/queries';
+import { UserGroupPolicyEntity } from '../../user-group-policy/repositories/entities';
 import { MarkUserAsSyncedCommand as DBMarkUserAsSyncedCommand } from '../../user/commands';
 import { User as DBUser } from '../../user/models';
 import { RetrieveUsersQuery as DBRetrieveUsersQuery } from '../../user/queries';
@@ -1059,6 +1119,225 @@ export class DiscrepancyStrategyProviderService {
                     'groupPolicyMembers',
                 ],
             } as DiscrepancyStrategy<BTUser, DBUser, UserEntity>;
+        }
+
+        throw new Error(`Unsupported entity type: ${entityType}`);
+    }
+
+    public getForRelation(parentId: number, entityType: DiscrepancyEntityType) {
+        if (entityType === DiscrepancyEntityType.GroupPolicyJumpGroup) {
+            return {
+                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<BTRetrieveGroupPolicyJumpGroupsQuery, BTGroupPolicyJumpGroup[]>(
+                        new BTRetrieveGroupPolicyJumpGroupsQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                btToDbEntity: (bt) => GroupPolicyJumpGroupEntity.createFromBT(parentId, bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveGroupPolicyJumpGroupsQuery, DBGroupPolicyJumpGroup[]>(
+                        new DBRetrieveGroupPolicyJumpGroupsQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                    this.commandBus.execute(
+                        new DBMarkGroupPolicyJumpGroupAsSyncedCommand(transactionId, tenantId, parentId, id),
+                    ),
+                trimmedProps: ['lastSyncDate', 'groupPolicy', 'jumpGroup'],
+                relationalEntityComparisonProps: {
+                    parent: 'groupPolicyId',
+                    child: 'jumpGroupId',
+                },
+            } as DiscrepancyStrategy<BTGroupPolicyJumpGroup, DBGroupPolicyJumpGroup, GroupPolicyJumpGroupEntity>;
+        }
+
+        if (entityType === DiscrepancyEntityType.GroupPolicyJumpoint) {
+            return {
+                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<BTRetrieveGroupPolicyJumpointsQuery, BTGroupPolicyJumpoint[]>(
+                        new BTRetrieveGroupPolicyJumpointsQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                btToDbEntity: (bt) => GroupPolicyJumpointEntity.createFromBT(parentId, bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveGroupPolicyJumpointsQuery, DBGroupPolicyJumpoint[]>(
+                        new DBRetrieveGroupPolicyJumpointsQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                    this.commandBus.execute(
+                        new DBMarkGroupPolicyJumpointAsSyncedCommand(transactionId, tenantId, parentId, id),
+                    ),
+                trimmedProps: ['lastSyncDate', 'groupPolicy', 'jumpoint'],
+                relationalEntityComparisonProps: {
+                    parent: 'groupPolicyId',
+                    child: 'jumpointId',
+                },
+            } as DiscrepancyStrategy<BTGroupPolicyJumpoint, DBGroupPolicyJumpoint, GroupPolicyJumpointEntity>;
+        }
+
+        if (entityType === DiscrepancyEntityType.GroupPolicyMember) {
+            return {
+                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<BTRetrieveGroupPolicyMembersQuery, BTGroupPolicyMember[]>(
+                        new BTRetrieveGroupPolicyMembersQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                btToDbEntity: (bt) => GroupPolicyMemberEntity.createFromBT(parentId, bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveGroupPolicyMembersQuery, DBGroupPolicyMember[]>(
+                        new DBRetrieveGroupPolicyMembersQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                    this.commandBus.execute(
+                        new DBMarkGroupPolicyMemberAsSyncedCommand(transactionId, tenantId, parentId, id),
+                    ),
+                trimmedProps: ['lastSyncDate', 'groupPolicy', 'user', 'distinguishedName', 'groupName'],
+                relationalEntityComparisonProps: {
+                    parent: 'groupPolicyId',
+                    child: 'memberId',
+                },
+            } as DiscrepancyStrategy<BTGroupPolicyMember, DBGroupPolicyMember, GroupPolicyMemberEntity>;
+        }
+
+        if (entityType === DiscrepancyEntityType.GroupPolicyTeam) {
+            return {
+                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<BTRetrieveGroupPolicyTeamsQuery, BTGroupPolicyTeam[]>(
+                        new BTRetrieveGroupPolicyTeamsQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                btToDbEntity: (bt) => GroupPolicyTeamEntity.createFromBT(parentId, bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveGroupPolicyTeamsQuery, DBGroupPolicyTeam[]>(
+                        new DBRetrieveGroupPolicyTeamsQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                    this.commandBus.execute(
+                        new DBMarkGroupPolicyTeamAsSyncedCommand(transactionId, tenantId, parentId, id),
+                    ),
+                trimmedProps: ['lastSyncDate', 'groupPolicy', 'team'],
+                relationalEntityComparisonProps: {
+                    parent: 'groupPolicyId',
+                    child: 'teamId',
+                },
+            } as DiscrepancyStrategy<BTGroupPolicyTeam, DBGroupPolicyTeam, GroupPolicyTeamEntity>;
+        }
+
+        if (entityType === DiscrepancyEntityType.JumpointNode) {
+            return {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                btRetrieveFunc: (transactionId, tenantId, _maxBatchSize, _pageNumber) =>
+                    this.queryBus.execute<BTRetrieveJumpointNodesQuery, BTJumpointNode[]>(
+                        new BTRetrieveJumpointNodesQuery(transactionId, tenantId, parentId),
+                    ),
+                btToDbEntity: (bt) => JumpointNodeEntity.createFromBT(parentId, bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveJumpointNodesQuery, DBJumpointNode[]>(
+                        new DBRetrieveJumpointNodesQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
+                    ),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                    this.commandBus.execute(
+                        new DBMarkJumpointNodeAsSyncedCommand(transactionId, tenantId, parentId, id),
+                    ),
+                trimmedProps: ['lastSyncDate', 'jumpoint'],
+                relationalEntityComparisonProps: {
+                    parent: 'jumpointId',
+                    child: 'id',
+                },
+            } as DiscrepancyStrategy<BTJumpointNode, DBJumpointNode, JumpointNodeEntity>;
+        }
+
+        if (entityType === DiscrepancyEntityType.TeamUser) {
+            return {
+                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<BTRetrieveTeamUsersQuery, BTTeamUser[]>(
+                        new BTRetrieveTeamUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
+                    ),
+                btToDbEntity: (bt) => TeamUserEntity.createFromBT(parentId, bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveTeamUsersQuery, DBTeamUser[]>(
+                        new DBRetrieveTeamUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
+                    ),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                    this.commandBus.execute(new DBMarkTeamUserAsSyncedCommand(transactionId, tenantId, parentId, id)),
+                trimmedProps: ['lastSyncDate', 'team', 'user'],
+                relationalEntityComparisonProps: {
+                    parent: 'teamId',
+                    child: 'userId',
+                },
+            } as DiscrepancyStrategy<BTTeamUser, DBTeamUser, TeamUserEntity>;
+        }
+
+        if (entityType === DiscrepancyEntityType.UserGroupPolicy) {
+            return {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                btRetrieveFunc: (transactionId, tenantId, _maxBatchSize, _pageNumber) =>
+                    this.queryBus.execute<BTRetrieveUserGroupPoliciesQuery, BTUserGroupPolicy[]>(
+                        new BTRetrieveUserGroupPoliciesQuery(transactionId, tenantId, parentId),
+                    ),
+                btToDbEntity: (bt) => UserGroupPolicyEntity.createFromBT(parentId, bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveUserGroupPoliciesQuery, DBUserGroupPolicy[]>(
+                        new DBRetrieveUserGroupPoliciesQuery(
+                            transactionId,
+                            tenantId,
+                            maxBatchSize,
+                            pageNumber,
+                            parentId,
+                        ),
+                    ),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                    this.commandBus.execute(
+                        new DBMarkUserGroupPolicyAsSyncedCommand(transactionId, tenantId, parentId, id),
+                    ),
+                trimmedProps: ['lastSyncDate', 'user', 'groupPolicy'],
+                relationalEntityComparisonProps: {
+                    parent: 'userId',
+                    child: 'groupPolicyId',
+                },
+            } as DiscrepancyStrategy<BTUserGroupPolicy, DBUserGroupPolicy, UserGroupPolicyEntity>;
         }
 
         throw new Error(`Unsupported entity type: ${entityType}`);

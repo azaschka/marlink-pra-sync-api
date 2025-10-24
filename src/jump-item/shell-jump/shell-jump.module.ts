@@ -9,11 +9,13 @@ import { ShellJumpController } from './controllers/shell-jump.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { ShellJumpRepositoryService } from './repositories/services/shell-jump-repository.service';
+import { ShellJumpService } from './services/shell-jump.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [ShellJumpController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, ShellJumpRepositoryService],
+    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, ShellJumpRepositoryService, ShellJumpService],
+    exports: [ShellJumpService],
 })
 export class ShellJumpModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

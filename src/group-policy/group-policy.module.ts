@@ -9,11 +9,19 @@ import { GroupPolicyController } from './controllers/group-policy.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { GroupPolicyRepositoryService } from './repositories/services/group-policy-repository.service';
+import { GroupPolicyService } from './services/group-policy.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [GroupPolicyController],
-    providers: [...QueryHandlers, ...CommandHandlers, ...EventHandlers, GroupPolicyRepositoryService],
+    providers: [
+        ...QueryHandlers,
+        ...CommandHandlers,
+        ...EventHandlers,
+        GroupPolicyRepositoryService,
+        GroupPolicyService,
+    ],
+    exports: [GroupPolicyService],
 })
 export class GroupPolicyModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;
