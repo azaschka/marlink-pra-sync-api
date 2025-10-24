@@ -7,7 +7,7 @@ export type DiscrepancyStrategy<BT, DB, Entity> = {
     ) => Promise<BT[]>;
     btCreateFunc: (transactionId: string, tenantId: number, entity: Entity) => Promise<void>;
     btModifyFunc: (transactionId: string, tenantId: number, entity: Entity) => Promise<void>;
-    btDeleteFunc: (transactionId: string, tenantId: number, id: number) => Promise<void>;
+    btDeleteFunc: (transactionId: string, tenantId: number, entity: Entity) => Promise<void>;
     btOmittedPropsForDuplicateCheck?: (keyof BT)[];
     btToDbEntity: (bt: BT) => Entity;
     dbRetrieveFunc: (
@@ -17,8 +17,8 @@ export type DiscrepancyStrategy<BT, DB, Entity> = {
         pageNumber: number,
     ) => Promise<DB[]>;
     dbCreateOrUpdateFunc: (tenantId: number, entity: Entity) => Promise<void>;
-    dbDeleteFunc: (tenantId: number, id: number) => Promise<void>;
-    dbMarkAsSyncedFunc: (transactionId: string, tenantId: number, id: number) => Promise<void>;
+    dbDeleteFunc: (tenantId: number, entity: Entity) => Promise<void>;
+    dbMarkAsSyncedFunc: (transactionId: string, tenantId: number, entity: Entity) => Promise<void>;
     trimmedProps: (keyof Entity)[];
     relationalEntityComparisonProps?: {
         parent: keyof Entity;

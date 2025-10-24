@@ -12,6 +12,12 @@ import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-s
 import { DiscrepancyStrategy } from '../../types';
 import { ScanDiscrepancyCommand } from '../scan-discrepancy.command';
 
+// Using GroupPolicy as representative type.
+// TODO: Generalize for different discrepancy types.
+type RepresentativeEntity = GroupPolicyEntity;
+type BTRepresentative = BTGroupPolicy;
+type DBRepresentative = DBGroupPolicy;
+
 @CommandHandler(ScanDiscrepancyCommand)
 export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscrepancyCommand> {
     constructor(
@@ -26,7 +32,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
 
         const discrepancyStrategy = this.discrepancyStrategyProviderService.get(
             command.entityType,
-        ) as DiscrepancyStrategy<BTGroupPolicy, DBGroupPolicy, GroupPolicyEntity>; // Group policy as representative type.
+        ) as DiscrepancyStrategy<BTRepresentative, DBRepresentative, RepresentativeEntity>;
 
         const btData = (
             await PaginationUtility.queryUntilDuplicatePage(
@@ -42,7 +48,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
         )
             .map((btData) => discrepancyStrategy.btToDbEntity(btData))
             .map((data) => ObjectUtility.stripProperties(data, ...discrepancyStrategy.trimmedProps))
-            .map((data) => JSON.parse(JSON.stringify(data)) as { id: number }); // Remove undefined values and convert to plain object
+            .map((data) => JSON.parse(JSON.stringify(data)) as RepresentativeEntity); // Remove undefined values and convert to plain object
 
         const dbData = (
             await PaginationUtility.queryUntilLastPage((pageNumber: number) =>
@@ -55,7 +61,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             )
         )
             .map((data) => ObjectUtility.stripProperties(data, ...discrepancyStrategy.trimmedProps))
-            .map((data) => JSON.parse(JSON.stringify(data)) as { id: number }); // Remove undefined values and convert to plain object
+            .map((data) => JSON.parse(JSON.stringify(data)) as RepresentativeEntity); // Remove undefined values and convert to plain object
 
         // 1. identical
         const identicalData = intersectionWith(btData, dbData, isEqual);
@@ -78,7 +84,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
 
         // Mark identical data as synced
         for (const data of identicalData) {
-            await discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data.id);
+            await discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data);
         }
 
         // Handle data which only exist in BT
@@ -94,7 +100,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 entityType: command.entityType,
                 entityId: bt.id,
                 internalData: undefined,
-                externalData: bt,
+                externalData: bt as unknown as Record<string, unknown>,
                 lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
             });
         }
@@ -111,7 +117,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 id: existingDiscrepancy?.id,
                 entityType: command.entityType,
                 entityId: db.id,
-                internalData: db,
+                internalData: db as unknown as Record<string, unknown>,
                 externalData: undefined,
                 lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
             });
@@ -130,8 +136,8 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 id: existingDiscrepancy?.id,
                 entityType: command.entityType,
                 entityId: entityId,
-                internalData: pair.db,
-                externalData: pair.bt,
+                internalData: pair.db as unknown as Record<string, unknown>,
+                externalData: pair.bt as unknown as Record<string, unknown>,
                 lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
             });
         }

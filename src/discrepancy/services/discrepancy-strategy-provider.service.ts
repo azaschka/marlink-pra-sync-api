@@ -326,8 +326,8 @@ export class DiscrepancyStrategyProviderService {
                             entity.unassignedJumpItemRoleId,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteGroupPolicyCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteGroupPolicyCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => GroupPolicyEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveGroupPoliciesQuery, DBGroupPolicy[]>(
@@ -335,9 +335,9 @@ export class DiscrepancyStrategyProviderService {
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) =>
                     this.groupPolicyService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.groupPolicyService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkGroupPolicyAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.groupPolicyService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkGroupPolicyAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: [
                     'lastSyncDate',
                     'userGroupPolicies',
@@ -387,8 +387,8 @@ export class DiscrepancyStrategyProviderService {
 
                     return Promise.resolve();
                 },
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteJumpClientInstallerCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteJumpClientInstallerCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => JumpClientInstallerEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveJumpClientInstallersQuery, DBJumpClientInstaller[]>(
@@ -396,9 +396,11 @@ export class DiscrepancyStrategyProviderService {
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) =>
                     this.jumpClientInstallerService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.jumpClientInstallerService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpClientInstallerAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.jumpClientInstallerService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new DBMarkJumpClientInstallerAsSyncedCommand(transactionId, tenantId, entity.id),
+                    ),
                 trimmedProps: ['lastSyncDate', 'keyInfo'],
             } as DiscrepancyStrategy<BTJumpClientInstaller, DBJumpClientInstaller, JumpClientInstallerEntity>;
         }
@@ -435,17 +437,17 @@ export class DiscrepancyStrategyProviderService {
                                 : undefined,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteJumpClientCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteJumpClientCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => JumpClientEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveJumpClientsQuery, DBJumpClient[]>(
                         new DBRetrieveJumpClientsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.jumpClientService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.jumpClientService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpClientAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.jumpClientService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkJumpClientAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: ['lastSyncDate', 'expirationDate', 'jumpGroup', 'jumpPolicy'],
             } as DiscrepancyStrategy<BTJumpClient, DBJumpClient, JumpClientEntity>;
         }
@@ -477,17 +479,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.comments,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteJumpGroupCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteJumpGroupCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => JumpGroupEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveJumpGroupsQuery, DBJumpGroup[]>(
                         new DBRetrieveJumpGroupsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.jumpGroupService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.jumpGroupService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpGroupAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.jumpGroupService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkJumpGroupAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: ['lastSyncDate'],
             } as DiscrepancyStrategy<BTJumpGroup, DBJumpGroup, JumpGroupEntity>;
         }
@@ -575,17 +577,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.isRecordingsDisabled,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteJumpPolicyCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteJumpPolicyCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => JumpPolicyEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveJumpPoliciesQuery, DBJumpPolicy[]>(
                         new DBRetrieveJumpPoliciesQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.jumpPolicyService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.jumpPolicyService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpPolicyAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.jumpPolicyService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkJumpPolicyAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: [
                     'lastSyncDate',
                     'protocolTunnelJumps',
@@ -655,8 +657,8 @@ export class DiscrepancyStrategyProviderService {
                             entity.jzpRestrictedIps,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteJumpointCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteJumpointCommand(transactionId, tenantId, entity.id)),
                 btOmittedPropsForDuplicateCheck: ['keyInfo'],
                 btToDbEntity: (bt) => JumpointEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
@@ -664,9 +666,9 @@ export class DiscrepancyStrategyProviderService {
                         new DBRetrieveJumpointsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.jumpointService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.jumpointService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkJumpointAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.jumpointService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkJumpointAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: [
                     'lastSyncDate',
                     'externalJumpItemNetworkId',
@@ -735,8 +737,8 @@ export class DiscrepancyStrategyProviderService {
                             entity.caCertificates,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteProtocolTunnelJumpCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteProtocolTunnelJumpCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => ProtocolTunnelJumpEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveProtocolTunnelJumpsQuery, DBProtocolTunnelJump[]>(
@@ -744,9 +746,11 @@ export class DiscrepancyStrategyProviderService {
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) =>
                     this.protocolTunnelJumpService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.protocolTunnelJumpService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkProtocolTunnelJumpAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.protocolTunnelJumpService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new DBMarkProtocolTunnelJumpAsSyncedCommand(transactionId, tenantId, entity.id),
+                    ),
                 trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
             } as DiscrepancyStrategy<BTProtocolTunnelJump, DBProtocolTunnelJump, ProtocolTunnelJumpEntity>;
         }
@@ -816,17 +820,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.credentialType,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteRemoteRdpCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteRemoteRdpCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => RemoteRdpEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveRemoteRdpsQuery, DBRemoteRdp[]>(
                         new DBRetrieveRemoteRdpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.remoteRdpService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.remoteRdpService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkRemoteRdpAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.remoteRdpService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkRemoteRdpAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: ['lastSyncDate', 'secureAppType', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
             } as DiscrepancyStrategy<BTRemoteRdp, DBRemoteRdp, RemoteRdpEntity>;
         }
@@ -872,17 +876,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.sessionPolicyId,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteRemoteVncCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteRemoteVncCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => RemoteVncEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveRemoteVncsQuery, DBRemoteVnc[]>(
                         new DBRetrieveRemoteVncsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.remoteVncService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.remoteVncService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkRemoteVncAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.remoteVncService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkRemoteVncAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
             } as DiscrepancyStrategy<BTRemoteVnc, DBRemoteVnc, RemoteVncEntity>;
         }
@@ -936,17 +940,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.sessionPolicyId,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteShellJumpCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteShellJumpCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => ShellJumpEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveShellJumpsQuery, DBShellJump[]>(
                         new DBRetrieveShellJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.shellJumpService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.shellJumpService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkShellJumpAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.shellJumpService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkShellJumpAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
             } as DiscrepancyStrategy<BTShellJump, DBShellJump, ShellJumpEntity>;
         }
@@ -1006,17 +1010,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.sessionPolicyId,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteWebJumpCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteWebJumpCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => WebJumpEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveWebJumpsQuery, DBWebJump[]>(
                         new DBRetrieveWebJumpsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.webJumpService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.webJumpService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkWebJumpAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.webJumpService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkWebJumpAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: ['lastSyncDate', 'jumpoint', 'jumpGroup', 'jumpPolicy'],
             } as DiscrepancyStrategy<BTWebJump, DBWebJump, WebJumpEntity>;
         }
@@ -1042,17 +1046,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.comments,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteTeamCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteTeamCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => TeamEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveTeamsQuery, DBTeam[]>(
                         new DBRetrieveTeamsQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.teamService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.teamService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkTeamAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.teamService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkTeamAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: ['lastSyncDate', 'teamUsers', 'groupPolicyTeams'],
             } as DiscrepancyStrategy<BTTeam, DBTeam, TeamEntity>;
         }
@@ -1098,17 +1102,17 @@ export class DiscrepancyStrategyProviderService {
                             entity.mustResetPasswordOnNextLogin,
                         ),
                     ),
-                btDeleteFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new BTDeleteUserCommand(transactionId, tenantId, id)),
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new BTDeleteUserCommand(transactionId, tenantId, entity.id)),
                 btToDbEntity: (bt) => UserEntity.createFromBT(bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveUsersQuery, DBUser[]>(
                         new DBRetrieveUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber),
                     ),
                 dbCreateOrUpdateFunc: (tenantId, entity) => this.userService.createOrUpdateById(tenantId, entity),
-                dbDeleteFunc: (tenantId, id) => this.userService.deleteById(tenantId, id),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkUserAsSyncedCommand(transactionId, tenantId, id)),
+                dbDeleteFunc: (tenantId, entity) => this.userService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkUserAsSyncedCommand(transactionId, tenantId, entity.id)),
                 trimmedProps: [
                     'lastSyncDate',
                     'creationDate', // TODO v1 doesn't have date precision of 3, while v2 has. So they always differ.
@@ -1148,9 +1152,14 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
-                        new DBMarkGroupPolicyJumpGroupAsSyncedCommand(transactionId, tenantId, parentId, id),
+                        new DBMarkGroupPolicyJumpGroupAsSyncedCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpGroupId,
+                        ),
                     ),
                 trimmedProps: ['lastSyncDate', 'groupPolicy', 'jumpGroup'],
                 relationalEntityComparisonProps: {
@@ -1183,9 +1192,14 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
-                        new DBMarkGroupPolicyJumpointAsSyncedCommand(transactionId, tenantId, parentId, id),
+                        new DBMarkGroupPolicyJumpointAsSyncedCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpointId,
+                        ),
                     ),
                 trimmedProps: ['lastSyncDate', 'groupPolicy', 'jumpoint'],
                 relationalEntityComparisonProps: {
@@ -1218,9 +1232,14 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
-                        new DBMarkGroupPolicyMemberAsSyncedCommand(transactionId, tenantId, parentId, id),
+                        new DBMarkGroupPolicyMemberAsSyncedCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.memberId,
+                        ),
                     ),
                 trimmedProps: ['lastSyncDate', 'groupPolicy', 'user', 'distinguishedName', 'groupName'],
                 relationalEntityComparisonProps: {
@@ -1253,9 +1272,14 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
-                        new DBMarkGroupPolicyTeamAsSyncedCommand(transactionId, tenantId, parentId, id),
+                        new DBMarkGroupPolicyTeamAsSyncedCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.teamId,
+                        ),
                     ),
                 trimmedProps: ['lastSyncDate', 'groupPolicy', 'team'],
                 relationalEntityComparisonProps: {
@@ -1277,9 +1301,9 @@ export class DiscrepancyStrategyProviderService {
                     this.queryBus.execute<DBRetrieveJumpointNodesQuery, DBJumpointNode[]>(
                         new DBRetrieveJumpointNodesQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
                     ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
-                        new DBMarkJumpointNodeAsSyncedCommand(transactionId, tenantId, parentId, id),
+                        new DBMarkJumpointNodeAsSyncedCommand(transactionId, tenantId, entity.jumpointId, entity.id),
                     ),
                 trimmedProps: ['lastSyncDate', 'jumpoint'],
                 relationalEntityComparisonProps: {
@@ -1300,8 +1324,10 @@ export class DiscrepancyStrategyProviderService {
                     this.queryBus.execute<DBRetrieveTeamUsersQuery, DBTeamUser[]>(
                         new DBRetrieveTeamUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
                     ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
-                    this.commandBus.execute(new DBMarkTeamUserAsSyncedCommand(transactionId, tenantId, parentId, id)),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new DBMarkTeamUserAsSyncedCommand(transactionId, tenantId, entity.teamId, entity.userId),
+                    ),
                 trimmedProps: ['lastSyncDate', 'team', 'user'],
                 relationalEntityComparisonProps: {
                     parent: 'teamId',
@@ -1328,9 +1354,14 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
-                dbMarkAsSyncedFunc: (transactionId, tenantId, id) =>
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
-                        new DBMarkUserGroupPolicyAsSyncedCommand(transactionId, tenantId, parentId, id),
+                        new DBMarkUserGroupPolicyAsSyncedCommand(
+                            transactionId,
+                            tenantId,
+                            entity.userId,
+                            entity.groupPolicyId,
+                        ),
                     ),
                 trimmedProps: ['lastSyncDate', 'user', 'groupPolicy'],
                 relationalEntityComparisonProps: {

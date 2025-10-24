@@ -141,11 +141,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler
 
             // Mark identical data as synced
             for (const data of identicalData) {
-                await discrepancyStrategy.dbMarkAsSyncedFunc(
-                    command.transactionId,
-                    command.tenantId,
-                    data[discrepancyStrategy.relationalEntityComparisonProps!.child] as number,
-                );
+                await discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data);
             }
 
             // Handle data which only exist in BT

@@ -40,7 +40,10 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                 );
             } else {
                 // Delete internal data
-                await discrepancyStrategy.dbDeleteFunc(command.tenantId, discrepancy.entityId);
+                await discrepancyStrategy.dbDeleteFunc(
+                    command.tenantId,
+                    discrepancy.internalData as unknown as RepresentativeEntity,
+                );
             }
         } else {
             if (discrepancy.internalData) {
@@ -61,7 +64,11 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                 }
             } else {
                 // Delete external data
-                await discrepancyStrategy.btDeleteFunc(command.transactionId, command.tenantId, discrepancy.entityId);
+                await discrepancyStrategy.btDeleteFunc(
+                    command.transactionId,
+                    command.tenantId,
+                    discrepancy.externalData as unknown as RepresentativeEntity,
+                );
             }
         }
 
