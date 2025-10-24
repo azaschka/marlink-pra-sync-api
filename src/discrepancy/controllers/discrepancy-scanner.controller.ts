@@ -51,16 +51,28 @@ export class DiscrepancyScannerController {
     ): Promise<unknown> {
         const scanOrders = [
             {
+                name: 'users',
+                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.User),
+            },
+            {
+                name: 'group-policies',
+                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.GroupPolicy),
+            },
+            {
+                name: 'teams',
+                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.Team),
+            },
+            {
+                name: 'jumpoints',
+                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.Jumpoint),
+            },
+            {
                 name: 'jump-policies',
                 func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpPolicy),
             },
             {
                 name: 'jump-groups',
                 func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpGroup),
-            },
-            {
-                name: 'jumpoints',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.Jumpoint),
             },
             {
                 name: 'protocol-tunnel-jumps',
@@ -90,18 +102,6 @@ export class DiscrepancyScannerController {
             {
                 name: 'jump-client-installers',
                 func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpClientInstaller),
-            },
-            {
-                name: 'users',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.User),
-            },
-            {
-                name: 'teams',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.Team),
-            },
-            {
-                name: 'group-policies',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.GroupPolicy),
             },
         ];
 
