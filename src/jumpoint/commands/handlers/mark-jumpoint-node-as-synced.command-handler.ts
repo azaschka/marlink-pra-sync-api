@@ -22,6 +22,8 @@ export class MarkJumpointNodeAsSyncedCommandHandler implements ICommandHandler<M
 
         jumpointNode.lastSyncDate = DateUtility.getCurrentUtcDate();
 
-        await this.jumpointNodeRepositoryService.createOrUpdateByIdAndJumpointId(command.tenantId, [jumpointNode]);
+        await this.jumpointNodeRepositoryService.createOrUpdateByJumpointIdAndJumpointNodeId(command.tenantId, [
+            jumpointNode,
+        ]);
     }
 }

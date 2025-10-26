@@ -6,7 +6,7 @@ import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondt
 import { GroupPolicy as DBGroupPolicy } from '../../../group-policy/models';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { DateUtility, ObjectUtility, PaginationUtility } from '../../../shared/utilities';
-import { DiscrepancyFoundEvent } from '../../events';
+import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
@@ -180,18 +180,12 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             mismatchedIds: differentDataPairs.map((pair) => pair.bt.id),
         };
 
-        if (
-            discrepancyOverview.onlyInExternalIds.length > 0 ||
-            discrepancyOverview.onlyInInternalIds.length > 0 ||
-            discrepancyOverview.mismatchedIds.length > 0
-        ) {
-            this.eventBus.publish(
-                new DiscrepancyFoundEvent(command.transactionId, {
-                    tenantId: command.tenantId,
-                    discrepancyOverview: discrepancyOverview,
-                }),
-            );
-        }
+        this.eventBus.publish(
+            new DiscrepancyScannedEvent(command.transactionId, {
+                tenantId: command.tenantId,
+                discrepancyOverview: discrepancyOverview,
+            }),
+        );
 
         return discrepancyOverview;
     }

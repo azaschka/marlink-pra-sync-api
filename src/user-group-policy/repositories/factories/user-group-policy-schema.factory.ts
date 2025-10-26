@@ -25,6 +25,7 @@ export class UserGroupPolicySchemaFactory implements BaseTenantEntitySchemaFacto
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

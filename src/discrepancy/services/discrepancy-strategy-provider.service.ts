@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
+    AddJumpGroupToGroupPolicyCommand as BTAddJumpGroupToGroupPolicyCommand,
+    AddJumpointToGroupPolicyCommand as BTAddJumpointToGroupPolicyCommand,
+    AddTeamToGroupPolicyCommand as BTAddTeamToGroupPolicyCommand,
     CreateGroupPolicyCommand as BTCreateGroupPolicyCommand,
     DeleteGroupPolicyCommand as BTDeleteGroupPolicyCommand,
     ModifyGroupPolicyCommand as BTModifyGroupPolicyCommand,
+    RemoveJumpGroupFromGroupPolicyCommand as BTRemoveJumpGroupFromGroupPolicyCommand,
+    RemoveJumpointFromGroupPolicyCommand as BTRemoveJumpointFromGroupPolicyCommand,
+    RemoveMemberFromGroupPolicyCommand as BTRemoveMemberFromGroupPolicyCommand,
+    RemoveTeamFromGroupPolicyCommand as BTRemoveTeamFromGroupPolicyCommand,
 } from '../../beyondtrust-pra-conf-api/group-policy/commands';
 import {
     GroupPolicyRetrievedDtoOutput as BTGroupPolicy,
@@ -96,9 +103,11 @@ import {
     RetrieveJumpointsQuery as BTRetrieveJumpointsQuery,
 } from '../../beyondtrust-pra-conf-api/jumpoint/queries';
 import {
+    AddUserToTeamCommand as BTAddUserToTeamCommand,
     CreateTeamCommand as BTCreateTeamCommand,
     DeleteTeamCommand as BTDeleteTeamCommand,
     ModifyTeamCommand as BTModifyTeamCommand,
+    RemoveUserFromTeamCommand as BTRemoveUserFromTeamCommand,
 } from '../../beyondtrust-pra-conf-api/team/commands';
 import {
     TeamRetrievedDtoOutput as BTTeam,
@@ -112,6 +121,7 @@ import {
     CreateUserCommand as BTCreateUserCommand,
     DeleteUserCommand as BTDeleteUserCommand,
     ModifyUserCommand as BTModifyUserCommand,
+    ModifyUserGroupPoliciesCommand as BTModifyUserGroupPoliciesCommand,
 } from '../../beyondtrust-pra-conf-api/user/commands';
 import {
     UserRetrievedDtoOutput as BTUser,
@@ -125,18 +135,26 @@ import { MarkGroupPolicyJumpGroupAsSyncedCommand as DBMarkGroupPolicyJumpGroupAs
 import { GroupPolicyJumpGroup as DBGroupPolicyJumpGroup } from '../../group-policy-jump-group/models';
 import { RetrieveGroupPolicyJumpGroupsQuery as DBRetrieveGroupPolicyJumpGroupsQuery } from '../../group-policy-jump-group/queries';
 import { GroupPolicyJumpGroupEntity } from '../../group-policy-jump-group/repositories/entities';
+import { GroupPolicyJumpGroupService } from '../../group-policy-jump-group/services/group-policy-jump-group.service';
 import { MarkGroupPolicyJumpointAsSyncedCommand as DBMarkGroupPolicyJumpointAsSyncedCommand } from '../../group-policy-jumpoint/commands';
 import { GroupPolicyJumpoint as DBGroupPolicyJumpoint } from '../../group-policy-jumpoint/models';
 import { RetrieveGroupPolicyJumpointsQuery as DBRetrieveGroupPolicyJumpointsQuery } from '../../group-policy-jumpoint/queries';
 import { GroupPolicyJumpointEntity } from '../../group-policy-jumpoint/repositories/entities';
-import { MarkGroupPolicyMemberAsSyncedCommand as DBMarkGroupPolicyMemberAsSyncedCommand } from '../../group-policy-member/commands';
+import { GroupPolicyJumpointService } from '../../group-policy-jumpoint/services/group-policy-jumpoint.service';
+import {
+    AddMemberToGroupPolicyCommand,
+    MarkGroupPolicyMemberAsSyncedCommand as DBMarkGroupPolicyMemberAsSyncedCommand,
+    RemoveMemberFromGroupPolicyCommand,
+} from '../../group-policy-member/commands';
 import { GroupPolicyMember as DBGroupPolicyMember } from '../../group-policy-member/models';
 import { RetrieveGroupPolicyMembersQuery as DBRetrieveGroupPolicyMembersQuery } from '../../group-policy-member/queries';
 import { GroupPolicyMemberEntity } from '../../group-policy-member/repositories/entities';
+import { GroupPolicyMemberService } from '../../group-policy-member/services/group-policy-member.service';
 import { MarkGroupPolicyTeamAsSyncedCommand as DBMarkGroupPolicyTeamAsSyncedCommand } from '../../group-policy-team/commands';
 import { GroupPolicyTeam as DBGroupPolicyTeam } from '../../group-policy-team/models';
 import { RetrieveGroupPolicyTeamsQuery as DBRetrieveGroupPolicyTeamsQuery } from '../../group-policy-team/queries';
 import { GroupPolicyTeamEntity } from '../../group-policy-team/repositories/entities';
+import { GroupPolicyTeamService } from '../../group-policy-team/services/group-policy-team.service';
 import { MarkGroupPolicyAsSyncedCommand as DBMarkGroupPolicyAsSyncedCommand } from '../../group-policy/commands';
 import { mapToBTAccessPermissionStatusType } from '../../group-policy/mappers';
 import { GroupPolicy as DBGroupPolicy } from '../../group-policy/models';
@@ -212,11 +230,13 @@ import {
     RetrieveJumpointsQuery as DBRetrieveJumpointsQuery,
 } from '../../jumpoint/queries';
 import { JumpointEntity, JumpointNodeEntity } from '../../jumpoint/repositories/entities';
+import { JumpointNodeService } from '../../jumpoint/services/jumpoint-node.service';
 import { JumpointService } from '../../jumpoint/services/jumpoint.service';
 import { MarkTeamUserAsSyncedCommand as DBMarkTeamUserAsSyncedCommand } from '../../team-user/commands';
 import { TeamUser as DBTeamUser } from '../../team-user/models';
 import { RetrieveTeamUsersQuery as DBRetrieveTeamUsersQuery } from '../../team-user/queries';
 import { TeamUserEntity } from '../../team-user/repositories/entities';
+import { TeamUserService } from '../../team-user/services/team-user.service';
 import { MarkTeamAsSyncedCommand as DBMarkTeamAsSyncedCommand } from '../../team/commands';
 import { Team as DBTeam } from '../../team/models';
 import { RetrieveTeamsQuery as DBRetrieveTeamsQuery } from '../../team/queries';
@@ -226,6 +246,7 @@ import { MarkUserGroupPolicyAsSyncedCommand as DBMarkUserGroupPolicyAsSyncedComm
 import { UserGroupPolicy as DBUserGroupPolicy } from '../../user-group-policy/models';
 import { RetrieveUserGroupPoliciesQuery as DBRetrieveUserGroupPoliciesQuery } from '../../user-group-policy/queries';
 import { UserGroupPolicyEntity } from '../../user-group-policy/repositories/entities';
+import { UserGroupPolicyService } from '../../user-group-policy/services/user-group-policy.service';
 import { MarkUserAsSyncedCommand as DBMarkUserAsSyncedCommand } from '../../user/commands';
 import { User as DBUser } from '../../user/models';
 import { RetrieveUsersQuery as DBRetrieveUsersQuery } from '../../user/queries';
@@ -240,18 +261,25 @@ export class DiscrepancyStrategyProviderService {
         private readonly queryBus: QueryBus,
         private readonly commandBus: CommandBus,
         private readonly groupPolicyService: GroupPolicyService,
+        private readonly groupPolicyJumpGroupService: GroupPolicyJumpGroupService,
+        private readonly groupPolicyJumpointService: GroupPolicyJumpointService,
+        private readonly groupPolicyMemberService: GroupPolicyMemberService,
+        private readonly groupPolicyTeamService: GroupPolicyTeamService,
         private readonly jumpClientInstallerService: JumpClientInstallerService,
         private readonly jumpClientService: JumpClientService,
         private readonly jumpGroupService: JumpGroupService,
         private readonly jumpPolicyService: JumpPolicyService,
         private readonly jumpointService: JumpointService,
+        private readonly jumpointNodeService: JumpointNodeService,
         private readonly protocolTunnelJumpService: ProtocolTunnelJumpService,
         private readonly remoteRdpService: RemoteRdpService,
         private readonly remoteVncService: RemoteVncService,
         private readonly shellJumpService: ShellJumpService,
         private readonly webJumpService: WebJumpService,
         private readonly teamService: TeamService,
+        private readonly teamUserService: TeamUserService,
         private readonly userService: UserService,
+        private readonly userGroupPolicyService: UserGroupPolicyService,
     ) {}
 
     public get(entityType: DiscrepancyEntityType) {
@@ -1141,6 +1169,47 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
+                btCreateFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTAddJumpGroupToGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpGroupId,
+                            entity.jumpItemRoleId,
+                            entity.jumpPolicyId,
+                        ),
+                    ),
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    await this.commandBus.execute(
+                        new BTRemoveJumpGroupFromGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpGroupId,
+                        ),
+                    );
+
+                    await this.commandBus.execute(
+                        new BTAddJumpGroupToGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpGroupId,
+                            entity.jumpItemRoleId,
+                            entity.jumpPolicyId,
+                        ),
+                    );
+                },
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTRemoveJumpGroupFromGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpGroupId,
+                        ),
+                    ),
                 btToDbEntity: (bt) => GroupPolicyJumpGroupEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveGroupPolicyJumpGroupsQuery, DBGroupPolicyJumpGroup[]>(
@@ -1151,6 +1220,14 @@ export class DiscrepancyStrategyProviderService {
                             pageNumber,
                             parentId,
                         ),
+                    ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.groupPolicyJumpGroupService.createOrUpdateByGroupPolicyIdAndJumpGroupId(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) =>
+                    this.groupPolicyJumpGroupService.deleteByGroupPolicyIdAndJumpGroupId(
+                        tenantId,
+                        entity.groupPolicyId,
+                        entity.jumpGroupId,
                     ),
                 dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
@@ -1181,6 +1258,31 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
+                btCreateFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTAddJumpointToGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpointId,
+                        ),
+                    ),
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No modify operation for GroupPolicy Jumpoint in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, group policy id: ${entity.groupPolicyId}, jumpoint id: ${entity.jumpointId}.`,
+                    );
+
+                    return Promise.resolve();
+                },
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTRemoveJumpointFromGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.jumpointId,
+                        ),
+                    ),
                 btToDbEntity: (bt) => GroupPolicyJumpointEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveGroupPolicyJumpointsQuery, DBGroupPolicyJumpoint[]>(
@@ -1191,6 +1293,14 @@ export class DiscrepancyStrategyProviderService {
                             pageNumber,
                             parentId,
                         ),
+                    ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.groupPolicyJumpointService.createOrUpdateByGroupPolicyIdAndJumpointId(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) =>
+                    this.groupPolicyJumpointService.deleteByGroupPolicyIdAndJumpointId(
+                        tenantId,
+                        entity.groupPolicyId,
+                        entity.jumpointId,
                     ),
                 dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
@@ -1221,6 +1331,75 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
+                btCreateFunc: async (transactionId, tenantId, entity) => {
+                    // Member id is assigned by BT when adding a member to a group policy.
+                    // Member id in db is a primary key which can't be changed.
+                    // If we only add the member in BT, we won't be able to modify the member id in DB.
+                    // Therefore, we first remove the member from the group policy (if exists) in both DB and BT,
+                    // then add the member again to get the new member id from BT, which will be used to create the DB entity.
+                    // Hence, the memberId will change but consistency is maintained.
+                    try {
+                        await this.commandBus.execute(
+                            new RemoveMemberFromGroupPolicyCommand(
+                                transactionId,
+                                tenantId,
+                                entity.groupPolicyId,
+                                entity.memberId,
+                            ),
+                        );
+                    } finally {
+                        await this.commandBus.execute(
+                            new AddMemberToGroupPolicyCommand(
+                                transactionId,
+                                tenantId,
+                                entity.groupPolicyId,
+                                entity.userId,
+                                entity.securityProviderId,
+                                entity.distinguishedName,
+                                entity.groupName,
+                            ),
+                        );
+                    }
+                },
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    // Member id is assigned by BT when adding a member to a group policy.
+                    // Member id in db is a primary key which can't be changed.
+                    // If we only add the member in BT, we won't be able to modify the member id in DB.
+                    // Therefore, we first remove the member from the group policy (if exists) in both DB and BT,
+                    // then add the member again to get the new member id from BT, which will be used to create the DB entity.
+                    // Hence, the memberId will change but consistency is maintained.
+                    try {
+                        await this.commandBus.execute(
+                            new RemoveMemberFromGroupPolicyCommand(
+                                transactionId,
+                                tenantId,
+                                entity.groupPolicyId,
+                                entity.memberId,
+                            ),
+                        );
+                    } finally {
+                        await this.commandBus.execute(
+                            new AddMemberToGroupPolicyCommand(
+                                transactionId,
+                                tenantId,
+                                entity.groupPolicyId,
+                                entity.userId,
+                                entity.securityProviderId,
+                                entity.distinguishedName,
+                                entity.groupName,
+                            ),
+                        );
+                    }
+                },
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTRemoveMemberFromGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.memberId,
+                        ),
+                    ),
                 btToDbEntity: (bt) => GroupPolicyMemberEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveGroupPolicyMembersQuery, DBGroupPolicyMember[]>(
@@ -1231,6 +1410,14 @@ export class DiscrepancyStrategyProviderService {
                             pageNumber,
                             parentId,
                         ),
+                    ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.groupPolicyMemberService.createOrUpdateByGroupPolicyIdAndMemberId(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) =>
+                    this.groupPolicyMemberService.deleteByGroupPolicyIdAndMemberId(
+                        tenantId,
+                        entity.groupPolicyId,
+                        entity.memberId,
                     ),
                 dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
@@ -1261,6 +1448,45 @@ export class DiscrepancyStrategyProviderService {
                             parentId,
                         ),
                     ),
+                btCreateFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTAddTeamToGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.teamId,
+                            entity.roleType,
+                        ),
+                    ),
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    await this.commandBus.execute(
+                        new BTRemoveTeamFromGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.teamId,
+                        ),
+                    );
+
+                    await this.commandBus.execute(
+                        new BTAddTeamToGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.teamId,
+                            entity.roleType,
+                        ),
+                    );
+                },
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTRemoveTeamFromGroupPolicyCommand(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.teamId,
+                        ),
+                    ),
                 btToDbEntity: (bt) => GroupPolicyTeamEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveGroupPolicyTeamsQuery, DBGroupPolicyTeam[]>(
@@ -1271,6 +1497,14 @@ export class DiscrepancyStrategyProviderService {
                             pageNumber,
                             parentId,
                         ),
+                    ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.groupPolicyTeamService.createOrUpdateByGroupPolicyIdAndTeamId(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) =>
+                    this.groupPolicyTeamService.deleteByGroupPolicyIdAndTeamId(
+                        tenantId,
+                        entity.groupPolicyId,
+                        entity.teamId,
                     ),
                 dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
@@ -1296,10 +1530,39 @@ export class DiscrepancyStrategyProviderService {
                     this.queryBus.execute<BTRetrieveJumpointNodesQuery, BTJumpointNode[]>(
                         new BTRetrieveJumpointNodesQuery(transactionId, tenantId, parentId),
                     ),
+                btCreateFunc: (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No create operation for Jumpoint Node in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, jumpoint id: ${entity.jumpointId}, jumpoint node id: ${entity.id}.`,
+                    );
+
+                    return Promise.resolve();
+                },
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No modify operation for Jumpoint Node in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, jumpoint id: ${entity.jumpointId}, jumpoint node id: ${entity.id}.`,
+                    );
+
+                    return Promise.resolve();
+                },
+                btDeleteFunc: (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No delete operation for Jumpoint Node in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, jumpoint id: ${entity.jumpointId}, jumpoint node id: ${entity.id}.`,
+                    );
+
+                    return Promise.resolve();
+                },
                 btToDbEntity: (bt) => JumpointNodeEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveJumpointNodesQuery, DBJumpointNode[]>(
                         new DBRetrieveJumpointNodesQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
+                    ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.jumpointNodeService.createOrUpdateByJumpointIdAndJumpointNodeId(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) =>
+                    this.jumpointNodeService.deleteByJumpointIdAndJumpointNodeId(
+                        tenantId,
+                        entity.jumpointId,
+                        entity.id,
                     ),
                 dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
@@ -1319,11 +1582,44 @@ export class DiscrepancyStrategyProviderService {
                     this.queryBus.execute<BTRetrieveTeamUsersQuery, BTTeamUser[]>(
                         new BTRetrieveTeamUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
                     ),
+                btCreateFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTAddUserToTeamCommand(
+                            transactionId,
+                            tenantId,
+                            entity.teamId,
+                            entity.userId,
+                            entity.roleType,
+                        ),
+                    ),
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    await this.commandBus.execute(
+                        new BTRemoveUserFromTeamCommand(transactionId, tenantId, entity.teamId, entity.userId),
+                    );
+
+                    await this.commandBus.execute(
+                        new BTAddUserToTeamCommand(
+                            transactionId,
+                            tenantId,
+                            entity.teamId,
+                            entity.userId,
+                            entity.roleType,
+                        ),
+                    );
+                },
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTRemoveUserFromTeamCommand(transactionId, tenantId, entity.teamId, entity.userId),
+                    ),
                 btToDbEntity: (bt) => TeamUserEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveTeamUsersQuery, DBTeamUser[]>(
                         new DBRetrieveTeamUsersQuery(transactionId, tenantId, maxBatchSize, pageNumber, parentId),
                     ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.teamUserService.createOrUpdateByTeamIdAndUserId(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) =>
+                    this.teamUserService.deleteByTeamIdAndUserId(tenantId, entity.teamId, entity.userId),
                 dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(
                         new DBMarkTeamUserAsSyncedCommand(transactionId, tenantId, entity.teamId, entity.userId),
@@ -1343,6 +1639,33 @@ export class DiscrepancyStrategyProviderService {
                     this.queryBus.execute<BTRetrieveUserGroupPoliciesQuery, BTUserGroupPolicy[]>(
                         new BTRetrieveUserGroupPoliciesQuery(transactionId, tenantId, parentId),
                     ),
+                btCreateFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTModifyUserGroupPoliciesCommand(
+                            transactionId,
+                            tenantId,
+                            entity.userId,
+                            [entity.groupPolicyId],
+                            [],
+                        ),
+                    ),
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No modify operation for User Group Policy in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, user id: ${entity.userId}, group policy id: ${entity.groupPolicyId}.`,
+                    );
+
+                    return Promise.resolve();
+                },
+                btDeleteFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(
+                        new BTModifyUserGroupPoliciesCommand(
+                            transactionId,
+                            tenantId,
+                            entity.userId,
+                            [],
+                            [entity.groupPolicyId],
+                        ),
+                    ),
                 btToDbEntity: (bt) => UserGroupPolicyEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveUserGroupPoliciesQuery, DBUserGroupPolicy[]>(
@@ -1353,6 +1676,14 @@ export class DiscrepancyStrategyProviderService {
                             pageNumber,
                             parentId,
                         ),
+                    ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.userGroupPolicyService.createOrUpdateByUserIdAndGroupPolicyId(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) =>
+                    this.userGroupPolicyService.deleteByUserIdAndGroupPolicyId(
+                        tenantId,
+                        entity.userId,
+                        entity.groupPolicyId,
                     ),
                 dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
                     this.commandBus.execute(

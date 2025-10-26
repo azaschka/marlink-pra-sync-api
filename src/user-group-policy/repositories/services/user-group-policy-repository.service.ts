@@ -21,6 +21,14 @@ export class UserGroupPolicyRepositoryService extends BaseTenantRepositoryServic
         await super.createOrUpdate(tenantId, entities, ['userId', 'groupPolicyId']);
     }
 
+    public async deleteByUserIdAndGroupPolicyId(
+        tenantId: number,
+        userId: number,
+        groupPolicyId: number,
+    ): Promise<void> {
+        await super.deleteBy(tenantId, { userId: userId, groupPolicyId: groupPolicyId });
+    }
+
     public async deleteByUserId(tenantId: number, userId: number): Promise<void> {
         await super.deleteBy(tenantId, { userId: userId });
     }

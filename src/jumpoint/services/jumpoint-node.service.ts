@@ -6,11 +6,22 @@ import { JumpointNodeRepositoryService } from '../repositories/services/jumpoint
 export class JumpointNodeService {
     constructor(private readonly jumpointNodeRepositoryService: JumpointNodeRepositoryService) {}
 
-    public async createOrUpdateById(tenantId: number, entity: Partial<JumpointNodeEntity>): Promise<void> {
-        await this.jumpointNodeRepositoryService.createOrUpdateById(tenantId, entity);
+    public async createOrUpdateByJumpointIdAndJumpointNodeId(
+        tenantId: number,
+        entity: Partial<JumpointNodeEntity>,
+    ): Promise<void> {
+        await this.jumpointNodeRepositoryService.createOrUpdateByJumpointIdAndJumpointNodeId(tenantId, [entity]);
     }
 
-    public async deleteById(tenantId: number, id: number): Promise<void> {
-        return await this.jumpointNodeRepositoryService.deleteById(tenantId, id);
+    public async deleteByJumpointIdAndJumpointNodeId(
+        tenantId: number,
+        jumpointId: number,
+        jumpointNodeId: number,
+    ): Promise<void> {
+        return await this.jumpointNodeRepositoryService.deleteByJumpointIdAndJumpointNodeId(
+            tenantId,
+            jumpointId,
+            jumpointNodeId,
+        );
     }
 }

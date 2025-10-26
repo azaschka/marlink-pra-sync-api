@@ -9,12 +9,19 @@ import { UserGroupPolicyController } from './controllers/user-group-policy.contr
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { UserGroupPolicyRepositoryService } from './repositories/services/user-group-policy-repository.service';
+import { UserGroupPolicyService } from './services/user-group-policy.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [UserGroupPolicyController],
-    providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers, UserGroupPolicyRepositoryService],
-    exports: [],
+    providers: [
+        ...CommandHandlers,
+        ...QueryHandlers,
+        ...EventHandlers,
+        UserGroupPolicyRepositoryService,
+        UserGroupPolicyService,
+    ],
+    exports: [UserGroupPolicyService],
 })
 export class UserGroupPolicyModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

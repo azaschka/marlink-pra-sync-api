@@ -56,7 +56,8 @@ export class UserSchemaFactory implements BaseTenantEntitySchemaFactory<User> {
                 isTwoFactorAuthRequired: {
                     name: 'is_two_factor_auth_required',
                     type: 'boolean',
-                    nullable: true,
+                    nullable: false,
+                    default: false,
                 },
                 isLoginAllowed: {
                     name: 'is_login_allowed',

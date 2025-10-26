@@ -7,7 +7,7 @@ import { GroupPolicyJumpGroupRetrievedDtoOutput as BTGroupPolicyJumpGroup } from
 import { GroupPolicyJumpGroup as DBGroupPolicyJumpGroup } from '../../../group-policy-jump-group/models';
 import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
 import { DateUtility, ObjectUtility, PaginationUtility } from '../../../shared/utilities';
-import { DiscrepancyFoundEvent } from '../../events';
+import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
@@ -259,18 +259,12 @@ export class ScanEntityRelationDiscrepancyCommandHandler
                 ),
             };
 
-            if (
-                discrepancyOverview.onlyInExternalIds.length > 0 ||
-                discrepancyOverview.onlyInInternalIds.length > 0 ||
-                discrepancyOverview.mismatchedIds.length > 0
-            ) {
-                this.eventBus.publish(
-                    new DiscrepancyFoundEvent(command.transactionId, {
-                        tenantId: command.tenantId,
-                        discrepancyOverview: discrepancyOverview,
-                    }),
-                );
-            }
+            this.eventBus.publish(
+                new DiscrepancyScannedEvent(command.transactionId, {
+                    tenantId: command.tenantId,
+                    discrepancyOverview: discrepancyOverview,
+                }),
+            );
         }
     }
 }

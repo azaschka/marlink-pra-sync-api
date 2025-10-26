@@ -48,79 +48,39 @@ export class DiscrepancyScannerController {
     public async scanAllDiscrepancies(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
         @TenantIdHeader() tenantId: number,
-    ): Promise<unknown> {
-        const scanOrders = [
-            {
-                name: 'users',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.User),
-            },
-            {
-                name: 'group-policies',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.GroupPolicy),
-            },
-            {
-                name: 'teams',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.Team),
-            },
-            {
-                name: 'jumpoints',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.Jumpoint),
-            },
-            {
-                name: 'jump-policies',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpPolicy),
-            },
-            {
-                name: 'jump-groups',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpGroup),
-            },
-            {
-                name: 'protocol-tunnel-jumps',
-                func: () =>
-                    this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpItemProtocolTunnelJump),
-            },
-            {
-                name: 'remote-rdps',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpItemRemoteRdp),
-            },
-            {
-                name: 'remote-vncs',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpItemRemoteVnc),
-            },
-            {
-                name: 'shell-jumps',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpItemShellJump),
-            },
-            {
-                name: 'web-jumps',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpItemWebJump),
-            },
-            {
-                name: 'jump-clients',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpClient),
-            },
-            {
-                name: 'jump-client-installers',
-                func: () => this.scanDiscrepancies(transactionId, tenantId, DiscrepancyEntityType.JumpClientInstaller),
-            },
+    ): Promise<DiscrepancyOverview[]> {
+        const entityTypeOrder = [
+            DiscrepancyEntityType.User,
+            DiscrepancyEntityType.GroupPolicy,
+            DiscrepancyEntityType.Team,
+            DiscrepancyEntityType.Jumpoint,
+            DiscrepancyEntityType.JumpPolicy,
+            DiscrepancyEntityType.JumpGroup,
+            DiscrepancyEntityType.JumpItemProtocolTunnelJump,
+            DiscrepancyEntityType.JumpItemRemoteRdp,
+            DiscrepancyEntityType.JumpItemRemoteVnc,
+            DiscrepancyEntityType.JumpItemShellJump,
+            DiscrepancyEntityType.JumpItemWebJump,
+            DiscrepancyEntityType.JumpClient,
+            DiscrepancyEntityType.JumpClientInstaller,
         ];
 
         const scanResults = [];
 
-        for (const scan of scanOrders) {
+        for (const entityType of entityTypeOrder) {
             for (let attempt = 1; attempt <= this.appConfigService.sync.cronJobRetryAttempts; attempt++) {
                 try {
-                    console.log(`Starting discrepancy scan for ${scan.name}, attempt ${attempt}`);
+                    console.log(`Starting discrepancy scan for ${entityType}, attempt ${attempt}`);
 
-                    const scanResult = await scan.func();
-                    scanResults.push({ name: scan.name, ...scanResult });
+                    const scanResult = await this.scanDiscrepancies(transactionId, tenantId, entityType);
+                    scanResults.push(scanResult);
 
                     break; // success, move to next function
                 } catch (error) {
-                    console.error(`Discrepancy scan failed on attempt ${attempt} for ${scan.name}:`, error);
+                    console.error(`Discrepancy scan failed on attempt ${attempt} for ${entityType}:`, error);
 
                     if (attempt === this.appConfigService.sync.cronJobRetryAttempts) {
-                        console.error(`Discrepancy scan attempts failed for ${scan.name}.`);
+                        console.error(`Discrepancy scan attempts failed for ${entityType}.`);
                     }
 
                     await new Promise((r) => setTimeout(r, this.appConfigService.sync.cronJobRetryDelayInMs));

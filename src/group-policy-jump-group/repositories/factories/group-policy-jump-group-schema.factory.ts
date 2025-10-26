@@ -35,6 +35,7 @@ export class GroupPolicyJumpGroupSchemaFactory implements BaseTenantEntitySchema
                     type: 'timestamp',
                     precision: 3,
                     nullable: false,
+                    updateDate: true,
                 },
             },
             relations: {

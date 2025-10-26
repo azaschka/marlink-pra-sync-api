@@ -3,7 +3,7 @@ import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicy as DBGroupPolicy } from '../../../group-policy/models';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
-import { DiscrepancySyncType } from '../../enums';
+import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
 import { DiscrepancyResolvedEvent } from '../../events';
 import { Discrepancy } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
@@ -27,9 +27,7 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
 
     public async execute(command: SyncDiscrepancyCommand): Promise<void> {
         const discrepancy = await this.getDiscrepancy(command.tenantId, command.id);
-        const discrepancyStrategy = this.discrepancyStrategyProviderService.get(
-            discrepancy.entityType,
-        ) as DiscrepancyStrategy<BTRepresentative, DBRepresentative, RepresentativeEntity>;
+        const discrepancyStrategy = this.getDiscrepancyStrategy(discrepancy);
 
         if (command.syncType === DiscrepancySyncType.ExternalToInternal) {
             if (discrepancy.externalData) {
@@ -91,5 +89,30 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
         }
 
         return discrepancy;
+    }
+
+    private getDiscrepancyStrategy(discrepancy: Discrepancy) {
+        if (
+            [
+                DiscrepancyEntityType.GroupPolicyJumpGroup,
+                DiscrepancyEntityType.GroupPolicyJumpoint,
+                DiscrepancyEntityType.GroupPolicyTeam,
+                DiscrepancyEntityType.GroupPolicyMember,
+                DiscrepancyEntityType.JumpointNode,
+                DiscrepancyEntityType.TeamUser,
+                DiscrepancyEntityType.UserGroupPolicy,
+            ].includes(discrepancy.entityType)
+        ) {
+            return this.discrepancyStrategyProviderService.getForRelation(
+                discrepancy.entityId,
+                discrepancy.entityType,
+            ) as unknown as DiscrepancyStrategy<BTRepresentative, DBRepresentative, RepresentativeEntity>;
+        }
+
+        return this.discrepancyStrategyProviderService.get(discrepancy.entityType) as DiscrepancyStrategy<
+            BTRepresentative,
+            DBRepresentative,
+            RepresentativeEntity
+        >;
     }
 }

@@ -9,12 +9,13 @@ import { TeamUserController } from './controllers/team-user.controller';
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { TeamUserRepositoryService } from './repositories/services/team-user-repository.service';
+import { TeamUserService } from './services/team-user.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [TeamUserController],
-    providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers, TeamUserRepositoryService],
-    exports: [],
+    providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers, TeamUserRepositoryService, TeamUserService],
+    exports: [TeamUserService],
 })
 export class TeamUserModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

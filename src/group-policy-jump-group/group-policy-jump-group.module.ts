@@ -9,12 +9,19 @@ import { GroupPolicyJumpGroupController } from './controllers/group-policy-jump-
 import { EventHandlers } from './events/handlers';
 import { QueryHandlers } from './queries/handlers';
 import { GroupPolicyJumpGroupRepositoryService } from './repositories/services/group-policy-jump-group-repository.service';
+import { GroupPolicyJumpGroupService } from './services/group-policy-jump-group.service';
 
 @Module({
     imports: [AppConfigModule],
     controllers: [GroupPolicyJumpGroupController],
-    providers: [...CommandHandlers, ...QueryHandlers, ...EventHandlers, GroupPolicyJumpGroupRepositoryService],
-    exports: [],
+    providers: [
+        ...CommandHandlers,
+        ...QueryHandlers,
+        ...EventHandlers,
+        GroupPolicyJumpGroupRepositoryService,
+        GroupPolicyJumpGroupService,
+    ],
+    exports: [GroupPolicyJumpGroupService],
 })
 export class GroupPolicyJumpGroupModule implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;

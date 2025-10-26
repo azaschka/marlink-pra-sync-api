@@ -56,6 +56,21 @@ describe('UserGroupPolicyRepositoryService', () => {
         });
     });
 
+    describe('deleteByUserIdAndGroupPolicyId', () => {
+        it('should call deleteBy with the correct parameters', async () => {
+            const userId = 1;
+            const groupPolicyId = 2;
+            const expectedWhere = { userId: userId, groupPolicyId: groupPolicyId };
+            const baseTenantRepositoryDeleteByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'deleteBy')
+                .mockReturnValue(Promise.resolve());
+
+            await service.deleteByUserIdAndGroupPolicyId(123, userId, groupPolicyId);
+
+            expect(baseTenantRepositoryDeleteByMethod).toHaveBeenCalledWith(123, expectedWhere);
+        });
+    });
+
     describe('deleteByUserId', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const id = 1;

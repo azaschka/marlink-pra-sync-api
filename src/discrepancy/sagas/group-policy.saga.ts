@@ -3,14 +3,14 @@ import { ICommand, Saga, ofType } from '@nestjs/cqrs';
 import { Observable, filter, mergeMap } from 'rxjs';
 import { ScanEntityRelationDiscrepancyCommand } from '../commands';
 import { DiscrepancyEntityType } from '../enums';
-import { DiscrepancyFoundEvent } from '../events';
+import { DiscrepancyScannedEvent } from '../events';
 
 @Injectable()
 export class GroupPolicySaga {
     @Saga()
-    public onDiscrepancyFoundEvent = (events$: Observable<DiscrepancyFoundEvent>): Observable<ICommand> => {
+    public onDiscrepancyScannedEvent = (events$: Observable<DiscrepancyScannedEvent>): Observable<ICommand> => {
         return events$.pipe(
-            ofType(DiscrepancyFoundEvent),
+            ofType(DiscrepancyScannedEvent),
             filter((event) => event.payload.discrepancyOverview.entityType === DiscrepancyEntityType.GroupPolicy),
             mergeMap((event) =>
                 [

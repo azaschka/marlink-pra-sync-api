@@ -23,7 +23,10 @@ describe('MarkJumpointNodeAsSyncedCommandHandler', () => {
     });
 
     it('should modify the last sync date', async () => {
-        const repoCreateOrUpdateMethod = jest.spyOn(jumpointNodeRepositoryService, 'createOrUpdateByIdAndJumpointId');
+        const repoCreateOrUpdateMethod = jest.spyOn(
+            jumpointNodeRepositoryService,
+            'createOrUpdateByJumpointIdAndJumpointNodeId',
+        );
         DateUtility.getCurrentUtcDate = jest.fn().mockReturnValue(new Date('2025-10-10'));
 
         await handler.execute(new MarkJumpointNodeAsSyncedCommand('transaction-1', 1, 2, 3));
@@ -41,7 +44,7 @@ describe('MarkJumpointNodeAsSyncedCommandHandler', () => {
 function mockJumpointNodeRepositoryService(): JumpointNodeRepositoryService {
     const service = {} as JumpointNodeRepositoryService;
     service.findOneBy = jest.fn().mockReturnValue(Promise.resolve({ jumpointId: 2, id: 3 } as JumpointNode));
-    service.createOrUpdateByIdAndJumpointId = jest.fn().mockReturnValue(Promise.resolve());
+    service.createOrUpdateByJumpointIdAndJumpointNodeId = jest.fn().mockReturnValue(Promise.resolve());
 
     return service;
 }

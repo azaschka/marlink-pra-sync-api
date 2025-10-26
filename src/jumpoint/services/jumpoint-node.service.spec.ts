@@ -10,28 +10,28 @@ describe('JumpointNodeService', () => {
         service = new JumpointNodeService(jumpointNodeRepositoryService);
     });
 
-    describe('createOrUpdateById', () => {
+    describe('createOrUpdateByJumpointIdAndJumpointNodeId', () => {
         it('should call repo with the correct parameters', async () => {
             const entity = { id: 1, name: 'Test' };
-            const repositoryCreateOrUpdateByIdMethod = jest
-                .spyOn(jumpointNodeRepositoryService, 'createOrUpdateById')
+            const repositoryCreateOrUpdateMethod = jest
+                .spyOn(jumpointNodeRepositoryService, 'createOrUpdateByJumpointIdAndJumpointNodeId')
                 .mockReturnValue(Promise.resolve());
 
-            await service.createOrUpdateById(123, entity);
+            await service.createOrUpdateByJumpointIdAndJumpointNodeId(123, entity);
 
-            expect(repositoryCreateOrUpdateByIdMethod).toHaveBeenCalledWith(123, entity);
+            expect(repositoryCreateOrUpdateMethod).toHaveBeenCalledWith(123, [entity]);
         });
     });
 
-    describe('deleteById', () => {
+    describe('deleteByJumpointIdAndJumpointNodeId', () => {
         it('should call repo with the correct parameters', async () => {
-            const repositoryDeleteByIdMethod = jest
-                .spyOn(jumpointNodeRepositoryService, 'deleteById')
+            const repositoryDeleteMethod = jest
+                .spyOn(jumpointNodeRepositoryService, 'deleteByJumpointIdAndJumpointNodeId')
                 .mockReturnValue(Promise.resolve());
 
-            await service.deleteById(123, 1);
+            await service.deleteByJumpointIdAndJumpointNodeId(123, 1, 2);
 
-            expect(repositoryDeleteByIdMethod).toHaveBeenCalledWith(123, 1);
+            expect(repositoryDeleteMethod).toHaveBeenCalledWith(123, 1, 2);
         });
     });
 });
@@ -39,8 +39,8 @@ describe('JumpointNodeService', () => {
 function mockRepositoryService(): JumpointNodeRepositoryService {
     const repositoryService = {} as JumpointNodeRepositoryService;
 
-    repositoryService.createOrUpdateById = jest.fn();
-    repositoryService.deleteById = jest.fn();
+    repositoryService.createOrUpdateByJumpointIdAndJumpointNodeId = jest.fn();
+    repositoryService.deleteByJumpointIdAndJumpointNodeId = jest.fn();
 
     return repositoryService;
 }
