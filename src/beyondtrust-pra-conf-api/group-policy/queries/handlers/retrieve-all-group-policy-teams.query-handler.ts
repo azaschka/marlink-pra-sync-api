@@ -14,7 +14,7 @@ export class RetrieveAllGroupPolicyTeamsQueryHandler implements IQueryHandler<Re
 
     public async execute(query: RetrieveAllGroupPolicyTeamsQuery): Promise<GroupPolicyTeamRetrievedDtoOutput[]> {
         const allGroupPolicyTeams: GroupPolicyTeamRetrievedDtoOutput[] = [];
-        const maxBatchSize = this.appConfigService.sync.maxBatchSize;
+        const maxBatchSize = this.appConfigService.discrepancy.maxBatchSize;
         let pageNumber = 1;
 
         while (true) {

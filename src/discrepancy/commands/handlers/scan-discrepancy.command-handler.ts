@@ -45,7 +45,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                     discrepancyStrategy.btRetrieveFunc(
                         command.transactionId,
                         command.tenantId,
-                        this.appConfigService.sync.maxBatchSize,
+                        this.appConfigService.discrepancy.maxBatchSize,
                         pageNumber,
                     ),
                 discrepancyStrategy.btOmittedPropsForDuplicateCheck,
@@ -60,7 +60,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 discrepancyStrategy.dbRetrieveFunc(
                     command.transactionId,
                     command.tenantId,
-                    this.appConfigService.sync.maxBatchSize,
+                    this.appConfigService.discrepancy.maxBatchSize,
                     pageNumber,
                 ),
             )

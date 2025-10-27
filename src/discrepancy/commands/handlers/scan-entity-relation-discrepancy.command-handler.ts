@@ -56,7 +56,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler
                             .btRetrieveFunc(
                                 command.transactionId,
                                 command.tenantId,
-                                this.appConfigService.sync.maxBatchSize,
+                                this.appConfigService.discrepancy.maxBatchSize,
                                 pageNumber,
                             )
                             .catch((error) => {
@@ -79,7 +79,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler
                         .dbRetrieveFunc(
                             command.transactionId,
                             command.tenantId,
-                            this.appConfigService.sync.maxBatchSize,
+                            this.appConfigService.discrepancy.maxBatchSize,
                             pageNumber,
                         )
                         .catch((error) => {

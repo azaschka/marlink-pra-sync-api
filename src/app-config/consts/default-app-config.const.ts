@@ -4,8 +4,8 @@ export abstract class DefaultAppConfig {
     private static readonly MARLINK_HTTPS_PROXY = 'https://10.10.105.19:3128';
     private static readonly HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT = 80;
     private static readonly HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 256;
-    private static readonly SYNC_CRON_JOB_TIMEZONE = 'Europe/Berlin';
-    private static readonly SYNC_CRON_JOB_EXPRESSION = '0 0 * * *'; // Every day at midnight
+    private static readonly DISCREPANCY_SCAN_CRON_JOB_TIMEZONE = 'Europe/Berlin';
+    private static readonly DISCREPANCY_SCAN_CRON_JOB_EXPRESSION = '0 * * * *'; // Every hour
     private static readonly DB_RETRY_ATTEMPTS = 60;
     private static readonly DB_RETRY_DELAY_IN_MS = 8000; // 8 seconds
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
@@ -132,13 +132,15 @@ export abstract class DefaultAppConfig {
         };
     }
 
-    public static get sync() {
+    public static get discrepancy() {
         return {
             maxBatchSize: 100,
-            cronJobTimezone: DefaultAppConfig.SYNC_CRON_JOB_TIMEZONE,
-            cronJobExpressions: DefaultAppConfig.SYNC_CRON_JOB_EXPRESSION,
-            cronJobRetryAttempts: 5,
-            cronJobRetryDelayInMs: 10000,
+            scan: {
+                cronJobTimezone: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_TIMEZONE,
+                cronJobExpressions: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_EXPRESSION,
+                cronJobRetryAttempts: 5,
+                cronJobRetryDelayInMs: 10000,
+            },
         };
     }
 

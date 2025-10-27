@@ -1,11 +1,9 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { AppConfigService } from '../../app-config/services/app-config.service';
 import { DiscrepancyDtoOutput, DiscrepancyOverviewDtoOutput } from '../dtos/outputs';
 import { DiscrepancyEntityType } from '../enums';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
 
 describe('DiscrepancyScannerController', () => {
-    let appConfigService: AppConfigService;
     let commandBus: CommandBus;
     let queryBus: QueryBus;
     let controller: DiscrepancyScannerController;
@@ -13,10 +11,9 @@ describe('DiscrepancyScannerController', () => {
     beforeEach(() => {
         // Mock console.log to prevent cluttering the test output
         jest.spyOn(console, 'log').mockImplementation(() => {});
-        appConfigService = mockAppConfigService();
         commandBus = mockCommandBus();
         queryBus = mockQueryBus();
-        controller = new DiscrepancyScannerController(queryBus, commandBus, appConfigService);
+        controller = new DiscrepancyScannerController(queryBus, commandBus);
     });
 
     describe('scanAllDiscrepancies', () => {
@@ -79,15 +76,6 @@ describe('DiscrepancyScannerController', () => {
         });
     });
 });
-
-function mockAppConfigService() {
-    return {
-        sync: {
-            cronJobRetryAttempts: 3,
-            cronJobRetryDelayInMs: 1000,
-        },
-    } as AppConfigService;
-}
 
 function mockCommandBus() {
     const commandBus = {} as CommandBus;

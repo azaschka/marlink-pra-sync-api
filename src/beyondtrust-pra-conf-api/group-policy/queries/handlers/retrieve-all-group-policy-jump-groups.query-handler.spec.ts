@@ -38,11 +38,23 @@ describe('RetrieveAllGroupPolicyJumpGroupsQueryHandler', () => {
             expect(queryBusExecuteMethod).toHaveBeenCalledTimes(2);
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 1,
-                new RetrieveGroupPolicyJumpGroupsQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 1, 1),
+                new RetrieveGroupPolicyJumpGroupsQuery(
+                    'transaction-1',
+                    123,
+                    appConfigService.discrepancy.maxBatchSize,
+                    1,
+                    1,
+                ),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 2,
-                new RetrieveGroupPolicyJumpGroupsQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 2, 1),
+                new RetrieveGroupPolicyJumpGroupsQuery(
+                    'transaction-1',
+                    123,
+                    appConfigService.discrepancy.maxBatchSize,
+                    2,
+                    1,
+                ),
             );
 
             expect(result).toStrictEqual([
@@ -74,15 +86,33 @@ describe('RetrieveAllGroupPolicyJumpGroupsQueryHandler', () => {
             expect(queryBusExecuteMethod).toHaveBeenCalledTimes(3);
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 1,
-                new RetrieveGroupPolicyJumpGroupsQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 1, 1),
+                new RetrieveGroupPolicyJumpGroupsQuery(
+                    'transaction-1',
+                    123,
+                    appConfigService.discrepancy.maxBatchSize,
+                    1,
+                    1,
+                ),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 2,
-                new RetrieveGroupPolicyJumpGroupsQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 2, 1),
+                new RetrieveGroupPolicyJumpGroupsQuery(
+                    'transaction-1',
+                    123,
+                    appConfigService.discrepancy.maxBatchSize,
+                    2,
+                    1,
+                ),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 3,
-                new RetrieveGroupPolicyJumpGroupsQuery('transaction-1', 123, appConfigService.sync.maxBatchSize, 3, 1),
+                new RetrieveGroupPolicyJumpGroupsQuery(
+                    'transaction-1',
+                    123,
+                    appConfigService.discrepancy.maxBatchSize,
+                    3,
+                    1,
+                ),
             );
 
             expect(result).toStrictEqual([
@@ -104,7 +134,7 @@ function mockQueryBus() {
 
 function mockAppConfigService() {
     const service = {
-        sync: {
+        discrepancy: {
             maxBatchSize: 2,
         },
     } as AppConfigService;

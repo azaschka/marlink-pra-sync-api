@@ -239,19 +239,25 @@ export class AppConfigService {
         };
     }
 
-    public get sync() {
+    public get discrepancy() {
         return {
-            maxBatchSize: this.configService.get<number>('SYNC_MAX_BATCH_SIZE') ?? DefaultAppConfig.sync.maxBatchSize,
-            cronJobTimezone:
-                this.configService.get<string>('SYNC_CRON_JOB_TIMEZONE') ?? DefaultAppConfig.sync.cronJobTimezone,
-            cronJobExpressions:
-                this.configService.get<string>('SYNC_CRON_JOB_EXPRESSIONS') ?? DefaultAppConfig.sync.cronJobExpressions,
-            cronJobRetryAttempts:
-                this.configService.get<number>('SYNC_CRON_JOB_RETRY_ATTEMPTS') ??
-                DefaultAppConfig.sync.cronJobRetryAttempts,
-            cronJobRetryDelayInMs:
-                this.configService.get<number>('SYNC_CRON_JOB_RETRY_DELAY_IN_MS') ??
-                DefaultAppConfig.sync.cronJobRetryDelayInMs,
+            maxBatchSize:
+                this.configService.get<number>('DISCREPANCY_MAX_BATCH_SIZE') ??
+                DefaultAppConfig.discrepancy.maxBatchSize,
+            scan: {
+                cronJobTimezone:
+                    this.configService.get<string>('DISCREPANCY_SCAN_CRON_JOB_TIMEZONE') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobTimezone,
+                cronJobExpressions:
+                    this.configService.get<string>('DISCREPANCY_SCAN_CRON_JOB_EXPRESSIONS') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobExpressions,
+                cronJobRetryAttempts:
+                    this.configService.get<number>('DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobRetryAttempts,
+                cronJobRetryDelayInMs:
+                    this.configService.get<number>('DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobRetryDelayInMs,
+            },
         };
     }
 

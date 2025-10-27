@@ -26,6 +26,7 @@ SOURCES=(
     "src/team-user"
     "src/user"
     "src/user-group-policy"
+    "src/discrepancy"
 )
 
 # Target folders to copy from each source module

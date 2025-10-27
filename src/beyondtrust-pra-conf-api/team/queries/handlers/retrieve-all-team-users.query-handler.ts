@@ -14,7 +14,7 @@ export class RetrieveAllTeamUsersQueryHandler implements IQueryHandler<RetrieveA
 
     public async execute(query: RetrieveAllTeamUsersQuery): Promise<TeamUserRetrievedDtoOutput[]> {
         const allTeamUsers: TeamUserRetrievedDtoOutput[] = [];
-        const maxBatchSize = this.appConfigService.sync.maxBatchSize;
+        const maxBatchSize = this.appConfigService.discrepancy.maxBatchSize;
         let pageNumber = 1;
 
         while (true) {

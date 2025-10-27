@@ -1,7 +1,6 @@
 import { BadRequestException, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
-import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ApiTenantIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { UuidUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommand } from '../commands';
@@ -18,7 +17,6 @@ export class DiscrepancyScannerController {
     constructor(
         private readonly queryBus: QueryBus,
         private readonly commandBus: CommandBus,
-        private readonly appConfigService: AppConfigService,
     ) {}
 
     @Get()
@@ -68,23 +66,13 @@ export class DiscrepancyScannerController {
         const scanResults = [];
 
         for (const entityType of entityTypeOrder) {
-            for (let attempt = 1; attempt <= this.appConfigService.sync.cronJobRetryAttempts; attempt++) {
-                try {
-                    console.log(`Starting discrepancy scan for ${entityType}, attempt ${attempt}`);
+            try {
+                console.log(`Starting discrepancy scan for ${entityType}.`);
 
-                    const scanResult = await this.scanDiscrepancies(transactionId, tenantId, entityType);
-                    scanResults.push(scanResult);
-
-                    break; // success, move to next function
-                } catch (error) {
-                    console.error(`Discrepancy scan failed on attempt ${attempt} for ${entityType}:`, error);
-
-                    if (attempt === this.appConfigService.sync.cronJobRetryAttempts) {
-                        console.error(`Discrepancy scan attempts failed for ${entityType}.`);
-                    }
-
-                    await new Promise((r) => setTimeout(r, this.appConfigService.sync.cronJobRetryDelayInMs));
-                }
+                const scanResult = await this.scanDiscrepancies(transactionId, tenantId, entityType);
+                scanResults.push(scanResult);
+            } catch (error) {
+                console.error(`Discrepancy scan failed for ${entityType}:`, error);
             }
         }
 

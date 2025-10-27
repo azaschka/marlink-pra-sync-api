@@ -18,7 +18,7 @@ export class RetrieveAllGroupPolicyJumpGroupsQueryHandler
         query: RetrieveAllGroupPolicyJumpGroupsQuery,
     ): Promise<GroupPolicyJumpGroupRetrievedDtoOutput[]> {
         const allGroupPolicyJumpGroups: GroupPolicyJumpGroupRetrievedDtoOutput[] = [];
-        const maxBatchSize = this.appConfigService.sync.maxBatchSize;
+        const maxBatchSize = this.appConfigService.discrepancy.maxBatchSize;
         let pageNumber = 1;
 
         while (true) {

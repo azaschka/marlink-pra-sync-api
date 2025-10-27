@@ -45,9 +45,11 @@ function mockSchedulerRegistry() {
 
 function mockAppConfigService() {
     const appConfigService = {
-        sync: {
-            cronJobTimezone: 'Europe/Berlin',
-            cronJobExpressions: '0 * * * *',
+        discrepancy: {
+            scan: {
+                cronJobTimezone: 'Europe/Berlin',
+                cronJobExpressions: '0 * * * *',
+            },
         },
     } as unknown as AppConfigService;
 

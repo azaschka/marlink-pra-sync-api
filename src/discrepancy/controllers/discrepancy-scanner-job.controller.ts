@@ -27,7 +27,7 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
         const cronJobMap = [
             {
                 name: 'scanAll',
-                cronExpression: this.appConfigService.sync.cronJobExpressions,
+                cronExpression: this.appConfigService.discrepancy.scan.cronJobExpressions,
                 func: this.discrepancyScannerController.scanAllDiscrepancies.bind(this.discrepancyScannerController),
             },
         ];
@@ -61,7 +61,7 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
                 },
                 null,
                 undefined,
-                this.appConfigService.sync.cronJobTimezone,
+                this.appConfigService.discrepancy.scan.cronJobTimezone,
             );
 
             this.schedulerRegistry.addCronJob(name, job);

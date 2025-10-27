@@ -736,61 +736,69 @@ describe('AppConfigService', () => {
         });
     });
 
-    describe('sync', () => {
+    describe('discrepancy', () => {
         it.each([
             {
                 input: {
                     maxBatchSize: 100,
-                    cronJobTimezone: 'Europe/Berlin',
-                    cronJobExpressions: '0 10 * * *',
-                    cronJobRetryAttempts: 5,
-                    cronJobRetryDelayInMs: 10000,
+                    scan: {
+                        cronJobTimezone: 'Europe/Berlin',
+                        cronJobExpressions: '0 10 * * *',
+                        cronJobRetryAttempts: 5,
+                        cronJobRetryDelayInMs: 10000,
+                    },
                 },
                 expected: {
                     maxBatchSize: 100,
-                    cronJobTimezone: 'Europe/Berlin',
-                    cronJobExpressions: '0 10 * * *',
-                    cronJobRetryAttempts: 5,
-                    cronJobRetryDelayInMs: 10000,
+                    scan: {
+                        cronJobTimezone: 'Europe/Berlin',
+                        cronJobExpressions: '0 10 * * *',
+                        cronJobRetryAttempts: 5,
+                        cronJobRetryDelayInMs: 10000,
+                    },
                 },
             },
             {
                 input: {},
                 expected: {
                     maxBatchSize: 100,
-                    cronJobTimezone: 'Europe/Berlin',
-                    cronJobExpressions: '0 0 * * *',
-                    cronJobRetryAttempts: 5,
-                    cronJobRetryDelayInMs: 10000,
+                    scan: {
+                        cronJobTimezone: 'Europe/Berlin',
+                        cronJobExpressions: '0 * * * *',
+                        cronJobRetryAttempts: 5,
+                        cronJobRetryDelayInMs: 10000,
+                    },
                 },
             },
-        ])('should return the sync configuration as expected', ({ input, expected }) => {
+        ])('should return the discrepancy configuration as expected', ({ input, expected }) => {
             configService.get = jest.fn().mockImplementation((key: string) => {
-                if (key === 'SYNC_MAX_BATCH_SIZE') {
+                if (key === 'DISCREPANCY_MAX_BATCH_SIZE') {
                     return input.maxBatchSize;
                 }
-                if (key === 'SYNC_CRON_JOB_TIMEZONE') {
-                    return input.cronJobTimezone;
+                if (key === 'DISCREPANCY_SCAN_CRON_JOB_TIMEZONE') {
+                    return input?.scan?.cronJobTimezone;
                 }
-                if (key === 'SYNC_CRON_JOB_EXPRESSIONS') {
-                    return input.cronJobExpressions;
+                if (key === 'DISCREPANCY_SCAN_CRON_JOB_EXPRESSIONS') {
+                    return input?.scan?.cronJobExpressions;
                 }
-                if (key === 'SYNC_CRON_JOB_RETRY_ATTEMPTS') {
-                    return input.cronJobRetryAttempts;
+                if (key === 'DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS') {
+                    return input?.scan?.cronJobRetryAttempts;
                 }
-                if (key === 'SYNC_CRON_JOB_RETRY_DELAY_IN_MS') {
-                    return input.cronJobRetryDelayInMs;
+                if (key === 'DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS') {
+                    return input?.scan?.cronJobRetryDelayInMs;
                 }
 
                 return undefined;
             });
 
-            expect(service.sync).toEqual({
+            expect(service.discrepancy).toEqual({
                 maxBatchSize: expected.maxBatchSize,
-                cronJobTimezone: expected.cronJobTimezone,
-                cronJobExpressions: expected.cronJobExpressions,
-                cronJobRetryAttempts: expected.cronJobRetryAttempts,
-                cronJobRetryDelayInMs: expected.cronJobRetryDelayInMs,
+                scan: {
+                    cronJobTimezone: expected.scan.cronJobTimezone,
+                    cronJobExpressions: expected.scan.cronJobExpressions,
+                    cronJobRetryAttempts: expected.scan.cronJobRetryAttempts,
+                    cronJobRetryDelayInMs: expected.scan.cronJobRetryDelayInMs,
+                },
             });
         });
     });
