@@ -22,7 +22,7 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
             const result = await handler.execute(new RetrieveJumpPoliciesQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpPolicies);
-            expect(jumpPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
+            expect(jumpPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, [{}], 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -38,7 +38,7 @@ describe('RetrieveJumpPoliciesQueryHandler', () => {
             expect(result).toBe(expectedJumpPolicies);
             expect(jumpPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(
                 123,
-                { codeName: 'jump-policy-1' },
+                [{ codeName: 'jump-policy-1' }],
                 1,
                 10,
             );

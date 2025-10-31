@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpGroupType } from '../../enums';
 import { RemoteRdpEntity } from '../../repositories/entities';
 import { RemoteRdpRepositoryService } from '../../repositories/services/remote-rdp-repository.service';
@@ -40,7 +41,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
                     1,
                     'remote-rdp-1',
                     'host-1',
-                    2,
+                    [2],
                     JumpGroupType.Personal,
                     3,
                     4,
@@ -54,7 +55,7 @@ describe('RetrieveRemoteRdpsQueryHandler', () => {
                 {
                     name: 'remote-rdp-1',
                     hostname: 'host-1',
-                    jumpGroupId: 2,
+                    jumpGroupId: In([2]),
                     jumpGroupType: JumpGroupType.Personal,
                     jumpointId: 3,
                     endpointId: 4,

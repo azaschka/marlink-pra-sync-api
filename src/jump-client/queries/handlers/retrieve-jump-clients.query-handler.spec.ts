@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
 import { JumpClientEntity } from '../../repositories/entities';
 import { JumpClientRepositoryService } from '../../repositories/services/jump-client-repository.service';
@@ -42,7 +43,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
                     'host-1',
                     'fqdn-1',
                     'tag-1',
-                    123,
+                    [123],
                     JumpClientGroupType.Personal,
                     'console-user-1',
                     'public-ip-1',
@@ -59,7 +60,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
                     hostname: 'host-1',
                     fqdn: 'fqdn-1',
                     tag: 'tag-1',
-                    jumpGroupId: 123,
+                    jumpGroupId: In([123]),
                     jumpGroupType: JumpClientGroupType.Personal,
                     consoleUser: 'console-user-1',
                     publicIp: 'public-ip-1',

@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpGroupType } from '../../enums';
 import { RemoteVncEntity } from '../../repositories/entities';
 import { RemoteVncRepositoryService } from '../../repositories/services/remote-vnc-repository.service';
@@ -40,7 +41,7 @@ describe('RetrieveRemoteVncsQueryHandler', () => {
                     1,
                     'remote-vnc-1',
                     'host-1',
-                    2,
+                    [2],
                     JumpGroupType.Personal,
                     3,
                     'tag-1',
@@ -53,7 +54,7 @@ describe('RetrieveRemoteVncsQueryHandler', () => {
                 {
                     name: 'remote-vnc-1',
                     hostname: 'host-1',
-                    jumpGroupId: 2,
+                    jumpGroupId: In([2]),
                     jumpGroupType: JumpGroupType.Personal,
                     jumpointId: 3,
                     tag: 'tag-1',

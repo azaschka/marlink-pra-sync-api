@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { ShellJump } from '../../models';
 import { ShellJumpEntity } from '../../repositories/entities';
 import { ShellJumpRepositoryService } from '../../repositories/services/shell-jump-repository.service';
@@ -9,7 +10,7 @@ export class RetrieveShellJumpsQueryHandler implements IQueryHandler<RetrieveShe
     constructor(private readonly shellJumpRepositoryService: ShellJumpRepositoryService) {}
 
     public async execute(query: RetrieveShellJumpsQuery): Promise<ShellJump[]> {
-        const shellJumpsFindByQuery = <ShellJumpEntity>{};
+        const shellJumpsFindByQuery: FindOptionsWhere<ShellJumpEntity> = {};
 
         if (query.name) {
             shellJumpsFindByQuery.name = query.name;
@@ -19,8 +20,8 @@ export class RetrieveShellJumpsQueryHandler implements IQueryHandler<RetrieveShe
             shellJumpsFindByQuery.hostname = query.hostname;
         }
 
-        if (query.jumpGroupId) {
-            shellJumpsFindByQuery.jumpGroupId = query.jumpGroupId;
+        if (query.jumpGroupIds !== undefined && query.jumpGroupIds.length > 0) {
+            shellJumpsFindByQuery.jumpGroupId = In(query.jumpGroupIds);
         }
 
         if (query.jumpGroupType) {

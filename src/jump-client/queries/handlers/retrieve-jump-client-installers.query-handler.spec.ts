@@ -1,4 +1,5 @@
 import { QueryBus } from '@nestjs/cqrs';
+import { In } from 'typeorm';
 import { JumpClientInstallerRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
 import {
     JumpClientConnectionType as BTJumpClientConnectionType,
@@ -52,7 +53,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
                     undefined,
                     undefined,
                     'tag-1',
-                    123,
+                    [123],
                     JumpClientGroupType.Personal,
                     JumpClientConnectionType.Active,
                 ),
@@ -64,7 +65,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
                 {
                     name: 'jump-client-1',
                     tag: 'tag-1',
-                    jumpGroupId: 123,
+                    jumpGroupId: In([123]),
                     jumpGroupType: JumpClientGroupType.Personal,
                     connectionType: JumpClientConnectionType.Active,
                 },
@@ -122,7 +123,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
                     'hostname-1',
                     'fqdn-1',
                     'tag-1',
-                    123,
+                    [123],
                     JumpClientGroupType.Personal,
                     JumpClientConnectionType.Active,
                 ),

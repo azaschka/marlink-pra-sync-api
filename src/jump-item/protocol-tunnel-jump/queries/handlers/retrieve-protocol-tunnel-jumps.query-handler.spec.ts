@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpGroupType } from '../../enums';
 import { ProtocolTunnelJumpEntity } from '../../repositories/entities';
 import { ProtocolTunnelJumpRepositoryService } from '../../repositories/services/protocol-tunnel-jump-repository.service';
@@ -40,7 +41,7 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
                     1,
                     'protocol-tunnel-jump-1',
                     'host-1',
-                    2,
+                    [2],
                     JumpGroupType.Personal,
                     3,
                     'tag-1',
@@ -53,7 +54,7 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
                 {
                     name: 'protocol-tunnel-jump-1',
                     hostname: 'host-1',
-                    jumpGroupId: 2,
+                    jumpGroupId: In([2]),
                     jumpGroupType: JumpGroupType.Personal,
                     jumpointId: 3,
                     tag: 'tag-1',

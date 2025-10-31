@@ -22,7 +22,7 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
             const result = await handler.execute(new RetrieveJumpGroupsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpGroups);
-            expect(jumpGroupRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
+            expect(jumpGroupRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, [{}], 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -38,7 +38,7 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
             expect(result).toBe(expectedJumpGroups);
             expect(jumpGroupRepositoryServiceFindByMethod).toHaveBeenCalledWith(
                 123,
-                { name: 'jump-group-1', codeName: 'jump-group-code-1' },
+                [{ name: 'jump-group-1', codeName: 'jump-group-code-1' }],
                 1,
                 10,
             );

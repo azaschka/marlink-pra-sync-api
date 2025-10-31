@@ -22,7 +22,7 @@ describe('RetrieveUsersQueryHandler', () => {
             const result = await handler.execute(new RetrieveUsersQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedUsers);
-            expect(userRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
+            expect(userRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, [{}], 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -38,7 +38,7 @@ describe('RetrieveUsersQueryHandler', () => {
             expect(result).toBe(expectedUsers);
             expect(userRepositoryServiceFindByMethod).toHaveBeenCalledWith(
                 123,
-                { securityProviderId: 123, username: 'user1', email: 'user1@email.com' },
+                [{ securityProviderId: 123, username: 'user1', email: 'user1@email.com' }],
                 1,
                 10,
             );

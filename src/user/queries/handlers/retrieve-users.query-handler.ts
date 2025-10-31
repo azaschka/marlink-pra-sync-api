@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, Like } from 'typeorm';
 import { User } from '../../models';
 import { UserEntity } from '../../repositories/entities';
 import { UserRepositoryService } from '../../repositories/services/user-repository.service';
@@ -9,23 +10,36 @@ export class RetrieveUsersQueryHandler implements IQueryHandler<RetrieveUsersQue
     constructor(private readonly userRepositoryService: UserRepositoryService) {}
 
     public async execute(query: RetrieveUsersQuery): Promise<User[]> {
-        const userFindByQuery = <UserEntity>{};
+        const multipleWhere: FindOptionsWhere<UserEntity>[] = [];
+        const singleWhere: FindOptionsWhere<UserEntity> = {};
 
         if (query.securityProviderId !== undefined) {
-            userFindByQuery.securityProviderId = query.securityProviderId;
+            singleWhere.securityProviderId = query.securityProviderId;
         }
 
         if (query.username) {
-            userFindByQuery.username = query.username;
+            singleWhere.username = query.username;
         }
 
         if (query.email) {
-            userFindByQuery.email = query.email;
+            singleWhere.email = query.email;
+        }
+
+        // handle multiple LIKE patterns properly
+        if (query.publicDisplayNamePatterns && query.publicDisplayNamePatterns.length > 0) {
+            for (const pattern of query.publicDisplayNamePatterns) {
+                multipleWhere.push({
+                    ...singleWhere, // retain other filters
+                    publicDisplayName: Like(pattern),
+                });
+            }
+        } else {
+            multipleWhere.push(singleWhere);
         }
 
         const users = await this.userRepositoryService.findBy(
             query.tenantId,
-            userFindByQuery,
+            multipleWhere,
             query.pageNumber,
             query.pageSize,
         );

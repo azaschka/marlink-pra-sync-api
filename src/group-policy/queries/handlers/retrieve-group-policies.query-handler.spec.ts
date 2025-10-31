@@ -23,17 +23,17 @@ describe('RetrieveGroupPoliciesQueryHandler', () => {
             const result = await handler.execute(new RetrieveGroupPoliciesQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedGroupPolicies);
-            expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
+            expect(groupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, [{}], 2, 20);
         });
 
         it.each([
             {
                 query: new RetrieveGroupPoliciesQuery('transaction-2', 123, 10, 1, 'group-policy-1'),
-                expectedFindByQuery: { name: 'group-policy-1' },
+                expectedFindByQuery: [{ name: 'group-policy-1' }],
             },
             {
-                query: new RetrieveGroupPoliciesQuery('transaction-2', 123, 10, 1, undefined, 'group-policy%'),
-                expectedFindByQuery: { name: Like('group-policy%') },
+                query: new RetrieveGroupPoliciesQuery('transaction-2', 123, 10, 1, undefined, ['group-policy%']),
+                expectedFindByQuery: [{ name: Like('group-policy%') }],
             },
         ])(
             'should call the repo with correct parameter and return value from the repo',

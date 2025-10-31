@@ -10,19 +10,27 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
     constructor(private readonly groupPolicyRepositoryService: GroupPolicyRepositoryService) {}
 
     public async execute(query: RetrieveGroupPoliciesQuery): Promise<GroupPolicy[]> {
-        const groupPoliciesFindByQuery = <FindOptionsWhere<GroupPolicyEntity>>{};
+        const multipleWhere: FindOptionsWhere<GroupPolicyEntity>[] = [];
+        const singleWhere: FindOptionsWhere<GroupPolicyEntity> = {};
 
         if (query.name) {
-            groupPoliciesFindByQuery.name = query.name;
+            singleWhere.name = query.name;
         }
 
-        if (query.namePattern) {
-            groupPoliciesFindByQuery.name = Like(query.namePattern);
+        if (query.namePatterns && query.namePatterns.length > 0) {
+            for (const pattern of query.namePatterns) {
+                multipleWhere.push({
+                    ...singleWhere, // retain other filters
+                    name: Like(pattern),
+                });
+            }
+        } else {
+            multipleWhere.push(singleWhere);
         }
 
         const groupPolicies = await this.groupPolicyRepositoryService.findBy(
             query.tenantId,
-            groupPoliciesFindByQuery,
+            multipleWhere,
             query.pageNumber,
             query.pageSize,
         );

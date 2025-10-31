@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpGroupType } from '../../enums';
 import { WebJumpEntity } from '../../repositories/entities';
 import { WebJumpRepositoryService } from '../../repositories/services/web-jump-repository.service';
@@ -40,7 +41,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
                     1,
                     'web-jump-1',
                     'url-1',
-                    2,
+                    [2],
                     JumpGroupType.Personal,
                     3,
                     'tag-1',
@@ -53,7 +54,7 @@ describe('RetrieveWebJumpsQueryHandler', () => {
                 {
                     name: 'web-jump-1',
                     url: 'url-1',
-                    jumpGroupId: 2,
+                    jumpGroupId: In([2]),
                     jumpGroupType: JumpGroupType.Personal,
                     jumpointId: 3,
                     tag: 'tag-1',

@@ -22,7 +22,7 @@ describe('RetrieveTeamsQueryHandler', () => {
             const result = await handler.execute(new RetrieveTeamsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedTeams);
-            expect(teamRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
+            expect(teamRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, [{}], 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -38,7 +38,7 @@ describe('RetrieveTeamsQueryHandler', () => {
             expect(result).toBe(expectedTeams);
             expect(teamRepositoryServiceFindByMethod).toHaveBeenCalledWith(
                 123,
-                { name: 'team-1', codeName: 'team-code-1' },
+                [{ name: 'team-1', codeName: 'team-code-1' }],
                 1,
                 10,
             );

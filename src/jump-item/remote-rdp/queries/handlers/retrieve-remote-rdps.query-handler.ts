@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { RemoteRdp } from '../../models';
 import { RemoteRdpEntity } from '../../repositories/entities';
 import { RemoteRdpRepositoryService } from '../../repositories/services/remote-rdp-repository.service';
@@ -9,7 +10,7 @@ export class RetrieveRemoteRdpsQueryHandler implements IQueryHandler<RetrieveRem
     constructor(private readonly remoteRdpRepositoryService: RemoteRdpRepositoryService) {}
 
     public async execute(query: RetrieveRemoteRdpsQuery): Promise<RemoteRdp[]> {
-        const remoteRdpsFindByQuery = <RemoteRdpEntity>{};
+        const remoteRdpsFindByQuery: FindOptionsWhere<RemoteRdpEntity> = {};
 
         if (query.name) {
             remoteRdpsFindByQuery.name = query.name;
@@ -19,8 +20,8 @@ export class RetrieveRemoteRdpsQueryHandler implements IQueryHandler<RetrieveRem
             remoteRdpsFindByQuery.hostname = query.hostname;
         }
 
-        if (query.jumpGroupId) {
-            remoteRdpsFindByQuery.jumpGroupId = query.jumpGroupId;
+        if (query.jumpGroupIds !== undefined && query.jumpGroupIds.length > 0) {
+            remoteRdpsFindByQuery.jumpGroupId = In(query.jumpGroupIds);
         }
 
         if (query.jumpGroupType) {

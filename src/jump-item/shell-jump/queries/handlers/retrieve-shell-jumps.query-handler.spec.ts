@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpGroupType } from '../../enums';
 import { ShellJumpEntity } from '../../repositories/entities';
 import { ShellJumpRepositoryService } from '../../repositories/services/shell-jump-repository.service';
@@ -40,7 +41,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
                     1,
                     'shell-jump-1',
                     'host-1',
-                    2,
+                    [2],
                     JumpGroupType.Personal,
                     3,
                     'tag-1',
@@ -53,7 +54,7 @@ describe('RetrieveShellJumpsQueryHandler', () => {
                 {
                     name: 'shell-jump-1',
                     hostname: 'host-1',
-                    jumpGroupId: 2,
+                    jumpGroupId: In([2]),
                     jumpGroupType: JumpGroupType.Personal,
                     jumpointId: 3,
                     tag: 'tag-1',

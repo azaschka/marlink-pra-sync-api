@@ -90,7 +90,7 @@ export class BaseTenantRepositoryService<T> {
 
     public async findBy<K extends Extract<keyof T, string>>(
         tenantId: number,
-        where: Pick<T, K> | FindOptionsWhere<T>,
+        where: Pick<T, K> | FindOptionsWhere<T> | FindOptionsWhere<T>[],
         pageNumber: number | undefined,
         pageSize: number | undefined,
         order?: FindOptionsOrder<() => T>,

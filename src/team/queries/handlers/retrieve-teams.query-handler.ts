@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, Like } from 'typeorm';
 import { Team } from '../../models';
 import { TeamEntity } from '../../repositories/entities';
 import { TeamRepositoryService } from '../../repositories/services/team-repository.service';
@@ -9,19 +10,31 @@ export class RetrieveTeamsQueryHandler implements IQueryHandler<RetrieveTeamsQue
     constructor(private readonly teamRepositoryService: TeamRepositoryService) {}
 
     public async execute(query: RetrieveTeamsQuery): Promise<Team[]> {
-        const teamsFindByQuery = <TeamEntity>{};
+        const multipleWhere: FindOptionsWhere<TeamEntity>[] = [];
+        const singleWhere: FindOptionsWhere<TeamEntity> = {};
 
         if (query.name) {
-            teamsFindByQuery.name = query.name;
+            singleWhere.name = query.name;
         }
 
         if (query.codeName) {
-            teamsFindByQuery.codeName = query.codeName;
+            singleWhere.codeName = query.codeName;
+        }
+
+        if (query.namePatterns && query.namePatterns.length > 0) {
+            for (const pattern of query.namePatterns) {
+                multipleWhere.push({
+                    ...singleWhere, // retain other filters
+                    name: Like(pattern),
+                });
+            }
+        } else {
+            multipleWhere.push(singleWhere);
         }
 
         const teams = await this.teamRepositoryService.findBy(
             query.tenantId,
-            teamsFindByQuery,
+            multipleWhere,
             query.pageNumber,
             query.pageSize,
         );

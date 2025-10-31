@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { RemoteVnc } from '../../models';
 import { RemoteVncEntity } from '../../repositories/entities';
 import { RemoteVncRepositoryService } from '../../repositories/services/remote-vnc-repository.service';
@@ -9,7 +10,7 @@ export class RetrieveRemoteVncsQueryHandler implements IQueryHandler<RetrieveRem
     constructor(private readonly remoteVncRepositoryService: RemoteVncRepositoryService) {}
 
     public async execute(query: RetrieveRemoteVncsQuery): Promise<RemoteVnc[]> {
-        const remoteVncsFindByQuery = <RemoteVncEntity>{};
+        const remoteVncsFindByQuery: FindOptionsWhere<RemoteVncEntity> = {};
 
         if (query.name) {
             remoteVncsFindByQuery.name = query.name;
@@ -19,8 +20,8 @@ export class RetrieveRemoteVncsQueryHandler implements IQueryHandler<RetrieveRem
             remoteVncsFindByQuery.hostname = query.hostname;
         }
 
-        if (query.jumpGroupId) {
-            remoteVncsFindByQuery.jumpGroupId = query.jumpGroupId;
+        if (query.jumpGroupIds !== undefined && query.jumpGroupIds.length > 0) {
+            remoteVncsFindByQuery.jumpGroupId = In(query.jumpGroupIds);
         }
 
         if (query.jumpGroupType) {
