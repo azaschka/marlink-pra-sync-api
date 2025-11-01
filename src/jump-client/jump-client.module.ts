@@ -16,7 +16,7 @@ import { JumpClientService } from './services/jump-client.service';
 
 @Module({
     imports: [AppConfigModule],
-    controllers: [JumpClientController, JumpClientInstallerController],
+    controllers: [JumpClientInstallerController, JumpClientController], // Installer should be first since it's more specific and routes could overlap
     providers: [
         ...QueryHandlers,
         ...CommandHandlers,
