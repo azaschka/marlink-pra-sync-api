@@ -87,6 +87,7 @@ export class JumpClientInstallerController {
                 dtoInput.jumpGroupIds,
                 dtoInput.jumpGroupType,
                 dtoInput.connectionType,
+                dtoInput.installerId,
             ),
         );
 

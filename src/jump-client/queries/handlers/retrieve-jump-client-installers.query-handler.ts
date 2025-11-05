@@ -42,6 +42,10 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
             jumpClientInstallerFindByQuery.connectionType = query.connectionType;
         }
 
+        if (query.installerId !== undefined) {
+            jumpClientInstallerFindByQuery.installerId = query.installerId;
+        }
+
         const jumpClientInstallers = await this.jumpClientInstallerRepositoryService.findBy(
             query.tenantId,
             jumpClientInstallerFindByQuery,

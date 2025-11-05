@@ -56,6 +56,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
                     [123],
                     JumpClientGroupType.Personal,
                     JumpClientConnectionType.Active,
+                    'installer-123',
                 ),
             );
 
@@ -68,6 +69,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
                     jumpGroupId: In([123]),
                     jumpGroupType: JumpClientGroupType.Personal,
                     connectionType: JumpClientConnectionType.Active,
+                    installerId: 'installer-123',
                 },
                 1,
                 10,
