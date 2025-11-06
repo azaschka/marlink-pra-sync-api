@@ -699,7 +699,7 @@ describe('AppConfigService', () => {
                 retryDelay: expected.retryDelayInMs,
                 maxQueryExecutionTime: expected.maxQueryExecutionTimeInMs,
                 extra: {
-                    max: expected.extra.connectionLimit,
+                    connectionLimit: expected.extra.connectionLimit,
                 },
             });
         });
