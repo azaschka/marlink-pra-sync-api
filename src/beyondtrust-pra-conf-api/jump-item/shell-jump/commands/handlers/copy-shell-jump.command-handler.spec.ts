@@ -33,12 +33,14 @@ describe('CopyShellJumpCommandHandler', () => {
             const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
-                new CopyShellJumpCommand('transaction-1', 1, 2, JumpGroupType.Personal, 'shell-jump-1'),
+                new CopyShellJumpCommand('transaction-1', 123, 1, 2, JumpGroupType.Personal, 'shell-jump-1'),
             );
 
             expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/shell-jump/1/copy`,
+                'transaction-1',
+                123,
+                `/jump-item/shell-jump/1/copy`,
                 {
                     name: 'shell-jump-1',
                     jumpGroupId: 2,
@@ -62,11 +64,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    shellJump: {
-                        path: 'jump-item/shell-jump',
-                        copy: 'copy',
+                config: {
+                    jumpItem: {
+                        shellJump: {
+                            path: 'jump-item/shell-jump',
+                            copy: 'copy',
+                        },
                     },
                 },
             },

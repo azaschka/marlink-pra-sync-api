@@ -111,6 +111,7 @@ describe('CopyJumpClientCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyJumpClientCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpClientGroupType.Personal,
@@ -119,7 +120,7 @@ describe('CopyJumpClientCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyJumpClientCommand('transaction-1', 1, 3, JumpClientGroupType.Personal, 'jump-client-1'),
+                new BTCopyJumpClientCommand('transaction-1', 123, 1, 3, JumpClientGroupType.Personal, 'jump-client-1'),
             );
             expect(jumpClientEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedJumpClientRetrievedDtoOutput.id,
@@ -149,13 +150,14 @@ describe('CopyJumpClientCommandHandler', () => {
                 TestHelper.mockedJumpClientRetrievedDtoOutput.endpointAgreementPolicy,
                 TestHelper.mockedJumpClientRetrievedDtoOutput.jumpointProxy,
             );
-            expect(jumpClientRepositoryServiceCreateMethod).toHaveBeenCalledWith(jumpClientEntityToBeCreated);
+            expect(jumpClientRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, jumpClientEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<JumpClientCopiedEvent>{
                     transactionId: 'transaction-1',
                     eventType: JumpClientCopiedEvent.EVENT_TYPE,
                     payload: {
                         jumpClient: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -197,6 +199,7 @@ describe('CopyJumpClientCommandHandler', () => {
                 handler.execute(<CopyJumpClientCommand>{
                     transactionId: 'transaction-1',
                     name: 'jump-client-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -210,6 +213,7 @@ describe('CopyJumpClientCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpClient: jumpClientEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

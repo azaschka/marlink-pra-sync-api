@@ -29,13 +29,13 @@ describe('CreateBackupCommandHandler', () => {
     describe('execute', () => {
         it.each([
             {
-                command: new CreateBackupCommand('transaction-1', 'password-1'),
+                command: new CreateBackupCommand('transaction-1', 123, 'password-1'),
                 expectedHttpClientBody: {
                     password: 'password-1',
                 },
             },
             {
-                command: new CreateBackupCommand('transaction-2'),
+                command: new CreateBackupCommand('transaction-2', 123),
                 expectedHttpClientBody: {},
             },
         ])(
@@ -47,7 +47,9 @@ describe('CreateBackupCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/backup',
+                    command.transactionId,
+                    command.beyondtrustInstanceId,
+                    '/backup',
                     expectedHttpClientBody,
                 );
 
@@ -67,8 +69,10 @@ function mockHttpClientService() {
 function mockAppConfigService() {
     const service = {
         beyondTrust: {
-            backup: {
-                apiUrl: 'https://api.example.com/backup',
+            api: {
+                backup: {
+                    path: '/backup',
+                },
             },
         },
     } as AppConfigService;

@@ -20,10 +20,12 @@ describe('DeleteJumpClientInstallerCommandHandler', () => {
         it('should call HttpClientService with correct url and return the result', async () => {
             const httpClientServiceDeleteMethod = jest.spyOn(httpClientService, 'delete');
 
-            await handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 123));
+            await handler.execute(new DeleteJumpClientInstallerCommand('transaction-1', 100, 123));
 
             expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith(
-                'https://api.example.com/jump-client/installer/123',
+                'transaction-1',
+                100,
+                `/jump-client/installer/123`,
             );
         });
     });
@@ -40,11 +42,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
-                    installer: {
-                        path: 'installer',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                        installer: {
+                            path: 'installer',
+                        },
                     },
                 },
             },

@@ -4,6 +4,7 @@ export interface UsersSyncedEventPayload {
     createdUserIds: number[];
     updatedUserIds: number[];
     deletedUserIds: number[];
+    tenantId: number;
 }
 
 export class UsersSyncedEvent extends BaseEvent {

@@ -61,11 +61,13 @@ describe('RetrieveJumpClientByIdQueryHandler', () => {
         it('should call HttpClientService with correct parameters and get the result', async () => {
             const httpClientServiceGetMethod = jest.spyOn(httpClientService, 'get');
 
-            const result = await handler.execute(new RetrieveJumpClientByIdQuery('transaction-1', 123));
+            const result = await handler.execute(new RetrieveJumpClientByIdQuery('transaction-1', 100, 123));
 
             expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                'https://api.example.com/jump-client/123',
+                'transaction-1',
+                100,
+                `/jump-client/123`,
             );
 
             expect(result).toStrictEqual(TestHelper.mockedJumpClientRetrievedDtoOutput);
@@ -84,9 +86,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                    },
                 },
             },
         },

@@ -14,14 +14,16 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
     ) {}
 
     public async execute(query: RetrieveGroupPoliciesQuery): Promise<GroupPolicyRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
         );
 
         return await this.httpClientService.get<GroupPolicyRetrievedDtoOutput, GroupPolicyRetrievedDtoOutput[]>(
             GroupPolicyRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveGroupPoliciesDtoInput.create(query.pageSize, query.pageNumber, query.name),
         );
     }

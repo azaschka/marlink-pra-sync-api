@@ -14,14 +14,16 @@ export class CreateJumpGroupCommandHandler implements ICommandHandler<CreateJump
     ) {}
 
     public async execute(command: CreateJumpGroupCommand): Promise<JumpGroupCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpGroup.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpGroup.path,
         );
 
         return await this.httpClientService.post<JumpGroupCreatedDtoOutput, JumpGroupCreatedDtoOutput>(
             JumpGroupCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateJumpGroupDtoInput.create(command.name, command.codeName, command.comments),
         );
     }

@@ -1,5 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { WebJump } from '../../models';
+import { WebJumpEntity } from '../../repositories/entities';
 import { WebJumpRepositoryService } from '../../repositories/services/web-jump-repository.service';
 import { RetrieveWebJumpsQuery } from '../retrieve-web-jumps.query';
 
@@ -8,7 +10,7 @@ export class RetrieveWebJumpsQueryHandler implements IQueryHandler<RetrieveWebJu
     constructor(private readonly webJumpRepositoryService: WebJumpRepositoryService) {}
 
     public async execute(query: RetrieveWebJumpsQuery): Promise<WebJump[]> {
-        const webJumpsFindByQuery = <WebJump>{};
+        const webJumpsFindByQuery: FindOptionsWhere<WebJumpEntity> = {};
 
         if (query.name) {
             webJumpsFindByQuery.name = query.name;
@@ -18,8 +20,8 @@ export class RetrieveWebJumpsQueryHandler implements IQueryHandler<RetrieveWebJu
             webJumpsFindByQuery.url = query.url;
         }
 
-        if (query.jumpGroupId) {
-            webJumpsFindByQuery.jumpGroupId = query.jumpGroupId;
+        if (query.jumpGroupIds !== undefined && query.jumpGroupIds.length > 0) {
+            webJumpsFindByQuery.jumpGroupId = In(query.jumpGroupIds);
         }
 
         if (query.jumpGroupType) {
@@ -35,6 +37,7 @@ export class RetrieveWebJumpsQueryHandler implements IQueryHandler<RetrieveWebJu
         }
 
         const webJumps = await this.webJumpRepositoryService.findBy(
+            query.tenantId,
             webJumpsFindByQuery,
             query.pageNumber,
             query.pageSize,

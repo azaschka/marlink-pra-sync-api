@@ -14,10 +14,10 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
     ) {}
 
     public async execute(command: CreateJumpClientInstallerCommand): Promise<JumpClientInstallerCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpClient.path,
-            this.appConfigService.beyondTrust.api.jumpClient.installer.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.installer.path,
         );
 
         return await this.httpClientService.post<
@@ -25,7 +25,9 @@ export class CreateJumpClientInstallerCommandHandler implements ICommandHandler<
             JumpClientInstallerCreatedDtoOutput
         >(
             JumpClientInstallerCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CreateJumpClientInstallerDtoInput.create(
                 command.jumpGroupId,
                 command.name,

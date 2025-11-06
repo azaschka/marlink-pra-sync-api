@@ -4,6 +4,7 @@ export interface TeamUserRemovalFailedEventPayload {
     errorMessage: string;
     teamId: number;
     userId: number;
+    tenantId: number;
 }
 
 export class TeamUserRemovalFailedEvent extends BaseEvent {

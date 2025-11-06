@@ -4,6 +4,7 @@ export interface GroupPoliciesSyncedEventPayload {
     createdGroupPolicyIds: number[];
     updatedGroupPolicyIds: number[];
     deletedGroupPolicyIds: number[];
+    tenantId: number;
 }
 
 export class GroupPoliciesSyncedEvent extends BaseEvent {

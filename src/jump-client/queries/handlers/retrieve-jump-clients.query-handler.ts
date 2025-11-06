@@ -1,5 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { JumpClient } from '../../models';
+import { JumpClientEntity } from '../../repositories/entities';
 import { JumpClientRepositoryService } from '../../repositories/services/jump-client-repository.service';
 import { RetrieveJumpClientsQuery } from '../retrieve-jump-clients.query';
 
@@ -8,7 +10,7 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
     constructor(private readonly jumpClientRepositoryService: JumpClientRepositoryService) {}
 
     public async execute(query: RetrieveJumpClientsQuery): Promise<JumpClient[]> {
-        const jumpClientFindByQuery = <JumpClient>{};
+        const jumpClientFindByQuery: FindOptionsWhere<JumpClientEntity> = {};
 
         if (query.name !== undefined) {
             jumpClientFindByQuery.name = query.name;
@@ -26,8 +28,8 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
             jumpClientFindByQuery.tag = query.tag;
         }
 
-        if (query.jumpGroupId !== undefined) {
-            jumpClientFindByQuery.jumpGroupId = query.jumpGroupId;
+        if (query.jumpGroupIds !== undefined && query.jumpGroupIds.length > 0) {
+            jumpClientFindByQuery.jumpGroupId = In(query.jumpGroupIds);
         }
 
         if (query.jumpGroupType !== undefined) {
@@ -51,6 +53,7 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
         }
 
         const jumpClients = await this.jumpClientRepositoryService.findBy(
+            query.tenantId,
             jumpClientFindByQuery,
             query.pageNumber,
             query.pageSize,

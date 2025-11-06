@@ -27,11 +27,12 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
         const remoteVncEntity = this.createRemoteVncEntity(btRemoteVnc);
 
         try {
-            const createdRemoteVnc = await this.remoteVncRepositoryService.create(remoteVncEntity);
+            const createdRemoteVnc = await this.remoteVncRepositoryService.create(command.tenantId, remoteVncEntity);
 
             this.eventBus.publish(
                 new RemoteVncCopiedEvent(command.transactionId, {
                     remoteVnc: createdRemoteVnc,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -41,6 +42,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
                 new RemoteVncCopyFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteVnc: remoteVncEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -52,6 +54,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
         const response = await this.commandBus.execute<BTCopyRemoteVncCommand, RemoteVncCopiedDtoOutput>(
             new BTCopyRemoteVncCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 mapToBTJumpGroupType(command.jumpGroupType),
@@ -60,7 +63,7 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
         );
 
         return await this.queryBus.execute<BTRetrieveRemoteVncByIdQuery, RemoteVncRetrievedDtoOutput>(
-            new BTRetrieveRemoteVncByIdQuery(command.transactionId, response.destId),
+            new BTRetrieveRemoteVncByIdQuery(command.transactionId, command.tenantId, response.destId),
         );
     }
 

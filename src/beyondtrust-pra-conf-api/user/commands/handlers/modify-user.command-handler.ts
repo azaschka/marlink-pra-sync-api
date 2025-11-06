@@ -14,15 +14,17 @@ export class ModifyUserCommandHandler implements ICommandHandler<ModifyUserComma
     ) {}
 
     public async execute(command: ModifyUserCommand): Promise<UserModifiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.user.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.user.path,
             command.id.toString(),
         );
 
         return await this.httpClientService.patch<UserModifiedDtoOutput, UserModifiedDtoOutput>(
             UserModifiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyUserDtoInput.create(
                 command.publicDisplayName,
                 command.username,

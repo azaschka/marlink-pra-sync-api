@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindOptionsWhere } from 'typeorm';
 import { JumpointNode } from '../../models';
+import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
 import { RetrieveJumpointNodesQuery } from '../retrieve-jumpoint-nodes.query';
 
@@ -10,13 +11,14 @@ export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<Retrieve
     constructor(private readonly jumpointNodeRepositoryService: JumpointNodeRepositoryService) {}
 
     public async execute(query: RetrieveJumpointNodesQuery): Promise<JumpointNode[]> {
-        const jumpointNodeFindByQuery = <FindOptionsWhere<JumpointNode>>{};
+        const jumpointNodeFindByQuery = <FindOptionsWhere<JumpointNodeEntity>>{};
         jumpointNodeFindByQuery.jumpointId = query.jumpointId;
 
         const jumpointNodes = await this.jumpointNodeRepositoryService.findBy(
+            query.tenantId,
             jumpointNodeFindByQuery,
-            undefined,
-            undefined,
+            query.pageNumber,
+            query.pageSize,
         );
 
         if (jumpointNodes.length === 0) {

@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface GroupPolicyJumpGroupRemovedEventPayload {
     groupPolicyId: number;
     jumpGroupId: number;
+    tenantId: number;
 }
 
 export class GroupPolicyJumpGroupRemovedEvent extends BaseEvent {

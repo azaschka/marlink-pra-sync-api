@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface GroupPolicyTeamsSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class GroupPolicyTeamsSyncFailedEvent extends BaseEvent {

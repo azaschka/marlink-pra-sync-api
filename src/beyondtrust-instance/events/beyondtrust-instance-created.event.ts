@@ -8,7 +8,10 @@ export interface BeyondtrustInstanceCreatedEventPayload {
 export class BeyondtrustInstanceCreatedEvent extends BaseEvent {
     public static readonly EVENT_TYPE = 'beyondtrust-instance-created';
 
-    constructor(transactionId: string, payload: BeyondtrustInstanceCreatedEventPayload) {
+    constructor(
+        transactionId: string,
+        public payload: BeyondtrustInstanceCreatedEventPayload,
+    ) {
         super(BeyondtrustInstanceCreatedEvent.EVENT_TYPE, payload, transactionId);
     }
 }

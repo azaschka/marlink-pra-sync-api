@@ -12,14 +12,14 @@ export class RemoveUserFromTeamCommandHandler implements ICommandHandler<RemoveU
     ) {}
 
     public async execute(command: RemoveUserFromTeamCommand): Promise<void> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.team.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.team.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.team.user.path,
+            this.appConfigService.beyondTrust.api.config.team.user.path,
             command.userId.toString(),
         );
 
-        return await this.httpClientService.delete(url);
+        return await this.httpClientService.delete(command.transactionId, command.beyondtrustInstanceId, urlPath);
     }
 }

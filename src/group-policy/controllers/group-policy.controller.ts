@@ -22,7 +22,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
+import { ApiTenantIdHeader, ApiTransactionIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateGroupPolicyCommand, DeleteGroupPolicyCommand, ModifyGroupPolicyCommand } from '../commands';
@@ -33,8 +33,9 @@ import {
     GroupPolicyRetrievedDtoOutput,
 } from '../dtos/outputs';
 import { GroupPolicy } from '../models';
-import { RetrieveGroupPoliciesQuery } from '../queries';
+import { RetrieveGroupPoliciesQuery, RetrieveGroupPolicyByIdQuery } from '../queries';
 
+@ApiTenantIdHeader()
 @ApiTransactionIdHeader()
 @ApiTags('Group Policies')
 @Controller('group-policies')
@@ -45,19 +46,37 @@ export class GroupPolicyController {
         private readonly queryBus: QueryBus,
     ) {}
 
+    @Get(':id')
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({ type: GroupPolicyRetrievedDtoOutput })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    public async retrieveGroupPolicy(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
+        @Param('id') id: number,
+    ): Promise<GroupPolicyRetrievedDtoOutput> {
+        const result = await this.queryBus.execute<RetrieveGroupPolicyByIdQuery, GroupPolicy>(
+            new RetrieveGroupPolicyByIdQuery(transactionId, tenantId, id),
+        );
+
+        return result;
+    }
+
     @Get()
     @ApiOkResponse({ type: GroupPolicyRetrievedDtoOutput, isArray: true })
     public async retrieveGroupPolicies(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Query() dtoInput: RetrieveGroupPoliciesDtoInput,
     ): Promise<GroupPolicyRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveGroupPoliciesQuery, GroupPolicy[]>(
             new RetrieveGroupPoliciesQuery(
                 transactionId,
+                tenantId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
-                dtoInput.namePattern,
+                dtoInput.namePatterns,
             ),
         );
 
@@ -75,11 +94,13 @@ export class GroupPolicyController {
     })
     public async createGroupPolicy(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Body() dtoInput: CreateGroupPolicyDtoInput,
     ): Promise<GroupPolicyCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateGroupPolicyCommand, GroupPolicy>(
             new CreateGroupPolicyCommand(
                 transactionId,
+                tenantId,
                 dtoInput.name,
                 dtoInput.hasEndpointsAccessPermission,
                 dtoInput.accessPermissionStatusType,
@@ -122,12 +143,14 @@ export class GroupPolicyController {
     })
     public async modifyGroupPolicy(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyGroupPolicyDtoInput,
     ): Promise<GroupPolicyModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyGroupPolicyCommand, GroupPolicy>(
             new ModifyGroupPolicyCommand(
                 transactionId,
+                tenantId,
                 id,
                 dtoInput.name,
                 dtoInput.hasEndpointsAccessPermission,
@@ -169,8 +192,11 @@ export class GroupPolicyController {
     })
     public async deleteGroupPolicy(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
     ): Promise<void> {
-        await this.commandBus.execute<DeleteGroupPolicyCommand, void>(new DeleteGroupPolicyCommand(transactionId, id));
+        await this.commandBus.execute<DeleteGroupPolicyCommand, void>(
+            new DeleteGroupPolicyCommand(transactionId, tenantId, id),
+        );
     }
 }

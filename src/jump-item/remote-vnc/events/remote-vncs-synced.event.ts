@@ -4,6 +4,7 @@ export interface RemoteVncsSyncedEventPayload {
     createdRemoteVncIds: number[];
     updatedRemoteVncIds: number[];
     deletedRemoteVncIds: number[];
+    tenantId: number;
 }
 
 export class RemoteVncsSyncedEvent extends BaseEvent {

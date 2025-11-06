@@ -61,6 +61,7 @@ describe('ModifyWebJumpCommandHandler', () => {
         it.each([
             <ModifyWebJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 name: 'web-jump-1',
                 jumpointId: 2,
@@ -80,6 +81,7 @@ describe('ModifyWebJumpCommandHandler', () => {
             },
             <ModifyWebJumpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'web-jump-2',
                 jumpointId: 2,
                 url: 'url-2',
@@ -112,6 +114,7 @@ describe('ModifyWebJumpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyWebJumpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.jumpointId,
@@ -148,14 +151,18 @@ describe('ModifyWebJumpCommandHandler', () => {
                     TestHelper.mockedWebJumpModifiedDtoOutput.submitField,
                     TestHelper.mockedWebJumpModifiedDtoOutput.sessionPolicyId,
                 );
-                expect(webJumpRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(webJumpEntityToBeUpdated);
-                expect(webJumpRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(webJumpEntityToBeUpdated.id);
+                expect(webJumpRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    123,
+                    webJumpEntityToBeUpdated,
+                );
+                expect(webJumpRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(123, webJumpEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<WebJumpModifiedEvent>{
                         transactionId: command.transactionId,
                         eventType: WebJumpModifiedEvent.EVENT_TYPE,
                         payload: {
                             webJump: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -201,6 +208,7 @@ describe('ModifyWebJumpCommandHandler', () => {
                 handler.execute(<ModifyWebJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'web-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -215,6 +223,7 @@ describe('ModifyWebJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         webJump: webJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -241,6 +250,7 @@ describe('ModifyWebJumpCommandHandler', () => {
                 handler.execute(<ModifyWebJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'web-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -254,6 +264,7 @@ describe('ModifyWebJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         webJump: webJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

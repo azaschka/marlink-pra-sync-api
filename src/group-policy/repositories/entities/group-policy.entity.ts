@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicyJumpGroupEntity } from '../../../group-policy-jump-group/repositories/entities';
 import { GroupPolicyJumpointEntity } from '../../../group-policy-jumpoint/repositories/entities';
 import { GroupPolicyMemberEntity } from '../../../group-policy-member/repositories/entities';
@@ -6,99 +6,40 @@ import { GroupPolicyTeamEntity } from '../../../group-policy-team/repositories/e
 import { DateUtility } from '../../../shared/utilities';
 import { UserGroupPolicyEntity } from '../../../user-group-policy/repositories/entities';
 import { AccessPermissionStatusType } from '../../enums';
+import { mapFromBTAccessPermissionStatusType } from '../../mappers';
 import { GroupPolicy } from '../../models';
 
-@Entity({ name: 'group_policies' })
 export class GroupPolicyEntity implements GroupPolicy {
-    @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
-
-    @Column({ name: 'name', type: 'varchar' })
     public name!: string;
-
-    @Column({ name: 'has_endpoints_access_permission', type: 'boolean', nullable: true })
     public hasEndpointsAccessPermission?: boolean;
-
-    @Column({ name: 'access_permission_status_type', type: 'enum', enum: AccessPermissionStatusType, nullable: true })
     public accessPermissionStatusType?: AccessPermissionStatusType;
-
-    @Column({ name: 'has_share_other_team_permission', type: 'boolean', nullable: true })
     public hasShareOtherTeamPermission?: boolean;
-
-    @Column({ name: 'has_invite_external_user_permission', type: 'boolean', nullable: true })
     public hasInviteExternalUserPermission?: boolean;
-
-    @Column({ name: 'user_session_idle_timeout_in_seconds', type: 'int', nullable: true })
     public userSessionIdleTimeoutInSeconds?: number;
-
-    @Column({ name: 'has_enable_extended_availability_mode_permission', type: 'boolean', nullable: true })
     public hasEnableExtendedAvailabilityModePermission?: boolean;
-
-    @Column({ name: 'has_edit_external_key_permission', type: 'boolean', nullable: true })
     public hasEditExternalKeyPermission?: boolean;
-
-    @Column({ name: 'has_collaborate_permission', type: 'boolean', nullable: true })
     public hasCollaboratePermission?: boolean;
-
-    @Column({ name: 'has_collaborate_control_permission', type: 'boolean', nullable: true })
     public hasCollaborateControlPermission?: boolean;
-
-    @Column({ name: 'has_jump_client_permission', type: 'boolean', nullable: true })
     public hasJumpClientPermission?: boolean;
-
-    @Column({ name: 'has_local_jump_permission', type: 'boolean', nullable: true })
     public hasLocalJumpPermission?: boolean;
-
-    @Column({ name: 'has_remote_jump_permission', type: 'boolean', nullable: true })
     public hasRemoteJumpPermission?: boolean;
-
-    @Column({ name: 'has_remote_vnc_permission', type: 'boolean', nullable: true })
     public hasRemoteVncPermission?: boolean;
-
-    @Column({ name: 'has_remote_rdp_permission', type: 'boolean', nullable: true })
     public hasRemoteRdpPermission?: boolean;
-
-    @Column({ name: 'has_shell_jump_permission', type: 'boolean', nullable: true })
     public hasShellJumpPermission?: boolean;
-
-    @Column({ name: 'has_web_jump_permission', type: 'boolean', nullable: true })
     public hasWebJumpPermission?: boolean;
-
-    @Column({ name: 'has_protocol_tunnel_permission', type: 'boolean', nullable: true })
     public hasProtocolTunnelPermission?: boolean;
-
-    @Column({ name: 'has_sd_static_port_for_external_tools_permission', type: 'boolean', nullable: true })
     public hasSdStaticPortForExternalToolsPermission?: boolean;
-
-    @Column({ name: 'default_jump_item_role_id', type: 'int', nullable: true })
     public defaultJumpItemRoleId?: number;
-
-    @Column({ name: 'private_jump_item_role_id', type: 'int', nullable: true })
     public privateJumpItemRoleId?: number;
-
-    @Column({ name: 'inferior_jump_item_role_id', type: 'int', nullable: true })
     public inferiorJumpItemRoleId?: number;
-
-    @Column({ name: 'unassigned_jump_item_role_id', type: 'int', nullable: true })
     public unassignedJumpItemRoleId?: number;
-
-    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
-
-    @OneToMany(() => UserGroupPolicyEntity, (userGroupPolicy) => userGroupPolicy.groupPolicy)
-    public userGroupPolicies!: UserGroupPolicyEntity[];
-
-    @OneToMany(() => GroupPolicyJumpointEntity, (groupPolicyJumpoint) => groupPolicyJumpoint.groupPolicy)
-    public groupPolicyJumpoints!: GroupPolicyJumpointEntity[];
-
-    @OneToMany(() => GroupPolicyJumpGroupEntity, (groupPolicyJumpGroup) => groupPolicyJumpGroup.groupPolicy)
-    public groupPolicyJumpGroups!: GroupPolicyJumpGroupEntity[];
-
-    @OneToMany(() => GroupPolicyMemberEntity, (groupPolicyMember) => groupPolicyMember.groupPolicy)
-    public groupPolicyMembers!: GroupPolicyMemberEntity[];
-
-    @OneToMany(() => GroupPolicyTeamEntity, (groupPolicyTeam) => groupPolicyTeam.groupPolicy)
-    public groupPolicyTeams!: GroupPolicyTeamEntity[];
+    public userGroupPolicies?: UserGroupPolicyEntity[];
+    public groupPolicyJumpoints?: GroupPolicyJumpointEntity[];
+    public groupPolicyJumpGroups?: GroupPolicyJumpGroupEntity[];
+    public groupPolicyMembers?: GroupPolicyMemberEntity[];
+    public groupPolicyTeams?: GroupPolicyTeamEntity[];
 
     public static create(
         id: number,
@@ -154,5 +95,36 @@ export class GroupPolicyEntity implements GroupPolicy {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btGroupPolicy: BTGroupPolicy) {
+        return GroupPolicyEntity.create(
+            btGroupPolicy.id,
+            btGroupPolicy.name,
+            btGroupPolicy.permAccessAllowed,
+            btGroupPolicy.accessPermStatus
+                ? mapFromBTAccessPermissionStatusType(btGroupPolicy.accessPermStatus)
+                : undefined,
+            btGroupPolicy.permShareOtherTeam,
+            btGroupPolicy.permInviteExternalUser,
+            btGroupPolicy.permSessionIdleTimeout,
+            btGroupPolicy.permExtendedAvailabilityModeAllowed,
+            btGroupPolicy.permEditExternalKey,
+            btGroupPolicy.permCollaborate,
+            btGroupPolicy.permCollaborateControl,
+            btGroupPolicy.permJumpClient,
+            btGroupPolicy.permLocalJump,
+            btGroupPolicy.permRemoteJump,
+            btGroupPolicy.permRemoteVnc,
+            btGroupPolicy.permRemoteRdp,
+            btGroupPolicy.permShellJump,
+            btGroupPolicy.permWebJump,
+            btGroupPolicy.permProtocolTunnel,
+            btGroupPolicy.permSdStaticPortForExternalTools,
+            btGroupPolicy.defaultJumpItemRoleId,
+            btGroupPolicy.privateJumpItemRoleId,
+            btGroupPolicy.inferiorJumpItemRoleId,
+            btGroupPolicy.unassignedJumpItemRoleId,
+        );
     }
 }

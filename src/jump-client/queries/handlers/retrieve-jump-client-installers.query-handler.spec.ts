@@ -1,4 +1,5 @@
 import { QueryBus } from '@nestjs/cqrs';
+import { In } from 'typeorm';
 import { JumpClientInstallerRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
 import {
     JumpClientConnectionType as BTJumpClientConnectionType,
@@ -30,10 +31,10 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
                 .spyOn(jumpClientInstallerRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpClients);
 
-            const result = await handler.execute(new RetrieveJumpClientInstallersQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveJumpClientInstallersQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpClients);
-            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -45,26 +46,30 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpClientInstallersQuery(
                     'transaction-2',
+                    100,
                     10,
                     1,
                     'jump-client-1',
                     undefined,
                     undefined,
                     'tag-1',
-                    123,
+                    [123],
                     JumpClientGroupType.Personal,
                     JumpClientConnectionType.Active,
+                    'installer-123',
                 ),
             );
 
             expect(result).toBe(expectedJumpClients);
             expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                100,
                 {
                     name: 'jump-client-1',
                     tag: 'tag-1',
-                    jumpGroupId: 123,
+                    jumpGroupId: In([123]),
                     jumpGroupType: JumpClientGroupType.Personal,
                     connectionType: JumpClientConnectionType.Active,
+                    installerId: 'installer-123',
                 },
                 1,
                 10,
@@ -113,13 +118,14 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpClientInstallersQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'jump-client-1',
                     'hostname-1',
                     'fqdn-1',
                     'tag-1',
-                    123,
+                    [123],
                     JumpClientGroupType.Personal,
                     JumpClientConnectionType.Active,
                 ),
@@ -152,6 +158,7 @@ describe('RetrieveJumpClientInstallersQueryHandler', () => {
             expect(queryBusExecuteMethod).toHaveBeenCalledWith(
                 new BTRetrieveJumpClientInstallersQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'jump-client-1',

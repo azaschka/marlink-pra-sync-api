@@ -33,6 +33,7 @@ describe('CreateJumpGroupCommandHandler', () => {
             {
                 command: new CreateJumpGroupCommand(
                     'transaction-1',
+                    123,
                     'jump-group-1',
                     'jump-group-code-1',
                     'jump-group-comments-1',
@@ -44,7 +45,7 @@ describe('CreateJumpGroupCommandHandler', () => {
                 },
             },
             {
-                command: new CreateJumpGroupCommand('transaction-2', 'jump-group-2'),
+                command: new CreateJumpGroupCommand('transaction-2', 123, 'jump-group-2'),
                 expectedHttpClientBody: {
                     name: 'jump-group-2',
                 },
@@ -58,7 +59,9 @@ describe('CreateJumpGroupCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-group',
+                    command.transactionId,
+                    123,
+                    '/jump-group',
                     expectedHttpClientBody,
                 );
 
@@ -79,9 +82,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpGroup: {
-                    path: 'jump-group',
+                config: {
+                    jumpGroup: {
+                        path: 'jump-group',
+                    },
                 },
             },
         },

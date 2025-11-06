@@ -27,18 +27,19 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
             'deleteById',
         );
 
-        await handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 123));
+        await handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 100, 123));
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 123),
+            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 100, 123),
         );
-        expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<ProtocolTunnelJumpDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: ProtocolTunnelJumpDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -53,12 +54,12 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
             'deleteById',
         );
 
-        await expect(handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 123))).rejects.toThrow(
+        await expect(handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 100, 123))).rejects.toThrow(
             expectedError,
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 123),
+            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 100, 123),
         );
         expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
@@ -75,14 +76,14 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 123))).rejects.toThrow(
+        await expect(handler.execute(new DeleteProtocolTunnelJumpCommand('transaction-1', 100, 123))).rejects.toThrow(
             expectedError,
         );
 
         expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 123),
+            new BTDeleteProtocolTunnelJumpCommand('transaction-1', 100, 123),
         );
-        expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(protocolTunnelJumpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -91,6 +92,7 @@ describe('DeleteProtocolTunnelJumpCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

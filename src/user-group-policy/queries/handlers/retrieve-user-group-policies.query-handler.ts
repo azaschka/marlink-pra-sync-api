@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { UserGroupPolicy } from '../../models';
+import { UserGroupPolicyEntity } from '../../repositories/entities';
 import { UserGroupPolicyRepositoryService } from '../../repositories/services/user-group-policy-repository.service';
 import { RetrieveUserGroupPoliciesQuery } from '../retrieve-user-group-policies.query';
 
@@ -8,10 +9,11 @@ export class RetrieveUserGroupPoliciesQueryHandler implements IQueryHandler<Retr
     constructor(private readonly userGroupPolicyRepositoryService: UserGroupPolicyRepositoryService) {}
 
     public async execute(query: RetrieveUserGroupPoliciesQuery): Promise<UserGroupPolicy[]> {
-        const userGroupPolicyFindByQuery = <UserGroupPolicy>{};
+        const userGroupPolicyFindByQuery = <UserGroupPolicyEntity>{};
         userGroupPolicyFindByQuery.userId = query.userId;
 
         const userGroupPolicies = await this.userGroupPolicyRepositoryService.findBy(
+            query.tenantId,
             userGroupPolicyFindByQuery,
             query.pageNumber,
             query.pageSize,

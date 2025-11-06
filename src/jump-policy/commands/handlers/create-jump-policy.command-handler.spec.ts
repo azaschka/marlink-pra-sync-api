@@ -82,6 +82,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
         it.each([
             <CreateJumpPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 displayName: 'jump-policy-1',
                 codeName: 'jump-policy-code-1',
                 description: 'jump-policy-description-1',
@@ -110,6 +111,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
             },
             <CreateJumpPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 displayName: 'jump-policy-2',
             },
         ])(
@@ -136,6 +138,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateJumpPolicyCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.displayName,
                         command.codeName,
                         command.description,
@@ -191,13 +194,14 @@ describe('CreateJumpPolicyCommandHandler', () => {
                     TestHelper.mockedJumpPolicyCreatedDtoOutput.approvalApproverScope,
                     TestHelper.mockedJumpPolicyCreatedDtoOutput.recordingsDisabled,
                 );
-                expect(jumpPolicyRepositoryServiceCreateMethod).toHaveBeenCalledWith(jumpPolicyEntityToBeCreated);
+                expect(jumpPolicyRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, jumpPolicyEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpPolicyCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: JumpPolicyCreatedEvent.EVENT_TYPE,
                         payload: {
                             jumpPolicy: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -240,6 +244,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                 handler.execute(<CreateJumpPolicyCommand>{
                     transactionId: 'transaction-1',
                     displayName: 'jump-policy-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -253,6 +258,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpPolicy: jumpPolicyEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

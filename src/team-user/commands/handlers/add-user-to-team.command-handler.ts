@@ -22,11 +22,12 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
         const teamUserEntity = this.createTeamUserEntity(command.id, btTeamUser);
 
         try {
-            const teamUser = await this.addTeamUser(teamUserEntity);
+            const teamUser = await this.addTeamUser(command.tenantId, teamUserEntity);
 
             this.eventBus.publish(
                 new TeamUserAddedEvent(command.transactionId, {
                     teamUser: teamUser,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -36,6 +37,7 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
                 new TeamUserAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     teamUser: teamUserEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -45,7 +47,13 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
 
     private async addBTTeamUser(command: AddUserToTeamCommand) {
         return await this.commandBus.execute<BTAddUserToTeamCommand, UserAddedToTeamDtoOutput>(
-            new BTAddUserToTeamCommand(command.transactionId, command.id, command.userId, command.roleType),
+            new BTAddUserToTeamCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.userId,
+                command.roleType,
+            ),
         );
     }
 
@@ -53,13 +61,14 @@ export class AddUserToTeamCommandHandler implements ICommandHandler<AddUserToTea
         return TeamUserEntity.create(teamId, btTeamUser.userId, mapFromBTUserTeamRoleType(btTeamUser.role));
     }
 
-    private async addTeamUser(teamUserEntity: TeamUserEntity): Promise<TeamUser> {
-        await this.teamUserRepositoryService.create(teamUserEntity);
+    private async addTeamUser(tenantId: number, teamUserEntity: TeamUserEntity): Promise<TeamUser> {
+        await this.teamUserRepositoryService.create(tenantId, teamUserEntity);
 
         return {
             teamId: teamUserEntity.teamId,
             userId: teamUserEntity.userId,
             roleType: teamUserEntity.roleType,
+            lastSyncDate: teamUserEntity.lastSyncDate,
         };
     }
 }

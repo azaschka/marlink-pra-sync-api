@@ -51,6 +51,7 @@ describe('ModifyJumpointCommandHandler', () => {
             {
                 command: new ModifyJumpointCommand(
                     'transaction-1',
+                    123,
                     1,
                     'Jumpoint 1',
                     'J1',
@@ -89,7 +90,7 @@ describe('ModifyJumpointCommandHandler', () => {
                 },
             },
             {
-                command: new ModifyJumpointCommand('transaction-2', 2, 'Jumpoint 2', 'code-2'),
+                command: new ModifyJumpointCommand('transaction-2', 123, 2, 'Jumpoint 2', 'code-2'),
                 expectedHttpClientBody: {
                     name: 'Jumpoint 2',
                     codeName: 'code-2',
@@ -104,7 +105,9 @@ describe('ModifyJumpointCommandHandler', () => {
 
                 expect(httpClientServicePatchMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/jumpoint/${command.id}`,
+                    command.transactionId,
+                    123,
+                    `/jumpoint/${command.id}`,
                     expectedHttpClientBody,
                 );
 
@@ -125,9 +128,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpoint: {
-                    path: 'jumpoint',
+                config: {
+                    jumpoint: {
+                        path: 'jumpoint',
+                    },
                 },
             },
         },

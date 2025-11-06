@@ -21,11 +21,12 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
         const teamEntity = this.createTeamEntity(btTeam);
 
         try {
-            const updatedTeam = await this.updateTeam(teamEntity);
+            const updatedTeam = await this.updateTeam(command.tenantId, teamEntity);
 
             this.eventBus.publish(
                 new TeamModifiedEvent(command.transactionId, {
                     team: updatedTeam,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
                 new TeamModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     team: teamEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +48,7 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
         return await this.commandBus.execute<BTModifyTeamCommand, TeamModifiedDtoOutput>(
             new BTModifyTeamCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.codeName,
@@ -58,10 +61,10 @@ export class ModifyTeamCommandHandler implements ICommandHandler<ModifyTeamComma
         return TeamEntity.create(btTeam.id, btTeam.name, btTeam.codeName, btTeam.comments);
     }
 
-    private async updateTeam(teamEntity: TeamEntity) {
-        await this.teamRepositoryService.createOrUpdateById(teamEntity);
+    private async updateTeam(tenantId: number, teamEntity: TeamEntity) {
+        await this.teamRepositoryService.createOrUpdateById(tenantId, teamEntity);
 
-        const createdOrUpdatedTeam = await this.teamRepositoryService.findOneById(teamEntity.id);
+        const createdOrUpdatedTeam = await this.teamRepositoryService.findOneById(tenantId, teamEntity.id);
 
         if (!createdOrUpdatedTeam) {
             throw new Error('Team has been created or updated but could not be retrieved.');

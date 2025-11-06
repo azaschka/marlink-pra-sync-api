@@ -15,18 +15,21 @@ export class DeleteShellJumpCommandHandler implements ICommandHandler<DeleteShel
 
     public async execute(command: DeleteShellJumpCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteShellJumpCommand, void>(
-            new BTDeleteShellJumpCommand(command.transactionId, command.id),
+            new BTDeleteShellJumpCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.shellJumpRepositoryService.deleteById(command.id);
+            await this.shellJumpRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new ShellJumpDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new ShellJumpDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new ShellJumpDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

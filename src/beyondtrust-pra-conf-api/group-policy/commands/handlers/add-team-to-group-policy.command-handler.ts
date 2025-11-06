@@ -14,16 +14,18 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
     ) {}
 
     public async execute(command: AddTeamToGroupPolicyCommand): Promise<TeamAddedToGroupPolicyDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.groupPolicy.team.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.team.path,
         );
 
         return await this.httpClientService.post<TeamAddedToGroupPolicyDtoOutput, TeamAddedToGroupPolicyDtoOutput>(
             TeamAddedToGroupPolicyDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             AddTeamToGroupPolicyDtoInput.create(command.teamId, command.role),
         );
     }

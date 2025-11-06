@@ -12,12 +12,12 @@ export class DeleteProtocolTunnelJumpCommandHandler implements ICommandHandler<D
     ) {}
 
     public async execute(command: DeleteProtocolTunnelJumpCommand): Promise<void> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.protocolTunnelJump.path,
             command.id.toString(),
         );
 
-        return await this.httpClientService.delete(url);
+        return await this.httpClientService.delete(command.transactionId, command.beyondtrustInstanceId, urlPath);
     }
 }

@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface JumpointNodesSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class JumpointNodesSyncFailedEvent extends BaseEvent {

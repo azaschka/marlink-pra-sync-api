@@ -40,6 +40,7 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpGroupsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'jump-group-1',
@@ -55,6 +56,7 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpGroupsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                 },
@@ -72,7 +74,9 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-group',
+                    inputQuery.transactionId,
+                    123,
+                    '/jump-group',
                     expectedHttpClientParams,
                 );
 
@@ -93,9 +97,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpGroup: {
-                    path: 'jump-group',
+                config: {
+                    jumpGroup: {
+                        path: 'jump-group',
+                    },
                 },
             },
         },

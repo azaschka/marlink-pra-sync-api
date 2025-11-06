@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface GroupPolicyDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class GroupPolicyDeletionFailedEvent extends BaseEvent {

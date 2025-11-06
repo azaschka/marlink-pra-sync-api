@@ -3,6 +3,7 @@ import { Jumpoint } from '../models';
 
 export interface JumpointModifiedEventPayload {
     jumpoint: Jumpoint;
+    tenantId: number;
 }
 
 export class JumpointModifiedEvent extends BaseEvent {

@@ -79,6 +79,7 @@ describe('CopyRemoteVncCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyRemoteVncCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -87,7 +88,7 @@ describe('CopyRemoteVncCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyRemoteVncCommand('transaction-1', 1, 3, JumpGroupType.Personal, 'remote-vnc-1'),
+                new BTCopyRemoteVncCommand('transaction-1', 123, 1, 3, JumpGroupType.Personal, 'remote-vnc-1'),
             );
             expect(remoteVncEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedRemoteVncRetrievedDtoOutput.id,
@@ -102,13 +103,14 @@ describe('CopyRemoteVncCommandHandler', () => {
                 TestHelper.mockedRemoteVncRetrievedDtoOutput.jumpPolicyId,
                 TestHelper.mockedRemoteVncRetrievedDtoOutput.sessionPolicyId,
             );
-            expect(remoteVncRepositoryServiceCreateMethod).toHaveBeenCalledWith(remoteVncEntityToBeCreated);
+            expect(remoteVncRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, remoteVncEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<RemoteVncCopiedEvent>{
                     transactionId: 'transaction-1',
                     eventType: RemoteVncCopiedEvent.EVENT_TYPE,
                     payload: {
                         remoteVnc: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -150,6 +152,7 @@ describe('CopyRemoteVncCommandHandler', () => {
                 handler.execute(<CopyRemoteVncCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-vnc-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -163,6 +166,7 @@ describe('CopyRemoteVncCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteVnc: remoteVncEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

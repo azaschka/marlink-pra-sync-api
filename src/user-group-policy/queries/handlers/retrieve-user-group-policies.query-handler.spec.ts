@@ -36,10 +36,10 @@ describe('RetrieveUserGroupPoliciesQueryHandler', () => {
                 .spyOn(userGroupPolicyRepositoryService, 'findBy')
                 .mockResolvedValue(expectedUserGroupPolicyEntities);
 
-            const result = await handler.execute(new RetrieveUserGroupPoliciesQuery('transaction-2', 10, 1, 123));
+            const result = await handler.execute(new RetrieveUserGroupPoliciesQuery('transaction-2', 100, 10, 1, 123));
 
             expect(result).toBe(expectedUserGroupPolicyEntities);
-            expect(userGroupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith({ userId: 123 }, 1, 10);
+            expect(userGroupPolicyRepositoryServiceFindByMethod).toHaveBeenCalledWith(100, { userId: 123 }, 1, 10);
         });
     });
 });

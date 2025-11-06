@@ -24,16 +24,17 @@ describe('DeleteRemoteRdpCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const remoteRdpRepositoryServiceDeleteByIdMethod = jest.spyOn(remoteRdpRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteRemoteRdpCommand('transaction-1', 123));
+        await handler.execute(new DeleteRemoteRdpCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 123));
-        expect(remoteRdpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 100, 123));
+        expect(remoteRdpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<RemoteRdpDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: RemoteRdpDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -45,9 +46,11 @@ describe('DeleteRemoteRdpCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const remoteRdpRepositoryServiceDeleteByIdMethod = jest.spyOn(remoteRdpRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteRemoteRdpCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteRemoteRdpCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 100, 123));
         expect(remoteRdpRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -63,10 +66,12 @@ describe('DeleteRemoteRdpCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteRemoteRdpCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteRemoteRdpCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 123));
-        expect(remoteRdpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteRdpCommand('transaction-1', 100, 123));
+        expect(remoteRdpRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -75,6 +80,7 @@ describe('DeleteRemoteRdpCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

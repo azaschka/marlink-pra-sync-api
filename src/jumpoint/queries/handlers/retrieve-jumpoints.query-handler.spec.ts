@@ -44,6 +44,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',
@@ -65,6 +66,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
             expect(queryBusExecuteMethod).toHaveBeenCalledWith(
                 new BTRetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',
@@ -82,16 +84,17 @@ describe('RetrieveJumpointsQueryHandler', () => {
                 .spyOn(jumpointRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpoints);
 
-            const result = await handler.execute(new RetrieveJumpointsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveJumpointsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpoints);
-            expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, [{}], 2, 20);
         });
 
         it.each([
             {
                 query: new RetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',
@@ -100,11 +103,12 @@ describe('RetrieveJumpointsQueryHandler', () => {
                     undefined,
                     'code-name-1',
                 ),
-                expectedFindByQuery: { name: 'Jumpoint 1', codeName: 'code-name-1' },
+                expectedFindByQuery: [{ name: 'Jumpoint 1', codeName: 'code-name-1' }],
             },
             {
                 query: new RetrieveJumpointsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'Jumpoint 1',
@@ -112,9 +116,9 @@ describe('RetrieveJumpointsQueryHandler', () => {
                     undefined,
                     undefined,
                     'code-name-1',
-                    'jumpoint%',
+                    ['jumpoint%'],
                 ),
-                expectedFindByQuery: { codeName: 'code-name-1', name: Like('jumpoint%') },
+                expectedFindByQuery: [{ codeName: 'code-name-1', name: Like('jumpoint%') }],
             },
         ])(
             'should call the repo with correct parameter and return its value',
@@ -129,7 +133,7 @@ describe('RetrieveJumpointsQueryHandler', () => {
 
                 expect(result).toStrictEqual(expectedJumpoints);
                 expect(queryBusExecuteMethod).not.toHaveBeenCalled();
-                expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(expectedFindByQuery, 1, 10);
+                expect(jumpointRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, expectedFindByQuery, 1, 10);
             },
         );
     });

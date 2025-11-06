@@ -15,18 +15,21 @@ export class DeleteRemoteRdpCommandHandler implements ICommandHandler<DeleteRemo
 
     public async execute(command: DeleteRemoteRdpCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteRemoteRdpCommand, void>(
-            new BTDeleteRemoteRdpCommand(command.transactionId, command.id),
+            new BTDeleteRemoteRdpCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.remoteRdpRepositoryService.deleteById(command.id);
+            await this.remoteRdpRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new RemoteRdpDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new RemoteRdpDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new RemoteRdpDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

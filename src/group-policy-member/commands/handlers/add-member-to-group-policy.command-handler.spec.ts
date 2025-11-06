@@ -37,11 +37,13 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
         it.each([
             <AddMemberToGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 userId: 2,
             },
             <AddMemberToGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 userId: 4,
             },
@@ -73,6 +75,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTAddMemberToGroupPolicyCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.userId,
                         command.securityProviderId,
@@ -89,6 +92,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                     TestHelper.mockedMemberAddedToGroupPolicyDtoOutput.groupName,
                 );
                 expect(groupPolicyMemberRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     groupPolicyMemberEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -97,6 +101,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyMemberAddedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicyMember: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -153,6 +158,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     userId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -170,6 +176,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
                             userId: groupPolicyMemberEntityToBeCreated.userId,
                             memberId: groupPolicyMemberEntityToBeCreated.memberId,
                         },
+                        tenantId: 123,
                     },
                 }),
             );

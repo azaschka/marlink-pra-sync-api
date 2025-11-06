@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface WebJumpDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class WebJumpDeletedEvent extends BaseEvent {

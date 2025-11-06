@@ -3,6 +3,7 @@ import { TeamUser } from '../models';
 
 export interface TeamUsersSyncedEventPayload {
     teamUsers: TeamUser[];
+    tenantId: number;
 }
 
 export class TeamUsersSyncedEvent extends BaseEvent {

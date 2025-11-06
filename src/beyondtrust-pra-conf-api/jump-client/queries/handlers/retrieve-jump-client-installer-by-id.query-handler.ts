@@ -15,16 +15,16 @@ export class RetrieveJumpClientInstallerByIdQueryHandler
     ) {}
 
     public async execute(query: RetrieveJumpClientInstallerByIdQuery): Promise<JumpClientInstallerRetrievedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpClient.path,
-            this.appConfigService.beyondTrust.api.jumpClient.installer.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.path,
+            this.appConfigService.beyondTrust.api.config.jumpClient.installer.path,
             query.id.toString(),
         );
 
         return await this.httpClientService.get<
             JumpClientInstallerRetrievedDtoOutput,
             JumpClientInstallerRetrievedDtoOutput
-        >(JumpClientInstallerRetrievedDtoOutput, url);
+        >(JumpClientInstallerRetrievedDtoOutput, query.transactionId, query.beyondtrustInstanceId, urlPath);
     }
 }

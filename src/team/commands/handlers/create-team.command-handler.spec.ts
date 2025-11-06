@@ -36,12 +36,14 @@ describe('CreateTeamCommandHandler', () => {
         it.each([
             <CreateTeamCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'team-1',
                 codeName: 'team-code-1',
                 comments: 'team-comments-1',
             },
             <CreateTeamCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'team-2',
             },
         ])(
@@ -64,7 +66,13 @@ describe('CreateTeamCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTCreateTeamCommand(command.transactionId, command.name, command.codeName, command.comments),
+                    new BTCreateTeamCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.name,
+                        command.codeName,
+                        command.comments,
+                    ),
                 );
                 expect(teamEntityCreateMethod).toHaveBeenCalledWith(
                     TestHelper.mockedTeamCreatedDtoOutput.id,
@@ -72,13 +80,14 @@ describe('CreateTeamCommandHandler', () => {
                     TestHelper.mockedTeamCreatedDtoOutput.codeName,
                     TestHelper.mockedTeamCreatedDtoOutput.comments,
                 );
-                expect(teamRepositoryServiceCreateMethod).toHaveBeenCalledWith(teamEntityToBeCreated);
+                expect(teamRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, teamEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<TeamCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: TeamCreatedEvent.EVENT_TYPE,
                         payload: {
                             team: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -119,6 +128,7 @@ describe('CreateTeamCommandHandler', () => {
                 handler.execute(<CreateTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -132,6 +142,7 @@ describe('CreateTeamCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         team: teamEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

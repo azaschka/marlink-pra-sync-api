@@ -14,9 +14,9 @@ export class RetrieveProtocolTunnelJumpsQueryHandler implements IQueryHandler<Re
     ) {}
 
     public async execute(query: RetrieveProtocolTunnelJumpsQuery): Promise<ProtocolTunnelJumpRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.protocolTunnelJump.path,
         );
 
         return await this.httpClientService.get<
@@ -24,7 +24,9 @@ export class RetrieveProtocolTunnelJumpsQueryHandler implements IQueryHandler<Re
             ProtocolTunnelJumpRetrievedDtoOutput[]
         >(
             ProtocolTunnelJumpRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveProtocolTunnelJumpsDtoInput.create(
                 query.pageSize,
                 query.pageNumber,

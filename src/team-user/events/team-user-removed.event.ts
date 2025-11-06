@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface TeamUserRemovedEventPayload {
     teamId: number;
     userId: number;
+    tenantId: number;
 }
 
 export class TeamUserRemovedEvent extends BaseEvent {

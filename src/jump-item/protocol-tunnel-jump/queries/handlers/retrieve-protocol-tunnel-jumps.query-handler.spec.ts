@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpGroupType } from '../../enums';
 import { ProtocolTunnelJumpEntity } from '../../repositories/entities';
 import { ProtocolTunnelJumpRepositoryService } from '../../repositories/services/protocol-tunnel-jump-repository.service';
@@ -20,10 +21,10 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
                 .spyOn(protocolTunnelJumpRepositoryService, 'findBy')
                 .mockResolvedValue(expectedProtocolTunnelJumps);
 
-            const result = await handler.execute(new RetrieveProtocolTunnelJumpsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveProtocolTunnelJumpsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedProtocolTunnelJumps);
-            expect(protocolTunnelJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(protocolTunnelJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -35,11 +36,12 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveProtocolTunnelJumpsQuery(
                     'transaction-2',
+                    123,
                     10,
                     1,
                     'protocol-tunnel-jump-1',
                     'host-1',
-                    2,
+                    [2],
                     JumpGroupType.Personal,
                     3,
                     'tag-1',
@@ -48,10 +50,11 @@ describe('RetrieveProtocolTunnelJumpsQueryHandler', () => {
 
             expect(result).toBe(expectedProtocolTunnelJumps);
             expect(protocolTunnelJumpRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                123,
                 {
                     name: 'protocol-tunnel-jump-1',
                     hostname: 'host-1',
-                    jumpGroupId: 2,
+                    jumpGroupId: In([2]),
                     jumpGroupType: JumpGroupType.Personal,
                     jumpointId: 3,
                     tag: 'tag-1',

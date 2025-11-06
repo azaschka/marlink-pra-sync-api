@@ -21,11 +21,12 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
         const teamEntity = this.createTeamEntity(btTeam);
 
         try {
-            const createdTeam = await this.teamRepositoryService.create(teamEntity);
+            const createdTeam = await this.teamRepositoryService.create(command.tenantId, teamEntity);
 
             this.eventBus.publish(
                 new TeamCreatedEvent(command.transactionId, {
                     team: createdTeam,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
                 new TeamCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     team: teamEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -44,7 +46,13 @@ export class CreateTeamCommandHandler implements ICommandHandler<CreateTeamComma
 
     private async createBTTeam(command: CreateTeamCommand) {
         return await this.commandBus.execute<BTCreateTeamCommand, TeamCreatedDtoOutput>(
-            new BTCreateTeamCommand(command.transactionId, command.name, command.codeName, command.comments),
+            new BTCreateTeamCommand(
+                command.transactionId,
+                command.tenantId,
+                command.name,
+                command.codeName,
+                command.comments,
+            ),
         );
     }
 

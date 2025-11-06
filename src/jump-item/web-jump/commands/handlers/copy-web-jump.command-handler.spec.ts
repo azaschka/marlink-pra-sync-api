@@ -89,6 +89,7 @@ describe('CopyWebJumpCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyWebJumpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -97,7 +98,7 @@ describe('CopyWebJumpCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyWebJumpCommand('transaction-1', 1, 3, JumpGroupType.Personal, 'web-jump-1'),
+                new BTCopyWebJumpCommand('transaction-1', 123, 1, 3, JumpGroupType.Personal, 'web-jump-1'),
             );
             expect(webJumpEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedWebJumpRetrievedDtoOutput.id,
@@ -117,13 +118,14 @@ describe('CopyWebJumpCommandHandler', () => {
                 TestHelper.mockedWebJumpRetrievedDtoOutput.submitField,
                 TestHelper.mockedWebJumpRetrievedDtoOutput.sessionPolicyId,
             );
-            expect(webJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(webJumpEntityToBeCreated);
+            expect(webJumpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, webJumpEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<WebJumpCopiedEvent>{
                     transactionId: 'transaction-1',
                     eventType: WebJumpCopiedEvent.EVENT_TYPE,
                     payload: {
                         webJump: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -165,6 +167,7 @@ describe('CopyWebJumpCommandHandler', () => {
                 handler.execute(<CopyWebJumpCommand>{
                     transactionId: 'transaction-1',
                     name: 'web-jump-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -178,6 +181,7 @@ describe('CopyWebJumpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         webJump: webJumpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

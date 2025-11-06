@@ -20,10 +20,12 @@ describe('DeleteRemoteRdpCommandHandler', () => {
         it('should call HttpClientService with correct url and return the result', async () => {
             const httpClientServiceDeleteMethod = jest.spyOn(httpClientService, 'delete');
 
-            await handler.execute(new DeleteRemoteRdpCommand('transaction-1', 123));
+            await handler.execute(new DeleteRemoteRdpCommand('transaction-1', 100, 123));
 
             expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith(
-                'https://api.example.com/jump-item/remote-rdp/123',
+                'transaction-1',
+                100,
+                '/jump-item/remote-rdp/123',
             );
         });
     });
@@ -40,10 +42,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteRdp: {
-                        path: 'jump-item/remote-rdp',
+                config: {
+                    jumpItem: {
+                        remoteRdp: {
+                            path: 'jump-item/remote-rdp',
+                        },
                     },
                 },
             },

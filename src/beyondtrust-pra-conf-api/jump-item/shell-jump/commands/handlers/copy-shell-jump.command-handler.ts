@@ -14,16 +14,18 @@ export class CopyShellJumpCommandHandler implements ICommandHandler<CopyShellJum
     ) {}
 
     public async execute(command: CopyShellJumpCommand): Promise<ShellJumpCopiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.shellJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.shellJump.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.jumpItem.shellJump.copy,
+            this.appConfigService.beyondTrust.api.config.jumpItem.shellJump.copy,
         );
 
         return await this.httpClientService.post<ShellJumpCopiedDtoOutput, ShellJumpCopiedDtoOutput>(
             ShellJumpCopiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CopyShellJumpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),
         );
     }

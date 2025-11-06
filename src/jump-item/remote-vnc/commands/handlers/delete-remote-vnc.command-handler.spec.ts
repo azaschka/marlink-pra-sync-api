@@ -24,16 +24,17 @@ describe('DeleteRemoteVncCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const remoteVncRepositoryServiceDeleteByIdMethod = jest.spyOn(remoteVncRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteRemoteVncCommand('transaction-1', 123));
+        await handler.execute(new DeleteRemoteVncCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 123));
-        expect(remoteVncRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 100, 123));
+        expect(remoteVncRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<RemoteVncDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: RemoteVncDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -45,9 +46,11 @@ describe('DeleteRemoteVncCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const remoteVncRepositoryServiceDeleteByIdMethod = jest.spyOn(remoteVncRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteRemoteVncCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteRemoteVncCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 100, 123));
         expect(remoteVncRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -63,10 +66,12 @@ describe('DeleteRemoteVncCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteRemoteVncCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteRemoteVncCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 123));
-        expect(remoteVncRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteRemoteVncCommand('transaction-1', 100, 123));
+        expect(remoteVncRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -75,6 +80,7 @@ describe('DeleteRemoteVncCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

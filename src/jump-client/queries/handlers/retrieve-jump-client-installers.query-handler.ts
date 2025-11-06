@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { JumpClientInstallerRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-client/dtos/outputs';
 import { RetrieveJumpClientInstallersQuery as BTRetrieveJumpClientInstallersQuery } from '../../../beyondtrust-pra-conf-api/jump-client/queries';
 import { mapFromBTJumpClientInstallerKeyInfo } from '../../mappers';
@@ -15,7 +16,7 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
     ) {}
 
     public async execute(query: RetrieveJumpClientInstallersQuery): Promise<JumpClientInstaller[]> {
-        const jumpClientInstallerFindByQuery = <JumpClientInstaller>{};
+        const jumpClientInstallerFindByQuery: FindOptionsWhere<JumpClientInstaller> = {};
 
         if (query.hostname || query.fqdn) {
             return this.retrieveBTJumpClientInstallers(query);
@@ -29,8 +30,8 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
             jumpClientInstallerFindByQuery.tag = query.tag;
         }
 
-        if (query.jumpGroupId !== undefined) {
-            jumpClientInstallerFindByQuery.jumpGroupId = query.jumpGroupId;
+        if (query.jumpGroupIds !== undefined && query.jumpGroupIds.length > 0) {
+            jumpClientInstallerFindByQuery.jumpGroupId = In(query.jumpGroupIds);
         }
 
         if (query.jumpGroupType !== undefined) {
@@ -41,7 +42,12 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
             jumpClientInstallerFindByQuery.connectionType = query.connectionType;
         }
 
+        if (query.installerId !== undefined) {
+            jumpClientInstallerFindByQuery.installerId = query.installerId;
+        }
+
         const jumpClientInstallers = await this.jumpClientInstallerRepositoryService.findBy(
+            query.tenantId,
             jumpClientInstallerFindByQuery,
             query.pageNumber,
             query.pageSize,
@@ -57,13 +63,14 @@ export class RetrieveJumpClientInstallersQueryHandler implements IQueryHandler<R
         >(
             new BTRetrieveJumpClientInstallersQuery(
                 query.transactionId,
+                query.tenantId,
                 query.pageSize,
                 query.pageNumber,
                 query.name,
                 query.hostname,
                 query.fqdn,
                 query.tag,
-                query.jumpGroupId,
+                query.jumpGroupIds?.[0], // BeyondTrust API only supports a single jump group id filter
                 query.jumpGroupType,
                 query.connectionType,
             ),

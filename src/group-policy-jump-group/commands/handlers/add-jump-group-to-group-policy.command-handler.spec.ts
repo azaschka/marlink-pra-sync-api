@@ -39,11 +39,13 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
         it.each([
             <AddJumpGroupToGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 2,
             },
             <AddJumpGroupToGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 jumpGroupId: 4,
             },
@@ -72,7 +74,12 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTAddJumpGroupToGroupPolicyCommand(command.transactionId, command.id, command.jumpGroupId),
+                    new BTAddJumpGroupToGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpGroupId,
+                    ),
                 );
                 expect(groupPolicyJumpGroupEntityCreateMethod).toHaveBeenCalledWith(
                     command.id,
@@ -81,6 +88,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                     TestHelper.mockedJumpGroupAddedToGroupPolicyDtoOutput.jumpPolicyId,
                 );
                 expect(groupPolicyJumpGroupRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                    123,
                     groupPolicyJumpGroupEntityToBeCreated,
                 );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
@@ -89,6 +97,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                         eventType: GroupPolicyJumpGroupAddedEvent.EVENT_TYPE,
                         payload: {
                             groupPolicyJumpGroup: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -142,6 +151,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     jumpGroupId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -158,6 +168,7 @@ describe('AddJumpGroupToGroupPolicyCommandHandler', () => {
                             groupPolicyId: groupPolicyJumpGroupEntityToBeCreated.groupPolicyId,
                             jumpGroupId: groupPolicyJumpGroupEntityToBeCreated.jumpGroupId,
                         },
+                        tenantId: 123,
                     },
                 }),
             );

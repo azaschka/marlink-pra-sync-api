@@ -22,15 +22,16 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
+import { ApiTenantIdHeader, ApiTransactionIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
 import { CreateUserCommand, DeleteUserCommand, ModifyUserCommand } from '../commands';
 import { CreateUserDtoInput, ModifyUserDtoInput, RetrieveUsersDtoInput } from '../dtos/inputs';
 import { UserCreatedDtoOutput, UserModifiedDtoOutput, UserRetrievedDtoOutput } from '../dtos/outputs';
 import { User } from '../models';
-import { RetrieveUsersQuery } from '../queries';
+import { RetrieveUserByIdQuery, RetrieveUsersQuery } from '../queries';
 
+@ApiTenantIdHeader()
 @ApiTransactionIdHeader()
 @ApiTags('Users')
 @Controller('users')
@@ -41,20 +42,39 @@ export class UserController {
         private readonly queryBus: QueryBus,
     ) {}
 
+    @Get(':id')
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({ type: UserRetrievedDtoOutput })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    public async retrieveUser(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
+        @Param('id') id: number,
+    ): Promise<UserRetrievedDtoOutput> {
+        const result = await this.queryBus.execute<RetrieveUserByIdQuery, User>(
+            new RetrieveUserByIdQuery(transactionId, tenantId, id),
+        );
+
+        return result;
+    }
+
     @Get()
     @ApiOkResponse({ type: UserRetrievedDtoOutput, isArray: true })
     public async retrieveUsers(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Query() dtoInput: RetrieveUsersDtoInput,
     ): Promise<UserRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveUsersQuery, User[]>(
             new RetrieveUsersQuery(
                 transactionId,
+                tenantId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.securityProviderId,
                 dtoInput.username,
                 dtoInput.email,
+                dtoInput.publicDisplayNamePatterns,
             ),
         );
 
@@ -72,11 +92,13 @@ export class UserController {
     })
     public async createUser(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Body() dtoInput: CreateUserDtoInput,
     ): Promise<UserCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateUserCommand, User>(
             new CreateUserCommand(
                 transactionId,
+                tenantId,
                 dtoInput.publicDisplayName,
                 dtoInput.username,
                 dtoInput.password,
@@ -106,12 +128,14 @@ export class UserController {
     })
     public async modifyUser(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyUserDtoInput,
     ): Promise<UserModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyUserCommand, User>(
             new ModifyUserCommand(
                 transactionId,
+                tenantId,
                 id,
                 dtoInput.publicDisplayName,
                 dtoInput.username,
@@ -140,8 +164,9 @@ export class UserController {
     })
     public async deleteUser(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
     ): Promise<void> {
-        await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand(transactionId, id));
+        await this.commandBus.execute<DeleteUserCommand, void>(new DeleteUserCommand(transactionId, tenantId, id));
     }
 }

@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface UsersSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class UsersSyncFailedEvent extends BaseEvent {

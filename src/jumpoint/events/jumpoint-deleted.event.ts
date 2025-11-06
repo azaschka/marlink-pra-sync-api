@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface JumpointDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class JumpointDeletedEvent extends BaseEvent {

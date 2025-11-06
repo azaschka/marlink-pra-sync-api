@@ -100,6 +100,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
             // Act
             const result = await handler.execute(<CopyRemoteRdpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 3,
                 jumpGroupType: JumpGroupType.Personal,
@@ -108,7 +109,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTCopyRemoteRdpCommand('transaction-1', 1, 3, JumpGroupType.Personal, 'remote-rdp-1'),
+                new BTCopyRemoteRdpCommand('transaction-1', 123, 1, 3, JumpGroupType.Personal, 'remote-rdp-1'),
             );
             expect(remoteRdpEntityCreateMethod).toHaveBeenCalledWith(
                 TestHelper.mockedRemoteRdpRetrievedDtoOutput.id,
@@ -136,13 +137,14 @@ describe('CopyRemoteRdpCommandHandler', () => {
                 TestHelper.mockedRemoteRdpRetrievedDtoOutput.targetSystem,
                 TestHelper.mockedRemoteRdpRetrievedDtoOutput.credentialType,
             );
-            expect(remoteRdpRepositoryServiceCreateMethod).toHaveBeenCalledWith(remoteRdpEntityToBeCreated);
+            expect(remoteRdpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, remoteRdpEntityToBeCreated);
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<RemoteRdpCopiedEvent>{
                     transactionId: 'transaction-1',
                     eventType: RemoteRdpCopiedEvent.EVENT_TYPE,
                     payload: {
                         remoteRdp: result,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -184,6 +186,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
                 handler.execute(<CopyRemoteRdpCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-rdp-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -197,6 +200,7 @@ describe('CopyRemoteRdpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteRdp: remoteRdpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

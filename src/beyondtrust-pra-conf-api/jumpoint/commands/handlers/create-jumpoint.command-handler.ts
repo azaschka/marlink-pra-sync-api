@@ -14,14 +14,16 @@ export class CreateJumpointCommandHandler implements ICommandHandler<CreateJumpo
     ) {}
 
     public async execute(command: CreateJumpointCommand): Promise<JumpointCreatedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpoint.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpoint.path,
         );
 
         return await this.httpClientService.post<JumpointCreatedDtoOutput, JumpointCreatedDtoOutput>(
             JumpointCreatedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyJumpointDtoInput.create(
                 command.name,
                 command.platform,

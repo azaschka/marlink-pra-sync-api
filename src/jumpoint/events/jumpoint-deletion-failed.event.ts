@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface JumpointDeletionFailedEventPayload {
     errorMessage: string;
     id: number;
+    tenantId: number;
 }
 
 export class JumpointDeletionFailedEvent extends BaseEvent {

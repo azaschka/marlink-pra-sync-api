@@ -27,11 +27,13 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
         it.each([
             <RemoveMemberFromGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 memberId: 2,
             },
             <RemoveMemberFromGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 memberId: 4,
             },
@@ -51,9 +53,15 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveMemberFromGroupPolicyCommand(command.transactionId, command.id, command.memberId),
+                    new BTRemoveMemberFromGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.memberId,
+                    ),
                 );
                 expect(groupPolicyMemberRepositoryServiceDeleteByGroupPolicyIdAndMemberIdMethod).toHaveBeenCalledWith(
+                    command.tenantId,
                     command.id,
                     command.memberId,
                 );
@@ -64,6 +72,7 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
                         payload: {
                             groupPolicyId: command.id,
                             memberId: command.memberId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -103,6 +112,7 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     memberId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -116,6 +126,7 @@ describe('RemoveMemberFromGroupPolicyCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         groupPolicyId: 3,
                         memberId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

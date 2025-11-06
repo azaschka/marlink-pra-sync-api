@@ -36,6 +36,7 @@ describe('ModifyTeamCommandHandler', () => {
         it.each([
             <ModifyTeamCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 name: 'team-1',
                 codeName: 'team-code-1',
@@ -43,6 +44,7 @@ describe('ModifyTeamCommandHandler', () => {
             },
             <ModifyTeamCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 2,
                 name: 'team-2',
             },
@@ -71,6 +73,7 @@ describe('ModifyTeamCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyTeamCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.codeName,
@@ -83,14 +86,15 @@ describe('ModifyTeamCommandHandler', () => {
                     TestHelper.mockedTeamModifiedDtoOutput.codeName,
                     TestHelper.mockedTeamModifiedDtoOutput.comments,
                 );
-                expect(teamRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(teamEntityToBeUpdated);
-                expect(teamRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(teamEntityToBeUpdated.id);
+                expect(teamRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(123, teamEntityToBeUpdated);
+                expect(teamRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(123, teamEntityToBeUpdated.id);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<TeamModifiedEvent>{
                         transactionId: command.transactionId,
                         eventType: TeamModifiedEvent.EVENT_TYPE,
                         payload: {
                             team: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -134,6 +138,7 @@ describe('ModifyTeamCommandHandler', () => {
                 handler.execute(<ModifyTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -148,6 +153,7 @@ describe('ModifyTeamCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         team: teamEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -172,6 +178,7 @@ describe('ModifyTeamCommandHandler', () => {
                 handler.execute(<ModifyTeamCommand>{
                     transactionId: 'transaction-1',
                     name: 'team-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -185,6 +192,7 @@ describe('ModifyTeamCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         team: teamEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

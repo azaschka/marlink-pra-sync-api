@@ -24,16 +24,17 @@ describe('DeleteJumpointCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const jumpointRepositoryServiceDeleteByIdMethod = jest.spyOn(jumpointRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteJumpointCommand('transaction-1', 123));
+        await handler.execute(new DeleteJumpointCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpointCommand('transaction-1', 123));
-        expect(jumpointRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpointCommand('transaction-1', 100, 123));
+        expect(jumpointRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<JumpointDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: JumpointDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -45,9 +46,11 @@ describe('DeleteJumpointCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const jumpointRepositoryServiceDeleteByIdMethod = jest.spyOn(jumpointRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteJumpointCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteJumpointCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpointCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpointCommand('transaction-1', 100, 123));
         expect(jumpointRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -63,10 +66,12 @@ describe('DeleteJumpointCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteJumpointCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteJumpointCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpointCommand('transaction-1', 123));
-        expect(jumpointRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpointCommand('transaction-1', 100, 123));
+        expect(jumpointRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -75,6 +80,7 @@ describe('DeleteJumpointCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

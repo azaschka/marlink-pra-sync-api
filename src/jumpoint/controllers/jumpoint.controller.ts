@@ -26,11 +26,16 @@ import {
 } from '@nestjs/swagger';
 import { AxiosResponse } from 'axios';
 import { Response } from 'express';
-import { ApiTransactionIdHeader, TransactionIdHeader } from '../../core/decorators';
+import { ApiTenantIdHeader, ApiTransactionIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { ErrorProcessorUtility, UuidUtility } from '../../shared/utilities';
 import { CreateJumpointCommand, DeleteJumpointCommand, ModifyJumpointCommand } from '../commands';
-import { CreateJumpointDtoInput, ModifyJumpointDtoInput, RetrieveJumpointsDtoInput } from '../dtos/inputs';
+import {
+    CreateJumpointDtoInput,
+    ModifyJumpointDtoInput,
+    RetrieveJumpointNodesDtoInput,
+    RetrieveJumpointsDtoInput,
+} from '../dtos/inputs';
 import {
     JumpointCreatedDtoOutput,
     JumpointModifiedDtoOutput,
@@ -38,8 +43,14 @@ import {
     JumpointRetrievedDtoOutput,
 } from '../dtos/outputs';
 import { Jumpoint } from '../models';
-import { RetrieveJumpointInstallerQuery, RetrieveJumpointNodesQuery, RetrieveJumpointsQuery } from '../queries';
+import {
+    RetrieveJumpointByIdQuery,
+    RetrieveJumpointInstallerQuery,
+    RetrieveJumpointNodesQuery,
+    RetrieveJumpointsQuery,
+} from '../queries';
 
+@ApiTenantIdHeader()
 @ApiTransactionIdHeader()
 @ApiTags('Jumpoints')
 @Controller('jumpoints')
@@ -50,15 +61,33 @@ export class JumpointController {
         private readonly queryBus: QueryBus,
     ) {}
 
+    @Get(':id')
+    @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
+    @ApiOkResponse({ type: JumpointRetrievedDtoOutput })
+    @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
+    public async retrieveJumpoint(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
+        @Param('id') id: number,
+    ): Promise<JumpointRetrievedDtoOutput> {
+        const result = await this.queryBus.execute<RetrieveJumpointByIdQuery, Jumpoint>(
+            new RetrieveJumpointByIdQuery(transactionId, tenantId, id),
+        );
+
+        return result;
+    }
+
     @Get()
     @ApiOkResponse({ type: JumpointRetrievedDtoOutput, isArray: true })
     public async retrieveJumpoints(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Query() dtoInput: RetrieveJumpointsDtoInput,
     ): Promise<JumpointRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveJumpointsQuery, Jumpoint[]>(
             new RetrieveJumpointsQuery(
                 transactionId,
+                tenantId,
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.name,
@@ -66,7 +95,7 @@ export class JumpointController {
                 dtoInput.privateIp,
                 dtoInput.hostname,
                 dtoInput.codeName,
-                dtoInput.namePattern,
+                dtoInput.namePatterns,
             ),
         );
 
@@ -84,11 +113,13 @@ export class JumpointController {
     })
     public async createJumpoint(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Body() dtoInput: CreateJumpointDtoInput,
     ): Promise<JumpointCreatedDtoOutput> {
         const result = await this.commandBus.execute<CreateJumpointCommand, Jumpoint>(
             new CreateJumpointCommand(
                 transactionId,
+                tenantId,
                 dtoInput.name,
                 dtoInput.platformType,
                 dtoInput.codeName,
@@ -125,12 +156,14 @@ export class JumpointController {
     })
     public async modifyJumpoint(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
         @Body(new NonEmptyBodyPipe()) dtoInput: ModifyJumpointDtoInput,
     ): Promise<JumpointModifiedDtoOutput> {
         const result = await this.commandBus.execute<ModifyJumpointCommand, Jumpoint>(
             new ModifyJumpointCommand(
                 transactionId,
+                tenantId,
                 id,
                 dtoInput.name,
                 dtoInput.codeName,
@@ -164,9 +197,12 @@ export class JumpointController {
     })
     public async deleteJumpoint(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
     ): Promise<void> {
-        await this.commandBus.execute<DeleteJumpointCommand, void>(new DeleteJumpointCommand(transactionId, id));
+        await this.commandBus.execute<DeleteJumpointCommand, void>(
+            new DeleteJumpointCommand(transactionId, tenantId, id),
+        );
     }
 
     @Get(':id/nodes')
@@ -178,10 +214,12 @@ export class JumpointController {
     @ApiNotFoundResponse({ description: 'The specified resource was not found.' })
     public async retrieveJumpointNodes(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
+        @Query() dtoInput: RetrieveJumpointNodesDtoInput,
     ): Promise<JumpointNodeRetrievedDtoOutput[]> {
         const result = this.queryBus.execute<RetrieveJumpointNodesQuery, JumpointNodeRetrievedDtoOutput[]>(
-            new RetrieveJumpointNodesQuery(transactionId, id),
+            new RetrieveJumpointNodesQuery(transactionId, tenantId, dtoInput.pageSize, dtoInput.pageNumber, id),
         );
 
         return result;
@@ -191,6 +229,7 @@ export class JumpointController {
     @ApiParam({ name: 'id', type: Number, required: true, description: 'Unique identifier for the resource.' })
     public async retrieveJumpointInstaller(
         @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
         @Param('id') id: number,
         @Res() res: Response,
     ): Promise<void> {
@@ -198,7 +237,7 @@ export class JumpointController {
             const response = await this.queryBus.execute<
                 RetrieveJumpointInstallerQuery,
                 AxiosResponse<NodeJS.ReadableStream>
-            >(new RetrieveJumpointInstallerQuery(transactionId, id));
+            >(new RetrieveJumpointInstallerQuery(transactionId, tenantId, id));
 
             if (response.headers['content-type']) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

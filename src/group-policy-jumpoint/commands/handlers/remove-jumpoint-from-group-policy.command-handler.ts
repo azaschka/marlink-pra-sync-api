@@ -19,12 +19,13 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
         await this.removeBTGroupPolicyJumpoint(command);
 
         try {
-            await this.removeGroupPolicyJumpoint(command.id, command.jumpointId);
+            await this.removeGroupPolicyJumpoint(command.tenantId, command.id, command.jumpointId);
 
             this.eventBus.publish(
                 new GroupPolicyJumpointRemovedEvent(command.transactionId, {
                     groupPolicyId: command.id,
                     jumpointId: command.jumpointId,
+                    tenantId: command.tenantId,
                 }),
             );
         } catch (error) {
@@ -33,6 +34,7 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyId: command.id,
                     jumpointId: command.jumpointId,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -42,11 +44,24 @@ export class RemoveJumpointFromGroupPolicyCommandHandler
 
     private async removeBTGroupPolicyJumpoint(command: RemoveJumpointFromGroupPolicyCommand) {
         await this.commandBus.execute<BTRemoveJumpointFromGroupPolicyCommand, void>(
-            new BTRemoveJumpointFromGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+            new BTRemoveJumpointFromGroupPolicyCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.jumpointId,
+            ),
         );
     }
 
-    private async removeGroupPolicyJumpoint(groupPolicyId: number, jumpointId: number): Promise<void> {
-        await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyIdAndJumpointId(groupPolicyId, jumpointId);
+    private async removeGroupPolicyJumpoint(
+        tenantId: number,
+        groupPolicyId: number,
+        jumpointId: number,
+    ): Promise<void> {
+        await this.groupPolicyJumpointRepositoryService.deleteByGroupPolicyIdAndJumpointId(
+            tenantId,
+            groupPolicyId,
+            jumpointId,
+        );
     }
 }

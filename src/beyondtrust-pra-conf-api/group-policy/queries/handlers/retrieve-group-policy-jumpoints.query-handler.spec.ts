@@ -35,6 +35,7 @@ describe('RetrieveGroupPolicyJumpointsQueryHandler', () => {
             {
                 inputQuery: <RetrieveGroupPolicyJumpointsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     id: 1,
@@ -47,6 +48,7 @@ describe('RetrieveGroupPolicyJumpointsQueryHandler', () => {
             {
                 inputQuery: <RetrieveGroupPolicyJumpointsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                     id: 2,
@@ -65,7 +67,9 @@ describe('RetrieveGroupPolicyJumpointsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    `https://api.example.com/group-policy/${inputQuery.id}/jumpoint`,
+                    inputQuery.transactionId,
+                    123,
+                    `/group-policy/${inputQuery.id}/jumpoint`,
                     expectedHttpClientParams,
                 );
 
@@ -86,11 +90,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
-                    jumpoint: {
-                        path: 'jumpoint',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                        jumpoint: {
+                            path: 'jumpoint',
+                        },
                     },
                 },
             },

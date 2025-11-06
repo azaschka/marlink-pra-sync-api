@@ -12,12 +12,12 @@ export class DeleteWebJumpCommandHandler implements ICommandHandler<DeleteWebJum
     ) {}
 
     public async execute(command: DeleteWebJumpCommand): Promise<void> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.webJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.webJump.path,
             command.id.toString(),
         );
 
-        return await this.httpClientService.delete(url);
+        return await this.httpClientService.delete(command.transactionId, command.beyondtrustInstanceId, urlPath);
     }
 }

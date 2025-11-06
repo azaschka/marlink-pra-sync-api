@@ -4,6 +4,7 @@ import { JumpClient } from '../models';
 export interface JumpClientModificationFailedEventPayload {
     errorMessage: string;
     jumpClient: JumpClient;
+    tenantId: number;
 }
 
 export class JumpClientModificationFailedEvent extends BaseEvent {

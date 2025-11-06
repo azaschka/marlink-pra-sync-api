@@ -35,6 +35,7 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
             const result = await handler.execute(
                 new CopyProtocolTunnelJumpCommand(
                     'transaction-1',
+                    123,
                     1,
                     2,
                     JumpGroupType.Personal,
@@ -44,7 +45,9 @@ describe('CopyProtocolTunnelJumpCommandHandler', () => {
 
             expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/protocol-tunnel-jump/1/copy`,
+                'transaction-1',
+                123,
+                `/jump-item/protocol-tunnel-jump/1/copy`,
                 {
                     name: 'protocol-tunnel-jump-1',
                     jumpGroupId: 2,
@@ -68,11 +71,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    protocolTunnelJump: {
-                        path: 'jump-item/protocol-tunnel-jump',
-                        copy: 'copy',
+                config: {
+                    jumpItem: {
+                        protocolTunnelJump: {
+                            path: 'jump-item/protocol-tunnel-jump',
+                            copy: 'copy',
+                        },
                     },
                 },
             },

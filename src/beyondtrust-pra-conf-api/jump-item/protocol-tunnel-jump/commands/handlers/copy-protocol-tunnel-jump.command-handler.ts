@@ -14,16 +14,18 @@ export class CopyProtocolTunnelJumpCommandHandler implements ICommandHandler<Cop
     ) {}
 
     public async execute(command: CopyProtocolTunnelJumpCommand): Promise<ProtocolTunnelJumpCopiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.protocolTunnelJump.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.jumpItem.protocolTunnelJump.copy,
+            this.appConfigService.beyondTrust.api.config.jumpItem.protocolTunnelJump.copy,
         );
 
         return await this.httpClientService.post<ProtocolTunnelJumpCopiedDtoOutput, ProtocolTunnelJumpCopiedDtoOutput>(
             ProtocolTunnelJumpCopiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CopyProtocolTunnelJumpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),
         );
     }

@@ -37,6 +37,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
             {
                 command: new CreateJumpPolicyCommand(
                     'transaction-1',
+                    123,
                     'jump-policy-1',
                     'jump-policy-code-1',
                     'jump-policy-description-1',
@@ -92,7 +93,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
                 },
             },
             {
-                command: new CreateJumpPolicyCommand('transaction-2', 'jump-policy-2'),
+                command: new CreateJumpPolicyCommand('transaction-2', 123, 'jump-policy-2'),
                 expectedHttpClientBody: {
                     displayName: 'jump-policy-2',
                 },
@@ -106,7 +107,9 @@ describe('CreateJumpPolicyCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-policy',
+                    command.transactionId,
+                    123,
+                    '/jump-policy',
                     expectedHttpClientBody,
                 );
 
@@ -127,9 +130,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpPolicy: {
-                    path: 'jump-policy',
+                config: {
+                    jumpPolicy: {
+                        path: 'jump-policy',
+                    },
                 },
             },
         },

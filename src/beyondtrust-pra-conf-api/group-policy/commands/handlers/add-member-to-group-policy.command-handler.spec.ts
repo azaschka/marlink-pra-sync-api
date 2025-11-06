@@ -32,6 +32,7 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
             {
                 command: new AddMemberToGroupPolicyCommand(
                     'transaction-1',
+                    123,
                     1,
                     2,
                     3,
@@ -54,7 +55,9 @@ describe('AddMemberToGroupPolicyCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/group-policy/1/member',
+                    'transaction-1',
+                    123,
+                    '/group-policy/1/member',
                     expectedHttpClientBody,
                 );
 
@@ -75,11 +78,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
-                    member: {
-                        path: 'member',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                        member: {
+                            path: 'member',
+                        },
                     },
                 },
             },

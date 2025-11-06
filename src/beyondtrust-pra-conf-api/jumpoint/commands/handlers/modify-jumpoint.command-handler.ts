@@ -14,15 +14,17 @@ export class ModifyJumpointCommandHandler implements ICommandHandler<ModifyJumpo
     ) {}
 
     public async execute(command: ModifyJumpointCommand): Promise<JumpointModifiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpoint.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpoint.path,
             command.id.toString(),
         );
 
         return await this.httpClientService.patch<JumpointModifiedDtoOutput, JumpointModifiedDtoOutput>(
             JumpointModifiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyJumpointDtoInput.create(
                 command.name,
                 undefined, // cannot be changed once it's created

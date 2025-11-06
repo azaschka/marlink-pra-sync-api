@@ -31,17 +31,18 @@ describe('RetrieveAllTeamUsersQueryHandler', () => {
 
             const result = await handler.execute(<RetrieveAllTeamUsersQuery>{
                 transactionId: 'transaction-1',
+                beyondtrustInstanceId: 123,
                 id: 1,
             });
 
             expect(queryBusExecuteMethod).toHaveBeenCalledTimes(2);
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 1,
-                new RetrieveTeamUsersQuery('transaction-1', appConfigService.sync.maxBatchSize, 1, 1),
+                new RetrieveTeamUsersQuery('transaction-1', 123, appConfigService.discrepancy.maxBatchSize, 1, 1),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 2,
-                new RetrieveTeamUsersQuery('transaction-1', appConfigService.sync.maxBatchSize, 2, 1),
+                new RetrieveTeamUsersQuery('transaction-1', 123, appConfigService.discrepancy.maxBatchSize, 2, 1),
             );
 
             expect(result).toStrictEqual([{ userId: 1 }, { userId: 2 }, { userId: 3 }] as TeamUserRetrievedDtoOutput[]);
@@ -62,21 +63,22 @@ describe('RetrieveAllTeamUsersQueryHandler', () => {
 
             const result = await handler.execute(<RetrieveAllTeamUsersQuery>{
                 transactionId: 'transaction-1',
+                beyondtrustInstanceId: 123,
                 id: 1,
             });
 
             expect(queryBusExecuteMethod).toHaveBeenCalledTimes(3);
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 1,
-                new RetrieveTeamUsersQuery('transaction-1', appConfigService.sync.maxBatchSize, 1, 1),
+                new RetrieveTeamUsersQuery('transaction-1', 123, appConfigService.discrepancy.maxBatchSize, 1, 1),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 2,
-                new RetrieveTeamUsersQuery('transaction-1', appConfigService.sync.maxBatchSize, 2, 1),
+                new RetrieveTeamUsersQuery('transaction-1', 123, appConfigService.discrepancy.maxBatchSize, 2, 1),
             );
             expect(queryBusExecuteMethod).toHaveBeenNthCalledWith(
                 3,
-                new RetrieveTeamUsersQuery('transaction-1', appConfigService.sync.maxBatchSize, 3, 1),
+                new RetrieveTeamUsersQuery('transaction-1', 123, appConfigService.discrepancy.maxBatchSize, 3, 1),
             );
 
             expect(result).toStrictEqual([
@@ -98,7 +100,7 @@ function mockQueryBus() {
 
 function mockAppConfigService() {
     const service = {
-        sync: {
+        discrepancy: {
             maxBatchSize: 2,
         },
     } as AppConfigService;

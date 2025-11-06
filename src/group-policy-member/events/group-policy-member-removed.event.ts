@@ -3,6 +3,7 @@ import { BaseEvent } from '../../core/events';
 export interface GroupPolicyMemberRemovedEventPayload {
     groupPolicyId: number;
     memberId: number;
+    tenantId: number;
 }
 
 export class GroupPolicyMemberRemovedEvent extends BaseEvent {

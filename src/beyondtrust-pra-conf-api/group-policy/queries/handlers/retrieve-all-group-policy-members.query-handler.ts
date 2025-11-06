@@ -14,14 +14,22 @@ export class RetrieveAllGroupPolicyMembersQueryHandler implements IQueryHandler<
 
     public async execute(query: RetrieveAllGroupPolicyMembersQuery): Promise<GroupPolicyMemberRetrievedDtoOutput[]> {
         const allGroupPolicyMembers: GroupPolicyMemberRetrievedDtoOutput[] = [];
-        const maxBatchSize = this.appConfigService.sync.maxBatchSize;
+        const maxBatchSize = this.appConfigService.discrepancy.maxBatchSize;
         let pageNumber = 1;
 
         while (true) {
             const batch = await this.queryBus.execute<
                 RetrieveGroupPolicyMembersQuery,
                 GroupPolicyMemberRetrievedDtoOutput[]
-            >(new RetrieveGroupPolicyMembersQuery(query.transactionId, maxBatchSize, pageNumber, query.id));
+            >(
+                new RetrieveGroupPolicyMembersQuery(
+                    query.transactionId,
+                    query.beyondtrustInstanceId,
+                    maxBatchSize,
+                    pageNumber,
+                    query.id,
+                ),
+            );
 
             // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
             if (

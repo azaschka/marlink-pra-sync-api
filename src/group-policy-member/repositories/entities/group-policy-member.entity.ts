@@ -1,38 +1,18 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { GroupPolicyMemberRetrievedDtoOutput as BTGroupPolicyMember } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { UserEntity } from '../../../user/repositories/entities';
 import { GroupPolicyMember } from '../../models';
 
-@Entity({ name: 'group_policy_members' })
 export class GroupPolicyMemberEntity implements GroupPolicyMember {
-    @PrimaryColumn({ name: 'group_policy_id', type: 'int' })
     public groupPolicyId!: number;
-
-    @PrimaryColumn({ name: 'member_id', type: 'int' })
     public memberId!: number;
-
-    @Column({ name: 'user_id', type: 'int' })
     public userId!: number;
-
-    @Column({ name: 'security_provider_id', type: 'int' })
     public securityProviderId!: number;
-
-    @Column({ name: 'distinguished_name', type: 'text', nullable: true })
     public distinguishedName?: string;
-
-    @Column({ name: 'group_name', type: 'varchar', nullable: true })
     public groupName?: string;
-
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyMembers, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'group_policy_id' })
-    public groupPolicy!: GroupPolicyEntity;
-
-    @ManyToOne(() => UserEntity, (user) => user.groupPolicyMembers, { eager: true, onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'user_id' })
-    public user!: UserEntity;
-
-    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
+    public groupPolicy?: GroupPolicyEntity;
+    public user?: UserEntity;
     public lastSyncDate!: Date;
 
     public static create(
@@ -55,5 +35,16 @@ export class GroupPolicyMemberEntity implements GroupPolicyMember {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(groupPolicyId: number, btGroupPolicyMember: BTGroupPolicyMember) {
+        return GroupPolicyMemberEntity.create(
+            groupPolicyId,
+            btGroupPolicyMember.id,
+            btGroupPolicyMember.userId,
+            btGroupPolicyMember.securityProviderId,
+            btGroupPolicyMember.distinguishedName,
+            btGroupPolicyMember.groupName,
+        );
     }
 }

@@ -27,11 +27,13 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
         it.each([
             <RemoveJumpointFromGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpointId: 2,
             },
             <RemoveJumpointFromGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 jumpointId: 4,
             },
@@ -51,11 +53,16 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveJumpointFromGroupPolicyCommand(command.transactionId, command.id, command.jumpointId),
+                    new BTRemoveJumpointFromGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpointId,
+                    ),
                 );
                 expect(
                     groupPolicyJumpointRepositoryServiceDeleteByGroupPolicyIdAndJumpointIdMethod,
-                ).toHaveBeenCalledWith(command.id, command.jumpointId);
+                ).toHaveBeenCalledWith(command.tenantId, command.id, command.jumpointId);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<GroupPolicyJumpointRemovedEvent>{
                         transactionId: command.transactionId,
@@ -63,6 +70,7 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
                         payload: {
                             groupPolicyId: command.id,
                             jumpointId: command.jumpointId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -102,6 +110,7 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     jumpointId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -115,6 +124,7 @@ describe('RemoveJumpointFromGroupPolicyCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         groupPolicyId: 3,
                         jumpointId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

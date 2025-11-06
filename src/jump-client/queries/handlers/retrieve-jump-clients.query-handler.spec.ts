@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpClientConnectionType, JumpClientGroupType } from '../../enums';
 import { JumpClientEntity } from '../../repositories/entities';
 import { JumpClientRepositoryService } from '../../repositories/services/jump-client-repository.service';
@@ -20,10 +21,10 @@ describe('RetrieveJumpClientsQueryHandler', () => {
                 .spyOn(jumpClientRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpClients);
 
-            const result = await handler.execute(new RetrieveJumpClientsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveJumpClientsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpClients);
-            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, {}, 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -35,13 +36,14 @@ describe('RetrieveJumpClientsQueryHandler', () => {
             const result = await handler.execute(
                 new RetrieveJumpClientsQuery(
                     'transaction-2',
+                    100,
                     10,
                     1,
                     'jump-client-1',
                     'host-1',
                     'fqdn-1',
                     'tag-1',
-                    123,
+                    [123],
                     JumpClientGroupType.Personal,
                     'console-user-1',
                     'public-ip-1',
@@ -52,12 +54,13 @@ describe('RetrieveJumpClientsQueryHandler', () => {
 
             expect(result).toBe(expectedJumpClients);
             expect(jumpClientRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                100,
                 {
                     name: 'jump-client-1',
                     hostname: 'host-1',
                     fqdn: 'fqdn-1',
                     tag: 'tag-1',
-                    jumpGroupId: 123,
+                    jumpGroupId: In([123]),
                     jumpGroupType: JumpClientGroupType.Personal,
                     consoleUser: 'console-user-1',
                     publicIp: 'public-ip-1',

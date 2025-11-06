@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface ProtocolTunnelJumpsSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class ProtocolTunnelJumpsSyncFailedEvent extends BaseEvent {

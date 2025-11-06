@@ -21,11 +21,15 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
         const groupPolicyJumpGroupEntity = this.createGroupPolicyJumpGroupEntity(command.id, btGroupPolicyJumpGroup);
 
         try {
-            const groupPolicyJumpGroup = await this.addGroupPolicyJumpGroup(groupPolicyJumpGroupEntity);
+            const groupPolicyJumpGroup = await this.addGroupPolicyJumpGroup(
+                command.tenantId,
+                groupPolicyJumpGroupEntity,
+            );
 
             this.eventBus.publish(
                 new GroupPolicyJumpGroupAddedEvent(command.transactionId, {
                     groupPolicyJumpGroup: groupPolicyJumpGroup,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +39,7 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
                 new GroupPolicyJumpGroupAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyJumpGroup: groupPolicyJumpGroupEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,6 +51,7 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
         return await this.commandBus.execute<BTAddJumpGroupToGroupPolicyCommand, JumpGroupAddedToGroupPolicyDtoOutput>(
             new BTAddJumpGroupToGroupPolicyCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.jumpGroupId,
                 command.jumpItemRoleId,
@@ -67,9 +73,10 @@ export class AddJumpGroupToGroupPolicyCommandHandler implements ICommandHandler<
     }
 
     private async addGroupPolicyJumpGroup(
+        tenantId: number,
         groupPolicyJumpGroupEntity: GroupPolicyJumpGroupEntity,
     ): Promise<GroupPolicyJumpGroup> {
-        await this.groupPolicyJumpGroupRepositoryService.create(groupPolicyJumpGroupEntity);
+        await this.groupPolicyJumpGroupRepositoryService.create(tenantId, groupPolicyJumpGroupEntity);
 
         return {
             groupPolicyId: groupPolicyJumpGroupEntity.groupPolicyId,

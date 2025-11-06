@@ -4,6 +4,7 @@ import { ProtocolTunnelJump } from '../models';
 export interface ProtocolTunnelJumpModificationFailedEventPayload {
     errorMessage: string;
     protocolTunnelJump: ProtocolTunnelJump;
+    tenantId: number;
 }
 
 export class ProtocolTunnelJumpModificationFailedEvent extends BaseEvent {

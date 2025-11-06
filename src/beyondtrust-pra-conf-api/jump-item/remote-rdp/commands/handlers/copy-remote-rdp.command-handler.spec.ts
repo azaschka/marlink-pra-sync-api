@@ -33,12 +33,14 @@ describe('CopyRemoteRdpCommandHandler', () => {
             const httpClientServicePostMethod = jest.spyOn(httpClientService, 'post');
 
             const result = await handler.execute(
-                new CopyRemoteRdpCommand('transaction-1', 1, 2, JumpGroupType.Personal, 'remote-rdp-1'),
+                new CopyRemoteRdpCommand('transaction-1', 123, 1, 2, JumpGroupType.Personal, 'remote-rdp-1'),
             );
 
             expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                `https://api.example.com/jump-item/remote-rdp/1/copy`,
+                'transaction-1',
+                123,
+                `/jump-item/remote-rdp/1/copy`,
                 {
                     name: 'remote-rdp-1',
                     jumpGroupId: 2,
@@ -62,11 +64,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    remoteRdp: {
-                        path: 'jump-item/remote-rdp',
-                        copy: 'copy',
+                config: {
+                    jumpItem: {
+                        remoteRdp: {
+                            path: 'jump-item/remote-rdp',
+                            copy: 'copy',
+                        },
                     },
                 },
             },

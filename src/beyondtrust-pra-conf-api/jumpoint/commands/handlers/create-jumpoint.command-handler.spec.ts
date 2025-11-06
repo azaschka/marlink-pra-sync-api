@@ -52,6 +52,7 @@ describe('CreateJumpointCommandHandler', () => {
             {
                 command: new CreateJumpointCommand(
                     'transaction-1',
+                    123,
                     'Jumpoint 1',
                     JumpointPlatformType.LinuxX86,
                     'J1',
@@ -91,7 +92,7 @@ describe('CreateJumpointCommandHandler', () => {
                 },
             },
             {
-                command: new CreateJumpointCommand('transaction-2', 'Jumpoint 2', JumpointPlatformType.WindowsX86),
+                command: new CreateJumpointCommand('transaction-2', 123, 'Jumpoint 2', JumpointPlatformType.WindowsX86),
                 expectedHttpClientBody: {
                     name: 'Jumpoint 2',
                     platform: JumpointPlatformType.WindowsX86,
@@ -106,7 +107,9 @@ describe('CreateJumpointCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jumpoint',
+                    command.transactionId,
+                    123,
+                    '/jumpoint',
                     expectedHttpClientBody,
                 );
 
@@ -127,9 +130,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpoint: {
-                    path: 'jumpoint',
+                config: {
+                    jumpoint: {
+                        path: 'jumpoint',
+                    },
                 },
             },
         },

@@ -27,11 +27,13 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
         it.each([
             <RemoveJumpGroupFromGroupPolicyCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 jumpGroupId: 2,
             },
             <RemoveJumpGroupFromGroupPolicyCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 jumpGroupId: 4,
             },
@@ -51,11 +53,16 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveJumpGroupFromGroupPolicyCommand(command.transactionId, command.id, command.jumpGroupId),
+                    new BTRemoveJumpGroupFromGroupPolicyCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.jumpGroupId,
+                    ),
                 );
                 expect(
                     groupPolicyJumpGroupRepositoryServiceDeleteByGroupPolicyIdAndJumpGroupIdMethod,
-                ).toHaveBeenCalledWith(command.id, command.jumpGroupId);
+                ).toHaveBeenCalledWith(command.tenantId, command.id, command.jumpGroupId);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<GroupPolicyJumpGroupRemovedEvent>{
                         transactionId: command.transactionId,
@@ -63,6 +70,7 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
                         payload: {
                             groupPolicyId: command.id,
                             jumpGroupId: command.jumpGroupId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -102,6 +110,7 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     jumpGroupId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -115,6 +124,7 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         groupPolicyId: 3,
                         jumpGroupId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

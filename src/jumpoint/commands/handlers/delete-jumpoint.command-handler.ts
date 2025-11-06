@@ -15,18 +15,21 @@ export class DeleteJumpointCommandHandler implements ICommandHandler<DeleteJumpo
 
     public async execute(command: DeleteJumpointCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteJumpointCommand, void>(
-            new BTDeleteJumpointCommand(command.transactionId, command.id),
+            new BTDeleteJumpointCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.jumpointRepositoryService.deleteById(command.id);
+            await this.jumpointRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new JumpointDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new JumpointDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new JumpointDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

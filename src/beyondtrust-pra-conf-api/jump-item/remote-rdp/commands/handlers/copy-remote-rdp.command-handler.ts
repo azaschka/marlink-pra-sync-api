@@ -14,16 +14,18 @@ export class CopyRemoteRdpCommandHandler implements ICommandHandler<CopyRemoteRd
     ) {}
 
     public async execute(command: CopyRemoteRdpCommand): Promise<RemoteRdpCopiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.remoteRdp.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteRdp.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.jumpItem.remoteRdp.copy,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteRdp.copy,
         );
 
         return await this.httpClientService.post<RemoteRdpCopiedDtoOutput, RemoteRdpCopiedDtoOutput>(
             RemoteRdpCopiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CopyRemoteRdpDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),
         );
     }

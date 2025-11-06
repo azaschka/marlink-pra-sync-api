@@ -19,17 +19,18 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
     ) {}
 
     public async execute(command: CreateRemoteVncCommand): Promise<RemoteVnc> {
-        await this.validateRemoteVncDoesNotExist(command.name, command.jumpGroupId, command.tag);
+        await this.validateRemoteVncDoesNotExist(command.tenantId, command.name, command.jumpGroupId, command.tag);
 
         const btRemoteVnc = await this.createBTRemoteVnc(command);
         const remoteVncEntity = this.createRemoteVncEntity(btRemoteVnc);
 
         try {
-            const createdRemoteVnc = await this.remoteVncRepositoryService.create(remoteVncEntity);
+            const createdRemoteVnc = await this.remoteVncRepositoryService.create(command.tenantId, remoteVncEntity);
 
             this.eventBus.publish(
                 new RemoteVncCreatedEvent(command.transactionId, {
                     remoteVnc: createdRemoteVnc,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -39,6 +40,7 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
                 new RemoteVncCreationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     remoteVnc: remoteVncEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -46,8 +48,8 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
         }
     }
 
-    private async validateRemoteVncDoesNotExist(name: string, jumpGroupId: number, tag?: string) {
-        const existingRemoteVnc = await this.remoteVncRepositoryService.findOneBy({
+    private async validateRemoteVncDoesNotExist(tenantId: number, name: string, jumpGroupId: number, tag?: string) {
+        const existingRemoteVnc = await this.remoteVncRepositoryService.findOneBy(tenantId, {
             name,
             jumpGroupId,
             tag,
@@ -62,6 +64,7 @@ export class CreateRemoteVncCommandHandler implements ICommandHandler<CreateRemo
         return await this.commandBus.execute<BTCreateRemoteVncCommand, RemoteVncCreatedDtoOutput>(
             new BTCreateRemoteVncCommand(
                 command.transactionId,
+                command.tenantId,
                 command.name,
                 command.jumpointId,
                 command.hostname,

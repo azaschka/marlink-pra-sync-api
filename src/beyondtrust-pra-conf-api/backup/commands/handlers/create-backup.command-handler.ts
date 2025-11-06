@@ -12,11 +12,11 @@ export class CreateBackupCommandHandler implements ICommandHandler<CreateBackupC
     ) {}
 
     public async execute(command: CreateBackupCommand): Promise<Buffer> {
-        const url = this.appConfigService.beyondTrust.backup.apiUrl;
-
         return await this.httpClientService.post<Buffer, Buffer>(
             Buffer,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            this.appConfigService.beyondTrust.api.backup.path,
             CreateBackupDtoInput.create(command.password),
         );
     }

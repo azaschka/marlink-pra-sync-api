@@ -20,10 +20,12 @@ describe('RemoveJumpGroupFromGroupPolicyCommandHandler', () => {
         it('should call HttpClientService with correct url and return the result', async () => {
             const httpClientServiceDeleteMethod = jest.spyOn(httpClientService, 'delete');
 
-            await handler.execute(new RemoveJumpGroupFromGroupPolicyCommand('transaction-1', 1, 2));
+            await handler.execute(new RemoveJumpGroupFromGroupPolicyCommand('transaction-1', 123, 1, 2));
 
             expect(httpClientServiceDeleteMethod).toHaveBeenCalledWith(
-                'https://api.example.com/group-policy/1/jump-group/2',
+                'transaction-1',
+                123,
+                '/group-policy/1/jump-group/2',
             );
         });
     });
@@ -40,11 +42,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
-                    jumpGroup: {
-                        path: 'jump-group',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                        jumpGroup: {
+                            path: 'jump-group',
+                        },
                     },
                 },
             },

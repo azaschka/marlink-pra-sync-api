@@ -1,31 +1,17 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { TeamRetrievedDtoOutput as BTTeam } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
 import { GroupPolicyTeamEntity } from '../../../group-policy-team/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { TeamUserEntity } from '../../../team-user/repositories/entities';
 import { Team } from '../../models';
 
-@Entity({ name: 'teams' })
 export class TeamEntity implements Team {
-    @Column({ name: 'id', type: 'int', unique: true, primary: true, generated: false })
     public id!: number;
-
-    @Column({ name: 'name', type: 'varchar' })
     public name!: string;
-
-    @Column({ name: 'code_name', type: 'varchar', nullable: true })
     public codeName?: string;
-
-    @Column({ name: 'comments', type: 'text', nullable: true })
     public comments?: string | null;
-
-    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
     public lastSyncDate!: Date;
-
-    @OneToMany(() => TeamUserEntity, (teamUser) => teamUser.team)
-    public teamUsers!: TeamUserEntity[];
-
-    @OneToMany(() => GroupPolicyTeamEntity, (groupPolicyTeam) => groupPolicyTeam.team)
-    public groupPolicyTeams!: GroupPolicyTeamEntity[];
+    public teamUsers?: TeamUserEntity[];
+    public groupPolicyTeams?: GroupPolicyTeamEntity[];
 
     public static create(id: number, name: string, codeName?: string, comments?: string | null): TeamEntity {
         const entity = new TeamEntity();
@@ -36,5 +22,9 @@ export class TeamEntity implements Team {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(btTeam: BTTeam) {
+        return TeamEntity.create(btTeam.id, btTeam.name, btTeam.codeName, btTeam.comments);
     }
 }

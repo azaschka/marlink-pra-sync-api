@@ -14,16 +14,18 @@ export class CopyRemoteVncCommandHandler implements ICommandHandler<CopyRemoteVn
     ) {}
 
     public async execute(command: CopyRemoteVncCommand): Promise<RemoteVncCopiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.remoteVnc.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteVnc.path,
             command.id.toString(),
-            this.appConfigService.beyondTrust.api.jumpItem.remoteVnc.copy,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteVnc.copy,
         );
 
         return await this.httpClientService.post<RemoteVncCopiedDtoOutput, RemoteVncCopiedDtoOutput>(
             RemoteVncCopiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             CopyRemoteVncDtoInput.create(command.name, command.jumpGroupId, command.jumpGroupType),
         );
     }

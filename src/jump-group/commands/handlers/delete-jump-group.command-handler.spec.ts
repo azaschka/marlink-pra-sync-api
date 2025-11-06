@@ -24,16 +24,17 @@ describe('DeleteJumpGroupCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const jumpGroupRepositoryServiceDeleteByIdMethod = jest.spyOn(jumpGroupRepositoryService, 'deleteById');
 
-        await handler.execute(new DeleteJumpGroupCommand('transaction-1', 123));
+        await handler.execute(new DeleteJumpGroupCommand('transaction-1', 100, 123));
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpGroupCommand('transaction-1', 123));
-        expect(jumpGroupRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpGroupCommand('transaction-1', 100, 123));
+        expect(jumpGroupRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining(<JumpGroupDeletedEvent>{
                 transactionId: 'transaction-1',
                 eventType: JumpGroupDeletedEvent.EVENT_TYPE,
                 payload: {
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );
@@ -45,9 +46,11 @@ describe('DeleteJumpGroupCommandHandler', () => {
         const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
         const jumpGroupRepositoryServiceDeleteByIdMethod = jest.spyOn(jumpGroupRepositoryService, 'deleteById');
 
-        await expect(handler.execute(new DeleteJumpGroupCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteJumpGroupCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpGroupCommand('transaction-1', 123));
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpGroupCommand('transaction-1', 100, 123));
         expect(jumpGroupRepositoryServiceDeleteByIdMethod).not.toHaveBeenCalled();
         expect(eventBusPublishMethod).not.toHaveBeenCalled();
     });
@@ -63,10 +66,12 @@ describe('DeleteJumpGroupCommandHandler', () => {
             .spyOn(ErrorProcessorUtility, 'stringify')
             .mockReturnValue('expected-error-message');
 
-        await expect(handler.execute(new DeleteJumpGroupCommand('transaction-1', 123))).rejects.toThrow(expectedError);
+        await expect(handler.execute(new DeleteJumpGroupCommand('transaction-1', 100, 123))).rejects.toThrow(
+            expectedError,
+        );
 
-        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpGroupCommand('transaction-1', 123));
-        expect(jumpGroupRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(123);
+        expect(commandBusExecuteMethod).toHaveBeenCalledWith(new BTDeleteJumpGroupCommand('transaction-1', 100, 123));
+        expect(jumpGroupRepositoryServiceDeleteByIdMethod).toHaveBeenCalledWith(100, 123);
         expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
         expect(eventBusPublishMethod).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -75,6 +80,7 @@ describe('DeleteJumpGroupCommandHandler', () => {
                 payload: {
                     errorMessage: 'expected-error-message',
                     id: 123,
+                    tenantId: 100,
                 },
             }),
         );

@@ -22,11 +22,13 @@ describe('RetrieveJumpointNodesQueryHandler', () => {
             const expectedResult = [{ id: 1 }] as JumpointNodeRetrievedDtoOutput[];
             const httpClientServiceGetMethod = jest.spyOn(httpClientService, 'get').mockResolvedValue(expectedResult);
 
-            const result = await handler.execute(new RetrieveJumpointNodesQuery('transaction-1', 123));
+            const result = await handler.execute(new RetrieveJumpointNodesQuery('transaction-1', 100, 123));
 
             expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                 expect.anything(),
-                'https://api.example.com/jumpoint/123/node',
+                'transaction-1',
+                100,
+                '/jumpoint/123/node',
             );
 
             expect(result).toStrictEqual(expectedResult);
@@ -45,11 +47,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpoint: {
-                    path: 'jumpoint',
-                    node: {
-                        path: 'node',
+                config: {
+                    jumpoint: {
+                        path: 'jumpoint',
+                        node: {
+                            path: 'node',
+                        },
                     },
                 },
             },

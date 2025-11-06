@@ -1,31 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, In } from 'typeorm';
-import { BaseRepositoryService } from '../../../core/services/base-repository.service';
+import { DataSource } from 'typeorm';
+import { BaseTenantRepositoryService } from '../../../core/services/base-tenant-repository.service';
 import { JumpointNodeEntity } from '../entities';
+import { JumpointNodeSchemaFactory } from '../factories';
 
 @Injectable()
-export class JumpointNodeRepositoryService extends BaseRepositoryService<JumpointNodeEntity> {
+export class JumpointNodeRepositoryService extends BaseTenantRepositoryService<JumpointNodeEntity> {
     constructor(dataSource: DataSource) {
-        super(dataSource, JumpointNodeEntity);
+        super(dataSource, new JumpointNodeSchemaFactory());
     }
 
-    public async createOrUpdateByIdAndJumpointId(entities: Partial<JumpointNodeEntity>[]): Promise<void> {
+    public async createOrUpdateByJumpointIdAndJumpointNodeId(
+        tenantId: number,
+        entities: Partial<JumpointNodeEntity>[],
+    ): Promise<void> {
         if (entities.length === 0) {
             return;
         }
 
-        await super.createOrUpdate(entities, ['id', 'jumpointId']);
+        await super.createOrUpdate(tenantId, entities, ['id', 'jumpointId']);
     }
 
-    public async deleteByJumpointIds(jumpointIds: number[]): Promise<void> {
-        if (jumpointIds.length === 0) {
-            return;
-        }
-
-        await super.deleteBy({ jumpointId: In(jumpointIds) });
-    }
-
-    public async deleteByJumpointId(jumpointId: number): Promise<void> {
-        await super.deleteBy({ jumpointId: jumpointId });
+    public async deleteByJumpointIdAndJumpointNodeId(
+        tenantId: number,
+        jumpointId: number,
+        jumpointNodeId: number,
+    ): Promise<void> {
+        await super.deleteBy(tenantId, { jumpointId: jumpointId, id: jumpointNodeId });
     }
 }

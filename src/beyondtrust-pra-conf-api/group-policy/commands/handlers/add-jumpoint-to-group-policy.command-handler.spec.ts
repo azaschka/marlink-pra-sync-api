@@ -28,7 +28,7 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
     describe('execute', () => {
         it.each([
             {
-                command: new AddJumpointToGroupPolicyCommand('transaction-1', 1, 2),
+                command: new AddJumpointToGroupPolicyCommand('transaction-1', 123, 1, 2),
                 expectedHttpClientBody: {
                     jumpointId: 2,
                 },
@@ -42,7 +42,9 @@ describe('AddJumpointToGroupPolicyCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/group-policy/1/jumpoint',
+                    'transaction-1',
+                    123,
+                    '/group-policy/1/jumpoint',
                     expectedHttpClientBody,
                 );
 
@@ -63,11 +65,12 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                groupPolicy: {
-                    path: 'group-policy',
-                    jumpoint: {
-                        path: 'jumpoint',
+                config: {
+                    groupPolicy: {
+                        path: 'group-policy',
+                        jumpoint: {
+                            path: 'jumpoint',
+                        },
                     },
                 },
             },

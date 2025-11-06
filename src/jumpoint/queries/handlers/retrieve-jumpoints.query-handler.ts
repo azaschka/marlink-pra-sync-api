@@ -20,6 +20,7 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
             const btJumpoints = await this.queryBus.execute<BTRetrieveJumpointsQuery, JumpointRetrievedDtoOutput[]>(
                 new BTRetrieveJumpointsQuery(
                     query.transactionId,
+                    query.tenantId,
                     query.pageSize,
                     query.pageNumber,
                     query.name,
@@ -33,22 +34,31 @@ export class RetrieveJumpointsQueryHandler implements IQueryHandler<RetrieveJump
             return btJumpoints.map((btJumpoint) => this.createJumpointEntity(btJumpoint));
         }
 
-        const jumpointFindByQuery = <FindOptionsWhere<Jumpoint>>{};
+        const multipleWhere: FindOptionsWhere<JumpointEntity>[] = [];
+        const singleWhere: FindOptionsWhere<JumpointEntity> = {};
 
         if (query.name !== undefined) {
-            jumpointFindByQuery.name = query.name;
+            singleWhere.name = query.name;
         }
 
         if (query.codeName !== undefined) {
-            jumpointFindByQuery.codeName = query.codeName;
+            singleWhere.codeName = query.codeName;
         }
 
-        if (query.namePattern !== undefined) {
-            jumpointFindByQuery.name = Like(query.namePattern);
+        if (query.namePatterns && query.namePatterns.length > 0) {
+            for (const pattern of query.namePatterns) {
+                multipleWhere.push({
+                    ...singleWhere, // retain other filters
+                    name: Like(pattern),
+                });
+            }
+        } else {
+            multipleWhere.push(singleWhere);
         }
 
         const jumpoints = await this.jumpointRepositoryService.findBy(
-            jumpointFindByQuery,
+            query.tenantId,
+            multipleWhere,
             query.pageNumber,
             query.pageSize,
         );

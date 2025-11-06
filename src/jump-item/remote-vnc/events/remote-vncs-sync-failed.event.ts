@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface RemoteVncsSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class RemoteVncsSyncFailedEvent extends BaseEvent {

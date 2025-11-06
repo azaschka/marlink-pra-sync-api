@@ -29,11 +29,12 @@ export class ModifyShellJumpCommandHandler implements ICommandHandler<ModifyShel
         const shellJumpEntity = this.createShellJumpEntity(btShellJump);
 
         try {
-            const updatedShellJump = await this.updateShellJump(shellJumpEntity);
+            const updatedShellJump = await this.updateShellJump(command.tenantId, shellJumpEntity);
 
             this.eventBus.publish(
                 new ShellJumpModifiedEvent(command.transactionId, {
                     shellJump: updatedShellJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -43,6 +44,7 @@ export class ModifyShellJumpCommandHandler implements ICommandHandler<ModifyShel
                 new ShellJumpModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     shellJump: shellJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -54,6 +56,7 @@ export class ModifyShellJumpCommandHandler implements ICommandHandler<ModifyShel
         return await this.commandBus.execute<BTModifyShellJumpCommand, ShellJumpModifiedDtoOutput>(
             new BTModifyShellJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,
@@ -93,10 +96,13 @@ export class ModifyShellJumpCommandHandler implements ICommandHandler<ModifyShel
         );
     }
 
-    private async updateShellJump(shellJumpEntity: ShellJumpEntity) {
-        await this.shellJumpRepositoryService.createOrUpdateById(shellJumpEntity);
+    private async updateShellJump(tenantId: number, shellJumpEntity: ShellJumpEntity) {
+        await this.shellJumpRepositoryService.createOrUpdateById(tenantId, shellJumpEntity);
 
-        const createdOrUpdatedShellJump = await this.shellJumpRepositoryService.findOneById(shellJumpEntity.id);
+        const createdOrUpdatedShellJump = await this.shellJumpRepositoryService.findOneById(
+            tenantId,
+            shellJumpEntity.id,
+        );
 
         if (!createdOrUpdatedShellJump) {
             throw new Error('Shell jump has been created or updated but could not be retrieved.');

@@ -14,15 +14,17 @@ export class ModifyRemoteRdpCommandHandler implements ICommandHandler<ModifyRemo
     ) {}
 
     public async execute(command: ModifyRemoteRdpCommand): Promise<RemoteRdpModifiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.remoteRdp.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteRdp.path,
             command.id.toString(),
         );
 
         return await this.httpClientService.patch<RemoteRdpModifiedDtoOutput, RemoteRdpModifiedDtoOutput>(
             RemoteRdpModifiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyRemoteRdpDtoInput.create(
                 command.name,
                 command.jumpointId,

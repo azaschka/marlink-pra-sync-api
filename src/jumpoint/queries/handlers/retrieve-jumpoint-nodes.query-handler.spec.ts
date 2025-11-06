@@ -14,7 +14,7 @@ describe('RetrieveJumpointNodeQueryHandler', () => {
     });
 
     it('should throw NotFoundException when jumpoint node is not found', async () => {
-        const query = new RetrieveJumpointNodesQuery('transaction-id', 1);
+        const query = new RetrieveJumpointNodesQuery('transaction-id', 123, 100, 5, 1);
         jest.spyOn(jumpointNodeRepositoryService, 'findBy').mockResolvedValue([]);
 
         await expect(handler.execute(query)).rejects.toThrow(NotFoundException);
@@ -24,7 +24,7 @@ describe('RetrieveJumpointNodeQueryHandler', () => {
         const expectedResult = [{ id: 1 }] as JumpointNodeEntity[];
         jest.spyOn(jumpointNodeRepositoryService, 'findBy').mockResolvedValue(expectedResult);
 
-        const query = new RetrieveJumpointNodesQuery('transaction-id', 1);
+        const query = new RetrieveJumpointNodesQuery('transaction-id', 123, 100, 5, 1);
 
         const result = await handler.execute(query);
 

@@ -3,6 +3,7 @@ import { GroupPolicyJumpoint } from '../models';
 
 export interface GroupPolicyJumpointAddedEventPayload {
     groupPolicyJumpoint: GroupPolicyJumpoint;
+    tenantId: number;
 }
 
 export class GroupPolicyJumpointAddedEvent extends BaseEvent {

@@ -5,6 +5,7 @@ export class CreateShellJumpCommand {
 
     constructor(
         public readonly transactionId: string,
+        public readonly beyondtrustInstanceId: number,
         public readonly name: string,
         public readonly jumpointId: number,
         public readonly hostname: string,

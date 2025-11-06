@@ -22,7 +22,7 @@ describe('RetrieveJumpClientInstallerPlatformQueryHandler', () => {
             jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
             const result = await handler.execute(
-                new RetrieveJumpClientInstallerPlatformQuery(transactionId, installerId, platformType),
+                new RetrieveJumpClientInstallerPlatformQuery(transactionId, 123, installerId, platformType),
             );
 
             expect(result).toBe(expectedResult);

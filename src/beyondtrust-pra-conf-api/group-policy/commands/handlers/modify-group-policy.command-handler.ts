@@ -14,15 +14,17 @@ export class ModifyGroupPolicyCommandHandler implements ICommandHandler<ModifyGr
     ) {}
 
     public async execute(command: ModifyGroupPolicyCommand): Promise<GroupPolicyModifiedDtoOutput> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.groupPolicy.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.groupPolicy.path,
             command.id.toString(),
         );
 
         return await this.httpClientService.patch<GroupPolicyModifiedDtoOutput, GroupPolicyModifiedDtoOutput>(
             GroupPolicyModifiedDtoOutput,
-            url,
+            command.transactionId,
+            command.beyondtrustInstanceId,
+            urlPath,
             ModifyGroupPolicyDtoInput.create(
                 command.name,
                 command.hasEndpointsAccessPermission,

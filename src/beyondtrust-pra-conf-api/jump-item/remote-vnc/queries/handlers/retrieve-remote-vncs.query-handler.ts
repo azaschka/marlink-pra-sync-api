@@ -14,14 +14,16 @@ export class RetrieveRemoteVncsQueryHandler implements IQueryHandler<RetrieveRem
     ) {}
 
     public async execute(query: RetrieveRemoteVncsQuery): Promise<RemoteVncRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpItem.remoteVnc.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpItem.remoteVnc.path,
         );
 
         return await this.httpClientService.get<RemoteVncRetrievedDtoOutput, RemoteVncRetrievedDtoOutput[]>(
             RemoteVncRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
             RetrieveRemoteVncsDtoInput.create(
                 query.pageSize,
                 query.pageNumber,

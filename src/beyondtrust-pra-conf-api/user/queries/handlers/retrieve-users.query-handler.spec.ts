@@ -139,6 +139,7 @@ describe('RetrieveUsersQueryHandler', () => {
             {
                 inputQuery: <RetrieveUsersQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 123,
                     pageSize: 10,
                     pageNumber: 1,
                     securityProviderId: 123,
@@ -156,6 +157,7 @@ describe('RetrieveUsersQueryHandler', () => {
             {
                 inputQuery: <RetrieveUsersQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 123,
                     pageSize: 20,
                     pageNumber: 2,
                     username: 'user-2',
@@ -175,7 +177,9 @@ describe('RetrieveUsersQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/user',
+                    inputQuery.transactionId,
+                    123,
+                    '/user',
                     expectedHttpClientParams,
                 );
 
@@ -196,9 +200,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                user: {
-                    path: 'user',
+                config: {
+                    user: {
+                        path: 'user',
+                    },
                 },
             },
         },

@@ -49,147 +49,143 @@ export class AppConfigService {
 
     public get beyondTrust() {
         return {
-            auth: {
-                oauth2TokenUrl:
-                    this.configService.get<string>('BEYONDTRUST_AUTH_OAUTH2_TOKEN_URL') ??
-                    AppConfigService.DEFAULT_UNDEFINED_STRING,
-                clientId:
-                    this.configService.get<string>('BEYONDTRUST_AUTH_CLIENT_ID') ??
-                    AppConfigService.DEFAULT_UNDEFINED_STRING,
-                secret:
-                    this.configService.get<string>('BEYONDTRUST_AUTH_SECRET') ??
-                    AppConfigService.DEFAULT_UNDEFINED_STRING,
-            },
             api: {
-                baseUrl:
-                    this.configService.get<string>('BEYONDTRUST_API_BASE_URL') ??
-                    AppConfigService.DEFAULT_UNDEFINED_STRING,
-                user: {
+                backup: {
                     path:
-                        this.configService.get<string>('BEYONDTRUST_API_USER_PATH') ??
-                        DefaultAppConfig.beyondTrust.api.user.path,
-                    groupPolicies: {
-                        path:
-                            this.configService.get<string>('BEYONDTRUST_API_USER_GROUP_POLICIES_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.user.groupPolicies.path,
-                        change:
-                            this.configService.get<string>('BEYONDTRUST_API_USER_CHANGE_GROUP_POLICIES') ??
-                            DefaultAppConfig.beyondTrust.api.user.groupPolicies.change,
-                    },
+                        this.configService.get<string>('BEYONDTRUST_API_BACKUP_PATH') ??
+                        DefaultAppConfig.beyondTrust.api.backup.path,
                 },
-                jumpClient: {
+                config: {
                     path:
-                        this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ??
-                        DefaultAppConfig.beyondTrust.api.jumpClient.path,
-                    copy:
-                        this.configService.get<string>('BEYONDTRUST_API_COPY_JUMP_CLIENT') ??
-                        DefaultAppConfig.beyondTrust.api.jumpClient.copy,
-                    installer: {
+                        this.configService.get<string>('BEYONDTRUST_API_CONFIG_PATH') ??
+                        DefaultAppConfig.beyondTrust.api.config.path,
+                    user: {
                         path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_INSTALLER_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpClient.installer.path,
+                            this.configService.get<string>('BEYONDTRUST_API_USER_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.user.path,
+                        groupPolicies: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_USER_GROUP_POLICIES_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.user.groupPolicies.path,
+                            change:
+                                this.configService.get<string>('BEYONDTRUST_API_USER_CHANGE_GROUP_POLICIES') ??
+                                DefaultAppConfig.beyondTrust.api.user.groupPolicies.change,
+                        },
                     },
-                },
-                groupPolicy: {
-                    path:
-                        this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_PATH') ??
-                        DefaultAppConfig.beyondTrust.api.groupPolicy.path,
-                    jumpoint: {
+                    jumpClient: {
                         path:
-                            this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.groupPolicy.jumpoint.path,
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.jumpClient.path,
+                        copy:
+                            this.configService.get<string>('BEYONDTRUST_API_COPY_JUMP_CLIENT') ??
+                            DefaultAppConfig.beyondTrust.api.jumpClient.copy,
+                        installer: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_CLIENT_INSTALLER_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpClient.installer.path,
+                        },
                     },
-                    jumpGroup: {
+                    groupPolicy: {
                         path:
-                            this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_JUMP_GROUP_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.groupPolicy.jumpGroup.path,
-                    },
-                    member: {
-                        path:
-                            this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_MEMBER_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.groupPolicy.member.path,
+                            this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.groupPolicy.path,
+                        jumpoint: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_JUMPOINT_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.groupPolicy.jumpoint.path,
+                        },
+                        jumpGroup: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_JUMP_GROUP_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.groupPolicy.jumpGroup.path,
+                        },
+                        member: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_MEMBER_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.groupPolicy.member.path,
+                        },
+                        team: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_TEAM_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.groupPolicy.team.path,
+                        },
                     },
                     team: {
                         path:
-                            this.configService.get<string>('BEYONDTRUST_API_GROUP_POLICY_TEAM_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.groupPolicy.team.path,
+                            this.configService.get<string>('BEYONDTRUST_API_TEAM_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.team.path,
+                        user: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_TEAM_USER_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.team.user.path,
+                        },
                     },
-                },
-                team: {
-                    path:
-                        this.configService.get<string>('BEYONDTRUST_API_TEAM_PATH') ??
-                        DefaultAppConfig.beyondTrust.api.team.path,
-                    user: {
+                    jumpGroup: {
                         path:
-                            this.configService.get<string>('BEYONDTRUST_API_TEAM_USER_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.team.user.path,
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_GROUP_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.jumpGroup.path,
                     },
-                },
-                jumpGroup: {
-                    path:
-                        this.configService.get<string>('BEYONDTRUST_API_JUMP_GROUP_PATH') ??
-                        DefaultAppConfig.beyondTrust.api.jumpGroup.path,
-                },
-                jumpPolicy: {
-                    path:
-                        this.configService.get<string>('BEYONDTRUST_API_JUMP_POLICY_PATH') ??
-                        DefaultAppConfig.beyondTrust.api.jumpPolicy.path,
-                },
-                jumpoint: {
-                    path:
-                        this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_PATH') ??
-                        DefaultAppConfig.beyondTrust.api.jumpoint.path,
-                    node: {
+                    jumpPolicy: {
                         path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_NODE_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpoint.node.path,
+                            this.configService.get<string>('BEYONDTRUST_API_JUMP_POLICY_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.jumpPolicy.path,
                     },
-                    installer: {
+                    jumpoint: {
                         path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_INSTALLER_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpoint.installer.path,
+                            this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.jumpoint.path,
+                        node: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_NODE_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpoint.node.path,
+                        },
+                        installer: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMPOINT_INSTALLER_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpoint.installer.path,
+                        },
                     },
-                },
-                jumpItem: {
-                    remoteRdp: {
-                        path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteRdp.path,
-                        copy:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_RDP') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteRdp.copy,
-                    },
-                    shellJump: {
-                        path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.shellJump.path,
-                        copy:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_SHELL_JUMP') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.shellJump.copy,
-                    },
-                    webJump: {
-                        path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.webJump.path,
-                        copy:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_WEB_JUMP') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.webJump.copy,
-                    },
-                    remoteVnc: {
-                        path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteVnc.path,
-                        copy:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_VNC') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.remoteVnc.copy,
-                    },
-                    protocolTunnelJump: {
-                        path:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.protocolTunnelJump.path,
-                        copy:
-                            this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_PROTOCOL_TUNNEL_JUMP') ??
-                            DefaultAppConfig.beyondTrust.api.jumpItem.protocolTunnelJump.copy,
+                    jumpItem: {
+                        remoteRdp: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_RDP_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.remoteRdp.path,
+                            copy:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_RDP') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.remoteRdp.copy,
+                        },
+                        shellJump: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_SHELL_JUMP_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.shellJump.path,
+                            copy:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_SHELL_JUMP') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.shellJump.copy,
+                        },
+                        webJump: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_WEB_JUMP_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.webJump.path,
+                            copy:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_WEB_JUMP') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.webJump.copy,
+                        },
+                        remoteVnc: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_REMOTE_VNC_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.remoteVnc.path,
+                            copy:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_REMOTE_VNC') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.remoteVnc.copy,
+                        },
+                        protocolTunnelJump: {
+                            path:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_PROTOCOL_TUNNEL_JUMP_PATH') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.protocolTunnelJump.path,
+                            copy:
+                                this.configService.get<string>('BEYONDTRUST_API_JUMP_ITEM_COPY_PROTOCOL_TUNNEL_JUMP') ??
+                                DefaultAppConfig.beyondTrust.api.jumpItem.protocolTunnelJump.copy,
+                        },
                     },
                 },
                 communication: {
@@ -200,11 +196,6 @@ export class AppConfigService {
                         this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS') ??
                         DefaultAppConfig.beyondTrust.api.communication.retryDelayInMs,
                 },
-            },
-            backup: {
-                apiUrl:
-                    this.configService.get<string>('BEYONDTRUST_BACKUP_API_URL') ??
-                    AppConfigService.DEFAULT_UNDEFINED_STRING,
             },
         };
     }
@@ -227,7 +218,16 @@ export class AppConfigService {
             maxQueryExecutionTime:
                 this.configService.get<number>('DB_MAX_QUERY_EXECUTION_TIME_IN_MS') ??
                 DefaultAppConfig.database.maxQueryExecutionTime, // Only applicable to MariaDB and MySQL
+            extra: {
+                max: this.databaseMaxConnections,
+            },
         };
+    }
+
+    public get databaseMaxConnections(): number {
+        return Number(
+            this.configService.get<number>('DB_EXTRA_MAX_CONNECTIONS') ?? DefaultAppConfig.database.extra.max,
+        );
     }
 
     public get storage() {
@@ -239,19 +239,41 @@ export class AppConfigService {
         };
     }
 
-    public get sync() {
+    public get discrepancy() {
         return {
-            maxBatchSize: this.configService.get<number>('SYNC_MAX_BATCH_SIZE') ?? DefaultAppConfig.sync.maxBatchSize,
-            cronJobTimezone:
-                this.configService.get<string>('SYNC_CRON_JOB_TIMEZONE') ?? DefaultAppConfig.sync.cronJobTimezone,
-            cronJobExpressions:
-                this.configService.get<string>('SYNC_CRON_JOB_EXPRESSIONS') ?? DefaultAppConfig.sync.cronJobExpressions,
-            cronJobRetryAttempts:
-                this.configService.get<number>('SYNC_CRON_JOB_RETRY_ATTEMPTS') ??
-                DefaultAppConfig.sync.cronJobRetryAttempts,
-            cronJobRetryDelayInMs:
-                this.configService.get<number>('SYNC_CRON_JOB_RETRY_DELAY_IN_MS') ??
-                DefaultAppConfig.sync.cronJobRetryDelayInMs,
+            maxBatchSize:
+                this.configService.get<number>('DISCREPANCY_MAX_BATCH_SIZE') ??
+                DefaultAppConfig.discrepancy.maxBatchSize,
+            scan: {
+                cronJobTimezone:
+                    this.configService.get<string>('DISCREPANCY_SCAN_CRON_JOB_TIMEZONE') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobTimezone,
+                cronJobExpressions:
+                    this.configService.get<string>('DISCREPANCY_SCAN_CRON_JOB_EXPRESSIONS') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobExpressions,
+                cronJobRetryAttempts:
+                    this.configService.get<number>('DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobRetryAttempts,
+                cronJobRetryDelayInMs:
+                    this.configService.get<number>('DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS') ??
+                    DefaultAppConfig.discrepancy.scan.cronJobRetryDelayInMs,
+            },
+        };
+    }
+
+    public get throttle() {
+        let isEnabled = DefaultAppConfig.throttle.isEnabled;
+
+        const isEnabledString = this.configService.get<string>('THROTTLE_IS_ENABLED');
+
+        if (isEnabledString !== undefined) {
+            isEnabled = JSON.parse(isEnabledString) as boolean;
+        }
+
+        return {
+            isEnabled: isEnabled,
+            ttlInMs: this.configService.get<number>('THROTTLE_TTL_IN_MS') ?? DefaultAppConfig.throttle.ttlInMs,
+            limit: this.configService.get<number>('THROTTLE_LIMIT') ?? DefaultAppConfig.throttle.limit,
         };
     }
 }

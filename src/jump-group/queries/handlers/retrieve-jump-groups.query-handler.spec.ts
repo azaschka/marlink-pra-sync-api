@@ -19,10 +19,10 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
                 .spyOn(jumpGroupRepositoryService, 'findBy')
                 .mockResolvedValue(expectedJumpGroups);
 
-            const result = await handler.execute(new RetrieveJumpGroupsQuery('transaction-1', 20, 2));
+            const result = await handler.execute(new RetrieveJumpGroupsQuery('transaction-1', 123, 20, 2));
 
             expect(result).toBe(expectedJumpGroups);
-            expect(jumpGroupRepositoryServiceFindByMethod).toHaveBeenCalledWith({}, 2, 20);
+            expect(jumpGroupRepositoryServiceFindByMethod).toHaveBeenCalledWith(123, [{}], 2, 20);
         });
 
         it('should call the repo with correct parameter and return value from the repo', async () => {
@@ -32,12 +32,13 @@ describe('RetrieveJumpGroupsQueryHandler', () => {
                 .mockResolvedValue(expectedJumpGroups);
 
             const result = await handler.execute(
-                new RetrieveJumpGroupsQuery('transaction-2', 10, 1, 'jump-group-1', 'jump-group-code-1'),
+                new RetrieveJumpGroupsQuery('transaction-2', 123, 10, 1, 'jump-group-1', 'jump-group-code-1'),
             );
 
             expect(result).toBe(expectedJumpGroups);
             expect(jumpGroupRepositoryServiceFindByMethod).toHaveBeenCalledWith(
-                { name: 'jump-group-1', codeName: 'jump-group-code-1' },
+                123,
+                [{ name: 'jump-group-1', codeName: 'jump-group-code-1' }],
                 1,
                 10,
             );

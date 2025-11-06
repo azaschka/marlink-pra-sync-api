@@ -89,6 +89,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
         it.each([
             <CreateRemoteRdpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'remote-rdp-1',
                 jumpointId: 1,
                 hostname: 'hostname-1',
@@ -114,6 +115,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
             },
             <CreateRemoteRdpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'remote-rdp-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -143,6 +145,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateRemoteRdpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.jumpointId,
                         command.hostname,
@@ -193,13 +196,14 @@ describe('CreateRemoteRdpCommandHandler', () => {
                     TestHelper.mockedRemoteRdpCreatedDtoOutput.targetSystem,
                     TestHelper.mockedRemoteRdpCreatedDtoOutput.credentialType,
                 );
-                expect(remoteRdpRepositoryServiceCreateMethod).toHaveBeenCalledWith(remoteRdpEntityToBeCreated);
+                expect(remoteRdpRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, remoteRdpEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<RemoteRdpCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: RemoteRdpCreatedEvent.EVENT_TYPE,
                         payload: {
                             remoteRdp: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -242,6 +246,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
                 handler.execute(<CreateRemoteRdpCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-rdp-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -255,6 +260,7 @@ describe('CreateRemoteRdpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteRdp: remoteRdpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

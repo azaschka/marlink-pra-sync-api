@@ -2,6 +2,7 @@ import { BaseEvent } from '../../core/events';
 
 export interface JumpClientInstallerDeletedEventPayload {
     id: number;
+    tenantId: number;
 }
 
 export class JumpClientInstallerDeletedEvent extends BaseEvent {

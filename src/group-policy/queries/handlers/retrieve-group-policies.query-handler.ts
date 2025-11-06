@@ -1,6 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindOptionsWhere, Like } from 'typeorm';
 import { GroupPolicy } from '../../models';
+import { GroupPolicyEntity } from '../../repositories/entities';
 import { GroupPolicyRepositoryService } from '../../repositories/services/group-policy-repository.service';
 import { RetrieveGroupPoliciesQuery } from '../retrieve-group-policies.query';
 
@@ -9,18 +10,27 @@ export class RetrieveGroupPoliciesQueryHandler implements IQueryHandler<Retrieve
     constructor(private readonly groupPolicyRepositoryService: GroupPolicyRepositoryService) {}
 
     public async execute(query: RetrieveGroupPoliciesQuery): Promise<GroupPolicy[]> {
-        const groupPoliciesFindByQuery = <FindOptionsWhere<GroupPolicy>>{};
+        const multipleWhere: FindOptionsWhere<GroupPolicyEntity>[] = [];
+        const singleWhere: FindOptionsWhere<GroupPolicyEntity> = {};
 
         if (query.name) {
-            groupPoliciesFindByQuery.name = query.name;
+            singleWhere.name = query.name;
         }
 
-        if (query.namePattern) {
-            groupPoliciesFindByQuery.name = Like(query.namePattern);
+        if (query.namePatterns && query.namePatterns.length > 0) {
+            for (const pattern of query.namePatterns) {
+                multipleWhere.push({
+                    ...singleWhere, // retain other filters
+                    name: Like(pattern),
+                });
+            }
+        } else {
+            multipleWhere.push(singleWhere);
         }
 
         const groupPolicies = await this.groupPolicyRepositoryService.findBy(
-            groupPoliciesFindByQuery,
+            query.tenantId,
+            multipleWhere,
             query.pageNumber,
             query.pageSize,
         );

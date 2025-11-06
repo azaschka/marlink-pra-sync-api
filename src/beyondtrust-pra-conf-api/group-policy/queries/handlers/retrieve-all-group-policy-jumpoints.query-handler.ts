@@ -18,14 +18,22 @@ export class RetrieveAllGroupPolicyJumpointsQueryHandler
         query: RetrieveAllGroupPolicyJumpointsQuery,
     ): Promise<GroupPolicyJumpointRetrievedDtoOutput[]> {
         const allGroupPolicyJumpoints: GroupPolicyJumpointRetrievedDtoOutput[] = [];
-        const maxBatchSize = this.appConfigService.sync.maxBatchSize;
+        const maxBatchSize = this.appConfigService.discrepancy.maxBatchSize;
         let pageNumber = 1;
 
         while (true) {
             const batch = await this.queryBus.execute<
                 RetrieveGroupPolicyJumpointsQuery,
                 GroupPolicyJumpointRetrievedDtoOutput[]
-            >(new RetrieveGroupPolicyJumpointsQuery(query.transactionId, maxBatchSize, pageNumber, query.id));
+            >(
+                new RetrieveGroupPolicyJumpointsQuery(
+                    query.transactionId,
+                    query.beyondtrustInstanceId,
+                    maxBatchSize,
+                    pageNumber,
+                    query.id,
+                ),
+            );
 
             // BT always return last page's data when we exceed the pagination limit. Therefore, we check for repeating ids.
             if (

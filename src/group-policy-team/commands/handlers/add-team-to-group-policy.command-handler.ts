@@ -21,11 +21,12 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
         const groupPolicyTeamEntity = this.createGroupPolicyTeamEntity(command.id, btGroupPolicyTeam);
 
         try {
-            const groupPolicyTeam = await this.addGroupPolicyTeam(groupPolicyTeamEntity);
+            const groupPolicyTeam = await this.addGroupPolicyTeam(command.tenantId, groupPolicyTeamEntity);
 
             this.eventBus.publish(
                 new GroupPolicyTeamAddedEvent(command.transactionId, {
                     groupPolicyTeam: groupPolicyTeam,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -35,6 +36,7 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
                 new GroupPolicyTeamAdditionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     groupPolicyTeam: groupPolicyTeamEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -44,7 +46,13 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
 
     private async addBTGroupPolicyTeam(command: AddTeamToGroupPolicyCommand) {
         return await this.commandBus.execute<BTAddTeamToGroupPolicyCommand, TeamAddedToGroupPolicyDtoOutput>(
-            new BTAddTeamToGroupPolicyCommand(command.transactionId, command.id, command.teamId, command.roleType),
+            new BTAddTeamToGroupPolicyCommand(
+                command.transactionId,
+                command.tenantId,
+                command.id,
+                command.teamId,
+                command.roleType,
+            ),
         );
     }
 
@@ -52,13 +60,17 @@ export class AddTeamToGroupPolicyCommandHandler implements ICommandHandler<AddTe
         return GroupPolicyTeamEntity.create(groupPolicyId, btGroupPolicyTeam.teamId, btGroupPolicyTeam.role);
     }
 
-    private async addGroupPolicyTeam(groupPolicyTeamEntity: GroupPolicyTeamEntity): Promise<GroupPolicyTeam> {
-        await this.groupPolicyTeamRepositoryService.create(groupPolicyTeamEntity);
+    private async addGroupPolicyTeam(
+        tenantId: number,
+        groupPolicyTeamEntity: GroupPolicyTeamEntity,
+    ): Promise<GroupPolicyTeam> {
+        await this.groupPolicyTeamRepositoryService.create(tenantId, groupPolicyTeamEntity);
 
         return {
             groupPolicyId: groupPolicyTeamEntity.groupPolicyId,
             teamId: groupPolicyTeamEntity.teamId,
             roleType: groupPolicyTeamEntity.roleType,
+            lastSyncDate: groupPolicyTeamEntity.lastSyncDate,
         };
     }
 }

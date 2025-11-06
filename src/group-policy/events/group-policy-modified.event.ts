@@ -3,6 +3,7 @@ import { GroupPolicy } from '../models';
 
 export interface GroupPolicyModifiedEventPayload {
     groupPolicy: GroupPolicy;
+    tenantId: number;
 }
 
 export class GroupPolicyModifiedEvent extends BaseEvent {

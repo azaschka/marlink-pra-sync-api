@@ -36,12 +36,14 @@ describe('CreateJumpGroupCommandHandler', () => {
         it.each([
             <CreateJumpGroupCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 name: 'jump-group-1',
                 codeName: 'jump-group-code-1',
                 comments: 'jump-group-comments-1',
             },
             <CreateJumpGroupCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'jump-group-2',
             },
         ])(
@@ -68,6 +70,7 @@ describe('CreateJumpGroupCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTCreateJumpGroupCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.name,
                         command.codeName,
                         command.comments,
@@ -79,13 +82,14 @@ describe('CreateJumpGroupCommandHandler', () => {
                     TestHelper.mockedJumpGroupCreatedDtoOutput.codeName,
                     TestHelper.mockedJumpGroupCreatedDtoOutput.comments,
                 );
-                expect(jumpGroupRepositoryServiceCreateMethod).toHaveBeenCalledWith(jumpGroupEntityToBeCreated);
+                expect(jumpGroupRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, jumpGroupEntityToBeCreated);
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<JumpGroupCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: JumpGroupCreatedEvent.EVENT_TYPE,
                         payload: {
                             jumpGroup: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -128,6 +132,7 @@ describe('CreateJumpGroupCommandHandler', () => {
                 handler.execute(<CreateJumpGroupCommand>{
                     transactionId: 'transaction-1',
                     name: 'jump-group-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -141,6 +146,7 @@ describe('CreateJumpGroupCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         jumpGroup: jumpGroupEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

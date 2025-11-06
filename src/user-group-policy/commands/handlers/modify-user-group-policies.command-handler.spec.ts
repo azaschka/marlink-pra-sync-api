@@ -62,14 +62,16 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
             const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
             const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
 
-            const userGroupPolicyEntitiesToBeReplaced = [
-                { userId: 123, groupPolicyId: 1 },
-                { userId: 123, groupPolicyId: 2 },
-                { userId: 123, groupPolicyId: 3 },
+            const userGroupPolicyEntityToBeReplaced = [
+                { userId: 123, groupPolicyId: 1, lastSyncDate: new Date('2025-01-01') },
+                { userId: 123, groupPolicyId: 2, lastSyncDate: new Date('2025-01-01') },
+                { userId: 123, groupPolicyId: 3, lastSyncDate: new Date('2025-01-01') },
             ] as UserGroupPolicyEntity[];
             const userGroupPolicyEntityCreateMethod = jest
                 .spyOn(UserGroupPolicyEntity, 'create')
-                .mockReturnValue(userGroupPolicyEntitiesToBeReplaced);
+                .mockReturnValueOnce(userGroupPolicyEntityToBeReplaced[0]!)
+                .mockReturnValueOnce(userGroupPolicyEntityToBeReplaced[1]!)
+                .mockReturnValueOnce(userGroupPolicyEntityToBeReplaced[2]!);
 
             const userGroupPolicyRepositoryServiceDeleteByUserIdMethod = jest
                 .spyOn(userGroupPolicyRepositoryService, 'deleteByUserId')
@@ -80,17 +82,20 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
 
             // Act
             const result = await handler.execute(
-                new ModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6]),
+                new ModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6]),
             );
 
             // Assert
             expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                new BTModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6]),
+                new BTModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6]),
             );
-            expect(userGroupPolicyEntityCreateMethod).toHaveBeenCalledWith(123, [1, 2, 3]);
-            expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenCalledWith(123);
+            expect(userGroupPolicyEntityCreateMethod).toHaveBeenNthCalledWith(1, 123, 1);
+            expect(userGroupPolicyEntityCreateMethod).toHaveBeenNthCalledWith(2, 123, 2);
+            expect(userGroupPolicyEntityCreateMethod).toHaveBeenNthCalledWith(3, 123, 3);
+            expect(userGroupPolicyRepositoryServiceDeleteByUserIdMethod).toHaveBeenCalledWith(100, 123);
             expect(userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod).toHaveBeenCalledWith(
-                userGroupPolicyEntitiesToBeReplaced,
+                100,
+                userGroupPolicyEntityToBeReplaced,
             );
             expect(eventBusPublishMethod).toHaveBeenCalledWith(
                 expect.objectContaining(<UserGroupPoliciesModifiedEvent>{
@@ -98,6 +103,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                     eventType: UserGroupPoliciesModifiedEvent.EVENT_TYPE,
                     payload: {
                         userGroupPolicies: result,
+                        tenantId: 100,
                     },
                 }),
             );
@@ -105,14 +111,17 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                 {
                     userId: 123,
                     groupPolicyId: 1,
+                    lastSyncDate: new Date('2025-01-01'),
                 },
                 {
                     userId: 123,
                     groupPolicyId: 2,
+                    lastSyncDate: new Date('2025-01-01'),
                 },
                 {
                     userId: 123,
                     groupPolicyId: 3,
+                    lastSyncDate: new Date('2025-01-01'),
                 },
             ]);
         });
@@ -123,7 +132,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6])),
+                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6])),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
         });
@@ -134,7 +143,8 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
             const userGroupPolicyEntitiesToBeReplaced = [{ userId: 1 }, { userId: 2 }] as UserGroupPolicyEntity[];
             const userGroupPolicyEntityCreateMethod = jest
                 .spyOn(UserGroupPolicyEntity, 'create')
-                .mockReturnValue(userGroupPolicyEntitiesToBeReplaced);
+                .mockReturnValueOnce(userGroupPolicyEntitiesToBeReplaced[0]!)
+                .mockReturnValueOnce(userGroupPolicyEntitiesToBeReplaced[1]!);
             const expectedError = new Error('Error');
             const userGroupPolicyRepositoryServiceCreateOrUpdateByUserIdAndGroupPolicyIdMethod = jest
                 .spyOn(userGroupPolicyRepositoryService, 'createOrUpdateByUserIdAndGroupPolicyId')
@@ -146,7 +156,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
 
             // Act & Assert
             await expect(
-                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 123, [1, 2, 3], [4, 5, 6])),
+                handler.execute(new ModifyUserGroupPoliciesCommand('transaction-1', 100, 123, [1, 2, 3], [4, 5, 6])),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
             expect(userGroupPolicyEntityCreateMethod).toHaveBeenCalled();
@@ -161,6 +171,7 @@ describe('ModifyUserGroupPoliciesCommandHandler', () => {
                         userId: 123,
                         groupPolicyIdsToAdd: [1, 2, 3],
                         groupPolicyIdsToRemove: [4, 5, 6],
+                        tenantId: 100,
                     },
                 }),
             );

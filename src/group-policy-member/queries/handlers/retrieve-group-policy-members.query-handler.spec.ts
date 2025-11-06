@@ -36,10 +36,15 @@ describe('RetrieveGroupPolicyMembersQueryHandler', () => {
                 .spyOn(groupPolicyMemberRepositoryService, 'findBy')
                 .mockResolvedValue(expectedGroupPolicyMemberEntities);
 
-            const result = await handler.execute(new RetrieveGroupPolicyMembersQuery('transaction-2', 10, 1, 123));
+            const result = await handler.execute(new RetrieveGroupPolicyMembersQuery('transaction-2', 100, 10, 1, 123));
 
             expect(result).toBe(expectedGroupPolicyMemberEntities);
-            expect(groupPolicyMemberRepositoryServiceFindByMethod).toHaveBeenCalledWith({ groupPolicyId: 123 }, 1, 10);
+            expect(groupPolicyMemberRepositoryServiceFindByMethod).toHaveBeenCalledWith(
+                100,
+                { groupPolicyId: 123 },
+                1,
+                10,
+            );
         });
     });
 });

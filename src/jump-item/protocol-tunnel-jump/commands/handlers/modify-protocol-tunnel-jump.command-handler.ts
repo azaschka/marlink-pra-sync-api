@@ -22,11 +22,15 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
         const protocolTunnelJumpEntity = this.createProtocolTunnelJumpEntity(btProtocolTunnelJump);
 
         try {
-            const updatedProtocolTunnelJump = await this.updateProtocolTunnelJump(protocolTunnelJumpEntity);
+            const updatedProtocolTunnelJump = await this.updateProtocolTunnelJump(
+                command.tenantId,
+                protocolTunnelJumpEntity,
+            );
 
             this.eventBus.publish(
                 new ProtocolTunnelJumpModifiedEvent(command.transactionId, {
                     protocolTunnelJump: updatedProtocolTunnelJump,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -36,6 +40,7 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
                 new ProtocolTunnelJumpModificationFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     protocolTunnelJump: protocolTunnelJumpEntity,
+                    tenantId: command.tenantId,
                 }),
             );
 
@@ -47,6 +52,7 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
         return await this.commandBus.execute<BTModifyProtocolTunnelJumpCommand, ProtocolTunnelJumpModifiedDtoOutput>(
             new BTModifyProtocolTunnelJumpCommand(
                 command.transactionId,
+                command.tenantId,
                 command.id,
                 command.name,
                 command.jumpointId,
@@ -90,10 +96,11 @@ export class ModifyProtocolTunnelJumpCommandHandler implements ICommandHandler<M
         );
     }
 
-    private async updateProtocolTunnelJump(protocolTunnelJumpEntity: ProtocolTunnelJumpEntity) {
-        await this.protocolTunnelJumpRepositoryService.createOrUpdateById(protocolTunnelJumpEntity);
+    private async updateProtocolTunnelJump(tenantId: number, protocolTunnelJumpEntity: ProtocolTunnelJumpEntity) {
+        await this.protocolTunnelJumpRepositoryService.createOrUpdateById(tenantId, protocolTunnelJumpEntity);
 
         const createdOrUpdatedProtocolTunnelJump = await this.protocolTunnelJumpRepositoryService.findOneById(
+            tenantId,
             protocolTunnelJumpEntity.id,
         );
 

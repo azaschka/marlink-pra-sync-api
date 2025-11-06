@@ -92,6 +92,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpClientsQuery>{
                     transactionId: 'transaction-1',
+                    beyondtrustInstanceId: 100,
                     pageSize: 10,
                     pageNumber: 1,
                     name: 'client-1',
@@ -123,6 +124,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
             {
                 inputQuery: <RetrieveJumpClientsQuery>{
                     transactionId: 'transaction-2',
+                    beyondtrustInstanceId: 100,
                     pageSize: 20,
                     pageNumber: 2,
                     name: 'client-1',
@@ -142,7 +144,9 @@ describe('RetrieveJumpClientsQueryHandler', () => {
 
                 expect(httpClientServiceGetMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-client',
+                    inputQuery.transactionId,
+                    inputQuery.beyondtrustInstanceId,
+                    `/jump-client`,
                     expectedHttpClientParams,
                 );
 
@@ -163,9 +167,10 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpClient: {
-                    path: 'jump-client',
+                config: {
+                    jumpClient: {
+                        path: 'jump-client',
+                    },
                 },
             },
         },

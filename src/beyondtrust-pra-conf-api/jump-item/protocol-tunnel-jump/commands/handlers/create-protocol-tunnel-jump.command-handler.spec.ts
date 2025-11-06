@@ -35,6 +35,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
             {
                 command: new CreateProtocolTunnelJumpCommand(
                     'transaction-1',
+                    123,
                     'protocol-tunnel-jump-1',
                     1,
                     'hostname-1',
@@ -74,6 +75,7 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
             {
                 command: new CreateProtocolTunnelJumpCommand(
                     'transaction-2',
+                    123,
                     'protocol-tunnel-jump-2',
                     1,
                     'hostname-2',
@@ -95,7 +97,9 @@ describe('CreateProtocolTunnelJumpCommandHandler', () => {
 
                 expect(httpClientServicePostMethod).toHaveBeenCalledWith(
                     expect.anything(),
-                    'https://api.example.com/jump-item/protocol-tunnel-jump',
+                    command.transactionId,
+                    123,
+                    '/jump-item/protocol-tunnel-jump',
                     expectedHttpClientBody,
                 );
 
@@ -116,10 +120,11 @@ function mockAppConfigService() {
     const service = {
         beyondTrust: {
             api: {
-                baseUrl: 'https://api.example.com',
-                jumpItem: {
-                    protocolTunnelJump: {
-                        path: 'jump-item/protocol-tunnel-jump',
+                config: {
+                    jumpItem: {
+                        protocolTunnelJump: {
+                            path: 'jump-item/protocol-tunnel-jump',
+                        },
                     },
                 },
             },

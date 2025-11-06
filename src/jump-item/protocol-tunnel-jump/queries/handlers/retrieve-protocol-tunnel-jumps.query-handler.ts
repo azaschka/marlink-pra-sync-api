@@ -1,5 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { ProtocolTunnelJump } from '../../models';
+import { ProtocolTunnelJumpEntity } from '../../repositories/entities';
 import { ProtocolTunnelJumpRepositoryService } from '../../repositories/services/protocol-tunnel-jump-repository.service';
 import { RetrieveProtocolTunnelJumpsQuery } from '../retrieve-protocol-tunnel-jumps.query';
 
@@ -8,7 +10,7 @@ export class RetrieveProtocolTunnelJumpsQueryHandler implements IQueryHandler<Re
     constructor(private readonly protocolTunnelJumpRepositoryService: ProtocolTunnelJumpRepositoryService) {}
 
     public async execute(query: RetrieveProtocolTunnelJumpsQuery): Promise<ProtocolTunnelJump[]> {
-        const protocolTunnelJumpsFindByQuery = <ProtocolTunnelJump>{};
+        const protocolTunnelJumpsFindByQuery: FindOptionsWhere<ProtocolTunnelJumpEntity> = {};
 
         if (query.name) {
             protocolTunnelJumpsFindByQuery.name = query.name;
@@ -18,8 +20,8 @@ export class RetrieveProtocolTunnelJumpsQueryHandler implements IQueryHandler<Re
             protocolTunnelJumpsFindByQuery.hostname = query.hostname;
         }
 
-        if (query.jumpGroupId) {
-            protocolTunnelJumpsFindByQuery.jumpGroupId = query.jumpGroupId;
+        if (query.jumpGroupIds !== undefined && query.jumpGroupIds.length > 0) {
+            protocolTunnelJumpsFindByQuery.jumpGroupId = In(query.jumpGroupIds);
         }
 
         if (query.jumpGroupType) {
@@ -35,6 +37,7 @@ export class RetrieveProtocolTunnelJumpsQueryHandler implements IQueryHandler<Re
         }
 
         const protocolTunnelJumps = await this.protocolTunnelJumpRepositoryService.findBy(
+            query.tenantId,
             protocolTunnelJumpsFindByQuery,
             query.pageNumber,
             query.pageSize,

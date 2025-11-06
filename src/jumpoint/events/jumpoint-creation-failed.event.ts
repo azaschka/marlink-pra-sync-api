@@ -4,6 +4,7 @@ import { Jumpoint } from '../models';
 export interface JumpointCreationFailedEventPayload {
     errorMessage: string;
     jumpoint: Jumpoint;
+    tenantId: number;
 }
 
 export class JumpointCreationFailedEvent extends BaseEvent {

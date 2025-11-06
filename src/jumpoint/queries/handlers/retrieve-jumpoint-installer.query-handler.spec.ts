@@ -17,7 +17,7 @@ describe('RetrieveJumpointInstallerQueryHandler', () => {
             const expectedResult = {} as AxiosResponse<NodeJS.ReadableStream>;
             jest.spyOn(queryBus, 'execute').mockResolvedValue(expectedResult);
 
-            const result = await handler.execute(new RetrieveJumpointInstallerQuery('transaction-1', 123));
+            const result = await handler.execute(new RetrieveJumpointInstallerQuery('transaction-1', 100, 123));
 
             expect(result).toBe(expectedResult);
         });

@@ -13,16 +13,18 @@ export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<Retrieve
     ) {}
 
     public async execute(query: RetrieveJumpointNodesQuery): Promise<JumpointNodeRetrievedDtoOutput[]> {
-        const url = UrlUtility.join(
-            this.appConfigService.beyondTrust.api.baseUrl,
-            this.appConfigService.beyondTrust.api.jumpoint.path,
+        const urlPath = UrlUtility.join(
+            this.appConfigService.beyondTrust.api.config.path,
+            this.appConfigService.beyondTrust.api.config.jumpoint.path,
             query.jumpointId.toString(),
-            this.appConfigService.beyondTrust.api.jumpoint.node.path,
+            this.appConfigService.beyondTrust.api.config.jumpoint.node.path,
         );
 
         return await this.httpClientService.get<JumpointNodeRetrievedDtoOutput, JumpointNodeRetrievedDtoOutput[]>(
             JumpointNodeRetrievedDtoOutput,
-            url,
+            query.transactionId,
+            query.beyondtrustInstanceId,
+            urlPath,
         );
     }
 }

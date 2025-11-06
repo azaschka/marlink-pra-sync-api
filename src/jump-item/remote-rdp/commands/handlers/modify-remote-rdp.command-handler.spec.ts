@@ -72,6 +72,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
         it.each([
             <ModifyRemoteRdpCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 name: 'remote-rdp-1',
                 jumpointId: 1,
@@ -98,6 +99,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
             },
             <ModifyRemoteRdpCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 name: 'remote-rdp-2',
                 jumpointId: 2,
                 hostname: 'hostname-2',
@@ -130,6 +132,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     new BTModifyRemoteRdpCommand(
                         command.transactionId,
+                        command.tenantId,
                         command.id,
                         command.name,
                         command.jumpointId,
@@ -182,15 +185,20 @@ describe('ModifyRemoteRdpCommandHandler', () => {
                     TestHelper.mockedRemoteRdpModifiedDtoOutput.credentialType,
                 );
                 expect(remoteRdpRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
+                    123,
                     remoteRdpEntityToBeUpdated,
                 );
-                expect(remoteRdpRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(remoteRdpEntityToBeUpdated.id);
+                expect(remoteRdpRepositoryServiceFindByIdMethod).toHaveBeenCalledWith(
+                    123,
+                    remoteRdpEntityToBeUpdated.id,
+                );
                 expect(eventBusPublishMethod).toHaveBeenCalledWith(
                     expect.objectContaining(<RemoteRdpModifiedEvent>{
                         transactionId: command.transactionId,
                         eventType: RemoteRdpModifiedEvent.EVENT_TYPE,
                         payload: {
                             remoteRdp: result,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -236,6 +244,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
                 handler.execute(<ModifyRemoteRdpCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-rdp-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow();
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -250,6 +259,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteRdp: remoteRdpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );
@@ -276,6 +286,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
                 handler.execute(<ModifyRemoteRdpCommand>{
                     transactionId: 'transaction-1',
                     name: 'remote-rdp-1',
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -289,6 +300,7 @@ describe('ModifyRemoteRdpCommandHandler', () => {
                     payload: {
                         errorMessage: 'expected-error-message',
                         remoteRdp: remoteRdpEntityToBeCreated,
+                        tenantId: 123,
                     },
                 }),
             );

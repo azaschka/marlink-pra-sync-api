@@ -15,18 +15,21 @@ export class DeleteWebJumpCommandHandler implements ICommandHandler<DeleteWebJum
 
     public async execute(command: DeleteWebJumpCommand): Promise<void> {
         await this.commandBus.execute<BTDeleteWebJumpCommand, void>(
-            new BTDeleteWebJumpCommand(command.transactionId, command.id),
+            new BTDeleteWebJumpCommand(command.transactionId, command.tenantId, command.id),
         );
 
         try {
-            await this.webJumpRepositoryService.deleteById(command.id);
+            await this.webJumpRepositoryService.deleteById(command.tenantId, command.id);
 
-            this.eventBus.publish(new WebJumpDeletedEvent(command.transactionId, { id: command.id }));
+            this.eventBus.publish(
+                new WebJumpDeletedEvent(command.transactionId, { id: command.id, tenantId: command.tenantId }),
+            );
         } catch (error) {
             this.eventBus.publish(
                 new WebJumpDeletionFailedEvent(command.transactionId, {
                     errorMessage: ErrorProcessorUtility.stringify(error),
                     id: command.id,
+                    tenantId: command.tenantId,
                 }),
             );
 

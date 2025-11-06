@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { BeyondtrustInstanceEntity } from '../../repositories/entities';
 import { BeyondtrustInstanceRepositoryService } from '../../repositories/services/beyondtrust-instance-repository.service';
 import { RetrieveBeyondtrustInstanceByIdQuery } from '../retrieve-beyondtrust-instance-by-id.query';
@@ -13,6 +14,14 @@ describe('RetrieveBeyondtrustInstanceByIdQueryHandler', () => {
     });
 
     describe('execute', () => {
+        it('should throw NotFoundException when repo returns null', async () => {
+            jest.spyOn(beyondtrustInstanceRepositoryService, 'findOneById').mockResolvedValue(null);
+
+            await expect(
+                handler.execute(new RetrieveBeyondtrustInstanceByIdQuery('transaction-1', 123)),
+            ).rejects.toThrow(NotFoundException);
+        });
+
         it('should return value from the repo', async () => {
             const expectedBeyondtrustInstance = { id: 123 } as BeyondtrustInstanceEntity;
             const beyondtrustInstanceRepositoryServiceFindOneByIdMethod = jest

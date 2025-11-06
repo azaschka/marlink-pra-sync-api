@@ -1,37 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { GroupPolicyJumpGroupRetrievedDtoOutput as BTGroupPolicyJumpGroup } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
 import { JumpGroupEntity } from '../../../jump-group/repositories/entities';
 import { DateUtility } from '../../../shared/utilities';
 import { GroupPolicyJumpGroup } from '../../models';
 
-@Entity({ name: 'group_policy_jump_groups' })
 export class GroupPolicyJumpGroupEntity implements GroupPolicyJumpGroup {
-    @PrimaryColumn({ name: 'group_policy_id', type: 'int' })
     public groupPolicyId!: number;
-
-    @PrimaryColumn({ name: 'jump_group_id', type: 'int' })
     public jumpGroupId!: number;
-
-    @Column({ name: 'jump_item_role_id', type: 'int', nullable: true })
     public jumpItemRoleId?: number;
-
-    @Column({ name: 'jump_policy_id', type: 'int', nullable: true })
     public jumpPolicyId?: number;
-
-    @ManyToOne(() => GroupPolicyEntity, (groupPolicy) => groupPolicy.groupPolicyJumpGroups, {
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'group_policy_id' })
-    public groupPolicy!: GroupPolicyEntity;
-
-    @ManyToOne(() => JumpGroupEntity, (jumpGroup) => jumpGroup.groupPolicyJumpGroups, {
-        eager: true,
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'jump_group_id' })
-    public jumpGroup!: JumpGroupEntity;
-
-    @Column({ name: 'last_sync_date', type: 'timestamp', precision: 3 })
+    public groupPolicy?: GroupPolicyEntity;
+    public jumpGroup?: JumpGroupEntity;
     public lastSyncDate!: Date;
 
     public static create(
@@ -50,5 +29,14 @@ export class GroupPolicyJumpGroupEntity implements GroupPolicyJumpGroup {
         entity.lastSyncDate = DateUtility.getCurrentUtcDate();
 
         return entity;
+    }
+
+    public static createFromBT(groupPolicyId: number, btGroupPolicyJumpGroup: BTGroupPolicyJumpGroup) {
+        return GroupPolicyJumpGroupEntity.create(
+            groupPolicyId,
+            btGroupPolicyJumpGroup.jumpGroupId,
+            btGroupPolicyJumpGroup.jumpItemRoleId,
+            btGroupPolicyJumpGroup.jumpPolicyId,
+        );
     }
 }

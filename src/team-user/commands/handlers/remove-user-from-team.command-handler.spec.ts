@@ -23,11 +23,13 @@ describe('RemoveUserFromTeamCommandHandler', () => {
         it.each([
             <RemoveUserFromTeamCommand>{
                 transactionId: 'transaction-1',
+                tenantId: 123,
                 id: 1,
                 userId: 2,
             },
             <RemoveUserFromTeamCommand>{
                 transactionId: 'transaction-2',
+                tenantId: 123,
                 id: 3,
                 userId: 4,
             },
@@ -47,9 +49,15 @@ describe('RemoveUserFromTeamCommandHandler', () => {
 
                 // Assert
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    new BTRemoveUserFromTeamCommand(command.transactionId, command.id, command.userId),
+                    new BTRemoveUserFromTeamCommand(
+                        command.transactionId,
+                        command.tenantId,
+                        command.id,
+                        command.userId,
+                    ),
                 );
                 expect(teamUserRepositoryServiceDeleteByTeamIdAndUserIdMethod).toHaveBeenCalledWith(
+                    123,
                     command.id,
                     command.userId,
                 );
@@ -60,6 +68,7 @@ describe('RemoveUserFromTeamCommandHandler', () => {
                         payload: {
                             teamId: command.id,
                             userId: command.userId,
+                            tenantId: 123,
                         },
                     }),
                 );
@@ -99,6 +108,7 @@ describe('RemoveUserFromTeamCommandHandler', () => {
                     transactionId: 'transaction-1',
                     id: 3,
                     userId: 4,
+                    tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
             expect(commandBusExecuteMethod).toHaveBeenCalled();
@@ -112,6 +122,7 @@ describe('RemoveUserFromTeamCommandHandler', () => {
                         errorMessage: 'expected-error-message',
                         teamId: 3,
                         userId: 4,
+                        tenantId: 123,
                     },
                 }),
             );

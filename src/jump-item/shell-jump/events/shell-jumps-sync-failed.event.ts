@@ -2,6 +2,7 @@ import { BaseEvent } from '../../../core/events';
 
 export interface ShellJumpsSyncFailedEventPayload {
     errorMessage: string;
+    tenantId: number;
 }
 
 export class ShellJumpsSyncFailedEvent extends BaseEvent {

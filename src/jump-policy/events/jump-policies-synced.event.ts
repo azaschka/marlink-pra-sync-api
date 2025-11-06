@@ -4,6 +4,7 @@ export interface JumpPoliciesSyncedEventPayload {
     createdJumpPolicyIds: number[];
     updatedJumpPolicyIds: number[];
     deletedJumpPolicyIds: number[];
+    tenantId: number;
 }
 
 export class JumpPoliciesSyncedEvent extends BaseEvent {

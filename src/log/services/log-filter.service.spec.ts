@@ -18,12 +18,12 @@ describe('LogFilterService', () => {
 
     describe('filterCommand', () => {
         it.each([
-            new CreateUserCommand('transaction-1', 'display-name', 'username', 'password123'),
-            new BTCreateUserCommand('transaction-2', 'display-name', 'username', 'password123'),
-            new ModifyUserCommand('transaction-3', 123, 'display-name', 'username', 'password123'),
-            new BTModifyUserCommand('transaction-4', 123, 'display-name', 'username', 'password123'),
+            new CreateUserCommand('transaction-1', 1, 'display-name', 'username', 'password123'),
+            new BTCreateUserCommand('transaction-2', 100, 'display-name', 'username', 'password123'),
+            new ModifyUserCommand('transaction-3', 1, 123, 'display-name', 'username', 'password123'),
+            new BTModifyUserCommand('transaction-4', 123, 2, 'display-name', 'username', 'password123'),
             new CreateBeyondtrustInstanceBackupCommand('transaction-5', 123, 'password123'),
-            new BTCreateBackupCommand('transaction-6', 'password123'),
+            new BTCreateBackupCommand('transaction-6', 100, 'password123'),
         ])('should return as expected', (command) => {
             const expectedResult = { transactionId: 'transaction-123' } as BaseCommand;
             jest.spyOn(ObjectUtility, 'stripProperties').mockReturnValue(expectedResult);

@@ -1,16 +1,18 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-
 export abstract class DefaultAppConfig {
     private static readonly PORT_NUMBER = 9001;
     private static readonly MARLINK_HTTP_PROXY = 'http://10.10.105.19:3128';
     private static readonly MARLINK_HTTPS_PROXY = 'https://10.10.105.19:3128';
     private static readonly HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT = 80;
     private static readonly HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 256;
-    private static readonly SYNC_CRON_JOB_TIMEZONE = 'Europe/Berlin';
-    private static readonly SYNC_CRON_JOB_EXPRESSION = '0 0 * * *'; // Every day at midnight
+    private static readonly DISCREPANCY_SCAN_CRON_JOB_TIMEZONE = 'Europe/Berlin';
+    private static readonly DISCREPANCY_SCAN_CRON_JOB_EXPRESSION = '0 * * * *'; // Every hour
     private static readonly DB_RETRY_ATTEMPTS = 60;
     private static readonly DB_RETRY_DELAY_IN_MS = 8000; // 8 seconds
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
+    private static readonly DB_EXTRA_MAX_CONNECTIONS = 6; // Maximum number of database connections
+    private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
+    private static readonly THROTTLE_LIMIT = 500; // 500 requests per TTL
+    private static readonly THROTTLE_IS_ENABLED = true;
 
     public static get port(): number {
         return DefaultAppConfig.PORT_NUMBER;
@@ -33,6 +35,12 @@ export abstract class DefaultAppConfig {
     public static get beyondTrust() {
         return {
             api: {
+                backup: {
+                    path: '/backup',
+                },
+                config: {
+                    path: '/config/v1',
+                },
                 user: {
                     path: '/user',
                     groupPolicies: {
@@ -113,21 +121,34 @@ export abstract class DefaultAppConfig {
         };
     }
 
-    public static get database(): TypeOrmModuleOptions {
+    public static get database() {
         return {
             retryAttempts: DefaultAppConfig.DB_RETRY_ATTEMPTS,
             retryDelay: DefaultAppConfig.DB_RETRY_DELAY_IN_MS,
             maxQueryExecutionTime: DefaultAppConfig.DB_MAX_QUERY_EXECUTION_TIME_IN_MS, // Only applicable to MariaDB and MySQL
+            extra: {
+                max: DefaultAppConfig.DB_EXTRA_MAX_CONNECTIONS,
+            },
         };
     }
 
-    public static get sync() {
+    public static get discrepancy() {
         return {
             maxBatchSize: 100,
-            cronJobTimezone: DefaultAppConfig.SYNC_CRON_JOB_TIMEZONE,
-            cronJobExpressions: DefaultAppConfig.SYNC_CRON_JOB_EXPRESSION,
-            cronJobRetryAttempts: 5,
-            cronJobRetryDelayInMs: 10000,
+            scan: {
+                cronJobTimezone: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_TIMEZONE,
+                cronJobExpressions: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_EXPRESSION,
+                cronJobRetryAttempts: 5,
+                cronJobRetryDelayInMs: 10000,
+            },
+        };
+    }
+
+    public static get throttle() {
+        return {
+            isEnabled: DefaultAppConfig.THROTTLE_IS_ENABLED,
+            ttlInMs: DefaultAppConfig.THROTTLE_TTL_IN_MS,
+            limit: DefaultAppConfig.THROTTLE_LIMIT,
         };
     }
 }
