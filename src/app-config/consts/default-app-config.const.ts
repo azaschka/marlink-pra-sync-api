@@ -3,15 +3,15 @@ export abstract class DefaultAppConfig {
     private static readonly MARLINK_HTTP_PROXY = 'http://10.10.105.19:3128';
     private static readonly MARLINK_HTTPS_PROXY = 'https://10.10.105.19:3128';
     private static readonly HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT = 80;
-    private static readonly HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 256;
+    private static readonly HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 512;
     private static readonly DISCREPANCY_SCAN_CRON_JOB_TIMEZONE = 'Europe/Berlin';
-    private static readonly DISCREPANCY_SCAN_CRON_JOB_EXPRESSION = '0 * * * *'; // Every hour
+    private static readonly DISCREPANCY_SCAN_CRON_JOB_EXPRESSION = '35 2 * * *'; // At 02:35 AM every day
     private static readonly DB_RETRY_ATTEMPTS = 60;
     private static readonly DB_RETRY_DELAY_IN_MS = 8000; // 8 seconds
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
-    private static readonly DB_EXTRA_MAX_CONNECTIONS = 6; // Maximum number of database connections
+    private static readonly DB_EXTRA_MAX_CONNECTIONS = 10; // Maximum number of database connections
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
-    private static readonly THROTTLE_LIMIT = 500; // 500 requests per TTL
+    private static readonly THROTTLE_LIMIT = 1500; // 1500 requests per TTL
     private static readonly THROTTLE_IS_ENABLED = true;
 
     public static get port(): number {
@@ -127,7 +127,7 @@ export abstract class DefaultAppConfig {
             retryDelay: DefaultAppConfig.DB_RETRY_DELAY_IN_MS,
             maxQueryExecutionTime: DefaultAppConfig.DB_MAX_QUERY_EXECUTION_TIME_IN_MS, // Only applicable to MariaDB and MySQL
             extra: {
-                max: DefaultAppConfig.DB_EXTRA_MAX_CONNECTIONS,
+                connectionLimit: DefaultAppConfig.DB_EXTRA_MAX_CONNECTIONS,
             },
         };
     }

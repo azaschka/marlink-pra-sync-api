@@ -147,7 +147,7 @@ describe('AppConfigService', () => {
                 input: {},
                 expected: {
                     diskStorageUsageThresholdInPercent: 80,
-                    memoryHeapUsageThresholdInMB: 256,
+                    memoryHeapUsageThresholdInMB: 512,
                 },
             },
         ])('should return as expected', ({ input, expected }) => {
@@ -255,7 +255,7 @@ describe('AppConfigService', () => {
                     },
                     communication: {
                         retryAttempts: 10,
-                        retryDelayInMs: 500,
+                        retryDelayInMs: 1500,
                     },
                 },
                 expected: {
@@ -340,7 +340,7 @@ describe('AppConfigService', () => {
                         },
                         communication: {
                             retryAttempts: 10,
-                            retryDelayInMs: 500,
+                            retryDelayInMs: 1500,
                         },
                     },
                 },
@@ -610,7 +610,7 @@ describe('AppConfigService', () => {
                     retryDelayInMs: 5000,
                     maxQueryExecutionTimeInMs: 1000,
                     extra: {
-                        max: 12,
+                        connectionLimit: 12,
                     },
                 },
                 expected: {
@@ -627,7 +627,7 @@ describe('AppConfigService', () => {
                     retryDelayInMs: 5000,
                     maxQueryExecutionTimeInMs: 1000,
                     extra: {
-                        max: 12,
+                        connectionLimit: 12,
                     },
                 },
             },
@@ -649,7 +649,7 @@ describe('AppConfigService', () => {
                     retryDelayInMs: 8000,
                     maxQueryExecutionTimeInMs: 15000,
                     extra: {
-                        max: 6,
+                        connectionLimit: 10,
                     },
                 },
             },
@@ -677,7 +677,7 @@ describe('AppConfigService', () => {
                     case 'DB_MAX_QUERY_EXECUTION_TIME_IN_MS':
                         return input.maxQueryExecutionTimeInMs;
                     case 'DB_EXTRA_MAX_CONNECTIONS':
-                        return input.extra?.max;
+                        return input.extra?.connectionLimit;
                     default:
                         return undefined;
                 }
@@ -699,7 +699,7 @@ describe('AppConfigService', () => {
                 retryDelay: expected.retryDelayInMs,
                 maxQueryExecutionTime: expected.maxQueryExecutionTimeInMs,
                 extra: {
-                    max: expected.extra.max,
+                    max: expected.extra.connectionLimit,
                 },
             });
         });
@@ -764,7 +764,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '0 * * * *',
+                        cronJobExpressions: '35 2 * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
@@ -822,7 +822,7 @@ describe('AppConfigService', () => {
                 expected: {
                     isEnabled: true,
                     ttlInMs: 60000,
-                    limit: 500,
+                    limit: 1500,
                 },
             },
         ])('should return the throttle configuration as expected', ({ input, expected }) => {
