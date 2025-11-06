@@ -226,7 +226,8 @@ export class AppConfigService {
 
     public get databaseMaxConnections(): number {
         return Number(
-            this.configService.get<number>('DB_EXTRA_MAX_CONNECTIONS') ?? DefaultAppConfig.database.extra.max,
+            this.configService.get<number>('DB_EXTRA_MAX_CONNECTIONS') ??
+                DefaultAppConfig.database.extra.connectionLimit,
         );
     }
 
