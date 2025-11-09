@@ -21,19 +21,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const status = this.determineStatusCode(exception);
         const message = this.determineMessage(exception);
 
-        /* ---- Datenbank-Logging ---- */
+        // Truncate long URLs to prevent database logging errors
+        const actionName = `${AllExceptionsFilter.ACTION_NAME_PREFIX} ${req.method} ${req.originalUrl}`;
+        const truncatedActionName = actionName.length > 950 ? `${actionName.substring(0, 950)}...` : actionName;
+
         await this.logService.log(
-            `${AllExceptionsFilter.ACTION_NAME_PREFIX} ${req.method} ${req.originalUrl}`,
+            truncatedActionName,
             (req.headers[TRANSACTION_ID_HEADER.toLowerCase()] as string) ?? AllExceptionsFilter.DEFAULT_TRANSACTION_ID,
             (req.user as { username?: string })?.username ?? AllExceptionsFilter.DEFAULT_INITIATED_BY,
             JSON.stringify({
                 status,
                 message,
                 stack: exception instanceof Error ? exception.stack : undefined,
+                originalUrl: req.originalUrl,
             }),
         );
 
-        /* ---- Antwort an den Client ---- */
         res.status(status).json({
             statusCode: status,
             timestamp: new Date().toISOString(),

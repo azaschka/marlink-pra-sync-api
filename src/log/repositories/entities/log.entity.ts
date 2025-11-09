@@ -13,7 +13,7 @@ export class LogEntity implements Log {
     @Column({ name: 'action_type', type: 'enum', enum: LogActionType })
     public actionType!: LogActionType;
 
-    @Column({ name: 'action_name', type: 'varchar' })
+    @Column({ name: 'action_name', type: 'varchar', length: 1000 })
     public actionName!: string;
 
     @Column({ name: 'transaction_id', type: 'varchar' })

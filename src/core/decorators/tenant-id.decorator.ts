@@ -17,7 +17,18 @@ export function ApiTenantIdHeader() {
     );
 }
 
-export const TenantIdHeader = createParamDecorator((_data: unknown, ctx: ExecutionContext): number | undefined => {
+export const TenantIdHeader = createParamDecorator((_data: unknown, ctx: ExecutionContext): number => {
     const request = ctx.switchToHttp().getRequest<Request>();
-    return Number(request.headers[TENANT_ID_HEADER.toLowerCase()]);
+    const tenantIdValue = request.headers[TENANT_ID_HEADER.toLowerCase()] as string;
+
+    if (!tenantIdValue) {
+        throw new Error(`Missing required header: ${TENANT_ID_HEADER}`);
+    }
+
+    const tenantId = Number(tenantIdValue);
+    if (isNaN(tenantId) || !Number.isInteger(tenantId) || tenantId <= 0) {
+        throw new Error(`Invalid ${TENANT_ID_HEADER} value: must be a positive integer`);
+    }
+
+    return tenantId;
 });
