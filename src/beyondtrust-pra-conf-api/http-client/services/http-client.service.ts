@@ -51,12 +51,8 @@ export class HttpClientService {
                 // using RxJS's `mergeMap` or `switchMap`
                 switchMap((response) => response), // unwrap inner Observable
                 catchError((error) => {
-                    if (error instanceof AxiosError) {
-                        console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
-                    } else {
-                        console.error(`Unknown error: ${error}`);
-                    }
-
+                    const errorDetails = this.formatAxiosError(error, 'GET', urlPath, beyondtrustInstance, params);
+                    console.error(errorDetails);
                     throw error;
                 }),
                 retry({
@@ -109,12 +105,15 @@ export class HttpClientService {
             ).pipe(
                 switchMap((response) => response),
                 catchError((error) => {
-                    if (error instanceof AxiosError) {
-                        console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
-                    } else {
-                        console.error(`Unknown error: ${error}`);
-                    }
-
+                    const errorDetails = this.formatAxiosError(
+                        error,
+                        'POST',
+                        urlPath,
+                        beyondtrustInstance,
+                        undefined,
+                        body,
+                    );
+                    console.error(errorDetails);
                     throw error;
                 }),
                 retry({
@@ -167,12 +166,15 @@ export class HttpClientService {
             ).pipe(
                 switchMap((response) => response),
                 catchError((error) => {
-                    if (error instanceof AxiosError) {
-                        console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
-                    } else {
-                        console.error(`Unknown error: ${error}`);
-                    }
-
+                    const errorDetails = this.formatAxiosError(
+                        error,
+                        'PATCH',
+                        urlPath,
+                        beyondtrustInstance,
+                        undefined,
+                        body,
+                    );
+                    console.error(errorDetails);
                     throw error;
                 }),
                 retry({
@@ -223,12 +225,8 @@ export class HttpClientService {
                 // using RxJS's `mergeMap` or `switchMap`
                 switchMap((response) => response), // unwrap inner Observable
                 catchError((error) => {
-                    if (error instanceof AxiosError) {
-                        console.error(`Axios error status code: ${error.status}. Message: ${error.message}`);
-                    } else {
-                        console.error(`Unknown error: ${error}`);
-                    }
-
+                    const errorDetails = this.formatAxiosError(error, 'DELETE', urlPath, beyondtrustInstance, params);
+                    console.error(errorDetails);
                     throw error;
                 }),
                 retry({
@@ -274,14 +272,14 @@ export class HttpClientService {
                 })
                 .pipe(
                     catchError((error) => {
-                        if (error instanceof AxiosError) {
-                            console.error(
-                                `Axios error status code: ${error.response?.status}. Message: ${error.message}`,
-                            );
-                        } else {
-                            console.error(`Unknown error:`, error);
-                        }
-
+                        const errorDetails = this.formatAxiosError(
+                            error,
+                            'GET (stream)',
+                            urlPath,
+                            beyondtrustInstance,
+                            params,
+                        );
+                        console.error(errorDetails);
                         return throwError(() => ErrorProcessorUtility.composeError(error));
                     }),
                 ),
@@ -318,5 +316,46 @@ export class HttpClientService {
             beyondtrustInstance.authClientSecret,
             beyondtrustInstance.oauth2TokenUrl,
         );
+    }
+
+    private formatAxiosError(
+        error: unknown,
+        method: string,
+        urlPath: string,
+        beyondtrustInstance: BeyondtrustInstance,
+        params?: unknown,
+        body?: unknown,
+    ): string {
+        if (error instanceof AxiosError) {
+            const fullUrl = UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath);
+            const responseData = error.response?.data ? JSON.stringify(error.response.data) : 'No response data';
+
+            return [
+                `BeyondTrust API Error Details:`,
+                `  Method: ${method}`,
+                `  URL: ${fullUrl}`,
+                `  Status Code: ${error.response?.status || 'Unknown'}`,
+                `  Status Text: ${error.response?.statusText || 'Unknown'}`,
+                `  Error Message: ${error.message}`,
+                `  BT Instance ID: ${beyondtrustInstance.id}`,
+                `  BT Instance Name: ${beyondtrustInstance.name}`,
+                params ? `  Request Params: ${JSON.stringify(params)}` : '',
+                body ? `  Request Body: ${JSON.stringify(body)}` : '',
+                `  Response Data: ${responseData}`,
+                `  Headers: ${error.response?.headers ? JSON.stringify(error.response.headers) : 'No headers'}`,
+            ]
+                .filter(Boolean)
+                .join('\n');
+        } else {
+            const fullUrl = UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath);
+            return [
+                `Non-Axios Error Details:`,
+                `  Method: ${method}`,
+                `  URL: ${fullUrl}`,
+                `  BT Instance ID: ${beyondtrustInstance.id}`,
+                `  BT Instance Name: ${beyondtrustInstance.name}`,
+                `  Error: ${String(error)}`,
+            ].join('\n');
+        }
     }
 }
