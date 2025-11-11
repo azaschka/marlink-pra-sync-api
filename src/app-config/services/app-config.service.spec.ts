@@ -820,7 +820,7 @@ describe('AppConfigService', () => {
             {
                 input: {},
                 expected: {
-                    isEnabled: true,
+                    isEnabled: false,
                     ttlInMs: 60000,
                     limit: 1500,
                 },

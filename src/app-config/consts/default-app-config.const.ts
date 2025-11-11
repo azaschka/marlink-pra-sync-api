@@ -12,7 +12,7 @@ export abstract class DefaultAppConfig {
     private static readonly DB_EXTRA_MAX_CONNECTIONS = 10; // Maximum number of database connections
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
     private static readonly THROTTLE_LIMIT = 1500; // 1500 requests per TTL
-    private static readonly THROTTLE_IS_ENABLED = true;
+    private static readonly THROTTLE_IS_ENABLED = false;
 
     public static get port(): number {
         return DefaultAppConfig.PORT_NUMBER;
