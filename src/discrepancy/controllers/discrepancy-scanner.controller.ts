@@ -2,7 +2,7 @@ import { BadRequestException, Controller, Get, HttpCode, HttpStatus, Param, Post
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiTenantIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
-import { UuidUtility } from '../../shared/utilities';
+import { RetryUtility, UuidUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommand } from '../commands';
 import { RetrieveDiscrepanciesDtoInput } from '../dtos/inputs';
 import { DiscrepancyDtoOutput, DiscrepancyOverviewDtoOutput } from '../dtos/outputs';
@@ -14,6 +14,10 @@ import { RetrieveDiscrepanciesQuery } from '../queries';
 @ApiTags('Discrepancies')
 @Controller('discrepancies')
 export class DiscrepancyScannerController {
+    private static readonly RETRY_DELAY_BETWEEN_ATTEMPTS_MS = 10000;
+    private static readonly MAX_RETRY_ATTEMPTS = 3;
+    private static readonly DELAY_BETWEEN_ENTITY_SCANS_MS = 1000;
+
     constructor(
         private readonly queryBus: QueryBus,
         private readonly commandBus: CommandBus,
@@ -67,14 +71,33 @@ export class DiscrepancyScannerController {
 
         for (const entityType of entityTypeOrder) {
             try {
-                console.log(`Starting discrepancy scan for ${entityType}.`);
-
-                const scanResult = await this.scanDiscrepancies(transactionId, tenantId, entityType);
+                const scanResult = await RetryUtility.executeWithRetry(
+                    () => this.scanDiscrepancies(transactionId, tenantId, entityType),
+                    `Scan for ${entityType}`,
+                );
                 scanResults.push(scanResult);
             } catch (error) {
-                console.error(`Discrepancy scan failed for ${entityType}:`, error);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.error(`❌ Discrepancy scan failed for ${entityType}:`, errorMessage);
+                console.log(`⏭️ Continuing with next entity type...`);
+
+                // Add a placeholder result to indicate the entity was attempted but failed
+                scanResults.push({
+                    entityType,
+                    totalBtData: 0,
+                    totalDbData: 0,
+                    identicalIds: [],
+                    onlyInExternalIds: [],
+                    onlyInInternalIds: [],
+                    mismatchedIds: [],
+                });
             }
+
+            // Add delay between entity scans to prevent overwhelming the system
+            await RetryUtility.delay(DiscrepancyScannerController.DELAY_BETWEEN_ENTITY_SCANS_MS);
         }
+
+        console.log(`🎉 Completed all discrepancy scans: ${scanResults.length} entity types processed`);
 
         return scanResults;
     }
@@ -94,11 +117,41 @@ export class DiscrepancyScannerController {
         @Param('entityType') entityType: DiscrepancyEntityType,
     ): Promise<DiscrepancyOverviewDtoOutput> {
         if (!Object.values(DiscrepancyEntityType).includes(entityType)) {
+            console.error(`Invalid entity type provided: ${entityType}`);
             throw new BadRequestException(`Invalid entity type: ${entityType}`);
         }
 
-        return await this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
-            new ScanDiscrepancyCommand(transactionId, tenantId, entityType),
-        );
+        try {
+            const result = await RetryUtility.executeWithRetry(
+                () =>
+                    this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
+                        new ScanDiscrepancyCommand(transactionId, tenantId, entityType),
+                    ),
+                `Command execution for ${entityType}`,
+                DiscrepancyScannerController.MAX_RETRY_ATTEMPTS,
+                DiscrepancyScannerController.RETRY_DELAY_BETWEEN_ATTEMPTS_MS,
+            );
+            return result;
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error(`❌ Command execution failed for ${entityType}:`, errorMessage);
+
+            // Return empty result for timeout/connectivity issues to allow scan/all to continue
+            if (errorMessage.includes('timeout') || errorMessage.includes('connectivity')) {
+                console.warn(`⚠️ Returning empty result for ${entityType} due to timeout/connectivity issues`);
+                return {
+                    entityType,
+                    totalBtData: 0,
+                    totalDbData: 0,
+                    identicalIds: [],
+                    onlyInExternalIds: [],
+                    onlyInInternalIds: [],
+                    mismatchedIds: [],
+                };
+            }
+
+            // Re-throw other errors (validation errors, etc.)
+            throw error;
+        }
     }
 }

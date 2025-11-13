@@ -3,14 +3,26 @@ import { DiscrepancyDtoOutput, DiscrepancyOverviewDtoOutput } from '../dtos/outp
 import { DiscrepancyEntityType } from '../enums';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
 
+// Mock RetryUtility
+// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+jest.mock('../../shared/utilities', () => ({
+    ...jest.requireActual('../../shared/utilities'),
+    RetryUtility: {
+        delay: jest.fn().mockResolvedValue(undefined),
+        executeWithRetry: jest.fn((operation: () => Promise<unknown>) => operation()),
+    },
+}));
+
 describe('DiscrepancyScannerController', () => {
     let commandBus: CommandBus;
     let queryBus: QueryBus;
     let controller: DiscrepancyScannerController;
 
     beforeEach(() => {
-        // Mock console.log to prevent cluttering the test output
+        // Mock console.log and console.error to prevent cluttering the test output
         jest.spyOn(console, 'log').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+        jest.clearAllMocks();
         commandBus = mockCommandBus();
         queryBus = mockQueryBus();
         controller = new DiscrepancyScannerController(queryBus, commandBus);
@@ -18,9 +30,17 @@ describe('DiscrepancyScannerController', () => {
 
     describe('scanAllDiscrepancies', () => {
         it('should attempt to scan discrepancies for all entity types', async () => {
-            const scanDiscrepanciesSpy = jest
-                .spyOn(controller, 'scanDiscrepancies')
-                .mockResolvedValue({} as DiscrepancyOverviewDtoOutput);
+            const mockOverview: DiscrepancyOverviewDtoOutput = {
+                entityType: DiscrepancyEntityType.User,
+                totalBtData: 10,
+                totalDbData: 10,
+                identicalIds: [1, 2, 3],
+                onlyInExternalIds: [],
+                onlyInInternalIds: [],
+                mismatchedIds: [],
+            };
+
+            const scanDiscrepanciesSpy = jest.spyOn(controller, 'scanDiscrepancies').mockResolvedValue(mockOverview);
 
             await controller.scanAllDiscrepancies('transaction-id-1', 123);
 
