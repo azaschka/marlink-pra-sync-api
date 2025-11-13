@@ -24,4 +24,20 @@ export abstract class ErrorProcessorUtility {
 
         return new HttpException(JSON.stringify(error), HttpStatusCode.InternalServerError);
     }
+
+    /**
+     * Check if an error is related to API connectivity issues (timeouts, connection resets, server errors).
+     * Used to determine if an operation should be gracefully skipped vs. thrown as a critical error.
+     */
+    public static isApiConnectivityError(error: unknown): boolean {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return (
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('ECONNRESET') ||
+            errorMessage.includes('ENOTFOUND') ||
+            errorMessage.includes('502') ||
+            errorMessage.includes('503') ||
+            errorMessage.includes('504')
+        );
+    }
 }

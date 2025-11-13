@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
@@ -7,7 +6,7 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import pLimit, { LimitFunction } from 'p-limit';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
-import { RetryUtility } from '../../../shared/utilities';
+import { ErrorProcessorUtility, RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
@@ -195,16 +194,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error(`❌ Error scanning ${command.entityType}:`, errorMessage);
 
-            // Check if this is a known problematic entity or API connectivity issue
-            const isApiError =
-                errorMessage.includes('timeout') ||
-                errorMessage.includes('ECONNRESET') ||
-                errorMessage.includes('ENOTFOUND') ||
-                errorMessage.includes('502') ||
-                errorMessage.includes('503') ||
-                errorMessage.includes('504');
-
-            if (isApiError) {
+            if (ErrorProcessorUtility.isApiConnectivityError(error)) {
                 console.warn(`⚠️ Skipping entity ${command.entityType} due to BeyondTrust API connectivity issues`);
 
                 const emptyResult: DiscrepancyOverview = {

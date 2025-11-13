@@ -79,7 +79,6 @@ export class DiscrepancyScannerController {
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.error(`❌ Discrepancy scan failed for ${entityType}:`, errorMessage);
-                console.log(`⏭️ Continuing with next entity type...`);
 
                 // Add a placeholder result to indicate the entity was attempted but failed
                 scanResults.push({
