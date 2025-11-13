@@ -48,17 +48,11 @@ export class ScanEntityRelationDiscrepancyCommandHandler
                 command.entityType,
             ) as DiscrepancyStrategy<unknown, unknown, unknown>;
 
-            console.log(`📡 Attempting BeyondTrust API call for ${command.entityType} (parent: ${parentId})...`);
-
             // Fetch BeyondTrust data with error handling for 404 (parent might not exist)
             const { transformed: btData } = await this.discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling(
                 discrepancyStrategy,
                 command.transactionId,
                 command.tenantId,
-            );
-
-            console.log(
-                `✅ BeyondTrust API successful for ${command.entityType} (parent: ${parentId}), received ${btData.length} records`,
             );
 
             // Fetch DB data with error handling for NotFoundException (parent might not exist)
@@ -67,8 +61,6 @@ export class ScanEntityRelationDiscrepancyCommandHandler
                 command.transactionId,
                 command.tenantId,
             );
-
-            console.log(`🔍 Analyzing discrepancies for ${command.entityType} (parent: ${parentId})...`);
 
             // Analyze discrepancies using relational comparison
             const {
@@ -80,10 +72,6 @@ export class ScanEntityRelationDiscrepancyCommandHandler
                 btData,
                 dbData,
                 discrepancyStrategy.relationalEntityComparisonProps!,
-            );
-
-            console.log(
-                `📊 Analysis complete: ${identicalData.length} identical, ${onlyInBt.length} only in BT, ${onlyInDb.length} only in DB, ${differentDataPairs.length} mismatched`,
             );
 
             // Mark identical data as synced
@@ -230,10 +218,6 @@ export class ScanEntityRelationDiscrepancyCommandHandler
                     tenantId: command.tenantId,
                     discrepancyOverview: discrepancyOverview,
                 }),
-            );
-
-            console.log(
-                `✅ Successfully completed discrepancy scan for ${command.entityType} (parent: ${parentId}): ${btData.length} BT records, ${dbData.length} DB records, ${identicalData.length} identical, ${onlyInBt.length} only in BT, ${onlyInDb.length} only in DB, ${differentDataPairs.length} mismatched`,
             );
         }
     }

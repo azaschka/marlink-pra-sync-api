@@ -24,18 +24,12 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
     ) {}
 
     public async execute(command: SyncDiscrepancyCommand): Promise<void> {
-        console.log(
-            `🔄 Starting discrepancy sync for ${command.id} (type: ${command.syncType}, entity: ${await this.getDiscrepancy(command.tenantId, command.id).then((d) => d.entityType)})...`,
-        );
-
         const discrepancy = await this.getDiscrepancy(command.tenantId, command.id);
         const discrepancyStrategy = this.getDiscrepancyStrategy(discrepancy);
 
         try {
             if (command.syncType === DiscrepancySyncType.ExternalToInternal) {
                 if (discrepancy.externalData) {
-                    // Either create or modify internal data
-                    console.log(`📥 Syncing from BeyondTrust to database (create/update)...`);
                     await RetryUtility.executeWithRetry(
                         () =>
                             discrepancyStrategy.dbCreateOrUpdateFunc(
@@ -45,8 +39,6 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                         `Create/Update internal data for discrepancy ${command.id}`,
                     );
                 } else {
-                    // Delete internal data
-                    console.log(`🗑️ Deleting from database...`);
                     await RetryUtility.executeWithRetry(
                         () =>
                             discrepancyStrategy.dbDeleteFunc(
@@ -59,8 +51,6 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
             } else {
                 if (discrepancy.internalData) {
                     if (discrepancy.externalData) {
-                        // Modify external data
-                        console.log(`📤 Syncing from database to BeyondTrust (modify)...`);
                         await RetryUtility.executeWithRetry(
                             () =>
                                 discrepancyStrategy.btModifyFunc(
@@ -71,8 +61,6 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                             `Modify external data for discrepancy ${command.id}`,
                         );
                     } else {
-                        // Create external data
-                        console.log(`📤 Syncing from database to BeyondTrust (create)...`);
                         await RetryUtility.executeWithRetry(
                             () =>
                                 discrepancyStrategy.btCreateFunc(
@@ -84,8 +72,6 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                         );
                     }
                 } else {
-                    // Delete external data
-                    console.log(`🗑️ Deleting from BeyondTrust...`);
                     await RetryUtility.executeWithRetry(
                         () =>
                             discrepancyStrategy.btDeleteFunc(
@@ -103,7 +89,6 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
             throw error;
         }
 
-        console.log(`🗑️ Deleting discrepancy record ${command.id}...`);
         await RetryUtility.executeWithRetry(
             () => this.discrepancyRepositoryService.deleteById(command.tenantId, command.id),
             `Delete discrepancy record ${command.id}`,
@@ -115,10 +100,6 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                 syncType: command.syncType,
                 tenantId: command.tenantId,
             }),
-        );
-
-        console.log(
-            `✅ Successfully synced and resolved discrepancy ${command.id} (${discrepancy.entityType}, sync type: ${command.syncType})`,
         );
     }
 
