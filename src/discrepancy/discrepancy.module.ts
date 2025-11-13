@@ -33,6 +33,7 @@ import { QueryHandlers } from './queries/handlers';
 import { DiscrepancyEntity } from './repositories/entities';
 import { DiscrepancyRepositoryService } from './repositories/services/discrepancy-repository.service';
 import { Sagas } from './sagas';
+import { DiscrepancyScannerService } from './services/discrepancy-scanner.service';
 import { DiscrepancyStrategyProviderService } from './services/discrepancy-strategy-provider.service';
 
 @Module({
@@ -64,6 +65,7 @@ import { DiscrepancyStrategyProviderService } from './services/discrepancy-strat
         DiscrepancyScannerController,
         DiscrepancyRepositoryService,
         DiscrepancyStrategyProviderService,
+        DiscrepancyScannerService,
         ...CommandHandlers,
         ...QueryHandlers,
         ...EventHandlers,
