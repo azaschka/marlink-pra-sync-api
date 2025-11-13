@@ -6,10 +6,10 @@ export abstract class DefaultAppConfig {
     private static readonly HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB = 512;
     private static readonly DISCREPANCY_SCAN_CRON_JOB_TIMEZONE = 'Europe/Berlin';
     private static readonly DISCREPANCY_SCAN_CRON_JOB_EXPRESSION = '35 2 * * *'; // At 02:35 AM every day
-    private static readonly DB_RETRY_ATTEMPTS = 60;
-    private static readonly DB_RETRY_DELAY_IN_MS = 8000; // 8 seconds
-    private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 15000; // 15 seconds
-    private static readonly DB_EXTRA_MAX_CONNECTIONS = 10; // Maximum number of database connections
+    private static readonly DB_RETRY_ATTEMPTS = 10; // Reduced from 60 - more reasonable retry count
+    private static readonly DB_RETRY_DELAY_IN_MS = 10000; // 10 seconds - faster recovery, less aggressive
+    private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 300000; // 5 minutes - allows complex sync operations
+    private static readonly DB_EXTRA_MAX_CONNECTIONS = 20; // Increased for better throughput during sync
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
     private static readonly THROTTLE_LIMIT = 1500; // 1500 requests per TTL
     private static readonly THROTTLE_IS_ENABLED = false;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { HttpProxyAgent } from 'http-proxy-agent';

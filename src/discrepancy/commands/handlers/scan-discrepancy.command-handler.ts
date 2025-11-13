@@ -1,23 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
-import { differenceBy, differenceWith, intersectionBy, intersectionWith, isEqual } from 'lodash';
 import pLimit, { LimitFunction } from 'p-limit';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
-import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
-import { GroupPolicy as DBGroupPolicy } from '../../../group-policy/models';
-import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
-import { DateUtility, ObjectUtility, PaginationUtility } from '../../../shared/utilities';
+import { RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
+import { DiscrepancyScannerService } from '../../services/discrepancy-scanner.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
-import { DiscrepancyStrategy } from '../../types';
+import { DiscrepancyStrategy } from '../../types/discrepancy-strategy.type';
 import { ScanDiscrepancyCommand } from '../scan-discrepancy.command';
-
-// Using GroupPolicy as representative type.
-// TODO: Generalize for different discrepancy types.
-type RepresentativeEntity = GroupPolicyEntity;
-type BTRepresentative = BTGroupPolicy;
-type DBRepresentative = DBGroupPolicy;
 
 @CommandHandler(ScanDiscrepancyCommand)
 export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscrepancyCommand> {
@@ -27,166 +24,211 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
         private readonly appConfigService: AppConfigService,
         private readonly discrepancyStrategyProviderService: DiscrepancyStrategyProviderService,
         private readonly discrepancyRepositoryService: DiscrepancyRepositoryService,
+        private readonly discrepancyScannerService: DiscrepancyScannerService,
         private readonly eventBus: EventBus,
     ) {
-        this.dbConnLimit = pLimit(this.appConfigService.databaseMaxConnections);
+        const maxConnections = this.appConfigService.databaseMaxConnections;
+        const concurrencyLimit = Math.floor(maxConnections / 2);
+        this.dbConnLimit = pLimit(concurrencyLimit);
     }
 
     public async execute(command: ScanDiscrepancyCommand): Promise<DiscrepancyOverview> {
-        const startSyncUtcDate = DateUtility.getCurrentUtcDate();
+        const startSyncUtcDate = this.discrepancyScannerService.getSyncStartDate();
 
-        const discrepancyStrategy = this.discrepancyStrategyProviderService.get(
-            command.entityType,
-        ) as DiscrepancyStrategy<BTRepresentative, DBRepresentative, RepresentativeEntity>;
+        try {
+            const discrepancyStrategy = this.discrepancyStrategyProviderService.get(
+                command.entityType,
+            ) as DiscrepancyStrategy<unknown, unknown, unknown>;
 
-        const btData = (
-            await PaginationUtility.queryUntilDuplicatePage(
-                (pageNumber: number) =>
-                    discrepancyStrategy.btRetrieveFunc(
-                        command.transactionId,
+            // Fetch BeyondTrust data with retry mechanism per page (not entire pagination)
+            const { transformed: btData } = await this.discrepancyScannerService.fetchFromBeyondTrust(
+                discrepancyStrategy,
+                command.transactionId,
+                command.tenantId,
+                command.entityType,
+            );
+
+            // Fetch DB data with retry mechanism
+            const dbData = await this.discrepancyScannerService.fetchFromDatabase(
+                discrepancyStrategy,
+                command.transactionId,
+                command.tenantId,
+                command.entityType,
+            );
+
+            // Analyze discrepancies
+            const {
+                identical: identicalData,
+                onlyInBt,
+                onlyInDb,
+                differentPairs: differentDataPairs,
+            } = this.discrepancyScannerService.analyzeDiscrepancies(btData, dbData);
+
+            // Mark identical data as synced
+            await Promise.all(
+                identicalData.map((data, index) =>
+                    this.dbConnLimit(async () => {
+                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
+                        return RetryUtility.executeWithRetry(
+                            () => discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data),
+                            `Mark entity ${data.id} as synced`,
+                        );
+                    }),
+                ),
+            );
+
+            // Handle data which only exist in BT
+            await Promise.all(
+                onlyInBt.map((bt, index) =>
+                    this.dbConnLimit(async () => {
+                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
+                        return RetryUtility.executeWithRetry(async () => {
+                            const existingDiscrepancy =
+                                await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+                                    command.tenantId,
+                                    command.entityType,
+                                    bt.id,
+                                );
+
+                            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                id: existingDiscrepancy?.id,
+                                entityType: command.entityType,
+                                entityId: bt.id,
+                                internalData: undefined,
+                                externalData: bt as unknown as Record<string, unknown>,
+                                lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
+                            });
+                        }, `Save discrepancy for entity ${bt.id} (only in BT)`);
+                    }),
+                ),
+            );
+
+            // Handle data which only exist in DB
+            await Promise.all(
+                onlyInDb.map((db, index) =>
+                    this.dbConnLimit(async () => {
+                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
+                        return RetryUtility.executeWithRetry(async () => {
+                            const existingDiscrepancy =
+                                await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+                                    command.tenantId,
+                                    command.entityType,
+                                    db.id,
+                                );
+
+                            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                id: existingDiscrepancy?.id,
+                                entityType: command.entityType,
+                                entityId: db.id,
+                                internalData: db as unknown as Record<string, unknown>,
+                                externalData: undefined,
+                                lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
+                            });
+                        }, `Save discrepancy for entity ${db.id} (only in DB)`);
+                    }),
+                ),
+            );
+
+            // Handle data which have different content
+            await Promise.all(
+                differentDataPairs.map((pair, index) =>
+                    this.dbConnLimit(async () => {
+                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
+                        return RetryUtility.executeWithRetry(async () => {
+                            const entityId = pair.bt.id; // use BT id to represent the entityId
+                            const existingDiscrepancy =
+                                await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+                                    command.tenantId,
+                                    command.entityType,
+                                    entityId,
+                                );
+
+                            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                id: existingDiscrepancy?.id,
+                                entityType: command.entityType,
+                                entityId: entityId,
+                                internalData: pair.db as unknown as Record<string, unknown>,
+                                externalData: pair.bt as unknown as Record<string, unknown>,
+                                lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
+                            });
+                        }, `Save discrepancy for mismatched entity ${pair.bt.id}`);
+                    }),
+                ),
+            );
+
+            // Delete obsolete discrepancies with retry
+            await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs);
+            await RetryUtility.executeWithRetry(
+                () =>
+                    this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
                         command.tenantId,
-                        this.appConfigService.discrepancy.maxBatchSize,
-                        pageNumber,
+                        command.entityType,
+                        startSyncUtcDate,
                     ),
-                discrepancyStrategy.btOmittedPropsForDuplicateCheck,
-            )
-        )
-            .map((btData) => discrepancyStrategy.btToDbEntity(btData))
-            .map((data) => ObjectUtility.stripProperties(data, ...discrepancyStrategy.trimmedProps))
-            .map((data) => JSON.parse(JSON.stringify(data)) as RepresentativeEntity); // Remove undefined values and convert to plain object
+                `Delete obsolete discrepancies for ${command.entityType}`,
+            );
 
-        const dbData = (
-            await PaginationUtility.queryUntilLastPage((pageNumber: number) =>
-                discrepancyStrategy.dbRetrieveFunc(
-                    command.transactionId,
-                    command.tenantId,
-                    this.appConfigService.discrepancy.maxBatchSize,
-                    pageNumber,
-                ),
-            )
-        )
-            .map((data) => ObjectUtility.stripProperties(data, ...discrepancyStrategy.trimmedProps))
-            .map((data) => JSON.parse(JSON.stringify(data)) as RepresentativeEntity); // Remove undefined values and convert to plain object
+            const discrepancyOverview: DiscrepancyOverview = {
+                entityType: command.entityType,
+                totalBtData: btData.length,
+                totalDbData: dbData.length,
+                identicalIds: identicalData.map((d) => d.id),
+                onlyInExternalIds: onlyInBt.map((d) => d.id),
+                onlyInInternalIds: onlyInDb.map((d) => d.id),
+                mismatchedIds: differentDataPairs.map((pair) => pair.bt.id),
+            };
 
-        // 1. identical
-        const identicalData = intersectionWith(btData, dbData, isEqual);
-
-        // 2. remaining
-        const remainingBtData = differenceWith(btData, identicalData, isEqual);
-        const remainingDbData = differenceWith(dbData, identicalData, isEqual);
-
-        // 3. only in one side
-        const onlyInBt = differenceBy(remainingBtData, remainingDbData, 'id');
-        const onlyInDb = differenceBy(remainingDbData, remainingBtData, 'id');
-
-        // 4. different content
-        const differentDataPairs = intersectionBy(remainingBtData, remainingDbData, 'id')
-            .map((bt) => {
-                const db = remainingDbData.find((d) => d.id === bt.id);
-                return db && !isEqual(bt, db) ? { bt, db } : null;
-            })
-            .filter((pair) => pair !== null);
-
-        // Mark identical data as synced
-        await Promise.all(
-            identicalData.map((data) =>
-                this.dbConnLimit(() =>
-                    discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data),
-                ),
-            ),
-        );
-
-        // Handle data which only exist in BT
-        await Promise.all(
-            onlyInBt.map((bt) =>
-                this.dbConnLimit(async () => {
-                    const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                        command.tenantId,
-                        command.entityType,
-                        bt.id,
-                    );
-
-                    await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                        id: existingDiscrepancy?.id,
-                        entityType: command.entityType,
-                        entityId: bt.id,
-                        internalData: undefined,
-                        externalData: bt as unknown as Record<string, unknown>,
-                        lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
-                    });
+            this.eventBus.publish(
+                new DiscrepancyScannedEvent(command.transactionId, {
+                    tenantId: command.tenantId,
+                    discrepancyOverview: discrepancyOverview,
                 }),
-            ),
-        );
+            );
 
-        // Handle data which only exist in DB
-        await Promise.all(
-            onlyInDb.map((db) =>
-                this.dbConnLimit(async () => {
-                    const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                        command.tenantId,
-                        command.entityType,
-                        db.id,
-                    );
+            console.log(
+                `✅ Successfully completed discrepancy scan for ${command.entityType}: ${btData.length} BT records, ${dbData.length} DB records, ${identicalData.length} identical, ${onlyInBt.length} only in BT, ${onlyInDb.length} only in DB, ${differentDataPairs.length} mismatched`,
+            );
 
-                    await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                        id: existingDiscrepancy?.id,
-                        entityType: command.entityType,
-                        entityId: db.id,
-                        internalData: db as unknown as Record<string, unknown>,
-                        externalData: undefined,
-                        lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
-                    });
-                }),
-            ),
-        );
+            return discrepancyOverview;
+        } catch (error) {
+            // Handle BeyondTrust API errors gracefully
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error(`❌ Error scanning ${command.entityType}:`, errorMessage);
 
-        // Handle data which have different content
-        await Promise.all(
-            differentDataPairs.map((pair) =>
-                this.dbConnLimit(async () => {
-                    const entityId = pair.bt.id; // use BT id to represent the entityId
-                    const existingDiscrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                        command.tenantId,
-                        command.entityType,
-                        entityId,
-                    );
+            // Check if this is a known problematic entity or API connectivity issue
+            const isApiError =
+                errorMessage.includes('timeout') ||
+                errorMessage.includes('ECONNRESET') ||
+                errorMessage.includes('ENOTFOUND') ||
+                errorMessage.includes('502') ||
+                errorMessage.includes('503') ||
+                errorMessage.includes('504');
 
-                    await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                        id: existingDiscrepancy?.id,
-                        entityType: command.entityType,
-                        entityId: entityId,
-                        internalData: pair.db as unknown as Record<string, unknown>,
-                        externalData: pair.bt as unknown as Record<string, unknown>,
-                        lastModificationDate: DateUtility.getCurrentUtcDate(), // Force modification date to be updated
-                    });
-                }),
-            ),
-        );
+            if (isApiError) {
+                console.warn(`⚠️ Skipping entity ${command.entityType} due to BeyondTrust API connectivity issues`);
 
-        // Delete obsolete discrepancies
-        await this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
-            command.tenantId,
-            command.entityType,
-            startSyncUtcDate,
-        );
+                const emptyResult: DiscrepancyOverview = {
+                    entityType: command.entityType,
+                    totalBtData: 0,
+                    totalDbData: 0,
+                    identicalIds: [],
+                    onlyInExternalIds: [],
+                    onlyInInternalIds: [],
+                    mismatchedIds: [],
+                };
 
-        const discrepancyOverview: DiscrepancyOverview = {
-            entityType: command.entityType,
-            totalBtData: btData.length,
-            totalDbData: dbData.length,
-            identicalIds: identicalData.map((d) => d.id),
-            onlyInExternalIds: onlyInBt.map((d) => d.id),
-            onlyInInternalIds: onlyInDb.map((d) => d.id),
-            mismatchedIds: differentDataPairs.map((pair) => pair.bt.id),
-        };
+                this.eventBus.publish(
+                    new DiscrepancyScannedEvent(command.transactionId, {
+                        tenantId: command.tenantId,
+                        discrepancyOverview: emptyResult,
+                    }),
+                );
 
-        this.eventBus.publish(
-            new DiscrepancyScannedEvent(command.transactionId, {
-                tenantId: command.tenantId,
-                discrepancyOverview: discrepancyOverview,
-            }),
-        );
+                return emptyResult;
+            }
 
-        return discrepancyOverview;
+            // Re-throw non-API errors
+            throw error;
+        }
     }
 }

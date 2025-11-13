@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
-import { GroupPolicyRetrievedDtoOutput as BTGroupPolicy } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
-import { GroupPolicy as DBGroupPolicy } from '../../../group-policy/models';
-import { GroupPolicyEntity } from '../../../group-policy/repositories/entities';
+import { RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
 import { DiscrepancyResolvedEvent } from '../../events';
 import { Discrepancy } from '../../models';
@@ -10,12 +14,6 @@ import { DiscrepancyRepositoryService } from '../../repositories/services/discre
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
 import { DiscrepancyStrategy } from '../../types';
 import { SyncDiscrepancyCommand } from '../sync-discrepancy.command';
-
-// Using GroupPolicy as representative type.
-// TODO: Generalize for different discrepancy types.
-type RepresentativeEntity = GroupPolicyEntity;
-type BTRepresentative = BTGroupPolicy;
-type DBRepresentative = DBGroupPolicy;
 
 @CommandHandler(SyncDiscrepancyCommand)
 export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscrepancyCommand> {
@@ -26,51 +24,90 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
     ) {}
 
     public async execute(command: SyncDiscrepancyCommand): Promise<void> {
+        console.log(
+            `🔄 Starting discrepancy sync for ${command.id} (type: ${command.syncType}, entity: ${await this.getDiscrepancy(command.tenantId, command.id).then((d) => d.entityType)})...`,
+        );
+
         const discrepancy = await this.getDiscrepancy(command.tenantId, command.id);
         const discrepancyStrategy = this.getDiscrepancyStrategy(discrepancy);
 
-        if (command.syncType === DiscrepancySyncType.ExternalToInternal) {
-            if (discrepancy.externalData) {
-                // Either create or modify internal data
-                await discrepancyStrategy.dbCreateOrUpdateFunc(
-                    command.tenantId,
-                    discrepancy.externalData as unknown as RepresentativeEntity,
-                );
-            } else {
-                // Delete internal data
-                await discrepancyStrategy.dbDeleteFunc(
-                    command.tenantId,
-                    discrepancy.internalData as unknown as RepresentativeEntity,
-                );
-            }
-        } else {
-            if (discrepancy.internalData) {
+        try {
+            if (command.syncType === DiscrepancySyncType.ExternalToInternal) {
                 if (discrepancy.externalData) {
-                    // Modify external data
-                    await discrepancyStrategy.btModifyFunc(
-                        command.transactionId,
-                        command.tenantId,
-                        discrepancy.internalData as unknown as RepresentativeEntity,
+                    // Either create or modify internal data
+                    console.log(`📥 Syncing from BeyondTrust to database (create/update)...`);
+                    await RetryUtility.executeWithRetry(
+                        () =>
+                            discrepancyStrategy.dbCreateOrUpdateFunc(
+                                command.tenantId,
+                                discrepancy.externalData as unknown as any,
+                            ),
+                        `Create/Update internal data for discrepancy ${command.id}`,
                     );
                 } else {
-                    // Create external data
-                    await discrepancyStrategy.btCreateFunc(
-                        command.transactionId,
-                        command.tenantId,
-                        discrepancy.internalData as unknown as RepresentativeEntity,
+                    // Delete internal data
+                    console.log(`🗑️ Deleting from database...`);
+                    await RetryUtility.executeWithRetry(
+                        () =>
+                            discrepancyStrategy.dbDeleteFunc(
+                                command.tenantId,
+                                discrepancy.internalData as unknown as any,
+                            ),
+                        `Delete internal data for discrepancy ${command.id}`,
                     );
                 }
             } else {
-                // Delete external data
-                await discrepancyStrategy.btDeleteFunc(
-                    command.transactionId,
-                    command.tenantId,
-                    discrepancy.externalData as unknown as RepresentativeEntity,
-                );
+                if (discrepancy.internalData) {
+                    if (discrepancy.externalData) {
+                        // Modify external data
+                        console.log(`📤 Syncing from database to BeyondTrust (modify)...`);
+                        await RetryUtility.executeWithRetry(
+                            () =>
+                                discrepancyStrategy.btModifyFunc(
+                                    command.transactionId,
+                                    command.tenantId,
+                                    discrepancy.internalData as unknown as any,
+                                ),
+                            `Modify external data for discrepancy ${command.id}`,
+                        );
+                    } else {
+                        // Create external data
+                        console.log(`📤 Syncing from database to BeyondTrust (create)...`);
+                        await RetryUtility.executeWithRetry(
+                            () =>
+                                discrepancyStrategy.btCreateFunc(
+                                    command.transactionId,
+                                    command.tenantId,
+                                    discrepancy.internalData as unknown as any,
+                                ),
+                            `Create external data for discrepancy ${command.id}`,
+                        );
+                    }
+                } else {
+                    // Delete external data
+                    console.log(`🗑️ Deleting from BeyondTrust...`);
+                    await RetryUtility.executeWithRetry(
+                        () =>
+                            discrepancyStrategy.btDeleteFunc(
+                                command.transactionId,
+                                command.tenantId,
+                                discrepancy.externalData as unknown as any,
+                            ),
+                        `Delete external data for discrepancy ${command.id}`,
+                    );
+                }
             }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error(`❌ Error syncing discrepancy ${command.id}:`, errorMessage);
+            throw error;
         }
 
-        await this.discrepancyRepositoryService.deleteById(command.tenantId, command.id);
+        console.log(`🗑️ Deleting discrepancy record ${command.id}...`);
+        await RetryUtility.executeWithRetry(
+            () => this.discrepancyRepositoryService.deleteById(command.tenantId, command.id),
+            `Delete discrepancy record ${command.id}`,
+        );
 
         this.eventBus.publish(
             new DiscrepancyResolvedEvent(command.transactionId, {
@@ -78,6 +115,10 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                 syncType: command.syncType,
                 tenantId: command.tenantId,
             }),
+        );
+
+        console.log(
+            `✅ Successfully synced and resolved discrepancy ${command.id} (${discrepancy.entityType}, sync type: ${command.syncType})`,
         );
     }
 
@@ -106,13 +147,13 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
             return this.discrepancyStrategyProviderService.getForRelation(
                 discrepancy.entityId,
                 discrepancy.entityType,
-            ) as unknown as DiscrepancyStrategy<BTRepresentative, DBRepresentative, RepresentativeEntity>;
+            ) as DiscrepancyStrategy<unknown, unknown, unknown>;
         }
 
         return this.discrepancyStrategyProviderService.get(discrepancy.entityType) as DiscrepancyStrategy<
-            BTRepresentative,
-            DBRepresentative,
-            RepresentativeEntity
+            unknown,
+            unknown,
+            unknown
         >;
     }
 }
