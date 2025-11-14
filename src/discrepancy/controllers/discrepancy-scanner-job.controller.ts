@@ -5,12 +5,14 @@ import { CronJob } from 'cron';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { BeyondtrustInstance } from '../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../../beyondtrust-instance/queries';
-import { PaginationUtility, UuidUtility } from '../../shared/utilities';
+import { PaginationUtility, RetryUtility, UuidUtility } from '../../shared/utilities';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
 
 @Controller('discrepancies/scan/job')
 export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
     private static readonly MAX_PAGE_SIZE = 50;
+    private static readonly RETRY_DELAY_BETWEEN_ATTEMPTS_MS = 10000;
+    private static readonly MAX_RETRY_ATTEMPTS = 3;
 
     private readonly logger = new Logger(DiscrepancyScannerJobController.name);
 
@@ -70,14 +72,21 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
     }
 
     private async getAllBeyondtrustInstances(): Promise<BeyondtrustInstance[]> {
-        return await PaginationUtility.queryUntilLastPage((pageNumber) => {
-            return this.queryBus.execute<RetrieveBeyondtrustInstancesQuery, BeyondtrustInstance[]>(
-                new RetrieveBeyondtrustInstancesQuery(
-                    UuidUtility.generate(),
-                    DiscrepancyScannerJobController.MAX_PAGE_SIZE,
-                    pageNumber,
-                ),
-            );
-        });
+        return await RetryUtility.executeWithRetry(
+            async () => {
+                return await PaginationUtility.queryUntilLastPage((pageNumber) => {
+                    return this.queryBus.execute<RetrieveBeyondtrustInstancesQuery, BeyondtrustInstance[]>(
+                        new RetrieveBeyondtrustInstancesQuery(
+                            UuidUtility.generate(),
+                            DiscrepancyScannerJobController.MAX_PAGE_SIZE,
+                            pageNumber,
+                        ),
+                    );
+                });
+            },
+            'Fetch all BeyondTrust instances for cron job setup',
+            DiscrepancyScannerJobController.MAX_RETRY_ATTEMPTS,
+            DiscrepancyScannerJobController.RETRY_DELAY_BETWEEN_ATTEMPTS_MS,
+        );
     }
 }
