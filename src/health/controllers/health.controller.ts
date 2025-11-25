@@ -25,8 +25,9 @@ export class HealthController {
     @Get()
     @HealthCheck()
     public async checkHealth(): Promise<HealthCheckResult> {
-        return await this.healthCheckService.check([
-            async () => this.typeOrmHealthIndicator.pingCheck('database'),
+        // Use Promise.race to timeout health checks and prevent hanging
+        const healthCheckPromise = this.healthCheckService.check([
+            async () => this.typeOrmHealthIndicator.pingCheck('database', { timeout: 3000 }),
             async () =>
                 this.diskHealthIndicator.checkStorage('storage', {
                     thresholdPercent: this.appConfigService.health.diskStorageUsageThresholdInPercent / 100,
@@ -38,5 +39,17 @@ export class HealthController {
                     this.appConfigService.health.memoryHeapUsageThresholdInMB * 1024 * 1024, // Convert MB to bytes
                 ),
         ]);
+
+        // Overall health check timeout (5 seconds)
+        const timeoutPromise = new Promise<HealthCheckResult>((_, reject) => {
+            setTimeout(() => reject(new Error('Health check timeout after 5 seconds')), 5000);
+        });
+
+        try {
+            return await Promise.race([healthCheckPromise, timeoutPromise]);
+        } catch (error) {
+            console.error('❌ Health check failed:', error);
+            throw error;
+        }
     }
 }

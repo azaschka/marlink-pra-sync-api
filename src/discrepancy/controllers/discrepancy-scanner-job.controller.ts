@@ -34,13 +34,20 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
             },
         ];
 
-        const transactionId = UuidUtility.generate();
-
         cronJobMap.forEach(({ name, cronExpression, func }) => {
             const job = new CronJob(
                 cronExpression,
                 async () => {
-                    this.logger.log(`[${name}] started`);
+                    // Generate new transaction ID per cron run for better tracing
+                    const transactionId = UuidUtility.generate();
+
+                    // Log memory usage before job execution
+                    const memBefore = process.memoryUsage();
+                    this.logger.log(`[${name}] started with transaction ID: ${transactionId}`);
+                    this.logger.debug(`[${name}] Memory before: ${Math.round(memBefore.heapUsed / 1024 / 1024)} MB`);
+
+                    const startTime = Date.now();
+
                     try {
                         for (const beyondtrustInstance of beyondtrustInstances) {
                             try {
@@ -55,10 +62,28 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
                                 );
                             }
                         }
-                        this.logger.log(`[${name}] finished`);
+
+                        // Log memory usage and duration after job execution
+                        const memAfter = process.memoryUsage();
+                        const duration = Date.now() - startTime;
+                        this.logger.log(`[${name}] finished successfully in ${Math.round(duration / 1000)}s`);
+                        this.logger.debug(
+                            `[${name}] Memory after: ${Math.round(memAfter.heapUsed / 1024 / 1024)} MB ` +
+                                `(delta: ${Math.round((memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024)} MB)`,
+                        );
+
+                        // Force garbage collection if memory increased significantly (if --expose-gc flag is set)
+                        if (global.gc && memAfter.heapUsed - memBefore.heapUsed > 100 * 1024 * 1024) {
+                            this.logger.debug(`[${name}] Running garbage collection`);
+                            global.gc();
+                        }
                     } catch (err) {
                         // IMPORTANT: Do not throw the error, otherwise it will kill the process
-                        this.logger.error(`[${name}] failed: ${(err as Error).message}`, err as Error);
+                        const duration = Date.now() - startTime;
+                        this.logger.error(
+                            `[${name}] failed after ${Math.round(duration / 1000)}s: ${(err as Error).message}`,
+                            err as Error,
+                        );
                     }
                 },
                 null,
