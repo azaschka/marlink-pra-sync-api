@@ -647,7 +647,7 @@ describe('AppConfigService', () => {
                     autoLoadEntities: true,
                     retryAttempts: 10,
                     retryDelayInMs: 10000,
-                    maxQueryExecutionTimeInMs: 300000,
+                    maxQueryExecutionTimeInMs: 30000,
                     extra: {
                         connectionLimit: 20,
                     },
@@ -700,6 +700,10 @@ describe('AppConfigService', () => {
                 maxQueryExecutionTime: expected.maxQueryExecutionTimeInMs,
                 extra: {
                     connectionLimit: expected.extra.connectionLimit,
+                    connectTimeout: 10000,
+                    acquireTimeout: 30000,
+                    idleTimeoutMillis: 300000,
+                    queueLimit: 0,
                 },
             });
         });
