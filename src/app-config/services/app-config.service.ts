@@ -220,14 +220,16 @@ export class AppConfigService {
                 DefaultAppConfig.database.maxQueryExecutionTime, // Only applicable to MariaDB and MySQL
             extra: {
                 connectionLimit: this.databaseMaxConnections,
-                // Connection timeout: abort if can't connect within 10 seconds
-                connectTimeout: this.configService.get<number>('DB_CONNECT_TIMEOUT_IN_MS') ?? 10000,
-                // Acquire timeout: abort if can't get connection from pool within 30 seconds
-                acquireTimeout: this.configService.get<number>('DB_ACQUIRE_TIMEOUT_IN_MS') ?? 30000,
-                // Idle timeout: close idle connections after 5 minutes
-                idleTimeoutMillis: this.configService.get<number>('DB_IDLE_TIMEOUT_IN_MS') ?? 300000,
-                // Queue limit: fail fast if too many waiting for connections (prevent backlog)
-                queueLimit: this.configService.get<number>('DB_QUEUE_LIMIT') ?? 0,
+                // Connection timeout: abort if can't connect within 10 seconds (MySQL2 option)
+                connectTimeout:
+                    this.configService.get<number>('DB_CONNECT_TIMEOUT_IN_MS') ??
+                    DefaultAppConfig.database.connectTimeout,
+                // Wait for available connection before timing out (MySQL2 option)
+                waitForConnections:
+                    this.configService.get<boolean>('DB_WAIT_FOR_CONNECTIONS') ??
+                    DefaultAppConfig.database.waitForConnections,
+                // Max requests waiting for connection from pool (MySQL2 option)
+                queueLimit: this.configService.get<number>('DB_QUEUE_LIMIT') ?? DefaultAppConfig.database.queueLimit,
             },
         };
     }

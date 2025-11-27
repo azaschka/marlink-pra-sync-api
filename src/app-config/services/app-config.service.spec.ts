@@ -701,9 +701,8 @@ describe('AppConfigService', () => {
                 extra: {
                     connectionLimit: expected.extra.connectionLimit,
                     connectTimeout: 10000,
-                    acquireTimeout: 30000,
-                    idleTimeoutMillis: 300000,
-                    queueLimit: 0,
+                    waitForConnections: true,
+                    queueLimit: 10,
                 },
             });
         });
