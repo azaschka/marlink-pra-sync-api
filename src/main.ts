@@ -42,15 +42,15 @@ function setupGlobalErrorHandlers() {
     });
 
     // Log memory usage periodically to detect leaks
-    setInterval(() => {
-        const used = process.memoryUsage();
-        console.log('💾 Memory usage:', {
-            rss: `${Math.round(used.rss / 1024 / 1024)} MB`,
-            heapTotal: `${Math.round(used.heapTotal / 1024 / 1024)} MB`,
-            heapUsed: `${Math.round(used.heapUsed / 1024 / 1024)} MB`,
-            external: `${Math.round(used.external / 1024 / 1024)} MB`,
-        });
-    }, 300000); // Every 5 minutes
+    // setInterval(() => {
+    //     const used = process.memoryUsage();
+    //     console.log('💾 Memory usage:', {
+    //         rss: `${Math.round(used.rss / 1024 / 1024)} MB`,
+    //         heapTotal: `${Math.round(used.heapTotal / 1024 / 1024)} MB`,
+    //         heapUsed: `${Math.round(used.heapUsed / 1024 / 1024)} MB`,
+    //         external: `${Math.round(used.external / 1024 / 1024)} MB`,
+    //     });
+    // }, 300000); // Every 5 minutes
 }
 
 function configureOpenApi(app: INestApplication<unknown>) {
