@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="tQ0TIPKMSSDaXLeWTdDW" name="Page-1">
-        <mxGraphModel dx="-700" dy="657" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#FFFFFF" math="0" shadow="0">
+        <mxGraphModel dx="-506" dy="1661" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#FFFFFF" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -17,16 +17,16 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="200" value="Marlink ecosystem" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="1900" y="150" width="700" height="447.5" as="geometry"/>
+                    <mxGeometry x="1969.5" y="150" width="700" height="447.5" as="geometry"/>
                 </mxCell>
                 <mxCell id="201" value="BeyondTrust ecosystem" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;" parent="1" vertex="1">
-                    <mxGeometry x="2680" y="150" width="375" height="447.5" as="geometry"/>
+                    <mxGeometry x="2749.5" y="150" width="375" height="447.5" as="geometry"/>
                 </mxCell>
                 <mxCell id="202" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="203" target="205" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="203" value="PRA API" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="2340" y="225" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="2409.5" y="225" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="204" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="205" target="207" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -34,8 +34,8 @@
                 <mxCell id="218" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;dashed=1;" parent="1" source="205" target="207" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="2400" y="537.5"/>
-                            <mxPoint x="2800" y="537.5"/>
+                            <mxPoint x="2469.5" y="537.5"/>
+                            <mxPoint x="2869.5" y="537.5"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -45,22 +45,22 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="205" value="PRA Sync API" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="2340" y="417.5" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="2409.5" y="417.5" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="206" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;dashed=1;" parent="1" source="207" target="212" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="207" value="BeyondTrust PRA Conf API" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="2740" y="417.5" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="2809.5" y="417.5" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="211" value="PRA DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
-                    <mxGeometry x="1970" y="407.5" width="60" height="80" as="geometry"/>
+                    <mxGeometry x="2039.5" y="407.5" width="60" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="212" value="BT DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
-                    <mxGeometry x="2950" y="407.5" width="60" height="80" as="geometry"/>
+                    <mxGeometry x="3019.5" y="407.5" width="60" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="213" value="Workflow" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;" parent="1" vertex="1">
-                    <mxGeometry x="1900" y="80" width="150" height="30" as="geometry"/>
+                    <mxGeometry x="1969.5" y="80" width="150" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="214" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="203" target="211" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
@@ -70,11 +70,11 @@
                 </mxCell>
                 <mxCell id="216" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="217" target="203" edge="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="2110" y="255" as="targetPoint"/>
+                        <mxPoint x="2179.5" y="255" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="217" value="PRA Console" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="1940" y="225" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="2009.5" y="225" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="237" value="Marlink ecosystem" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;" parent="1" vertex="1">
                     <mxGeometry x="1970" y="796.25" width="700" height="447.5" as="geometry"/>
@@ -323,6 +323,102 @@
                 </mxCell>
                 <mxCell id="388" value="3" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" parent="1" vertex="1">
                     <mxGeometry x="2537" y="2822.5" width="20" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="389" value="Marlink ecosystem" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="2035" y="-447" width="700" height="447.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="390" value="BeyondTrust ecosystem" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="2815" y="-447" width="310" height="447.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="391" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="392" target="396">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2405" y="-149"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="392" value="PRA API&lt;div&gt;(internal only)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="2245" y="-179.5" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="393" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="396" target="398">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="394" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="396" target="398">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2580" y="-59"/>
+                            <mxPoint x="2950" y="-59"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="395" value="cron job&amp;nbsp;&lt;div&gt;data syncing&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="394">
+                    <mxGeometry x="0.0014" relative="1" as="geometry">
+                        <mxPoint x="10" y="2" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="396" value="PRA Sync API&lt;div&gt;(internal only)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="2505" y="-179.5" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="397" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;dashed=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="398" target="400">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="3065" y="-149"/>
+                            <mxPoint x="3065" y="-342"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="398" value="BeyondTrust PRA Conf API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+                    <mxGeometry x="2875" y="-179.5" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="399" value="PRA DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="2415" y="-107" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="400" value="BT DB" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+                    <mxGeometry x="2920" y="-382" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="401" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="392" target="399">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="402" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="396" target="399">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="403" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;curved=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="404" target="408">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="404" value="PRA Admin Console&lt;div&gt;(public URL)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="2095" y="-312" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="405" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;curved=0;" edge="1" parent="1" source="406" target="404">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="406" value="User / Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="1845" y="-312" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="407" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;curved=0;" edge="1" parent="1" source="408" target="392">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2590" y="-237"/>
+                            <mxPoint x="2320" y="-237"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="408" value="PRA Proxy API&#xa;(public URL → internal)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="2515" y="-407" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="409" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="412" target="408">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="410" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="1837" y="-407" width="128" height="68" as="geometry"/>
+                </mxCell>
+                <mxCell id="411" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="410">
+                    <mxGeometry x="8" y="8" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="412" value="MSSP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="410">
+                    <mxGeometry width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="413" value="Workflow v2 (proposal)" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;" vertex="1" parent="1">
+                    <mxGeometry x="1969.5" y="-520" width="330.5" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
