@@ -700,7 +700,6 @@ export class DiscrepancyStrategyProviderService {
                 trimmedProps: [
                     'lastSyncDate',
                     'externalJumpItemNetworkId',
-                    'keyInfo',
                     'groupPolicyJumpoints',
                     'protocolTunnelJumps',
                     'remoteRdps',
