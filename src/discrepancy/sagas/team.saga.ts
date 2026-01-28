@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ICommand, Saga, ofType } from '@nestjs/cqrs';
-import { Observable, filter, mergeMap } from 'rxjs';
+import { Observable, concatMap, filter } from 'rxjs';
 import { ScanEntityRelationDiscrepancyCommand } from '../commands';
 import { DiscrepancyEntityType } from '../enums';
 import { DiscrepancyScannedEvent } from '../events';
@@ -12,7 +12,7 @@ export class TeamSaga {
         return events$.pipe(
             ofType(DiscrepancyScannedEvent),
             filter((event) => event.payload.discrepancyOverview.entityType === DiscrepancyEntityType.Team),
-            mergeMap((event) =>
+            concatMap((event) =>
                 [DiscrepancyEntityType.TeamUser].map(
                     (entityType) =>
                         new ScanEntityRelationDiscrepancyCommand(
