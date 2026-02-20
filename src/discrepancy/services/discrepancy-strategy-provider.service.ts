@@ -102,6 +102,8 @@ import {
     RetrieveJumpointNodesQuery as BTRetrieveJumpointNodesQuery,
     RetrieveJumpointsQuery as BTRetrieveJumpointsQuery,
 } from '../../beyondtrust-pra-conf-api/jumpoint/queries';
+import { SessionPolicyRetrievedDtoOutput as BTSessionPolicy } from '../../beyondtrust-pra-conf-api/session-policy/dtos/outputs';
+import { RetrieveSessionPoliciesQuery as BTRetrieveSessionPoliciesQuery } from '../../beyondtrust-pra-conf-api/session-policy/queries';
 import {
     AddUserToTeamCommand as BTAddUserToTeamCommand,
     CreateTeamCommand as BTCreateTeamCommand,
@@ -232,6 +234,11 @@ import {
 import { JumpointEntity, JumpointNodeEntity } from '../../jumpoint/repositories/entities';
 import { JumpointNodeService } from '../../jumpoint/services/jumpoint-node.service';
 import { JumpointService } from '../../jumpoint/services/jumpoint.service';
+import { MarkSessionPolicyAsSyncedCommand as DBMarkSessionPolicyAsSyncedCommand } from '../../session-policy/commands';
+import { SessionPolicy as DBSessionPolicy } from '../../session-policy/models';
+import { RetrieveSessionPoliciesQuery as DBRetrieveSessionPoliciesQuery } from '../../session-policy/queries';
+import { SessionPolicyEntity } from '../../session-policy/repositories/entities';
+import { SessionPolicyService } from '../../session-policy/services/session-policy.service';
 import { MarkTeamUserAsSyncedCommand as DBMarkTeamUserAsSyncedCommand } from '../../team-user/commands';
 import { TeamUser as DBTeamUser } from '../../team-user/models';
 import { RetrieveTeamUsersQuery as DBRetrieveTeamUsersQuery } from '../../team-user/queries';
@@ -280,6 +287,7 @@ export class DiscrepancyStrategyProviderService {
         private readonly teamUserService: TeamUserService,
         private readonly userService: UserService,
         private readonly userGroupPolicyService: UserGroupPolicyService,
+        private readonly sessionPolicyService: SessionPolicyService,
     ) {}
 
     public get(entityType: DiscrepancyEntityType) {
@@ -1150,6 +1158,47 @@ export class DiscrepancyStrategyProviderService {
                     'groupPolicyMembers',
                 ],
             } as DiscrepancyStrategy<BTUser, DBUser, UserEntity>;
+        }
+
+        if (entityType === DiscrepancyEntityType.SessionPolicy) {
+            return {
+                btRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<BTRetrieveSessionPoliciesQuery, BTSessionPolicy[]>(
+                        new BTRetrieveSessionPoliciesQuery(transactionId, tenantId, maxBatchSize, pageNumber),
+                    ),
+                btCreateFunc: async (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No create operation for SessionPolicy in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, session policy id: ${entity.id}.`,
+                    );
+
+                    return Promise.resolve();
+                },
+                btModifyFunc: async (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No modify operation for SessionPolicy in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, session policy id: ${entity.id}.`,
+                    );
+
+                    return Promise.resolve();
+                },
+                btDeleteFunc: async (transactionId, tenantId, entity) => {
+                    console.log(
+                        `No delete operation for SessionPolicy in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, session policy id: ${entity.id}.`,
+                    );
+
+                    return Promise.resolve();
+                },
+                btToDbEntity: (bt) => SessionPolicyEntity.createFromBT(bt),
+                dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
+                    this.queryBus.execute<DBRetrieveSessionPoliciesQuery, DBSessionPolicy[]>(
+                        new DBRetrieveSessionPoliciesQuery(transactionId, tenantId, maxBatchSize, pageNumber),
+                    ),
+                dbCreateOrUpdateFunc: (tenantId, entity) =>
+                    this.sessionPolicyService.createOrUpdateById(tenantId, entity),
+                dbDeleteFunc: (tenantId, entity) => this.sessionPolicyService.deleteById(tenantId, entity.id),
+                dbMarkAsSyncedFunc: (transactionId, tenantId, entity) =>
+                    this.commandBus.execute(new DBMarkSessionPolicyAsSyncedCommand(transactionId, tenantId, entity.id)),
+                trimmedProps: ['lastSyncDate', 'creationDate'],
+            } as DiscrepancyStrategy<BTSessionPolicy, DBSessionPolicy, SessionPolicyEntity>;
         }
 
         throw new Error(`Unsupported entity type: ${entityType}`);

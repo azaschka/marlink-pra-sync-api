@@ -19,6 +19,7 @@ import { ShellJumpModule } from '../jump-item/shell-jump/shell-jump.module';
 import { WebJumpModule } from '../jump-item/web-jump/web-jump.module';
 import { JumpPolicyModule } from '../jump-policy/jump-policy.module';
 import { JumpointModule } from '../jumpoint/jumpoint.module';
+import { SessionPolicyModule } from '../session-policy/session-policy.module';
 import { ErrorProcessorUtility, PaginationUtility, UuidUtility } from '../shared/utilities';
 import { TeamUserModule } from '../team-user/team-user.module';
 import { TeamModule } from '../team/team.module';
@@ -59,6 +60,7 @@ import { DiscrepancyStrategyProviderService } from './services/discrepancy-strat
         TeamModule,
         UserModule,
         UserGroupPolicyModule,
+        SessionPolicyModule,
     ],
     controllers: [DiscrepancyScannerController, DiscrepancyScannerJobController, DiscrepancySyncController],
     providers: [

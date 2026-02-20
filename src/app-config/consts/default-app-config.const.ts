@@ -127,6 +127,9 @@ export abstract class DefaultAppConfig {
                         copy: 'copy',
                     },
                 },
+                sessionPolicy: {
+                    path: '/session-policy',
+                },
                 communication: {
                     retryAttempts: 5,
                     retryDelayInMs: 5000,
