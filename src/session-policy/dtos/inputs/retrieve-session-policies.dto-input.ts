@@ -38,11 +38,11 @@ export class RetrieveSessionPoliciesDtoInput {
     @ApiProperty({
         required: false,
         type: [String],
-        description: 'Filters results to include only session policies that match the given display name patterns.',
+        description: 'Filters results to include only session policies that match the given code name patterns.',
     })
     @IsString({ each: true })
     @IsOptional()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
-    public displayNamePatterns?: string[];
+    public codeNamePatterns?: string[];
 }

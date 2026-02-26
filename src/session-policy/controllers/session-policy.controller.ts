@@ -31,7 +31,7 @@ export class SessionPolicyController {
                 dtoInput.pageNumber,
                 dtoInput.displayName,
                 dtoInput.codeName,
-                dtoInput.displayNamePatterns,
+                dtoInput.codeNamePatterns,
             ),
         );
 

@@ -21,11 +21,11 @@ export class RetrieveSessionPoliciesQueryHandler implements IQueryHandler<Retrie
             singleWhere.codeName = query.codeName;
         }
 
-        if (query.displayNamePatterns && query.displayNamePatterns.length > 0) {
-            for (const pattern of query.displayNamePatterns) {
+        if (query.codeNamePatterns && query.codeNamePatterns.length > 0) {
+            for (const pattern of query.codeNamePatterns) {
                 multipleWhere.push({
                     ...singleWhere, // retain other filters
-                    displayName: Like(pattern),
+                    codeName: Like(pattern),
                 });
             }
         } else {

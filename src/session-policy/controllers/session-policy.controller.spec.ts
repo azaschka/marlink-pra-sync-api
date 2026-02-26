@@ -26,12 +26,12 @@ describe('SessionPolicyController', () => {
                 pageNumber: 1,
                 displayName: 'session-policy-1',
                 codeName: 'session-policy-code-1',
-                displayNamePatterns: ['session-policy%'],
+                codeNamePatterns: ['session-policy-code%'],
             });
 
             expect(queryBusExecuteSpy).toHaveBeenCalledWith(
                 new RetrieveSessionPoliciesQuery('uuid-123', 123, 10, 1, 'session-policy-1', 'session-policy-code-1', [
-                    'session-policy%',
+                    'session-policy-code%',
                 ]),
             );
             expect(result).toBe(expectedResult);

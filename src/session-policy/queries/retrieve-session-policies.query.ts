@@ -8,6 +8,6 @@ export class RetrieveSessionPoliciesQuery {
         public readonly pageNumber: number,
         public readonly displayName?: string,
         public readonly codeName?: string,
-        public readonly displayNamePatterns?: string[],
+        public readonly codeNamePatterns?: string[],
     ) {}
 }
