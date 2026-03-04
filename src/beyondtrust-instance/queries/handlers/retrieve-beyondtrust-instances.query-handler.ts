@@ -22,6 +22,10 @@ export class RetrieveBeyondtrustInstancesQueryHandler implements IQueryHandler<R
             beyondtrustInstanceFindByQuery.apiBaseUrl = query.apiBaseUrl;
         }
 
+        if (query.businessUnit) {
+            beyondtrustInstanceFindByQuery.businessUnit = query.businessUnit;
+        }
+
         const beyondtrustInstances = await this.beyondtrustInstanceRepositoryService.findBy(
             beyondtrustInstanceFindByQuery,
             query.pageNumber,
