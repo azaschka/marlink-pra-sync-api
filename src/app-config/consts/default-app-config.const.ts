@@ -9,7 +9,7 @@ export abstract class DefaultAppConfig {
 
     // Discrepancy scanning
     private static readonly DISCREPANCY_SCAN_CRON_JOB_TIMEZONE = 'Europe/Berlin';
-    private static readonly DISCREPANCY_SCAN_CRON_JOB_EXPRESSION = '35 2 * * *'; // At 02:35 AM every day
+    private static readonly DISCREPANCY_SCAN_CRON_JOB_EXPRESSION = '0 */30 * * *'; // Every 30 minutes
     private static readonly DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS = 5;
     private static readonly DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS = 10000;
     private static readonly DISCREPANCY_MAX_BATCH_SIZE = 100;

@@ -260,7 +260,7 @@ export class AppConfigService {
                     this.configService.get<string>('DISCREPANCY_SCAN_CRON_JOB_TIMEZONE') ??
                     DefaultAppConfig.discrepancy.scan.cronJobTimezone,
                 cronJobExpressions:
-                    this.configService.get<string>('DISCREPANCY_SCAN_CRON_JOB_EXPRESSIONS') ??
+                    // this.configService.get<string>('DISCREPANCY_SCAN_CRON_JOB_EXPRESSIONS') ??
                     DefaultAppConfig.discrepancy.scan.cronJobExpressions,
                 cronJobRetryAttempts:
                     this.configService.get<number>('DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS') ??
