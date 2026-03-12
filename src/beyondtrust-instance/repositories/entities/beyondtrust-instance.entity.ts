@@ -26,7 +26,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
     @Column({ name: 'billing_type', type: 'enum', enum: BillingType, default: BillingType.Asset })
     public billingType!: BillingType;
 
-    @Column({ name: 'business_unit', type: 'enum', enum: BusinessUnit, default: BusinessUnit.Unknown })
+    @Column({ name: 'business_unit', type: 'enum', enum: BusinessUnit, nullable: true })
     public businessUnit!: BusinessUnit;
 
     @CreateDateColumn({ name: 'creation_date', type: 'timestamp' })
