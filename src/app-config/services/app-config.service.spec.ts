@@ -746,7 +746,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '0 10 * * *',
+                        cronJobExpressions: '0 */30 * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
@@ -755,7 +755,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '0 10 * * *',
+                        cronJobExpressions: '0 */30 * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
@@ -767,7 +767,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '35 2 * * *',
+                        cronJobExpressions: '0 */30 * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
