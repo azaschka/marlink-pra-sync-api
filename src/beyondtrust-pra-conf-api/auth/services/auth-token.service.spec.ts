@@ -220,5 +220,5 @@ function mockHttpService(): HttpService {
 }
 
 function mockCurrentDate(date: string): void {
-    jest.useFakeTimers().setSystemTime(new Date(date));
+    jest.useFakeTimers().setSystemTime(new Date(date).getTime());
 }

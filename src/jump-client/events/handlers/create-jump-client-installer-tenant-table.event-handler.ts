@@ -5,9 +5,7 @@ import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { JumpClientInstallerRepositoryService } from '../../repositories/services/jump-client-installer-repository.service';
 
 @EventsHandler(BeyondtrustInstanceCreatedEvent)
-export class CreateJumpClientInstallerTenantTableEventHandler
-    implements IEventHandler<BeyondtrustInstanceCreatedEvent>
-{
+export class CreateJumpClientInstallerTenantTableEventHandler implements IEventHandler<BeyondtrustInstanceCreatedEvent> {
     constructor(
         private readonly jumpClientInstallerRepositoryService: JumpClientInstallerRepositoryService,
         private readonly eventBus: EventBus,

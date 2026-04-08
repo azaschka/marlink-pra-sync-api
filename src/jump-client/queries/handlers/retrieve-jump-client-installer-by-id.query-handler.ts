@@ -5,9 +5,7 @@ import { JumpClientInstallerRepositoryService } from '../../repositories/service
 import { RetrieveJumpClientInstallerByIdQuery } from '../retrieve-jump-client-installer-by-id.query';
 
 @QueryHandler(RetrieveJumpClientInstallerByIdQuery)
-export class RetrieveJumpClientInstallerByIdQueryHandler
-    implements IQueryHandler<RetrieveJumpClientInstallerByIdQuery>
-{
+export class RetrieveJumpClientInstallerByIdQueryHandler implements IQueryHandler<RetrieveJumpClientInstallerByIdQuery> {
     constructor(private readonly jumpClientInstallerRepositoryService: JumpClientInstallerRepositoryService) {}
 
     public async execute(query: RetrieveJumpClientInstallerByIdQuery): Promise<JumpClientInstaller> {

@@ -6,9 +6,7 @@ import { RetrieveAllGroupPolicyJumpGroupsQuery } from '../retrieve-all-group-pol
 import { RetrieveGroupPolicyJumpGroupsQuery } from '../retrieve-group-policy-jump-groups.query';
 
 @QueryHandler(RetrieveAllGroupPolicyJumpGroupsQuery)
-export class RetrieveAllGroupPolicyJumpGroupsQueryHandler
-    implements IQueryHandler<RetrieveAllGroupPolicyJumpGroupsQuery>
-{
+export class RetrieveAllGroupPolicyJumpGroupsQueryHandler implements IQueryHandler<RetrieveAllGroupPolicyJumpGroupsQuery> {
     constructor(
         private readonly appConfigService: AppConfigService,
         private readonly queryBus: QueryBus,

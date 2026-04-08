@@ -5,9 +5,7 @@ import { HttpClientService } from '../../../http-client/services/http-client.ser
 import { RemoveJumpointFromGroupPolicyCommand } from '../remove-jumpoint-from-group-policy.command';
 
 @CommandHandler(RemoveJumpointFromGroupPolicyCommand)
-export class RemoveJumpointFromGroupPolicyCommandHandler
-    implements ICommandHandler<RemoveJumpointFromGroupPolicyCommand>
-{
+export class RemoveJumpointFromGroupPolicyCommandHandler implements ICommandHandler<RemoveJumpointFromGroupPolicyCommand> {
     constructor(
         private readonly appConfigService: AppConfigService,
         private readonly httpClientService: HttpClientService,

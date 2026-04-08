@@ -5,9 +5,7 @@ import { BeyondtrustInstanceRepositoryService } from '../../repositories/service
 import { RetrieveBeyondtrustInstanceByIdQuery } from '../retrieve-beyondtrust-instance-by-id.query';
 
 @QueryHandler(RetrieveBeyondtrustInstanceByIdQuery)
-export class RetrieveBeyondtrustInstanceByIdQueryHandler
-    implements IQueryHandler<RetrieveBeyondtrustInstanceByIdQuery>
-{
+export class RetrieveBeyondtrustInstanceByIdQueryHandler implements IQueryHandler<RetrieveBeyondtrustInstanceByIdQuery> {
     constructor(private readonly beyondtrustInstanceRepositoryService: BeyondtrustInstanceRepositoryService) {}
 
     public async execute(query: RetrieveBeyondtrustInstanceByIdQuery): Promise<BeyondtrustInstance> {

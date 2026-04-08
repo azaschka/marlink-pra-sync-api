@@ -1,6 +1,12 @@
 import { NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+
+jest.mock('fs');
+jest.mock('path', () => {
+    const actual = jest.requireActual<typeof import('path')>('path');
+    return { ...actual, basename: jest.fn().mockImplementation((p: string, ext?: string) => actual.basename(p, ext)) };
+});
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { BeyondtrustInstanceBackupRepositoryService } from '../../repositories/services/beyondtrust-instance-backup-repository.service';
 import { RetrieveBeyondtrustInstanceBackupContentQuery } from '../retrieve-beyondtrust-instance-backup-content.query';
@@ -34,7 +40,7 @@ describe('RetrieveBeyondtrustInstanceBackupByIdQueryHandler', () => {
 
         it('should throw NotFoundException if the backup file does not exist', async () => {
             // Arrange
-            jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+            jest.mocked(fs.existsSync).mockReturnValue(false);
 
             // Act & Assert
             await expect(
@@ -46,11 +52,14 @@ describe('RetrieveBeyondtrustInstanceBackupByIdQueryHandler', () => {
             // Arrange
             const expectedBuffer = Buffer.from('backup content');
             const expectedFilename = 'file.nsb';
-            jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-            jest.spyOn(fs, 'readFile').mockImplementation((_path, callback) => {
-                callback(null, expectedBuffer);
-            });
-            jest.spyOn(path, 'basename').mockReturnValue(expectedFilename);
+            jest.mocked(fs.existsSync).mockReturnValue(true);
+            (fs.readFile as unknown as jest.Mock).mockImplementation(
+                (_path, callback: (err: null, data: Buffer) => void) => {
+                    callback(null, expectedBuffer);
+                },
+            );
+            // eslint-disable-next-line @typescript-eslint/unbound-method
+            jest.mocked(path.basename).mockReturnValue(expectedFilename);
 
             // Act
             const result = await handler.execute(

@@ -1,6 +1,12 @@
 import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import * as fs from 'fs';
 import * as path from 'path';
+
+jest.mock('fs');
+jest.mock('path', () => {
+    const actual = jest.requireActual<typeof import('path')>('path');
+    return { ...actual, dirname: jest.fn().mockImplementation((p: string) => actual.dirname(p)) };
+});
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { BeyondtrustInstance } from '../../../beyondtrust-instance/models';
 import { ErrorProcessorUtility, UrlUtility } from '../../../shared/utilities';
@@ -19,14 +25,15 @@ describe('CreateBeyondtrustInstanceBackupCommandHandler', () => {
     let handler: CreateBeyondtrustInstanceBackupCommandHandler;
 
     beforeEach(() => {
-        jest.spyOn(fs, 'mkdirSync').mockImplementation(() => {
+        jest.mocked(fs.mkdirSync).mockImplementation(() => {
             return undefined;
         });
-        jest.spyOn(fs, 'writeFile').mockImplementation((_path, _data, callback) => {
+        (fs.writeFile as unknown as jest.Mock).mockImplementation((_path, _data, callback: (err: null) => void) => {
             callback(null);
         });
-        jest.spyOn(path, 'dirname').mockReturnValue('/mock/dir');
-        jest.useFakeTimers().setSystemTime(new Date('2025-10-01T00:00:00Z'));
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        jest.mocked(path.dirname).mockReturnValue('/mock/dir');
+        jest.useFakeTimers().setSystemTime(new Date('2025-10-01T00:00:00Z').getTime());
         mockUrlUtility();
         appConfigService = mockAppConfigService();
         commandBus = mockCommandBus();

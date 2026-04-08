@@ -5,9 +5,7 @@ import { GroupPolicyJumpGroupRepositoryService } from '../../repositories/servic
 import { MarkGroupPolicyJumpGroupAsSyncedCommand } from '../mark-group-policy-jump-group-as-synced.command';
 
 @CommandHandler(MarkGroupPolicyJumpGroupAsSyncedCommand)
-export class MarkGroupPolicyJumpGroupAsSyncedCommandHandler
-    implements ICommandHandler<MarkGroupPolicyJumpGroupAsSyncedCommand>
-{
+export class MarkGroupPolicyJumpGroupAsSyncedCommandHandler implements ICommandHandler<MarkGroupPolicyJumpGroupAsSyncedCommand> {
     constructor(private readonly groupPolicyJumpGroupRepositoryService: GroupPolicyJumpGroupRepositoryService) {}
 
     public async execute(command: MarkGroupPolicyJumpGroupAsSyncedCommand): Promise<void> {

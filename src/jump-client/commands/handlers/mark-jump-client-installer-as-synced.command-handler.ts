@@ -5,9 +5,7 @@ import { JumpClientInstallerRepositoryService } from '../../repositories/service
 import { MarkJumpClientInstallerAsSyncedCommand } from '../mark-jump-client-installer-as-synced.command';
 
 @CommandHandler(MarkJumpClientInstallerAsSyncedCommand)
-export class MarkJumpClientInstallerAsSyncedCommandHandler
-    implements ICommandHandler<MarkJumpClientInstallerAsSyncedCommand>
-{
+export class MarkJumpClientInstallerAsSyncedCommandHandler implements ICommandHandler<MarkJumpClientInstallerAsSyncedCommand> {
     constructor(private readonly jumpClientInstallerRepositoryService: JumpClientInstallerRepositoryService) {}
 
     public async execute(command: MarkJumpClientInstallerAsSyncedCommand): Promise<void> {

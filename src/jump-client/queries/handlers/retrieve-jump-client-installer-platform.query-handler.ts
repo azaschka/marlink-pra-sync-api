@@ -4,9 +4,7 @@ import { RetrieveJumpClientInstallerPlatformQuery as BTRetrieveJumpClientInstall
 import { RetrieveJumpClientInstallerPlatformQuery } from '../retrieve-jump-client-installer-platform.query';
 
 @QueryHandler(RetrieveJumpClientInstallerPlatformQuery)
-export class RetrieveJumpClientInstallerPlatformQueryHandler
-    implements IQueryHandler<RetrieveJumpClientInstallerPlatformQuery>
-{
+export class RetrieveJumpClientInstallerPlatformQueryHandler implements IQueryHandler<RetrieveJumpClientInstallerPlatformQuery> {
     constructor(private readonly queryBus: QueryBus) {}
 
     public async execute(

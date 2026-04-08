@@ -13,9 +13,7 @@ import { DiscrepancyStrategy } from '../../types';
 import { ScanEntityRelationDiscrepancyCommand } from '../scan-entity-relation-discrepancy.command';
 
 @CommandHandler(ScanEntityRelationDiscrepancyCommand)
-export class ScanEntityRelationDiscrepancyCommandHandler
-    implements ICommandHandler<ScanEntityRelationDiscrepancyCommand>
-{
+export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHandler<ScanEntityRelationDiscrepancyCommand> {
     private readonly dbConnLimit: LimitFunction;
 
     constructor(

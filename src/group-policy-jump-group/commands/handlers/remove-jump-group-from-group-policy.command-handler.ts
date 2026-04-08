@@ -6,9 +6,7 @@ import { GroupPolicyJumpGroupRepositoryService } from '../../repositories/servic
 import { RemoveJumpGroupFromGroupPolicyCommand } from '../remove-jump-group-from-group-policy.command';
 
 @CommandHandler(RemoveJumpGroupFromGroupPolicyCommand)
-export class RemoveJumpGroupFromGroupPolicyCommandHandler
-    implements ICommandHandler<RemoveJumpGroupFromGroupPolicyCommand>
-{
+export class RemoveJumpGroupFromGroupPolicyCommandHandler implements ICommandHandler<RemoveJumpGroupFromGroupPolicyCommand> {
     constructor(
         private readonly commandBus: CommandBus,
         private readonly eventBus: EventBus,

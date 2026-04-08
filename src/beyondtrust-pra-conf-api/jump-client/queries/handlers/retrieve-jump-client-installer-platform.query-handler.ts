@@ -6,9 +6,7 @@ import { HttpClientService } from '../../../http-client/services/http-client.ser
 import { RetrieveJumpClientInstallerPlatformQuery } from '../retrieve-jump-client-installer-platform.query';
 
 @QueryHandler(RetrieveJumpClientInstallerPlatformQuery)
-export class RetrieveJumpClientInstallerPlatformQueryHandler
-    implements IQueryHandler<RetrieveJumpClientInstallerPlatformQuery>
-{
+export class RetrieveJumpClientInstallerPlatformQueryHandler implements IQueryHandler<RetrieveJumpClientInstallerPlatformQuery> {
     constructor(
         private readonly appConfigService: AppConfigService,
         private readonly httpClientService: HttpClientService,

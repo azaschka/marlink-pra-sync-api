@@ -5,9 +5,7 @@ import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { GroupPolicyJumpGroupRepositoryService } from '../../repositories/services/group-policy-jump-group-repository.service';
 
 @EventsHandler(BeyondtrustInstanceCreatedEvent)
-export class CreateGroupPolicyJumpGroupTenantTableEventHandler
-    implements IEventHandler<BeyondtrustInstanceCreatedEvent>
-{
+export class CreateGroupPolicyJumpGroupTenantTableEventHandler implements IEventHandler<BeyondtrustInstanceCreatedEvent> {
     constructor(
         private readonly groupPolicyJumpGroupRepositoryService: GroupPolicyJumpGroupRepositoryService,
         private readonly eventBus: EventBus,

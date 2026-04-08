@@ -4,9 +4,7 @@ import { BeyondtrustInstanceBackupRepositoryService } from '../../repositories/s
 import { RetrieveBeyondtrustInstanceBackupsQuery } from '../retrieve-beyondtrust-instance-backups.query';
 
 @QueryHandler(RetrieveBeyondtrustInstanceBackupsQuery)
-export class RetrieveBeyondtrustInstanceBackupsQueryHandler
-    implements IQueryHandler<RetrieveBeyondtrustInstanceBackupsQuery>
-{
+export class RetrieveBeyondtrustInstanceBackupsQueryHandler implements IQueryHandler<RetrieveBeyondtrustInstanceBackupsQuery> {
     constructor(
         private readonly beyondtrustInstanceBackupRepositoryService: BeyondtrustInstanceBackupRepositoryService,
     ) {}

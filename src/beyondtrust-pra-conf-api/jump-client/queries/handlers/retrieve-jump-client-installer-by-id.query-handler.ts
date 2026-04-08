@@ -6,9 +6,7 @@ import { JumpClientInstallerRetrievedDtoOutput } from '../../dtos/outputs';
 import { RetrieveJumpClientInstallerByIdQuery } from '../retrieve-jump-client-installer-by-id.query';
 
 @QueryHandler(RetrieveJumpClientInstallerByIdQuery)
-export class RetrieveJumpClientInstallerByIdQueryHandler
-    implements IQueryHandler<RetrieveJumpClientInstallerByIdQuery>
-{
+export class RetrieveJumpClientInstallerByIdQueryHandler implements IQueryHandler<RetrieveJumpClientInstallerByIdQuery> {
     constructor(
         private readonly appConfigService: AppConfigService,
         private readonly httpClientService: HttpClientService,

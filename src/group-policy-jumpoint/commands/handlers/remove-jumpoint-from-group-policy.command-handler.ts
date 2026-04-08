@@ -6,9 +6,7 @@ import { GroupPolicyJumpointRepositoryService } from '../../repositories/service
 import { RemoveJumpointFromGroupPolicyCommand } from '../remove-jumpoint-from-group-policy.command';
 
 @CommandHandler(RemoveJumpointFromGroupPolicyCommand)
-export class RemoveJumpointFromGroupPolicyCommandHandler
-    implements ICommandHandler<RemoveJumpointFromGroupPolicyCommand>
-{
+export class RemoveJumpointFromGroupPolicyCommandHandler implements ICommandHandler<RemoveJumpointFromGroupPolicyCommand> {
     constructor(
         private readonly commandBus: CommandBus,
         private readonly eventBus: EventBus,

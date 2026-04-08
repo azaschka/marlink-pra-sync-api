@@ -5,9 +5,7 @@ import { HttpClientService } from '../../../http-client/services/http-client.ser
 import { RemoveJumpGroupFromGroupPolicyCommand } from '../remove-jump-group-from-group-policy.command';
 
 @CommandHandler(RemoveJumpGroupFromGroupPolicyCommand)
-export class RemoveJumpGroupFromGroupPolicyCommandHandler
-    implements ICommandHandler<RemoveJumpGroupFromGroupPolicyCommand>
-{
+export class RemoveJumpGroupFromGroupPolicyCommandHandler implements ICommandHandler<RemoveJumpGroupFromGroupPolicyCommand> {
     constructor(
         private readonly appConfigService: AppConfigService,
         private readonly httpClientService: HttpClientService,

@@ -5,9 +5,7 @@ import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { GroupPolicyJumpointRepositoryService } from '../../repositories/services/group-policy-jumpoint-repository.service';
 
 @EventsHandler(BeyondtrustInstanceCreatedEvent)
-export class CreateGroupPolicyJumpointTenantTableEventHandler
-    implements IEventHandler<BeyondtrustInstanceCreatedEvent>
-{
+export class CreateGroupPolicyJumpointTenantTableEventHandler implements IEventHandler<BeyondtrustInstanceCreatedEvent> {
     constructor(
         private readonly groupPolicyJumpointRepositoryService: GroupPolicyJumpointRepositoryService,
         private readonly eventBus: EventBus,

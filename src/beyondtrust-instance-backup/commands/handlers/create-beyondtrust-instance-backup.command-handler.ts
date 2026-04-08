@@ -13,9 +13,7 @@ import { BeyondtrustInstanceBackupRepositoryService } from '../../repositories/s
 import { CreateBeyondtrustInstanceBackupCommand } from '../create-beyondtrust-instance-backup.command';
 
 @CommandHandler(CreateBeyondtrustInstanceBackupCommand)
-export class CreateBeyondtrustInstanceBackupCommandHandler
-    implements ICommandHandler<CreateBeyondtrustInstanceBackupCommand>
-{
+export class CreateBeyondtrustInstanceBackupCommandHandler implements ICommandHandler<CreateBeyondtrustInstanceBackupCommand> {
     private static readonly BACKUP_FILE_EXTENSION = '.nsb';
 
     constructor(

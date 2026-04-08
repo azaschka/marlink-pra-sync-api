@@ -5,9 +5,7 @@ import { ProtocolTunnelJumpRepositoryService } from '../../repositories/services
 import { MarkProtocolTunnelJumpAsSyncedCommand } from '../mark-protocol-tunnel-jump-as-synced.command';
 
 @CommandHandler(MarkProtocolTunnelJumpAsSyncedCommand)
-export class MarkProtocolTunnelJumpAsSyncedCommandHandler
-    implements ICommandHandler<MarkProtocolTunnelJumpAsSyncedCommand>
-{
+export class MarkProtocolTunnelJumpAsSyncedCommandHandler implements ICommandHandler<MarkProtocolTunnelJumpAsSyncedCommand> {
     constructor(private readonly protocolTunnelJumpRepositoryService: ProtocolTunnelJumpRepositoryService) {}
 
     public async execute(command: MarkProtocolTunnelJumpAsSyncedCommand): Promise<void> {
