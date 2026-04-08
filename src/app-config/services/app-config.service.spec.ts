@@ -251,6 +251,9 @@ describe('AppConfigService', () => {
                                     copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
                                 },
                             },
+                            sessionPolicy: {
+                                path: 'api-path-session-policy-1',
+                            },
                         },
                     },
                     communication: {
@@ -336,6 +339,9 @@ describe('AppConfigService', () => {
                                     path: 'api-path-jump-item-protocol-tunnel-jump-1',
                                     copy: 'api-path-jump-item-protocol-tunnel-jump-copy-1',
                                 },
+                            },
+                            sessionPolicy: {
+                                path: 'api-path-session-policy-1',
                             },
                         },
                         communication: {
@@ -426,6 +432,9 @@ describe('AppConfigService', () => {
                                     copy: 'copy',
                                 },
                             },
+                            sessionPolicy: {
+                                path: '/session-policy',
+                            },
                         },
                         communication: {
                             retryAttempts: 5,
@@ -497,6 +506,8 @@ describe('AppConfigService', () => {
                         return input.api?.config.jumpItem?.protocolTunnelJump?.path;
                     case 'BEYONDTRUST_API_JUMP_ITEM_COPY_PROTOCOL_TUNNEL_JUMP':
                         return input.api?.config.jumpItem?.protocolTunnelJump?.copy;
+                    case 'BEYONDTRUST_API_SESSION_POLICY_PATH':
+                        return input.api?.config.sessionPolicy?.path;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS':
                         return input.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
@@ -584,6 +595,9 @@ describe('AppConfigService', () => {
                                 path: expected.api.config.jumpItem.protocolTunnelJump.path,
                                 copy: expected.api.config.jumpItem.protocolTunnelJump.copy,
                             },
+                        },
+                        sessionPolicy: {
+                            path: expected.api.config.sessionPolicy.path,
                         },
                     },
                     communication: {

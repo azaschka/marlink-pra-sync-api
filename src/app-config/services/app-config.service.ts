@@ -187,6 +187,11 @@ export class AppConfigService {
                                 DefaultAppConfig.beyondTrust.api.jumpItem.protocolTunnelJump.copy,
                         },
                     },
+                    sessionPolicy: {
+                        path:
+                            this.configService.get<string>('BEYONDTRUST_API_SESSION_POLICY_PATH') ??
+                            DefaultAppConfig.beyondTrust.api.sessionPolicy.path,
+                    },
                 },
                 communication: {
                     retryAttempts:

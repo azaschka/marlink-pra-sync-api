@@ -10,6 +10,7 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
     private static readonly AUTO_SYNC_ENTITY_TYPES = [
         DiscrepancyEntityType.JumpClient,
         DiscrepancyEntityType.JumpClientInstaller,
+        DiscrepancyEntityType.SessionPolicy,
     ];
 
     constructor(private readonly commandBus: CommandBus) {}

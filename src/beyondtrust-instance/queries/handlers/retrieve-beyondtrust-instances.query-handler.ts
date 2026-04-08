@@ -1,4 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FindOptionsWhere, In } from 'typeorm';
 import { BeyondtrustInstance } from '../../models';
 import { BeyondtrustInstanceRepositoryService } from '../../repositories/services/beyondtrust-instance-repository.service';
 import { RetrieveBeyondtrustInstancesQuery } from '../retrieve-beyondtrust-instances.query';
@@ -8,7 +9,7 @@ export class RetrieveBeyondtrustInstancesQueryHandler implements IQueryHandler<R
     constructor(private readonly beyondtrustInstanceRepositoryService: BeyondtrustInstanceRepositoryService) {}
 
     public async execute(query: RetrieveBeyondtrustInstancesQuery): Promise<BeyondtrustInstance[]> {
-        const beyondtrustInstanceFindByQuery = <BeyondtrustInstance>{};
+        const beyondtrustInstanceFindByQuery = <FindOptionsWhere<BeyondtrustInstance>>{};
 
         if (query.name) {
             beyondtrustInstanceFindByQuery.name = query.name;
@@ -20,6 +21,10 @@ export class RetrieveBeyondtrustInstancesQueryHandler implements IQueryHandler<R
 
         if (query.apiBaseUrl) {
             beyondtrustInstanceFindByQuery.apiBaseUrl = query.apiBaseUrl;
+        }
+
+        if (query.businessUnits && query.businessUnits.length > 0) {
+            beyondtrustInstanceFindByQuery.businessUnit = In(query.businessUnits);
         }
 
         const beyondtrustInstances = await this.beyondtrustInstanceRepositoryService.findBy(

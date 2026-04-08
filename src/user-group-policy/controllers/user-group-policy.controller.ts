@@ -35,7 +35,14 @@ export class UserGroupPolicyController {
         @Query() dtoInput: RetrieveUserGroupPoliciesDtoInput,
     ): Promise<UserGroupPolicyRetrievedDtoOutput[]> {
         const result = await this.queryBus.execute<RetrieveUserGroupPoliciesQuery, UserGroupPolicyRetrievedDtoOutput[]>(
-            new RetrieveUserGroupPoliciesQuery(transactionId, tenantId, dtoInput.pageSize, dtoInput.pageNumber, id),
+            new RetrieveUserGroupPoliciesQuery(
+                transactionId,
+                tenantId,
+                dtoInput.pageSize,
+                dtoInput.pageNumber,
+                id,
+                dtoInput.groupPolicyNamePatterns,
+            ),
         );
 
         return result;

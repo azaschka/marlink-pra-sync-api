@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { BeyondtrustInstanceBackupEntity } from '../../../beyondtrust-instance-backup/repositories/entities';
-import { BillingType } from '../../enums';
+import { BillingType, BusinessUnit } from '../../enums';
 import { BeyondtrustInstance } from '../../models';
 
 @Entity({ name: 'beyondtrust_instances' })
@@ -26,6 +26,9 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
     @Column({ name: 'billing_type', type: 'enum', enum: BillingType, default: BillingType.Asset })
     public billingType!: BillingType;
 
+    @Column({ name: 'business_unit', type: 'enum', enum: BusinessUnit, nullable: true })
+    public businessUnit!: BusinessUnit;
+
     @CreateDateColumn({ name: 'creation_date', type: 'timestamp' })
     public creationDate!: Date;
 
@@ -46,6 +49,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         oauth2TokenUrl: string,
         apiBaseUrl: string,
         billingType: BillingType,
+        businessUnit: BusinessUnit,
     ): BeyondtrustInstanceEntity {
         const entity = new BeyondtrustInstanceEntity();
         entity.id = id;
@@ -55,6 +59,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         entity.oauth2TokenUrl = oauth2TokenUrl;
         entity.apiBaseUrl = apiBaseUrl;
         entity.billingType = billingType;
+        entity.businessUnit = businessUnit;
 
         return entity;
     }
@@ -66,6 +71,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         oauth2TokenUrl: string,
         apiBaseUrl: string,
         billingType: BillingType,
+        businessUnit: BusinessUnit,
     ): BeyondtrustInstanceEntity {
         const entity = new BeyondtrustInstanceEntity();
         entity.name = name;
@@ -74,6 +80,7 @@ export class BeyondtrustInstanceEntity implements BeyondtrustInstance {
         entity.oauth2TokenUrl = oauth2TokenUrl;
         entity.apiBaseUrl = apiBaseUrl;
         entity.billingType = billingType;
+        entity.businessUnit = businessUnit;
 
         return entity;
     }

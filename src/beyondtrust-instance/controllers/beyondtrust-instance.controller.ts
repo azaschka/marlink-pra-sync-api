@@ -81,6 +81,7 @@ export class BeyondtrustInstanceController {
                 dtoInput.name,
                 dtoInput.oauth2TokenUrl,
                 dtoInput.apiBaseUrl,
+                dtoInput.businessUnits,
             ),
         );
 
@@ -106,6 +107,7 @@ export class BeyondtrustInstanceController {
                 dtoInput.oauth2TokenUrl,
                 dtoInput.apiBaseUrl,
                 dtoInput.billingType,
+                dtoInput.businessUnit,
             ),
         );
 
@@ -135,6 +137,7 @@ export class BeyondtrustInstanceController {
                 dtoInput.oauth2TokenUrl,
                 dtoInput.apiBaseUrl,
                 dtoInput.billingType,
+                dtoInput.businessUnit,
             ),
         );
 
