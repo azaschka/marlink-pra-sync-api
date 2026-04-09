@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "ignoreDeprecations": "6.0",
         "declaration": true,
         "removeComments": true,
         "emitDecoratorMetadata": true,
@@ -10,7 +9,7 @@
         "target": "ES2023",
         "sourceMap": true,
         "outDir": "./dist",
-        "rootDir": "./src",
+        "baseUrl": "./",
         "types": ["node", "jest", "passport"],
         "incremental": true,
         "skipLibCheck": true,
