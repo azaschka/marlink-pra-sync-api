@@ -107,7 +107,7 @@ export class BeyondtrustInstanceController {
                 dtoInput.oauth2TokenUrl,
                 dtoInput.apiBaseUrl,
                 dtoInput.billingType,
-                dtoInput.businessUnit,
+                dtoInput.businessUnit ?? null,
             ),
         );
 

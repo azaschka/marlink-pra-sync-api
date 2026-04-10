@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { BillingType, BusinessUnit } from '../../enums';
 
 export class CreateBeyondtrustInstanceDtoInput {
@@ -54,11 +54,13 @@ export class CreateBeyondtrustInstanceDtoInput {
     public billingType!: BillingType;
 
     @ApiProperty({
-        required: true,
+        required: false,
+        nullable: true,
         enum: BusinessUnit,
-        description: 'Business unit of the BeyondTrust instance.',
+        description:
+            'Business unit of the BeyondTrust instance. Omit or set to null for shared instances visible to all BUs.',
     })
     @IsEnum(BusinessUnit)
-    @IsNotEmpty()
-    public businessUnit!: BusinessUnit;
+    @IsOptional()
+    public businessUnit?: BusinessUnit | null;
 }

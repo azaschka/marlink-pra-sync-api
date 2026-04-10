@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { FindOptionsWhere, In } from 'typeorm';
+import { FindOptionsWhere, In, IsNull } from 'typeorm';
 import { BeyondtrustInstance } from '../../models';
 import { BeyondtrustInstanceRepositoryService } from '../../repositories/services/beyondtrust-instance-repository.service';
 import { RetrieveBeyondtrustInstancesQuery } from '../retrieve-beyondtrust-instances.query';
@@ -24,7 +24,16 @@ export class RetrieveBeyondtrustInstancesQueryHandler implements IQueryHandler<R
         }
 
         if (query.businessUnits && query.businessUnits.length > 0) {
-            beyondtrustInstanceFindByQuery.businessUnit = In(query.businessUnits);
+            const beyondtrustInstances = await this.beyondtrustInstanceRepositoryService.findBy(
+                [
+                    { ...beyondtrustInstanceFindByQuery, businessUnit: IsNull() },
+                    { ...beyondtrustInstanceFindByQuery, businessUnit: In(query.businessUnits) },
+                ],
+                query.pageNumber,
+                query.pageSize,
+            );
+
+            return beyondtrustInstances;
         }
 
         const beyondtrustInstances = await this.beyondtrustInstanceRepositoryService.findBy(

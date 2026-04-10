@@ -49,11 +49,12 @@ export class BeyondtrustInstanceModifiedDtoOutput implements BeyondtrustInstance
     public billingType!: BillingType;
 
     @ApiProperty({
-        required: true,
+        required: false,
+        nullable: true,
         enum: BusinessUnit,
         description: 'Business unit of the BeyondTrust instance.',
     })
-    public businessUnit!: BusinessUnit;
+    public businessUnit!: BusinessUnit | null;
 
     @ApiProperty({
         required: true,
