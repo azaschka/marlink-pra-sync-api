@@ -12,7 +12,7 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         DiscrepancyEntityType.JumpClient,
         DiscrepancyEntityType.JumpClientInstaller,
         DiscrepancyEntityType.Jumpoint,
-        DiscrepancyEntityType.JumpointNode,
+        DiscrepancyEntityType.GroupPolicyJumpoint,
         DiscrepancyEntityType.SessionPolicy,
     ];
 
@@ -20,6 +20,10 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
 
     public async handle(event: DiscrepancyScannedEvent) {
         const { entityType, mismatchedIds, onlyInExternalIds, onlyInInternalIds } = event.payload.discrepancyOverview;
+
+        console.log(
+            `🔔 SyncAfterDiscrepancyFoundEventHandler triggered for ${entityType}: ${mismatchedIds.length} mismatched, ${onlyInExternalIds.length} only in BT, ${onlyInInternalIds.length} only in DB`,
+        );
 
         if (SyncAfterDiscrepancyFoundEventHandler.AUTO_SYNC_ENTITY_TYPES.includes(entityType)) {
             const allDiscrepancyEntityIds = new Set([...mismatchedIds, ...onlyInExternalIds, ...onlyInInternalIds]);

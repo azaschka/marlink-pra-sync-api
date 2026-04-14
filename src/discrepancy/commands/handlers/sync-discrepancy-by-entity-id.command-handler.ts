@@ -23,10 +23,15 @@ export class SyncDiscrepancyByEntityIdCommandHandler implements ICommandHandler<
                 new SyncDiscrepancyCommand(command.transactionId, command.tenantId, discrepancy.id, command.syncType),
             );
         } catch (error) {
+            const errorMessage = ErrorProcessorUtility.stringify(error);
+            console.error(
+                `❌ Sync failed for ${command.entityType} entityId=${command.entityId} syncType=${command.syncType}:`,
+                errorMessage,
+            );
             this.eventBus.publish(
                 new SyncDiscrepancyByEntityIdFailedEvent(command.transactionId, {
                     tenantId: command.tenantId,
-                    errorMessage: ErrorProcessorUtility.stringify(error),
+                    errorMessage,
                 }),
             );
         }

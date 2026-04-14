@@ -19,7 +19,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 DiscrepancyEntityType.JumpClient,
                 DiscrepancyEntityType.JumpClientInstaller,
                 DiscrepancyEntityType.Jumpoint,
-                DiscrepancyEntityType.JumpointNode,
+                DiscrepancyEntityType.GroupPolicyJumpoint,
                 DiscrepancyEntityType.SessionPolicy,
             ])('should sync all discrepancy types ExternalToInternal for %s', async (entityType) => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
@@ -56,7 +56,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 DiscrepancyEntityType.JumpClient,
                 DiscrepancyEntityType.JumpClientInstaller,
                 DiscrepancyEntityType.Jumpoint,
-                DiscrepancyEntityType.JumpointNode,
+                DiscrepancyEntityType.GroupPolicyJumpoint,
                 DiscrepancyEntityType.SessionPolicy,
             ])('should never use InternalToExternal for %s', async (entityType) => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
