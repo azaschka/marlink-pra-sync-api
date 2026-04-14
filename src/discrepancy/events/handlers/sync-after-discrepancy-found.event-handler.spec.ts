@@ -140,6 +140,8 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
             });
 
             it('should not execute any command for mismatchedIds', async () => {
+                const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+
                 await handler.handle(
                     buildEvent(DiscrepancyEntityType.User, {
                         mismatchedIds: [1, 2, 3],
@@ -148,7 +150,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                     }),
                 );
 
-                expect(commandBus.execute).not.toHaveBeenCalled();
+                expect(commandBusExecuteMethod).not.toHaveBeenCalled();
             });
 
             it('should handle both onlyInExternalIds and onlyInInternalIds in one event', async () => {
@@ -178,6 +180,8 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
             });
 
             it('should not execute any command when all lists are empty', async () => {
+                const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+
                 await handler.handle(
                     buildEvent(DiscrepancyEntityType.Team, {
                         mismatchedIds: [],
@@ -186,7 +190,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                     }),
                 );
 
-                expect(commandBus.execute).not.toHaveBeenCalled();
+                expect(commandBusExecuteMethod).not.toHaveBeenCalled();
             });
 
             it('should pass transactionId and tenantId to the command', async () => {
