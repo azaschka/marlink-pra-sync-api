@@ -27,6 +27,7 @@ SOURCES=(
     "src/user"
     "src/user-group-policy"
     "src/discrepancy"
+    "src/jumpoint-node"
 )
 
 # Target folders to copy from each source module
