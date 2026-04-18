@@ -252,6 +252,9 @@ export class AppConfigService {
             beyondTrustBackupPath:
                 this.configService.get<string>('STORAGE_BEYONDTRUST_BACKUP_PATH') ??
                 AppConfigService.DEFAULT_UNDEFINED_STRING,
+            jumpointNodeIsoPath:
+                this.configService.get<string>('STORAGE_JUMPOINT_NODE_ISO_PATH') ??
+                DefaultAppConfig.storage.jumpointNodeIsoPath,
         };
     }
 
@@ -290,6 +293,48 @@ export class AppConfigService {
             isEnabled: isEnabled,
             ttlInMs: this.configService.get<number>('THROTTLE_TTL_IN_MS') ?? DefaultAppConfig.throttle.ttlInMs,
             limit: this.configService.get<number>('THROTTLE_LIMIT') ?? DefaultAppConfig.throttle.limit,
+        };
+    }
+
+    public get serviceManager() {
+        return {
+            api: {
+                accessToken:
+                    this.configService.get<string>('SERVICE_MANAGER_API_ACCESS_TOKEN') ??
+                    AppConfigService.DEFAULT_UNDEFINED_STRING,
+                baseUrl:
+                    this.configService.get<string>('SERVICE_MANAGER_API_BASE_URL') ??
+                    DefaultAppConfig.serviceManager.api.baseUrl,
+                version: {
+                    path:
+                        this.configService.get<string>('SERVICE_MANAGER_API_VERSION_PATH') ??
+                        DefaultAppConfig.serviceManager.api.version.path,
+                },
+                node: {
+                    path:
+                        this.configService.get<string>('SERVICE_MANAGER_API_NODE_PATH') ??
+                        DefaultAppConfig.serviceManager.api.node.path,
+                    service: {
+                        path:
+                            this.configService.get<string>('SERVICE_MANAGER_API_NODE_SERVICE_PATH') ??
+                            DefaultAppConfig.serviceManager.api.node.service.path,
+                    },
+                    approve:
+                        this.configService.get<string>('SERVICE_MANAGER_API_NODE_APPROVE') ??
+                        DefaultAppConfig.serviceManager.api.node.approve,
+                    iso:
+                        this.configService.get<string>('SERVICE_MANAGER_API_NODE_ISO') ??
+                        DefaultAppConfig.serviceManager.api.node.iso,
+                },
+                communication: {
+                    retryAttempts:
+                        this.configService.get<number>('SERVICE_MANAGER_API_COMMUNICATION_RETRY_ATTEMPTS') ??
+                        DefaultAppConfig.serviceManager.api.communication.retryAttempts,
+                    retryDelayInMs:
+                        this.configService.get<number>('SERVICE_MANAGER_API_COMMUNICATION_RETRY_DELAY_IN_MS') ??
+                        DefaultAppConfig.serviceManager.api.communication.retryDelayInMs,
+                },
+            },
         };
     }
 }

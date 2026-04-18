@@ -20,8 +20,10 @@ import { JumpClientModule } from './jump-client/jump-client.module';
 import { JumpGroupModule } from './jump-group/jump-group.module';
 import { JumpItemModule } from './jump-item/jump-item.module';
 import { JumpPolicyModule } from './jump-policy/jump-policy.module';
+import { JumpointNodeModule } from './jumpoint-node/jumpoint-node.module';
 import { JumpointModule } from './jumpoint/jumpoint.module';
 import { LogModule } from './log/log.module';
+import { ServiceManagerApiModule } from './service-manager-api/service-manager-api.module';
 import { TeamUserModule } from './team-user/team-user.module';
 import { TeamModule } from './team/team.module';
 import { UserGroupPolicyModule } from './user-group-policy/user-group-policy.module';
@@ -67,6 +69,8 @@ import { UserModule } from './user/user.module';
         JumpItemModule,
         DiscrepancyModule,
         LogModule,
+        ServiceManagerApiModule,
+        JumpointNodeModule,
     ],
     controllers: [AppController],
     providers: [
