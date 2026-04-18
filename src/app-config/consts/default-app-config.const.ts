@@ -28,6 +28,9 @@ export abstract class DefaultAppConfig {
     private static readonly THROTTLE_LIMIT = 1500; // 1500 requests per TTL
     private static readonly THROTTLE_IS_ENABLED = false;
 
+    // Service Manager API settings
+    private static readonly SERVICE_MANAGER_API_BASE_URL = 'https://service-manager-dev-acsforge.cdn-vas.net/api';
+
     public static get port(): number {
         return DefaultAppConfig.PORT_NUMBER;
     }
@@ -152,6 +155,12 @@ export abstract class DefaultAppConfig {
         };
     }
 
+    public static get storage() {
+        return {
+            jumpointNodeIsoPath: 'jumpoint-node-iso',
+        };
+    }
+
     public static get discrepancy() {
         return {
             maxBatchSize: DefaultAppConfig.DISCREPANCY_MAX_BATCH_SIZE,
@@ -169,6 +178,29 @@ export abstract class DefaultAppConfig {
             isEnabled: DefaultAppConfig.THROTTLE_IS_ENABLED,
             ttlInMs: DefaultAppConfig.THROTTLE_TTL_IN_MS,
             limit: DefaultAppConfig.THROTTLE_LIMIT,
+        };
+    }
+
+    public static get serviceManager() {
+        return {
+            api: {
+                baseUrl: DefaultAppConfig.SERVICE_MANAGER_API_BASE_URL,
+                version: {
+                    path: '/v1',
+                },
+                node: {
+                    path: '/nodes',
+                    service: {
+                        path: '/services',
+                    },
+                    approve: 'approve',
+                    iso: 'iso',
+                },
+                communication: {
+                    retryAttempts: 5,
+                    retryDelayInMs: 5000,
+                },
+            },
         };
     }
 }

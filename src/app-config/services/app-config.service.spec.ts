@@ -727,11 +727,24 @@ describe('AppConfigService', () => {
             {
                 input: {
                     rootPath: 'root/path',
-                    beyondTrustBackupPath: 'https://backup.api.url',
+                    beyondTrustBackupPath: 'beyond-trust-backup-path-1',
+                    jumpointNodeIsoPath: 'jumpoint-node-iso-1',
                 },
                 expected: {
                     rootPath: 'root/path',
-                    beyondTrustBackupPath: 'https://backup.api.url',
+                    beyondTrustBackupPath: 'beyond-trust-backup-path-1',
+                    jumpointNodeIsoPath: 'jumpoint-node-iso-1',
+                },
+            },
+            {
+                input: {
+                    rootPath: 'root/path',
+                    beyondTrustBackupPath: 'beyond-trust-backup-path-1',
+                },
+                expected: {
+                    rootPath: 'root/path',
+                    beyondTrustBackupPath: 'beyond-trust-backup-path-1',
+                    jumpointNodeIsoPath: 'jumpoint-node-iso',
                 },
             },
         ])('should return the storage configuration as expected', ({ input, expected }) => {
@@ -742,6 +755,9 @@ describe('AppConfigService', () => {
                 if (key === 'STORAGE_BEYONDTRUST_BACKUP_PATH') {
                     return input.beyondTrustBackupPath;
                 }
+                if (key === 'STORAGE_JUMPOINT_NODE_ISO_PATH') {
+                    return input.jumpointNodeIsoPath;
+                }
 
                 return undefined;
             });
@@ -749,6 +765,7 @@ describe('AppConfigService', () => {
             expect(service.storage).toEqual({
                 rootPath: expected.rootPath,
                 beyondTrustBackupPath: expected.beyondTrustBackupPath,
+                jumpointNodeIsoPath: expected.jumpointNodeIsoPath,
             });
         });
     });
@@ -769,7 +786,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '0 10 * * *',
+                        cronJobExpressions: '0 */30 * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
@@ -781,7 +798,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '35 2 * * *',
+                        cronJobExpressions: '0 */30 * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
@@ -862,6 +879,121 @@ describe('AppConfigService', () => {
                 isEnabled: expected.isEnabled,
                 ttlInMs: expected.ttlInMs,
                 limit: expected.limit,
+            });
+        });
+    });
+
+    describe('serviceManager', () => {
+        it.each([
+            {
+                input: {
+                    api: {
+                        accessToken: 'test-access-token',
+                        baseUrl: 'base-url',
+                        version: {
+                            path: '/api-1',
+                        },
+                        node: {
+                            path: '/nodes-1',
+                            service: {
+                                path: '/services-1',
+                            },
+                            approve: 'approve-1',
+                            iso: 'iso-1',
+                        },
+                        communication: {
+                            retryAttempts: 10,
+                            retryDelayInMs: 1500,
+                        },
+                    },
+                },
+                expected: {
+                    api: {
+                        accessToken: 'test-access-token',
+                        baseUrl: 'base-url',
+                        version: {
+                            path: '/api-1',
+                        },
+                        node: {
+                            path: '/nodes-1',
+                            service: {
+                                path: '/services-1',
+                            },
+                            approve: 'approve-1',
+                            iso: 'iso-1',
+                        },
+                        communication: {
+                            retryAttempts: 10,
+                            retryDelayInMs: 1500,
+                        },
+                    },
+                },
+            },
+            {
+                input: {},
+                expected: {
+                    api: {
+                        accessToken: 'unknown',
+                        baseUrl: 'https://service-manager-dev-acsforge.cdn-vas.net/api',
+                        version: {
+                            path: '/v1',
+                        },
+                        node: {
+                            path: '/nodes',
+                            service: {
+                                path: '/services',
+                            },
+                            approve: 'approve',
+                            iso: 'iso',
+                        },
+                        communication: {
+                            retryAttempts: 5,
+                            retryDelayInMs: 5000,
+                        },
+                    },
+                },
+            },
+        ])('should return the service manager API configuration as expected', ({ input, expected }) => {
+            configService.get = jest.fn().mockImplementation((key: string) => {
+                if (key === 'SERVICE_MANAGER_API_ACCESS_TOKEN') {
+                    return input.api?.accessToken;
+                }
+                if (key === 'SERVICE_MANAGER_API_BASE_URL') {
+                    return input.api?.baseUrl;
+                }
+                if (key === 'SERVICE_MANAGER_API_VERSION_PATH') {
+                    return input.api?.version?.path;
+                }
+                if (key === 'SERVICE_MANAGER_API_NODE_PATH') {
+                    return input.api?.node?.path;
+                }
+                if (key === 'SERVICE_MANAGER_API_NODE_SERVICE_PATH') {
+                    return input.api?.node?.service?.path;
+                }
+                if (key === 'SERVICE_MANAGER_API_NODE_APPROVE') {
+                    return input.api?.node?.approve;
+                }
+                if (key === 'SERVICE_MANAGER_API_NODE_ISO') {
+                    return input.api?.node?.iso;
+                }
+                if (key === 'SERVICE_MANAGER_API_COMMUNICATION_RETRY_ATTEMPTS') {
+                    return input.api?.communication?.retryAttempts;
+                }
+                if (key === 'SERVICE_MANAGER_API_COMMUNICATION_RETRY_DELAY_IN_MS') {
+                    return input.api?.communication?.retryDelayInMs;
+                }
+
+                return undefined;
+            });
+
+            expect(service.serviceManager).toStrictEqual({
+                api: {
+                    accessToken: expected.api.accessToken,
+                    baseUrl: expected.api.baseUrl,
+                    version: expected.api.version,
+                    node: expected.api.node,
+                    communication: expected.api.communication,
+                },
             });
         });
     });
