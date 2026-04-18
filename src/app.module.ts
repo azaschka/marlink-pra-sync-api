@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { BeyondtrustInstanceBackupModule } from './beyondtrust-instance-backup/beyondtrust-instance-backup.module';
 import { BeyondtrustInstanceModule } from './beyondtrust-instance/beyondtrust-instance.module';
 import { BeyondtrustPraConfApiModule } from './beyondtrust-pra-conf-api/beyondtrust-pra-conf-api.module';
+import { DeploymentModule } from './deployment/deployment.module';
 import { DiscrepancyModule } from './discrepancy/discrepancy.module';
 import { GroupPolicyJumpGroupModule } from './group-policy-jump-group/group-policy-jump-group.module';
 import { GroupPolicyJumpointModule } from './group-policy-jumpoint/group-policy-jumpoint.module';
@@ -20,7 +21,6 @@ import { JumpClientModule } from './jump-client/jump-client.module';
 import { JumpGroupModule } from './jump-group/jump-group.module';
 import { JumpItemModule } from './jump-item/jump-item.module';
 import { JumpPolicyModule } from './jump-policy/jump-policy.module';
-import { JumpointNodeModule } from './jumpoint-node/jumpoint-node.module';
 import { JumpointModule } from './jumpoint/jumpoint.module';
 import { LogModule } from './log/log.module';
 import { ServiceManagerApiModule } from './service-manager-api/service-manager-api.module';
@@ -70,7 +70,7 @@ import { UserModule } from './user/user.module';
         DiscrepancyModule,
         LogModule,
         ServiceManagerApiModule,
-        JumpointNodeModule,
+        DeploymentModule,
     ],
     controllers: [AppController],
     providers: [
