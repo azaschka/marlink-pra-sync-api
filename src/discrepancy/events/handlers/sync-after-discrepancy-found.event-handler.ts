@@ -40,29 +40,29 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         }
 
         // For all other entity types: sync onlyInExternalIds ExternalToInternal (create missing records in DB)
-        for (const entityId of onlyInExternalIds) {
-            await this.commandBus.execute(
-                new SyncDiscrepancyByEntityIdCommand(
-                    event.transactionId,
-                    event.payload.tenantId,
-                    entityId,
-                    entityType,
-                    DiscrepancySyncType.ExternalToInternal,
-                ),
-            );
-        }
+        // for (const entityId of onlyInExternalIds) {
+        //     await this.commandBus.execute(
+        //         new SyncDiscrepancyByEntityIdCommand(
+        //             event.transactionId,
+        //             event.payload.tenantId,
+        //             entityId,
+        //             entityType,
+        //             DiscrepancySyncType.ExternalToInternal,
+        //         ),
+        //     );
+        // }
 
         // For all other entity types: sync onlyInInternalIds InternalToExternal (push missing records to BT)
-        for (const entityId of onlyInInternalIds) {
-            await this.commandBus.execute(
-                new SyncDiscrepancyByEntityIdCommand(
-                    event.transactionId,
-                    event.payload.tenantId,
-                    entityId,
-                    entityType,
-                    DiscrepancySyncType.InternalToExternal,
-                ),
-            );
-        }
+        // for (const entityId of onlyInInternalIds) {
+        //     await this.commandBus.execute(
+        //         new SyncDiscrepancyByEntityIdCommand(
+        //             event.transactionId,
+        //             event.payload.tenantId,
+        //             entityId,
+        //             entityType,
+        //             DiscrepancySyncType.InternalToExternal,
+        //         ),
+        //     );
+        // }
     }
 }
