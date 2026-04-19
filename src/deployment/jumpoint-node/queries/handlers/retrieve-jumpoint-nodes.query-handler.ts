@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { FindOptionsWhere, IsNull } from 'typeorm';
+import { FindOptionsWhere, In, IsNull } from 'typeorm';
 import { JumpointNode } from '../../models';
 import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
@@ -16,8 +16,8 @@ export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<Retrieve
             jumpointNodeFindByQuery.certname = query.certname;
         }
 
-        if (query.businessUnit) {
-            jumpointNodeFindByQuery.businessUnit = query.businessUnit;
+        if (query.businessUnits) {
+            jumpointNodeFindByQuery.businessUnit = In(query.businessUnits);
         }
 
         if (query.siteKey) {

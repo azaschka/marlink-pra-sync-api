@@ -88,7 +88,7 @@ export class JumpointNodeController {
                 dtoInput.pageSize,
                 dtoInput.pageNumber,
                 dtoInput.certname,
-                dtoInput.businessUnit,
+                dtoInput.businessUnits,
                 dtoInput.siteKey,
                 dtoInput.customerName,
                 dtoInput.puppetServerDomain,

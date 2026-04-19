@@ -1,3 +1,4 @@
+import { In } from 'typeorm';
 import { JumpointNodeBusinessUnit, JumpointNodeHypervisorType } from '../../enums';
 import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
@@ -22,7 +23,7 @@ describe('RetrieveJumpointNodesQueryHandler', () => {
             10,
             1,
             'cert-1',
-            JumpointNodeBusinessUnit.EG,
+            [JumpointNodeBusinessUnit.EG],
             'site-1',
             'cust-1',
             'puppet-domain',
@@ -35,7 +36,7 @@ describe('RetrieveJumpointNodesQueryHandler', () => {
 
         expect(findByMethod).toHaveBeenCalledWith(
             {
-                businessUnit: JumpointNodeBusinessUnit.EG,
+                businessUnit: In([JumpointNodeBusinessUnit.EG]),
                 certname: 'cert-1',
                 customerName: 'cust-1',
                 hypervisorId: 'hypervisor-1',
