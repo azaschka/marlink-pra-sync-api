@@ -2,7 +2,7 @@ import { In } from 'typeorm';
 import { JumpointNodeBusinessUnit, JumpointNodeHypervisorType } from '../../enums';
 import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
-import { RetrieveJumpointNodesQuery } from '../retrieve-jumpoint-nodes.query';
+import { DeploymentRetrieveJumpointNodesQuery } from '../retrieve-jumpoint-nodes.query';
 import { RetrieveJumpointNodesQueryHandler } from './retrieve-jumpoint-nodes.query-handler';
 
 describe('RetrieveJumpointNodesQueryHandler', () => {
@@ -18,7 +18,7 @@ describe('RetrieveJumpointNodesQueryHandler', () => {
         const expectedResult = [{ id: 1 }] as JumpointNodeEntity[];
         const findByMethod = jest.spyOn(jumpointNodeRepositoryService, 'findBy').mockResolvedValue(expectedResult);
 
-        const query = new RetrieveJumpointNodesQuery(
+        const query = new DeploymentRetrieveJumpointNodesQuery(
             'transaction-id',
             10,
             1,

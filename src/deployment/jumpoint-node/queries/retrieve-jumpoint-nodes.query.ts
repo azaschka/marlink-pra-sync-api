@@ -1,6 +1,6 @@
 import { JumpointNodeBusinessUnit, JumpointNodeHypervisorType } from '../enums';
 
-export class RetrieveJumpointNodesQuery {
+export class DeploymentRetrieveJumpointNodesQuery {
     public readonly queryType = 'retrieve-jumpoint-nodes';
 
     constructor(

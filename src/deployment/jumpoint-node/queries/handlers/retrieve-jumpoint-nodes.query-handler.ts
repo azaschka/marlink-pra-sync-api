@@ -3,13 +3,13 @@ import { FindOptionsWhere, In, IsNull } from 'typeorm';
 import { JumpointNode } from '../../models';
 import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
-import { RetrieveJumpointNodesQuery } from '../retrieve-jumpoint-nodes.query';
+import { DeploymentRetrieveJumpointNodesQuery } from '../retrieve-jumpoint-nodes.query';
 
-@QueryHandler(RetrieveJumpointNodesQuery)
-export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<RetrieveJumpointNodesQuery> {
+@QueryHandler(DeploymentRetrieveJumpointNodesQuery)
+export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<DeploymentRetrieveJumpointNodesQuery> {
     constructor(private readonly jumpointNodeRepositoryService: JumpointNodeRepositoryService) {}
 
-    public async execute(query: RetrieveJumpointNodesQuery): Promise<JumpointNode[]> {
+    public async execute(query: DeploymentRetrieveJumpointNodesQuery): Promise<JumpointNode[]> {
         const jumpointNodeFindByQuery = <FindOptionsWhere<JumpointNodeEntity>>{};
 
         if (query.certname) {
