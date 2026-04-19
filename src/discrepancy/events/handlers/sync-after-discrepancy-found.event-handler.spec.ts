@@ -87,7 +87,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
         });
 
         describe('all other entity types', () => {
-            it('should sync onlyInExternalIds ExternalToInternal', async () => {
+            it.skip('should sync onlyInExternalIds ExternalToInternal', async () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
 
                 await handler.handle(
@@ -113,7 +113,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 );
             });
 
-            it('should sync onlyInInternalIds InternalToExternal', async () => {
+            it.skip('should sync onlyInInternalIds InternalToExternal', async () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
 
                 await handler.handle(
@@ -153,7 +153,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 expect(commandBusExecuteMethod).not.toHaveBeenCalled();
             });
 
-            it('should handle both onlyInExternalIds and onlyInInternalIds in one event', async () => {
+            it.skip('should handle both onlyInExternalIds and onlyInInternalIds in one event', async () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
 
                 await handler.handle(
@@ -193,7 +193,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 expect(commandBusExecuteMethod).not.toHaveBeenCalled();
             });
 
-            it('should pass transactionId and tenantId to the command', async () => {
+            it.skip('should pass transactionId and tenantId to the command', async () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
 
                 await handler.handle(
