@@ -13,7 +13,11 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         DiscrepancyEntityType.JumpClientInstaller,
         DiscrepancyEntityType.Jumpoint,
         DiscrepancyEntityType.GroupPolicyJumpoint,
+        DiscrepancyEntityType.GroupPolicyJumpGroup,
+        DiscrepancyEntityType.GroupPolicyMember,
+        DiscrepancyEntityType.GroupPolicyTeam,
         DiscrepancyEntityType.SessionPolicy,
+        DiscrepancyEntityType.UserGroupPolicy,
     ];
 
     constructor(private readonly commandBus: CommandBus) {}
