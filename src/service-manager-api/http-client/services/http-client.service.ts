@@ -27,7 +27,7 @@ export class HttpClientService {
     public async post<C, O>(cls: ClassConstructor<C> | undefined, url: string, body?: unknown): Promise<O> {
         const result = await firstValueFrom(
             defer(() =>
-                this.httpService.post<O>(url, instanceToPlain(body), {
+                this.httpService.post<O>(url, instanceToPlain(body, { excludeExtraneousValues: true }), {
                     headers: {
                         Authorization: `Bearer ${this.authTokenService.getAuthToken().accessToken}`,
                     },
