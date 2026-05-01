@@ -2,7 +2,7 @@ import { In } from 'typeorm';
 import { JumpointNodeBusinessUnit, JumpointNodeHypervisorType } from '../../enums';
 import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
-import { DeploymentRetrieveJumpointNodesQuery } from '../retrieve-jumpoint-nodes.query';
+import { DeploymentRetrieveJumpointNodesQuery } from '../deployment-retrieve-jumpoint-nodes.query';
 import { RetrieveJumpointNodesQueryHandler } from './retrieve-jumpoint-nodes.query-handler';
 
 describe('RetrieveJumpointNodesQueryHandler', () => {

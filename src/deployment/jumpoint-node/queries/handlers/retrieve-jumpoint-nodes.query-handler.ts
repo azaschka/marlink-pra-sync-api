@@ -4,7 +4,7 @@ import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { JumpointNode } from '../../models';
 import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
-import { DeploymentRetrieveJumpointNodesQuery } from '../retrieve-jumpoint-nodes.query';
+import { DeploymentRetrieveJumpointNodesQuery } from '../deployment-retrieve-jumpoint-nodes.query';
 
 @QueryHandler(DeploymentRetrieveJumpointNodesQuery)
 export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<DeploymentRetrieveJumpointNodesQuery> {
