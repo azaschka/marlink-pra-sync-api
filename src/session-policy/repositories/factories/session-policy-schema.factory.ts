@@ -30,7 +30,7 @@ export class SessionPolicySchemaFactory implements BaseTenantEntitySchemaFactory
                 description: {
                     name: 'description',
                     type: 'text',
-                    nullable: false,
+                    nullable: true,
                 },
                 lastSyncDate: {
                     name: 'last_sync_date',

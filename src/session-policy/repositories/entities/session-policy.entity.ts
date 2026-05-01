@@ -6,10 +6,15 @@ export class SessionPolicyEntity implements SessionPolicy {
     public id!: number;
     public displayName!: string;
     public codeName!: string;
-    public description!: string;
+    public description!: string | null;
     public lastSyncDate!: Date;
 
-    public static create(id: number, displayName: string, codeName: string, description: string): SessionPolicyEntity {
+    public static create(
+        id: number,
+        displayName: string,
+        codeName: string,
+        description: string | null,
+    ): SessionPolicyEntity {
         const entity = new SessionPolicyEntity();
         entity.id = id;
         entity.displayName = displayName;

@@ -20,7 +20,7 @@ export class SessionPolicyRetrievedDtoOutput implements SessionPolicy {
     public codeName!: string;
 
     @ApiProperty({ required: false, type: String, nullable: true, description: 'The session policy description.' })
-    public description!: string;
+    public description!: string | null;
 
     @ApiProperty({
         required: true,

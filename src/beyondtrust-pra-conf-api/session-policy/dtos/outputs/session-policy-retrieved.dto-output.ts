@@ -9,5 +9,5 @@ export class SessionPolicyRetrievedDtoOutput {
     @Expose({ name: 'code_name' })
     public codeName!: string;
 
-    public description!: string;
+    public description!: string | null;
 }
