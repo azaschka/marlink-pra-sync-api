@@ -25,17 +25,29 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const actionName = `${AllExceptionsFilter.ACTION_NAME_PREFIX} ${req.method} ${req.originalUrl}`;
         const truncatedActionName = actionName.length > 950 ? `${actionName.substring(0, 950)}...` : actionName;
 
-        await this.logService.log(
-            truncatedActionName,
-            (req.headers[TRANSACTION_ID_HEADER.toLowerCase()] as string) ?? AllExceptionsFilter.DEFAULT_TRANSACTION_ID,
-            (req.user as { username?: string })?.username ?? AllExceptionsFilter.DEFAULT_INITIATED_BY,
-            JSON.stringify({
-                status,
-                message,
-                stack: exception instanceof Error ? exception.stack : undefined,
-                originalUrl: req.originalUrl,
-            }),
-        );
+        // Always log to stdout first so errors are visible even when the DB itself is unavailable.
+        console.error(`❌ [${new Date().toISOString()}] ${req.method} ${req.originalUrl} → ${status}`, {
+            message,
+            stack: exception instanceof Error ? exception.stack : String(exception),
+        });
+
+        // Best-effort DB log — if this throws (e.g. DB is down) we still responded above.
+        try {
+            await this.logService.log(
+                truncatedActionName,
+                (req.headers[TRANSACTION_ID_HEADER.toLowerCase()] as string) ??
+                    AllExceptionsFilter.DEFAULT_TRANSACTION_ID,
+                (req.user as { username?: string })?.username ?? AllExceptionsFilter.DEFAULT_INITIATED_BY,
+                JSON.stringify({
+                    status,
+                    message,
+                    stack: exception instanceof Error ? exception.stack : undefined,
+                    originalUrl: req.originalUrl,
+                }),
+            );
+        } catch (logError) {
+            console.error('⚠️  Failed to persist exception to DB log:', logError);
+        }
 
         res.status(status).json({
             statusCode: status,
