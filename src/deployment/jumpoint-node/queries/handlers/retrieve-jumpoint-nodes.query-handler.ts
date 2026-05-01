@@ -1,5 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FindOptionsWhere, In, IsNull } from 'typeorm';
+import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { JumpointNode } from '../../models';
 import { JumpointNodeEntity } from '../../repositories/entities';
 import { JumpointNodeRepositoryService } from '../../repositories/services/jumpoint-node-repository.service';
@@ -48,12 +49,21 @@ export class RetrieveJumpointNodesQueryHandler implements IQueryHandler<Deployme
             jumpointNodeFindByQuery.vmId = query.vmId;
         }
 
-        const jumpointNodes = await this.jumpointNodeRepositoryService.findBy(
-            jumpointNodeFindByQuery,
-            query.pageNumber,
-            query.pageSize,
-        );
+        try {
+            const jumpointNodes = await this.jumpointNodeRepositoryService.findBy(
+                jumpointNodeFindByQuery,
+                query.pageNumber,
+                query.pageSize,
+            );
 
-        return jumpointNodes;
+            return jumpointNodes;
+        } catch (error) {
+            console.error(
+                `[${query.transactionId}] RetrieveJumpointNodesQueryHandler: DB query failed.`,
+                `\nFilter: ${JSON.stringify(jumpointNodeFindByQuery)}`,
+                `\nError: ${ErrorProcessorUtility.stringify(error)}`,
+            );
+            throw error;
+        }
     }
 }
