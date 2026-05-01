@@ -1,7 +1,6 @@
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateNodeCommand } from '../../../../service-manager-api/nodes/commands';
 import { NodeCreatedDtoOutput } from '../../../../service-manager-api/nodes/dtos/outputs';
-import { HypervisorType as SMHypervisorType } from '../../../../service-manager-api/nodes/enums';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { JumpointNodeCreatedEvent, JumpointNodeCreationFailedEvent } from '../../events';
 import {
@@ -24,16 +23,14 @@ export class CreateJumpointNodeCommandHandler implements ICommandHandler<CreateJ
     ) {}
 
     public async execute(command: CreateJumpointNodeCommand): Promise<JumpointNode> {
-        // TODO: Remove dummy fallbacks once the Service Manager API marks hypervisorId,
-        //       hypervisorType, and vmId as truly optional (currently still required by SM API).
         const createdNode = await this.commandBus.execute<CreateNodeCommand, NodeCreatedDtoOutput>(
             new CreateNodeCommand(
                 command.transactionId,
                 command.siteKey,
                 mapToSMBusinessUnit(command.businessUnit),
-                command.hypervisorId ?? '1',
-                command.hypervisorType ? mapToSMHypervisorType(command.hypervisorType) : SMHypervisorType.OneEdge,
-                command.vmId ?? 1,
+                command.hypervisorId ?? undefined,
+                command.hypervisorType ? mapToSMHypervisorType(command.hypervisorType) : undefined,
+                command.vmId ?? undefined,
             ),
         );
 
