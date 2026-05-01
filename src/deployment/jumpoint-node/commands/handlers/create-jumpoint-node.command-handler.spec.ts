@@ -1,6 +1,6 @@
 import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateNodeCommand } from '../../../../service-manager-api/nodes/commands';
-import { BusinessUnit, BusinessUnitFullName } from '../../../../service-manager-api/nodes/enums';
+import { BusinessUnit, BusinessUnitFullName, HypervisorType } from '../../../../service-manager-api/nodes/enums';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { JumpointNodeBusinessUnit } from '../../enums';
 import { JumpointNodeCreatedEvent, JumpointNodeCreationFailedEvent } from '../../events';
@@ -33,8 +33,9 @@ describe('CreateJumpointNodeCommandHandler', () => {
             handler.execute(new CreateJumpointNodeCommand('transaction-1', 'site-1', JumpointNodeBusinessUnit.EG)),
         ).rejects.toThrow(expectedError);
 
+        // Dummy fallbacks are injected by the handler until the SM API makes these fields optional.
         expect(commandBusExecute).toHaveBeenCalledWith(
-            new CreateNodeCommand('transaction-1', 'site-1', BusinessUnit.EG),
+            new CreateNodeCommand('transaction-1', 'site-1', BusinessUnit.EG, '1', HypervisorType.OneEdge, 1),
         );
     });
 
