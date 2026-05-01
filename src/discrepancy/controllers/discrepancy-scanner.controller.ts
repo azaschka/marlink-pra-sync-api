@@ -57,6 +57,7 @@ export class DiscrepancyScannerController {
             DiscrepancyEntityType.Team,
             DiscrepancyEntityType.Jumpoint,
             DiscrepancyEntityType.JumpPolicy,
+            DiscrepancyEntityType.SessionPolicy,
             DiscrepancyEntityType.JumpGroup,
             DiscrepancyEntityType.JumpItemProtocolTunnelJump,
             DiscrepancyEntityType.JumpItemRemoteRdp,

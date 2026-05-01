@@ -44,7 +44,7 @@ describe('DiscrepancyScannerController', () => {
 
             await controller.scanAllDiscrepancies('transaction-id-1', 123);
 
-            expect(scanDiscrepanciesSpy).toHaveBeenCalledTimes(13);
+            expect(scanDiscrepanciesSpy).toHaveBeenCalledTimes(14);
         });
     });
 
