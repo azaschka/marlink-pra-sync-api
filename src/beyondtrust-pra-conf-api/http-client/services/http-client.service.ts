@@ -323,29 +323,38 @@ export class HttpClientService {
         method: string,
         urlPath: string,
         beyondtrustInstance: BeyondtrustInstance,
-        params?: unknown,
-        body?: unknown,
+        /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+        _params?: unknown,
+        /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+        _body?: unknown,
     ): string {
         if (error instanceof AxiosError) {
-            const fullUrl = UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath);
+            // const fullUrl = UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath);
             const responseData = error.response?.data ? JSON.stringify(error.response.data) : 'No response data';
 
+            // TODO: Enhance error formatting to include in external monitoring/logging systems, and consider sanitizing sensitive information from logs
             return [
-                `BeyondTrust API Error Details:`,
-                `  Method: ${method}`,
-                `  URL: ${fullUrl}`,
-                `  Status Code: ${error.response?.status || 'Unknown'}`,
-                `  Status Text: ${error.response?.statusText || 'Unknown'}`,
-                `  Error Message: ${error.message}`,
-                `  BT Instance ID: ${beyondtrustInstance.id}`,
-                `  BT Instance Name: ${beyondtrustInstance.name}`,
-                params ? `  Request Params: ${JSON.stringify(params)}` : '',
-                body ? `  Request Body: ${JSON.stringify(body)}` : '',
-                `  Response Data: ${responseData}`,
-                `  Headers: ${error.response?.headers ? JSON.stringify(error.response.headers) : 'No headers'}`,
+                `BT Error: ${error.response?.status || 'Unknown'}, ${error.response?.statusText || 'Unknown'}, ${responseData}`,
             ]
                 .filter(Boolean)
                 .join('\n');
+
+            // return [
+            //     `BeyondTrust API Error Details:`,
+            //     `  Method: ${method}`,
+            //     `  URL: ${fullUrl}`,
+            //     `  Status Code: ${error.response?.status || 'Unknown'}`,
+            //     `  Status Text: ${error.response?.statusText || 'Unknown'}`,
+            //     `  Error Message: ${error.message}`,
+            //     `  BT Instance ID: ${beyondtrustInstance.id}`,
+            //     `  BT Instance Name: ${beyondtrustInstance.name}`,
+            //     _params ? `  Request Params: ${JSON.stringify(_params)}` : '',
+            //     _body ? `  Request Body: ${JSON.stringify(_body)}` : '',
+            //     `  Response Data: ${responseData}`,
+            //     `  Headers: ${error.response?.headers ? JSON.stringify(error.response.headers) : 'No headers'}`,
+            // ]
+            //     .filter(Boolean)
+            //     .join('\n');
         } else {
             const fullUrl = UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath);
             return [
