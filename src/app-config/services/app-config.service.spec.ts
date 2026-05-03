@@ -716,7 +716,7 @@ describe('AppConfigService', () => {
                     connectionLimit: expected.extra.connectionLimit,
                     connectTimeout: 10000,
                     waitForConnections: true,
-                    queueLimit: 10,
+                    queueLimit: 100,
                 },
             });
         });
@@ -777,7 +777,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '0 */30 * * *',
+                        cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
@@ -786,7 +786,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '0 */30 * * *',
+                        cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
@@ -798,7 +798,7 @@ describe('AppConfigService', () => {
                     maxBatchSize: 100,
                     scan: {
                         cronJobTimezone: 'Europe/Berlin',
-                        cronJobExpressions: '0 */30 * * *',
+                        cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                     },
