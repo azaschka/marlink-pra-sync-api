@@ -20,7 +20,11 @@ export abstract class DefaultAppConfig {
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 30000; // 30 seconds - simple queries should be fast
     private static readonly DB_EXTRA_MAX_CONNECTIONS = 20; // Increased for better throughput during sync
     private static readonly DB_CONNECT_TIMEOUT_IN_MS = 10000; // 10 seconds to establish connection
-    private static readonly DB_QUEUE_LIMIT = 10; // Max requests waiting for connection
+    // Sagas can dispatch up to 7 concurrent ScanEntityRelationDiscrepancyCommandHandler instances
+    // (GroupPolicySaga: 4, UserSaga: 1, JumpointSaga: 1, TeamSaga: 1). Each uses pLimit internally,
+    // so burst demand can spike well above connectionLimit. A large queue prevents "Queue limit reached"
+    // errors by making excess requests wait rather than fail outright.
+    private static readonly DB_QUEUE_LIMIT = 100; // Max requests waiting for a free connection slot
     private static readonly DB_WAIT_FOR_CONNECTIONS = true; // Wait for available connection
 
     // Throttle settings
