@@ -9,8 +9,13 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
     let commandBus: CommandBus;
 
     beforeEach(() => {
+        jest.spyOn(console, 'warn').mockImplementation();
         commandBus = mockCommandBus();
         handler = new SyncAfterDiscrepancyFoundEventHandler(commandBus);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     describe('handle', () => {
@@ -83,6 +88,104 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 );
 
                 expect(commandBusExecuteMethod).toHaveBeenCalledTimes(2);
+            });
+
+            it('should continue syncing remaining entities when some operations fail', async () => {
+                // Arrange: middle command rejects, but Promise.allSettled ensures all 3 are attempted
+                const commandBusExecuteMethod = jest
+                    .spyOn(commandBus, 'execute')
+                    .mockResolvedValueOnce(undefined)
+                    .mockRejectedValueOnce(new Error('Sync failed'))
+                    .mockResolvedValueOnce(undefined);
+
+                // Act
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.JumpClient, {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [3],
+                    }),
+                );
+
+                // Assert – all 3 attempted despite the middle failure
+                expect(commandBusExecuteMethod).toHaveBeenCalledTimes(3);
+            });
+
+            it('should log a warning when some sync operations fail', async () => {
+                // Arrange
+                jest.spyOn(commandBus, 'execute')
+                    .mockResolvedValueOnce(undefined)
+                    .mockRejectedValueOnce(new Error('Sync failed'))
+                    .mockResolvedValueOnce(undefined);
+
+                // Act
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.Jumpoint, {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [3],
+                    }),
+                );
+
+                // Assert
+                expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('1/3 auto-sync operations failed'));
+                expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Will retry on next scan'));
+            });
+
+            it('should not warn when all sync operations succeed', async () => {
+                // Arrange
+                jest.spyOn(commandBus, 'execute').mockResolvedValue(undefined);
+
+                // Act
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.JumpClient, {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [3],
+                    }),
+                );
+
+                // Assert
+                expect(console.warn).not.toHaveBeenCalled();
+            });
+
+            it('should return immediately without calling commandBus when no entity ids exist', async () => {
+                // Arrange
+                const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+
+                // Act
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.JumpClient, {
+                        mismatchedIds: [],
+                        onlyInExternalIds: [],
+                        onlyInInternalIds: [],
+                    }),
+                );
+
+                // Assert – early exit path: pLimit never reached
+                expect(commandBusExecuteMethod).not.toHaveBeenCalled();
+            });
+
+            it('should pass transactionId and tenantId to all sync commands', async () => {
+                // Arrange
+                const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+
+                // Act
+                await handler.handle(
+                    buildEvent(
+                        DiscrepancyEntityType.Jumpoint,
+                        { mismatchedIds: [5], onlyInExternalIds: [], onlyInInternalIds: [] },
+                        { transactionId: 'tx-parallel-123', tenantId: 42 },
+                    ),
+                );
+
+                // Assert
+                expect(commandBusExecuteMethod).toHaveBeenCalledWith(
+                    expect.objectContaining<Partial<SyncDiscrepancyByEntityIdCommand>>({
+                        transactionId: 'tx-parallel-123',
+                        tenantId: 42,
+                    }),
+                );
             });
         });
 

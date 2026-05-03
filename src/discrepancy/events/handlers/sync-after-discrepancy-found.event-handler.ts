@@ -1,4 +1,5 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
+import pLimit from 'p-limit';
 import { SyncDiscrepancyByEntityIdCommand } from '../../commands';
 import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
@@ -20,23 +21,44 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         DiscrepancyEntityType.UserGroupPolicy,
     ];
 
+    // Limit concurrent BeyondTrust API sync calls to avoid overwhelming the external API
+    // while keeping the frontend responsive. Failures are tolerated — next 30-min scan retries.
+    private static readonly SYNC_CONCURRENCY_LIMIT = 3;
+
     constructor(private readonly commandBus: CommandBus) {}
 
     public async handle(event: DiscrepancyScannedEvent) {
         const { entityType, mismatchedIds, onlyInExternalIds, onlyInInternalIds } = event.payload.discrepancyOverview;
 
         if (SyncAfterDiscrepancyFoundEventHandler.AUTO_SYNC_ENTITY_TYPES.includes(entityType)) {
-            const allDiscrepancyEntityIds = new Set([...mismatchedIds, ...onlyInExternalIds, ...onlyInInternalIds]);
+            const allDiscrepancyEntityIds = [
+                ...new Set([...mismatchedIds, ...onlyInExternalIds, ...onlyInInternalIds]),
+            ];
 
-            for (const entityId of allDiscrepancyEntityIds) {
-                await this.commandBus.execute(
-                    new SyncDiscrepancyByEntityIdCommand(
-                        event.transactionId,
-                        event.payload.tenantId,
-                        entityId,
-                        entityType,
-                        DiscrepancySyncType.ExternalToInternal,
+            if (allDiscrepancyEntityIds.length === 0) return;
+
+            const limit = pLimit(SyncAfterDiscrepancyFoundEventHandler.SYNC_CONCURRENCY_LIMIT);
+
+            const results = await Promise.allSettled(
+                allDiscrepancyEntityIds.map((entityId) =>
+                    limit(() =>
+                        this.commandBus.execute(
+                            new SyncDiscrepancyByEntityIdCommand(
+                                event.transactionId,
+                                event.payload.tenantId,
+                                entityId,
+                                entityType,
+                                DiscrepancySyncType.ExternalToInternal,
+                            ),
+                        ),
                     ),
+                ),
+            );
+
+            const failureCount = results.filter((r) => r.status === 'rejected').length;
+            if (failureCount > 0) {
+                console.warn(
+                    `⚠️ [${event.transactionId}] ${failureCount}/${allDiscrepancyEntityIds.length} auto-sync operations failed for ${entityType}. Will retry on next scan.`,
                 );
             }
 
