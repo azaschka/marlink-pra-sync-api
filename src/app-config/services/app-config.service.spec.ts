@@ -612,6 +612,8 @@ describe('AppConfigService', () => {
     describe('database', () => {
         it.each([
             {
+                // Behavior settings (retryAttempts, pool, timeouts) are hardcoded via DefaultAppConfig
+                // and cannot be overridden by environment variables. Only credentials vary per environment.
                 input: {
                     env: 'production',
                     type: 'mysql',
@@ -620,12 +622,6 @@ describe('AppConfigService', () => {
                     username: 'root',
                     password: 'password',
                     database: 'test',
-                    retryAttempts: 30,
-                    retryDelayInMs: 5000,
-                    maxQueryExecutionTimeInMs: 1000,
-                    extra: {
-                        connectionLimit: 12,
-                    },
                 },
                 expected: {
                     type: 'mysql',
@@ -637,11 +633,11 @@ describe('AppConfigService', () => {
                     synchronize: false,
                     logging: false,
                     autoLoadEntities: true,
-                    retryAttempts: 30,
-                    retryDelayInMs: 5000,
-                    maxQueryExecutionTimeInMs: 1000,
+                    retryAttempts: 10,
+                    retryDelayInMs: 10000,
+                    maxQueryExecutionTimeInMs: 30000,
                     extra: {
-                        connectionLimit: 12,
+                        connectionLimit: 20,
                     },
                 },
             },
@@ -684,14 +680,6 @@ describe('AppConfigService', () => {
                         return input.password;
                     case 'DB_NAME':
                         return input.database;
-                    case 'DB_RETRY_ATTEMPTS':
-                        return input.retryAttempts;
-                    case 'DB_RETRY_DELAY_IN_MS':
-                        return input.retryDelayInMs;
-                    case 'DB_MAX_QUERY_EXECUTION_TIME_IN_MS':
-                        return input.maxQueryExecutionTimeInMs;
-                    case 'DB_EXTRA_MAX_CONNECTIONS':
-                        return input.extra?.connectionLimit;
                     default:
                         return undefined;
                 }
@@ -713,7 +701,7 @@ describe('AppConfigService', () => {
                 retryDelay: expected.retryDelayInMs,
                 maxQueryExecutionTime: expected.maxQueryExecutionTimeInMs,
                 extra: {
-                    connectionLimit: expected.extra.connectionLimit,
+                    connectionLimit: 20,
                     connectTimeout: 10000,
                     waitForConnections: true,
                     queueLimit: 100,

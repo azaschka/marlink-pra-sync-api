@@ -221,33 +221,23 @@ export class AppConfigService {
             synchronize: !this.isProduction,
             logging: false,
             autoLoadEntities: true,
-            retryAttempts:
-                this.configService.get<number>('DB_RETRY_ATTEMPTS') ?? DefaultAppConfig.database.retryAttempts,
-            retryDelay: this.configService.get<number>('DB_RETRY_DELAY_IN_MS') ?? DefaultAppConfig.database.retryDelay,
-            maxQueryExecutionTime:
-                this.configService.get<number>('DB_MAX_QUERY_EXECUTION_TIME_IN_MS') ??
-                DefaultAppConfig.database.maxQueryExecutionTime, // Only applicable to MariaDB and MySQL
+            retryAttempts: DefaultAppConfig.database.retryAttempts,
+            retryDelay: DefaultAppConfig.database.retryDelay,
+            maxQueryExecutionTime: DefaultAppConfig.database.maxQueryExecutionTime, // Only applicable to MariaDB and MySQL
             extra: {
                 connectionLimit: this.databaseMaxConnections,
                 // Connection timeout: abort if can't connect within 10 seconds (MySQL2 option)
-                connectTimeout:
-                    this.configService.get<number>('DB_CONNECT_TIMEOUT_IN_MS') ??
-                    DefaultAppConfig.database.connectTimeout,
+                connectTimeout: DefaultAppConfig.database.connectTimeout,
                 // Wait for available connection before timing out (MySQL2 option)
-                waitForConnections:
-                    this.configService.get<boolean>('DB_WAIT_FOR_CONNECTIONS') ??
-                    DefaultAppConfig.database.waitForConnections,
+                waitForConnections: DefaultAppConfig.database.waitForConnections,
                 // Max requests waiting for connection from pool (MySQL2 option)
-                queueLimit: this.configService.get<number>('DB_QUEUE_LIMIT') ?? DefaultAppConfig.database.queueLimit,
+                queueLimit: DefaultAppConfig.database.queueLimit,
             },
         };
     }
 
     public get databaseMaxConnections(): number {
-        return Number(
-            this.configService.get<number>('DB_EXTRA_MAX_CONNECTIONS') ??
-                DefaultAppConfig.database.extra.connectionLimit,
-        );
+        return DefaultAppConfig.database.extra.connectionLimit;
     }
 
     public get storage() {
