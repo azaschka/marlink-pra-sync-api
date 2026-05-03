@@ -24,7 +24,14 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
         private readonly eventBus: EventBus,
     ) {
         const maxConnections = this.appConfigService.databaseMaxConnections;
-        const concurrencyLimit = Math.floor(maxConnections / 2);
+        // Sagas dispatch up to 7 concurrent instances of this handler simultaneously
+        // (GroupPolicySaga: 4 types, UserSaga: 1, JumpointSaga: 1, TeamSaga: 1).
+        // Using /2 like ScanDiscrepancyCommandHandler would allow 7 * (maxConnections/2)
+        // concurrent DB connections, which exhausts the pool and fills the queue.
+        // Dividing by 8 ensures all concurrent instances together stay within the pool:
+        //   maxConnections=20  → pLimit(2): 7 handlers * 2 =  14 connections (pool: 20) ✅
+        //   maxConnections=300 → pLimit(37): 7 handlers * 37 = 259 connections (pool: 300) ✅
+        const concurrencyLimit = Math.max(2, Math.floor(maxConnections / 8));
         this.dbConnLimit = pLimit(concurrencyLimit);
     }
 
@@ -70,12 +77,27 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                     discrepancyStrategy.relationalEntityComparisonProps!,
                 );
 
+                // Pre-fetch all existing discrepancy records scoped to this parent in a single query.
+                // Builds a foreignEntityId → id Map to replace N individual findOne calls below.
+                const existingDiscrepancies = await this.discrepancyRepositoryService.findManyByEntityTypeAndEntityId(
+                    command.tenantId,
+                    command.entityType,
+                    parentId,
+                );
+                const existingIdByForeignEntityId = new Map<number, number>(
+                    existingDiscrepancies
+                        .filter((d) => d.foreignEntityId !== undefined && d.foreignEntityId !== null)
+                        .map((d) => [d.foreignEntityId!, d.id]),
+                );
+
+                const parentProp = discrepancyStrategy.relationalEntityComparisonProps!.parent;
+                const childProp = discrepancyStrategy.relationalEntityComparisonProps!.child;
+
                 // Mark identical data as synced
                 await Promise.all(
-                    identicalData.map((data, index) =>
-                        this.dbConnLimit(async () => {
-                            await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                            return RetryUtility.executeWithRetry(
+                    identicalData.map((data) =>
+                        this.dbConnLimit(() =>
+                            RetryUtility.executeWithRetry(
                                 () =>
                                     discrepancyStrategy.dbMarkAsSyncedFunc(
                                         command.transactionId,
@@ -83,108 +105,81 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                                         data,
                                     ),
                                 `Mark entity (parent: ${parentId}) as synced`,
-                            );
-                        }),
+                            ),
+                        ),
                     ),
                 );
 
                 // Handle data which only exist in BT
                 await Promise.all(
-                    onlyInBt.map((bt, index) =>
-                        this.dbConnLimit(async () => {
-                            await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                            return RetryUtility.executeWithRetry(async () => {
-                                const existingDiscrepancy =
-                                    await this.discrepancyRepositoryService.findOneByEntityTypeEntityIdAndForeignEntityId(
-                                        command.tenantId,
-                                        command.entityType,
-                                        bt[discrepancyStrategy.relationalEntityComparisonProps!.parent] as number,
-                                        bt[discrepancyStrategy.relationalEntityComparisonProps!.child] as number,
-                                    );
-
-                                await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                                    id: existingDiscrepancy?.id,
-                                    entityType: command.entityType,
-                                    entityId: bt[discrepancyStrategy.relationalEntityComparisonProps!.parent] as number,
-                                    foreignEntityId: bt[
-                                        discrepancyStrategy.relationalEntityComparisonProps!.child
-                                    ] as number,
-                                    internalData: undefined,
-                                    externalData: bt as unknown as Record<string, unknown>,
-                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
-                                });
-                            }, `Save discrepancy for entity (parent: ${parentId}, child: ${bt[discrepancyStrategy.relationalEntityComparisonProps!.child]}) (only in BT)`);
-                        }),
-                    ),
+                    onlyInBt.map((bt) => {
+                        const entityId = bt[parentProp] as number;
+                        const foreignEntityId = bt[childProp] as number;
+                        return this.dbConnLimit(() =>
+                            RetryUtility.executeWithRetry(
+                                () =>
+                                    this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                        id: existingIdByForeignEntityId.get(foreignEntityId),
+                                        entityType: command.entityType,
+                                        entityId: entityId,
+                                        foreignEntityId: foreignEntityId,
+                                        internalData: undefined,
+                                        externalData: bt as unknown as Record<string, unknown>,
+                                        lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                    }),
+                                `Save discrepancy for entity (parent: ${parentId}, child: ${foreignEntityId}) (only in BT)`,
+                            ),
+                        );
+                    }),
                 );
 
                 // Handle data which only exist in DB
                 await Promise.all(
-                    onlyInDb.map((db, index) =>
-                        this.dbConnLimit(async () => {
-                            await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                            return RetryUtility.executeWithRetry(async () => {
-                                const existingDiscrepancy =
-                                    await this.discrepancyRepositoryService.findOneByEntityTypeEntityIdAndForeignEntityId(
-                                        command.tenantId,
-                                        command.entityType,
-                                        db[discrepancyStrategy.relationalEntityComparisonProps!.parent] as number,
-                                        db[discrepancyStrategy.relationalEntityComparisonProps!.child] as number,
-                                    );
-
-                                await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                                    id: existingDiscrepancy?.id,
-                                    entityType: command.entityType,
-                                    entityId: db[discrepancyStrategy.relationalEntityComparisonProps!.parent] as number,
-                                    foreignEntityId: db[
-                                        discrepancyStrategy.relationalEntityComparisonProps!.child
-                                    ] as number,
-                                    internalData: db as unknown as Record<string, unknown>,
-                                    externalData: undefined,
-                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
-                                });
-                            }, `Save discrepancy for entity (parent: ${parentId}, child: ${db[discrepancyStrategy.relationalEntityComparisonProps!.child]}) (only in DB)`);
-                        }),
-                    ),
+                    onlyInDb.map((db) => {
+                        const entityId = db[parentProp] as number;
+                        const foreignEntityId = db[childProp] as number;
+                        return this.dbConnLimit(() =>
+                            RetryUtility.executeWithRetry(
+                                () =>
+                                    this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                        id: existingIdByForeignEntityId.get(foreignEntityId),
+                                        entityType: command.entityType,
+                                        entityId: entityId,
+                                        foreignEntityId: foreignEntityId,
+                                        internalData: db as unknown as Record<string, unknown>,
+                                        externalData: undefined,
+                                        lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                    }),
+                                `Save discrepancy for entity (parent: ${parentId}, child: ${foreignEntityId}) (only in DB)`,
+                            ),
+                        );
+                    }),
                 );
 
                 // Handle data which have different content
                 await Promise.all(
-                    differentDataPairs.map((pair, index) =>
-                        this.dbConnLimit(async () => {
-                            await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                            return RetryUtility.executeWithRetry(async () => {
-                                const entityId = pair.bt[
-                                    discrepancyStrategy.relationalEntityComparisonProps!.parent
-                                ] as number;
-                                const foreignEntityId = pair.bt[
-                                    discrepancyStrategy.relationalEntityComparisonProps!.child
-                                ] as number;
-
-                                const existingDiscrepancy =
-                                    await this.discrepancyRepositoryService.findOneByEntityTypeEntityIdAndForeignEntityId(
-                                        command.tenantId,
-                                        command.entityType,
-                                        entityId,
-                                        foreignEntityId,
-                                    );
-
-                                await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                                    id: existingDiscrepancy?.id,
-                                    entityType: command.entityType,
-                                    entityId: entityId,
-                                    foreignEntityId: foreignEntityId,
-                                    internalData: pair.db as unknown as Record<string, unknown>,
-                                    externalData: pair.bt as unknown as Record<string, unknown>,
-                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
-                                });
-                            }, `Save discrepancy for mismatched entity (parent: ${parentId}, child: ${pair.bt[discrepancyStrategy.relationalEntityComparisonProps!.child]})`);
-                        }),
-                    ),
+                    differentDataPairs.map((pair) => {
+                        const entityId = pair.bt[parentProp] as number;
+                        const foreignEntityId = pair.bt[childProp] as number;
+                        return this.dbConnLimit(() =>
+                            RetryUtility.executeWithRetry(
+                                () =>
+                                    this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                        id: existingIdByForeignEntityId.get(foreignEntityId),
+                                        entityType: command.entityType,
+                                        entityId: entityId,
+                                        foreignEntityId: foreignEntityId,
+                                        internalData: pair.db as unknown as Record<string, unknown>,
+                                        externalData: pair.bt as unknown as Record<string, unknown>,
+                                        lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                    }),
+                                `Save discrepancy for mismatched entity (parent: ${parentId}, child: ${foreignEntityId})`,
+                            ),
+                        );
+                    }),
                 );
 
                 // Delete obsolete discrepancies with retry
-                await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs);
                 await RetryUtility.executeWithRetry(
                     () =>
                         this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
@@ -200,18 +195,10 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                     totalBtData: btData.length,
                     totalDbData: dbData.length,
                     parentId: parentId,
-                    identicalIds: identicalData.map(
-                        (d) => d[discrepancyStrategy.relationalEntityComparisonProps!.child] as number,
-                    ),
-                    onlyInExternalIds: onlyInBt.map(
-                        (d) => d[discrepancyStrategy.relationalEntityComparisonProps!.child] as number,
-                    ),
-                    onlyInInternalIds: onlyInDb.map(
-                        (d) => d[discrepancyStrategy.relationalEntityComparisonProps!.child] as number,
-                    ),
-                    mismatchedIds: differentDataPairs.map(
-                        (pair) => pair.bt[discrepancyStrategy.relationalEntityComparisonProps!.child] as number,
-                    ),
+                    identicalIds: identicalData.map((d) => d[childProp] as number),
+                    onlyInExternalIds: onlyInBt.map((d) => d[childProp] as number),
+                    onlyInInternalIds: onlyInDb.map((d) => d[childProp] as number),
+                    mismatchedIds: differentDataPairs.map((pair) => pair.bt[childProp] as number),
                 };
 
                 this.eventBus.publish(
