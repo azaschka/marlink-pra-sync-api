@@ -90,7 +90,6 @@ describe('DiscrepancyScannerService', () => {
 
             jest.spyOn(RetryUtility, 'delay').mockResolvedValue();
             jest.spyOn(RetryUtility, 'executeWithRetry').mockResolvedValue(mockPageData);
-            jest.spyOn(console, 'log').mockImplementation();
 
             // Mock the pagination to call our callback
             jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockImplementation(async (callback) => {
@@ -104,8 +103,6 @@ describe('DiscrepancyScannerService', () => {
 
             // Assert
             expect(RetryUtility.executeWithRetry).toHaveBeenCalledTimes(2);
-            expect(console.log).toHaveBeenCalledWith(expect.stringContaining('📄 Fetching page 1'));
-            expect(console.log).toHaveBeenCalledWith(expect.stringContaining('📄 Fetching page 2'));
         });
 
         it('should propagate errors from BeyondTrust API', async () => {

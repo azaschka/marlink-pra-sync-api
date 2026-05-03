@@ -53,8 +53,6 @@ export class DiscrepancyScannerService {
         await RetryUtility.delay(DiscrepancyScannerService.DELAY_BETWEEN_CALLS_MS);
 
         const rawData = await PaginationUtility.queryUntilDuplicatePage(async (pageNumber: number) => {
-            console.log(`📄 Fetching page ${pageNumber} for ${entityType} [Started: ${new Date().toISOString()}]`);
-
             return (await RetryUtility.executeWithRetry(
                 () =>
                     discrepancyStrategy.btRetrieveFunc(
