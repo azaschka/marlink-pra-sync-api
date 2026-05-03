@@ -45,8 +45,10 @@ describe('ScanDiscrepancyCommandHandler', () => {
             get: jest.fn().mockReturnValue(mockStrategy),
         } as unknown as DiscrepancyStrategyProviderService;
 
+        // findManyByEntityType replaces the old findOneByEntityTypeAndEntityId pattern.
+        // Default: empty array → Map is empty → all createOrUpdateById calls get id: undefined.
         discrepancyRepositoryService = {
-            findOneByEntityTypeAndEntityId: jest.fn().mockResolvedValue(null),
+            findManyByEntityType: jest.fn().mockResolvedValue([]),
             createOrUpdateById: jest.fn().mockResolvedValue(undefined),
             deleteByLastModificationDateBefore: jest.fn().mockResolvedValue(undefined),
         } as unknown as DiscrepancyRepositoryService;
@@ -56,7 +58,6 @@ describe('ScanDiscrepancyCommandHandler', () => {
             fetchFromBeyondTrust: jest.fn(),
             fetchFromDatabase: jest.fn(),
             analyzeDiscrepancies: jest.fn(),
-            delayBetweenCallsMs: 10,
         } as unknown as DiscrepancyScannerService;
 
         eventBus = {
@@ -71,7 +72,6 @@ describe('ScanDiscrepancyCommandHandler', () => {
             eventBus,
         );
 
-        jest.spyOn(RetryUtility, 'delay').mockResolvedValue();
         jest.spyOn(RetryUtility, 'executeWithRetry').mockImplementation((fn) => fn());
     });
 
@@ -120,6 +120,10 @@ describe('ScanDiscrepancyCommandHandler', () => {
                 DiscrepancyEntityType.User,
             );
             expect(discrepancyScannerService.analyzeDiscrepancies).toHaveBeenCalledWith(btData, dbData);
+            expect(discrepancyRepositoryService.findManyByEntityType).toHaveBeenCalledWith(
+                1,
+                DiscrepancyEntityType.User,
+            );
             expect(mockStrategy.dbMarkAsSyncedFunc).toHaveBeenCalledTimes(2);
             expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).toHaveBeenCalled();
             expect(eventBus.publish).toHaveBeenCalledWith(expect.any(DiscrepancyScannedEvent));
@@ -396,28 +400,27 @@ describe('ScanDiscrepancyCommandHandler', () => {
             await expect(handler.execute(command)).rejects.toThrow(error);
         });
 
-        it('should handle existing discrepancies when saving', async () => {
-            // Arrange
+        it('should use existing discrepancy id from pre-fetched Map when saving', async () => {
+            // Arrange: findManyByEntityType returns an existing record for entityId=1 with id=100.
+            // The Map lookup replaces the old per-item findOneByEntityTypeAndEntityId call.
             const command = new ScanDiscrepancyCommand('txn-existing', 10, DiscrepancyEntityType.User);
-            const existingDiscrepancy = { id: 100 };
 
             const btData = [{ id: 1, name: 'User1' }];
-            const dbData: unknown[] = [];
 
             (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockResolvedValue({
                 raw: btData,
                 transformed: btData,
             });
-            (discrepancyScannerService.fetchFromDatabase as jest.Mock).mockResolvedValue(dbData);
+            (discrepancyScannerService.fetchFromDatabase as jest.Mock).mockResolvedValue([]);
             (discrepancyScannerService.analyzeDiscrepancies as jest.Mock).mockReturnValue({
                 identical: [],
                 onlyInBt: btData,
                 onlyInDb: [],
                 differentPairs: [],
             });
-            (discrepancyRepositoryService.findOneByEntityTypeAndEntityId as jest.Mock).mockResolvedValue(
-                existingDiscrepancy,
-            );
+            (discrepancyRepositoryService.findManyByEntityType as jest.Mock).mockResolvedValue([
+                { entityId: 1, id: 100 },
+            ]);
 
             // Act
             await handler.execute(command);
@@ -431,6 +434,89 @@ describe('ScanDiscrepancyCommandHandler', () => {
                 externalData: { id: 1, name: 'User1' },
                 lastModificationDate: expect.any(Date),
             });
+        });
+
+        it('should resolve existing ids via Map for both onlyInDb and differentPairs', async () => {
+            // Arrange: two existing records – one for a DB-only entity, one for a mismatched entity.
+            const command = new ScanDiscrepancyCommand('txn-map-test', 1, DiscrepancyEntityType.User);
+
+            (discrepancyRepositoryService.findManyByEntityType as jest.Mock).mockResolvedValue([
+                { entityId: 5, id: 200 },
+                { entityId: 6, id: 300 },
+            ]);
+
+            (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockResolvedValue({
+                raw: [{ id: 5, name: 'User5_Updated' }],
+                transformed: [{ id: 5, name: 'User5_Updated' }],
+            });
+            (discrepancyScannerService.fetchFromDatabase as jest.Mock).mockResolvedValue([
+                { id: 5, name: 'User5_Old' },
+                { id: 6, name: 'User6' },
+            ]);
+            (discrepancyScannerService.analyzeDiscrepancies as jest.Mock).mockReturnValue({
+                identical: [],
+                onlyInBt: [],
+                onlyInDb: [{ id: 6, name: 'User6' }],
+                differentPairs: [
+                    {
+                        bt: { id: 5, name: 'User5_Updated' },
+                        db: { id: 5, name: 'User5_Old' },
+                    },
+                ],
+            });
+
+            // Act
+            await handler.execute(command);
+
+            // Assert – differentPairs uses id: 200, onlyInDb uses id: 300
+            expect(discrepancyRepositoryService.createOrUpdateById).toHaveBeenCalledWith(1, {
+                id: 200,
+                entityType: DiscrepancyEntityType.User,
+                entityId: 5,
+                internalData: { id: 5, name: 'User5_Old' },
+                externalData: { id: 5, name: 'User5_Updated' },
+                lastModificationDate: expect.any(Date),
+            });
+            expect(discrepancyRepositoryService.createOrUpdateById).toHaveBeenCalledWith(1, {
+                id: 300,
+                entityType: DiscrepancyEntityType.User,
+                entityId: 6,
+                internalData: { id: 6, name: 'User6' },
+                externalData: undefined,
+                lastModificationDate: expect.any(Date),
+            });
+        });
+
+        it('should call findManyByEntityType exactly once per scan regardless of discrepancy count', async () => {
+            // Arrange: 30 discrepancies – the pre-fetch must happen once, not once per item.
+            const command = new ScanDiscrepancyCommand('txn-once', 1, DiscrepancyEntityType.User);
+
+            const manyRecords = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: `User${i + 1}` }));
+            const existingDiscrepancies = manyRecords.map((r) => ({ entityId: r.id, id: r.id + 1000 }));
+
+            (discrepancyRepositoryService.findManyByEntityType as jest.Mock).mockResolvedValue(existingDiscrepancies);
+            (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockResolvedValue({
+                raw: manyRecords,
+                transformed: manyRecords,
+            });
+            (discrepancyScannerService.fetchFromDatabase as jest.Mock).mockResolvedValue([]);
+            (discrepancyScannerService.analyzeDiscrepancies as jest.Mock).mockReturnValue({
+                identical: [],
+                onlyInBt: manyRecords,
+                onlyInDb: [],
+                differentPairs: [],
+            });
+
+            // Act
+            await handler.execute(command);
+
+            // Assert: one pre-fetch, not 30
+            expect(discrepancyRepositoryService.findManyByEntityType).toHaveBeenCalledTimes(1);
+            expect(discrepancyRepositoryService.findManyByEntityType).toHaveBeenCalledWith(
+                1,
+                DiscrepancyEntityType.User,
+            );
+            expect(discrepancyRepositoryService.createOrUpdateById).toHaveBeenCalledTimes(30);
         });
 
         it('should delete obsolete discrepancies after scan', async () => {
@@ -483,9 +569,8 @@ describe('ScanDiscrepancyCommandHandler', () => {
             // Act
             await handler.execute(command);
 
-            // Assert
+            // Assert – all 50 operations complete regardless of concurrency limit
             expect(discrepancyRepositoryService.createOrUpdateById).toHaveBeenCalledTimes(50);
-            // pLimit should control concurrency (hard to test directly, but operations should complete)
         });
     });
 });

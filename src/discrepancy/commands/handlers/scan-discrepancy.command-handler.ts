@@ -63,100 +63,88 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 differentPairs: differentDataPairs,
             } = this.discrepancyScannerService.analyzeDiscrepancies(btData, dbData);
 
+            // Pre-fetch all existing discrepancy records for this entity type in a single query.
+            // Builds an entityId → id Map to replace N individual findOne calls in the loops below,
+            // reducing DB round-trips from O(n) to O(1) per upsert. pLimit handles concurrency.
+            const existingDiscrepancies = await this.discrepancyRepositoryService.findManyByEntityType(
+                command.tenantId,
+                command.entityType,
+            );
+            const existingIdByEntityId = new Map<number, number>(existingDiscrepancies.map((d) => [d.entityId, d.id]));
+
             // Mark identical data as synced
             await Promise.all(
-                identicalData.map((data, index) =>
-                    this.dbConnLimit(async () => {
-                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                        return RetryUtility.executeWithRetry(
+                identicalData.map((data) =>
+                    this.dbConnLimit(() =>
+                        RetryUtility.executeWithRetry(
                             () => discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data),
                             `Mark entity ${data.id} as synced`,
-                        );
-                    }),
+                        ),
+                    ),
                 ),
             );
 
             // Handle data which only exist in BT
             await Promise.all(
-                onlyInBt.map((bt, index) =>
-                    this.dbConnLimit(async () => {
-                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                        return RetryUtility.executeWithRetry(async () => {
-                            const existingDiscrepancy =
-                                await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                                    command.tenantId,
-                                    command.entityType,
-                                    bt.id,
-                                );
-
-                            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                                id: existingDiscrepancy?.id,
-                                entityType: command.entityType,
-                                entityId: bt.id,
-                                internalData: undefined,
-                                externalData: bt as unknown as Record<string, unknown>,
-                                lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
-                            });
-                        }, `Save discrepancy for entity ${bt.id} (only in BT)`);
-                    }),
+                onlyInBt.map((bt) =>
+                    this.dbConnLimit(() =>
+                        RetryUtility.executeWithRetry(
+                            () =>
+                                this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                    id: existingIdByEntityId.get(bt.id),
+                                    entityType: command.entityType,
+                                    entityId: bt.id,
+                                    internalData: undefined,
+                                    externalData: bt as unknown as Record<string, unknown>,
+                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                }),
+                            `Save discrepancy for entity ${bt.id} (only in BT)`,
+                        ),
+                    ),
                 ),
             );
 
             // Handle data which only exist in DB
             await Promise.all(
-                onlyInDb.map((db, index) =>
-                    this.dbConnLimit(async () => {
-                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                        return RetryUtility.executeWithRetry(async () => {
-                            const existingDiscrepancy =
-                                await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                                    command.tenantId,
-                                    command.entityType,
-                                    db.id,
-                                );
-
-                            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                                id: existingDiscrepancy?.id,
-                                entityType: command.entityType,
-                                entityId: db.id,
-                                internalData: db as unknown as Record<string, unknown>,
-                                externalData: undefined,
-                                lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
-                            });
-                        }, `Save discrepancy for entity ${db.id} (only in DB)`);
-                    }),
+                onlyInDb.map((db) =>
+                    this.dbConnLimit(() =>
+                        RetryUtility.executeWithRetry(
+                            () =>
+                                this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                    id: existingIdByEntityId.get(db.id),
+                                    entityType: command.entityType,
+                                    entityId: db.id,
+                                    internalData: db as unknown as Record<string, unknown>,
+                                    externalData: undefined,
+                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                }),
+                            `Save discrepancy for entity ${db.id} (only in DB)`,
+                        ),
+                    ),
                 ),
             );
 
             // Handle data which have different content
             await Promise.all(
-                differentDataPairs.map((pair, index) =>
-                    this.dbConnLimit(async () => {
-                        await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs * index);
-                        return RetryUtility.executeWithRetry(async () => {
-                            const entityId = pair.bt.id; // use BT id to represent the entityId
-                            const existingDiscrepancy =
-                                await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
-                                    command.tenantId,
-                                    command.entityType,
-                                    entityId,
-                                );
-
-                            await this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
-                                id: existingDiscrepancy?.id,
-                                entityType: command.entityType,
-                                entityId: entityId,
-                                internalData: pair.db as unknown as Record<string, unknown>,
-                                externalData: pair.bt as unknown as Record<string, unknown>,
-                                lastModificationDate: this.discrepancyScannerService.getSyncStartDate(), // Force modification date to be updated
-                            });
-                        }, `Save discrepancy for mismatched entity ${pair.bt.id}`);
-                    }),
+                differentDataPairs.map((pair) =>
+                    this.dbConnLimit(() =>
+                        RetryUtility.executeWithRetry(
+                            () =>
+                                this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
+                                    id: existingIdByEntityId.get(pair.bt.id),
+                                    entityType: command.entityType,
+                                    entityId: pair.bt.id,
+                                    internalData: pair.db as unknown as Record<string, unknown>,
+                                    externalData: pair.bt as unknown as Record<string, unknown>,
+                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                }),
+                            `Save discrepancy for mismatched entity ${pair.bt.id}`,
+                        ),
+                    ),
                 ),
             );
 
             // Delete obsolete discrepancies with retry
-            await RetryUtility.delay(this.discrepancyScannerService.delayBetweenCallsMs);
             await RetryUtility.executeWithRetry(
                 () =>
                     this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
@@ -190,7 +178,6 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
 
             return discrepancyOverview;
         } catch (error) {
-            // Handle BeyondTrust API errors gracefully
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error(`❌ Error scanning ${command.entityType}:`, errorMessage);
 
@@ -217,7 +204,6 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 return emptyResult;
             }
 
-            // Re-throw non-API errors
             throw error;
         }
     }
