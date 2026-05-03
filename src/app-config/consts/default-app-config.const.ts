@@ -15,17 +15,35 @@ export abstract class DefaultAppConfig {
     private static readonly DISCREPANCY_MAX_BATCH_SIZE = 100;
 
     // Database connection settings
+    // Current baseline: MariaDB default max_connections = 151, wait_timeout / interactive_timeout = 30 s
     private static readonly DB_RETRY_ATTEMPTS = 10; // Reduced from 60 - more reasonable retry count
     private static readonly DB_RETRY_DELAY_IN_MS = 10000; // 10 seconds - faster recovery, less aggressive
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 30000; // 30 seconds - simple queries should be fast
-    private static readonly DB_EXTRA_MAX_CONNECTIONS = 20; // Increased for better throughput during sync
-    private static readonly DB_CONNECT_TIMEOUT_IN_MS = 10000; // 10 seconds to establish connection
+
+    // Connection pool — sized for max_connections = 151.
+    // Capacity plan (worst-case saga burst, see ScanEntityRelationDiscrepancyCommandHandler):
+    //   7 relation handlers × pLimit(max(2, floor(20/8)=2)) =  14 DB connections
+    //   1 scan handler      × pLimit(floor(20/2)=10)        =  10 DB connections
+    //   1 sync event handler (static pLimit(3))             =   3 BT-API calls (no extra DB conn)
+    //   Total demand ≈ 24 — fits within pool(20) + queue(100) = 120 capacity ✅
+    private static readonly DB_EXTRA_MAX_CONNECTIONS = 20;
+    // TODO: After MariaDB upgrade to max_connections = 300 & wait_timeout / interactive_timeout = 300 s,
+    //       increase the connection pool accordingly:
+    //   7 relation handlers × pLimit(max(2, floor(50/8)=6)) =  42 DB connections
+    //   1 scan handler      × pLimit(floor(50/2)=25)        =  25 DB connections
+    //   Total demand ≈ 67 — fits within pool(50) + queue(100) = 150 capacity ✅
+    // private static readonly DB_EXTRA_MAX_CONNECTIONS = 50;
+
+    private static readonly DB_CONNECT_TIMEOUT_IN_MS = 10000; // 10 seconds to establish connection (unchanged for both DB configs)
+
     // Sagas can dispatch up to 7 concurrent ScanEntityRelationDiscrepancyCommandHandler instances
     // (GroupPolicySaga: 4, UserSaga: 1, JumpointSaga: 1, TeamSaga: 1). Each uses pLimit internally,
     // so burst demand can spike well above connectionLimit. A large queue prevents "Queue limit reached"
     // errors by making excess requests wait rather than fail outright.
+    // Queue of 100 is sufficient for both the current (151) and the planned (300) max_connections scenario.
     private static readonly DB_QUEUE_LIMIT = 100; // Max requests waiting for a free connection slot
-    private static readonly DB_WAIT_FOR_CONNECTIONS = true; // Wait for available connection
+
+    private static readonly DB_WAIT_FOR_CONNECTIONS = true; // Wait for available connection (MySQL2 option)
 
     // Throttle settings
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
