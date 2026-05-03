@@ -36,6 +36,31 @@ export class DiscrepancyRepositoryService extends BaseTenantRepositoryService<Di
         return await super.findOneBy(tenantId, { entityType, entityId, foreignEntityId });
     }
 
+    /**
+     * Fetches all discrepancy records for a given entity type without pagination.
+     * Used to pre-build a lookup Map before bulk upsert operations,
+     * replacing N individual findOne calls with a single query (O(n) → O(1) per item).
+     */
+    public async findManyByEntityType(
+        tenantId: number,
+        entityType: DiscrepancyEntityType,
+    ): Promise<DiscrepancyEntity[]> {
+        return await super.findBy(tenantId, { entityType }, undefined, undefined);
+    }
+
+    /**
+     * Fetches all relational discrepancy records for a given entity type scoped to a parent entityId.
+     * Used to pre-build a foreignEntityId → id lookup Map per parent,
+     * replacing N individual findOne calls per parent iteration.
+     */
+    public async findManyByEntityTypeAndEntityId(
+        tenantId: number,
+        entityType: DiscrepancyEntityType,
+        entityId: number,
+    ): Promise<DiscrepancyEntity[]> {
+        return await super.findBy(tenantId, { entityType, entityId }, undefined, undefined);
+    }
+
     public async deleteById(tenantId: number, id: number): Promise<void> {
         return await super.deleteBy(tenantId, { id: id });
     }
