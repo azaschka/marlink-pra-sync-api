@@ -211,6 +211,9 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                 // Log and continue with next parent - errors like 404 are already handled
                 // but may still bubble up through RxJS chain causing EventBus warnings
                 const errorMessage = error instanceof Error ? error.message : String(error);
+                if (errorMessage === 'Document Not Found') {
+                    continue;
+                }
                 console.warn(
                     `⚠️ Skipping relational scan for ${command.entityType} parent ${parentId}: ${errorMessage}`,
                 );

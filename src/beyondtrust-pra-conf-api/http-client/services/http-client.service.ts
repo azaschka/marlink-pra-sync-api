@@ -52,7 +52,9 @@ export class HttpClientService {
                 switchMap((response) => response), // unwrap inner Observable
                 catchError((error) => {
                     const errorDetails = this.formatAxiosError(error, 'GET', urlPath, beyondtrustInstance, params);
-                    console.error(errorDetails);
+                    if (!this.shouldSkipAxiosErrorLog(error)) {
+                        console.error(errorDetails);
+                    }
                     throw error;
                 }),
                 retry({
@@ -113,7 +115,9 @@ export class HttpClientService {
                         undefined,
                         body,
                     );
-                    console.error(errorDetails);
+                    if (!this.shouldSkipAxiosErrorLog(error)) {
+                        console.error(errorDetails);
+                    }
                     throw error;
                 }),
                 retry({
@@ -174,7 +178,9 @@ export class HttpClientService {
                         undefined,
                         body,
                     );
-                    console.error(errorDetails);
+                    if (!this.shouldSkipAxiosErrorLog(error)) {
+                        console.error(errorDetails);
+                    }
                     throw error;
                 }),
                 retry({
@@ -226,7 +232,9 @@ export class HttpClientService {
                 switchMap((response) => response), // unwrap inner Observable
                 catchError((error) => {
                     const errorDetails = this.formatAxiosError(error, 'DELETE', urlPath, beyondtrustInstance, params);
-                    console.error(errorDetails);
+                    if (!this.shouldSkipAxiosErrorLog(error)) {
+                        console.error(errorDetails);
+                    }
                     throw error;
                 }),
                 retry({
@@ -279,7 +287,9 @@ export class HttpClientService {
                             beyondtrustInstance,
                             params,
                         );
-                        console.error(errorDetails);
+                        if (!this.shouldSkipAxiosErrorLog(error)) {
+                            console.error(errorDetails);
+                        }
                         return throwError(() => ErrorProcessorUtility.composeError(error));
                     }),
                 ),
@@ -316,6 +326,10 @@ export class HttpClientService {
             beyondtrustInstance.authClientSecret,
             beyondtrustInstance.oauth2TokenUrl,
         );
+    }
+
+    private shouldSkipAxiosErrorLog(error: unknown): boolean {
+        return error instanceof AxiosError && error.response?.status === HttpStatusCode.NotFound;
     }
 
     private formatAxiosError(

@@ -40,7 +40,6 @@ export abstract class DefaultAppConfig {
     // (GroupPolicySaga: 4, UserSaga: 1, JumpointSaga: 1, TeamSaga: 1). Each uses pLimit internally,
     // so burst demand can spike well above connectionLimit. A large queue prevents "Queue limit reached"
     // errors by making excess requests wait rather than fail outright.
-    // Queue of 100 is sufficient for both the current (151) and the planned (300) max_connections scenario.
     private static readonly DB_QUEUE_LIMIT = 100; // Max requests waiting for a free connection slot
 
     private static readonly DB_WAIT_FOR_CONNECTIONS = true; // Wait for available connection (MySQL2 option)
