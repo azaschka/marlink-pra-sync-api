@@ -4,7 +4,7 @@ import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ApiTenantIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
 import { NonEmptyBodyPipe } from '../../shared/pipes';
 import { UuidUtility } from '../../shared/utilities';
-import { SyncDiscrepancyCommand } from '../commands';
+import { SyncAllExternalDiscrepanciesCommand, SyncAllExternalResult, SyncDiscrepancyCommand } from '../commands';
 import { SyncDiscrepancyDtoInput } from '../dtos/inputs';
 
 @ApiTenantIdHeader()
@@ -12,6 +12,18 @@ import { SyncDiscrepancyDtoInput } from '../dtos/inputs';
 @Controller('discrepancies')
 export class DiscrepancySyncController {
     constructor(private readonly commandBus: CommandBus) {}
+
+    @Post('sync/all-external')
+    @ApiOkResponse()
+    @HttpCode(HttpStatus.OK)
+    public async syncAllExternalDiscrepancies(
+        @TransactionIdHeader() transactionId: string = UuidUtility.generate(),
+        @TenantIdHeader() tenantId: number,
+    ): Promise<SyncAllExternalResult> {
+        return await this.commandBus.execute<SyncAllExternalDiscrepanciesCommand, SyncAllExternalResult>(
+            new SyncAllExternalDiscrepanciesCommand(transactionId, tenantId),
+        );
+    }
 
     @Post(':id/sync')
     @ApiParam({

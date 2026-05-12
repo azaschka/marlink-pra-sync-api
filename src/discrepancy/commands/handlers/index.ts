@@ -1,4 +1,5 @@
 import { ScanDiscrepancyCommandHandler } from './scan-discrepancy.command-handler';
+import { SyncAllExternalDiscrepanciesCommandHandler } from './sync-all-external-discrepancies.command-handler';
 import { ScanEntityRelationDiscrepancyCommandHandler } from './scan-entity-relation-discrepancy.command-handler';
 import { SyncDiscrepancyByEntityIdCommandHandler } from './sync-discrepancy-by-entity-id.command-handler';
 import { SyncDiscrepancyCommandHandler } from './sync-discrepancy.command-handler';
@@ -8,4 +9,5 @@ export const CommandHandlers = [
     ScanDiscrepancyCommandHandler,
     SyncDiscrepancyCommandHandler,
     SyncDiscrepancyByEntityIdCommandHandler,
+    SyncAllExternalDiscrepanciesCommandHandler,
 ];
