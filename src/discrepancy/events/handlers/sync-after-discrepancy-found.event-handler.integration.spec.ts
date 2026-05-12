@@ -21,12 +21,14 @@ class SyncCommandExecutionProbe {
 class SyncDiscrepancyByEntityIdCommandProbeHandler implements ICommandHandler<SyncDiscrepancyByEntityIdCommand> {
     constructor(private readonly probe: SyncCommandExecutionProbe) {}
 
-    public async execute(command: SyncDiscrepancyByEntityIdCommand): Promise<void> {
+    public execute(command: SyncDiscrepancyByEntityIdCommand): Promise<void> {
         this.probe.calls.push(command);
 
         if (this.probe.failOnEntityIds.has(command.entityId)) {
             throw new Error(`Forced sync failure for entity ${command.entityId}`);
         }
+
+        return Promise.resolve();
     }
 }
 
@@ -105,7 +107,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler (integration)', () => {
         );
 
         expect(probe.calls).toHaveLength(0);
-        expect(commandBus.execute).not.toHaveBeenCalled();
+        expect(jest.spyOn(commandBus, 'execute')).not.toHaveBeenCalled();
     });
 
     it('should deduplicate onlyInExternalIds before dispatching sync commands', async () => {
