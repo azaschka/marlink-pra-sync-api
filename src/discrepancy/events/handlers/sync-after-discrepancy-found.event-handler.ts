@@ -65,18 +65,35 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
             return;
         }
 
-        // For all other entity types: sync onlyInExternalIds ExternalToInternal (create missing records in DB)
-        // for (const entityId of onlyInExternalIds) {
-        //     await this.commandBus.execute(
-        //         new SyncDiscrepancyByEntityIdCommand(
-        //             event.transactionId,
-        //             event.payload.tenantId,
-        //             entityId,
-        //             entityType,
-        //             DiscrepancySyncType.ExternalToInternal,
-        //         ),
-        //     );
-        // }
+        // For all other entity types: sync onlyInExternalIds ExternalToInternal (create missing records in DB).
+        // Use the same fault-tolerant pattern so one failed entity does not block remaining BT-only records.
+        const onlyInExternalEntityIds = [...new Set(onlyInExternalIds)];
+        if (onlyInExternalEntityIds.length > 0) {
+            const limit = pLimit(SyncAfterDiscrepancyFoundEventHandler.SYNC_CONCURRENCY_LIMIT);
+
+            const results = await Promise.allSettled(
+                onlyInExternalEntityIds.map((entityId) =>
+                    limit(() =>
+                        this.commandBus.execute(
+                            new SyncDiscrepancyByEntityIdCommand(
+                                event.transactionId,
+                                event.payload.tenantId,
+                                entityId,
+                                entityType,
+                                DiscrepancySyncType.ExternalToInternal,
+                            ),
+                        ),
+                    ),
+                ),
+            );
+
+            const failureCount = results.filter((r) => r.status === 'rejected').length;
+            if (failureCount > 0) {
+                console.warn(
+                    `⚠️ [${event.transactionId}] ${failureCount}/${onlyInExternalEntityIds.length} ExternalToInternal sync operations failed for ${entityType}. Will retry on next scan.`,
+                );
+            }
+        }
 
         // For all other entity types: sync onlyInInternalIds InternalToExternal (push missing records to BT)
         // for (const entityId of onlyInInternalIds) {

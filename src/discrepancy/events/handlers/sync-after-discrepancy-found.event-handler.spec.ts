@@ -190,7 +190,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
         });
 
         describe('all other entity types', () => {
-            it.skip('should sync onlyInExternalIds ExternalToInternal', async () => {
+            it('should sync onlyInExternalIds ExternalToInternal', async () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
 
                 await handler.handle(
@@ -256,7 +256,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 expect(commandBusExecuteMethod).not.toHaveBeenCalled();
             });
 
-            it.skip('should handle both onlyInExternalIds and onlyInInternalIds in one event', async () => {
+            it('should handle both onlyInExternalIds and onlyInInternalIds in one event', async () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
 
                 await handler.handle(
@@ -267,17 +267,11 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                     }),
                 );
 
-                expect(commandBusExecuteMethod).toHaveBeenCalledTimes(2);
+                expect(commandBusExecuteMethod).toHaveBeenCalledTimes(1);
                 expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                     expect.objectContaining<Partial<SyncDiscrepancyByEntityIdCommand>>({
                         entityId: 10,
                         syncType: DiscrepancySyncType.ExternalToInternal,
-                    }),
-                );
-                expect(commandBusExecuteMethod).toHaveBeenCalledWith(
-                    expect.objectContaining<Partial<SyncDiscrepancyByEntityIdCommand>>({
-                        entityId: 20,
-                        syncType: DiscrepancySyncType.InternalToExternal,
                     }),
                 );
             });
@@ -296,7 +290,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 expect(commandBusExecuteMethod).not.toHaveBeenCalled();
             });
 
-            it.skip('should pass transactionId and tenantId to the command', async () => {
+            it('should pass transactionId and tenantId to the command', async () => {
                 const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
 
                 await handler.handle(
@@ -313,6 +307,41 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                         tenantId: 7,
                     }),
                 );
+            });
+
+            it('should continue syncing remaining onlyInExternalIds when one command fails', async () => {
+                const commandBusExecuteMethod = jest
+                    .spyOn(commandBus, 'execute')
+                    .mockResolvedValueOnce(undefined)
+                    .mockRejectedValueOnce(new Error('Sync failed'))
+                    .mockResolvedValueOnce(undefined);
+
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.User, {
+                        mismatchedIds: [],
+                        onlyInExternalIds: [10, 20, 30],
+                        onlyInInternalIds: [],
+                    }),
+                );
+
+                expect(commandBusExecuteMethod).toHaveBeenCalledTimes(3);
+                expect(console.warn).toHaveBeenCalledWith(
+                    expect.stringContaining('1/3 ExternalToInternal sync operations failed'),
+                );
+            });
+
+            it('should deduplicate onlyInExternalIds for non-auto entity types', async () => {
+                const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.User, {
+                        mismatchedIds: [],
+                        onlyInExternalIds: [10, 10, 20],
+                        onlyInInternalIds: [],
+                    }),
+                );
+
+                expect(commandBusExecuteMethod).toHaveBeenCalledTimes(2);
             });
         });
     });
