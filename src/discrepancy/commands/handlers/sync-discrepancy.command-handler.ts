@@ -2,6 +2,7 @@
 
 import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { QueryFailedError } from 'typeorm';
 import { RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
 import { DiscrepancyResolvedEvent } from '../../events';
@@ -82,6 +83,22 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error(`❌ Error syncing discrepancy ${command.id}:`, errorMessage);
+
+            // Permanent DB schema constraint violations will never resolve via retry.
+            // Auto-delete the discrepancy so it does not accumulate as a stale record.
+            // The next scheduled scan will re-create it if the underlying problem still exists.
+            if (SyncDiscrepancyCommandHandler.isPermanentDbFailure(error)) {
+                console.warn(
+                    `⚠️ Discrepancy ${command.id} (${discrepancy.entityType}) has a permanent schema constraint failure and cannot be resolved. Auto-deleting to prevent perpetual retries. It will be re-created on the next scan if still applicable.`,
+                );
+                try {
+                    await this.discrepancyRepositoryService.deleteById(command.tenantId, command.id);
+                } catch {
+                    // Ignore – the record may already be gone or the DB is temporarily unavailable.
+                }
+                return;
+            }
+
             throw error;
         }
 
@@ -97,6 +114,18 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                 tenantId: command.tenantId,
             }),
         );
+    }
+
+    /**
+     * Returns true for DB errors that are structural/schema violations and will NEVER
+     * resolve through retries – i.e. the BeyondTrust payload is missing a value that
+     * the local schema requires as NOT NULL with no default (e.g. a GroupPolicyMember
+     * of type LDAP-group that has no user_id).
+     */
+    private static isPermanentDbFailure(error: unknown): boolean {
+        if (!(error instanceof QueryFailedError)) return false;
+        const msg = error.message.toLowerCase();
+        return msg.includes("doesn't have a default value") || msg.includes('cannot be null');
     }
 
     private async getDiscrepancy(tenantId: number, id: number): Promise<Discrepancy> {
