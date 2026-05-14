@@ -20,33 +20,36 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
         const status = this.determineStatusCode(exception);
         const message = this.determineMessage(exception);
+        const shouldLog = this.shouldLog(status);
 
         // Truncate long URLs to prevent database logging errors
         const actionName = `${AllExceptionsFilter.ACTION_NAME_PREFIX} ${req.method} ${req.originalUrl}`;
         const truncatedActionName = actionName.length > 950 ? `${actionName.substring(0, 950)}...` : actionName;
 
-        // Always log to stdout first so errors are visible even when the DB itself is unavailable.
-        console.error(`❌ [${new Date().toISOString()}] ${req.method} ${req.originalUrl} → ${status}`, {
-            message,
-            stack: exception instanceof Error ? exception.stack : String(exception),
-        });
+        if (shouldLog) {
+            // Always log to stdout first so errors are visible even when the DB itself is unavailable.
+            console.error(`❌ [${new Date().toISOString()}] ${req.method} ${req.originalUrl} → ${status}`, {
+                message,
+                stack: exception instanceof Error ? exception.stack : String(exception),
+            });
 
-        // Best-effort DB log — if this throws (e.g. DB is down) we still responded above.
-        try {
-            await this.logService.log(
-                truncatedActionName,
-                (req.headers[TRANSACTION_ID_HEADER.toLowerCase()] as string) ??
-                    AllExceptionsFilter.DEFAULT_TRANSACTION_ID,
-                (req.user as { username?: string })?.username ?? AllExceptionsFilter.DEFAULT_INITIATED_BY,
-                JSON.stringify({
-                    status,
-                    message,
-                    stack: exception instanceof Error ? exception.stack : undefined,
-                    originalUrl: req.originalUrl,
-                }),
-            );
-        } catch (logError) {
-            console.error('⚠️  Failed to persist exception to DB log:', logError);
+            // Best-effort DB log — if this throws (e.g. DB is down) we still responded above.
+            try {
+                await this.logService.log(
+                    truncatedActionName,
+                    (req.headers[TRANSACTION_ID_HEADER.toLowerCase()] as string) ??
+                        AllExceptionsFilter.DEFAULT_TRANSACTION_ID,
+                    (req.user as { username?: string })?.username ?? AllExceptionsFilter.DEFAULT_INITIATED_BY,
+                    JSON.stringify({
+                        status,
+                        message,
+                        stack: exception instanceof Error ? exception.stack : undefined,
+                        originalUrl: req.originalUrl,
+                    }),
+                );
+            } catch (logError) {
+                console.error('⚠️  Failed to persist exception to DB log:', logError);
+            }
         }
 
         res.status(status).json({
@@ -71,5 +74,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
 
         return exception instanceof HttpException ? exception.getResponse() : AllExceptionsFilter.DEFAULT_ERROR_MESSAGE;
+    }
+
+    private shouldLog(status: number) {
+        return this.isServerError(status);
+    }
+
+    /** Returns true only for 5xx status codes that represent real server errors. */
+    private isServerError(status: number): boolean {
+        return status >= Number(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
