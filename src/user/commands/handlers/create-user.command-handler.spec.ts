@@ -1,12 +1,14 @@
-import { CommandBus, EventBus } from '@nestjs/cqrs';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { CreateUserCommand as BTCreateUserCommand } from '../../../beyondtrust-pra-conf-api/user/commands';
-import { UserCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
+import { UserCreatedDtoOutput, UserRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/user/dtos/outputs';
 import {
     UserAllowedAccessPermissionType as BTUserAllowedAccessPermissionType,
     UserEndpointAutomationPermissionType as BTUserEndpointAutomationPermissionType,
     UserViewSupportReportsPermissionType as BTUserViewSupportReportsPermissionType,
     UserViewVaultReportsPermissionType as BTUserViewVaultReportsPermissionType,
 } from '../../../beyondtrust-pra-conf-api/user/enums';
+import { RetrieveUsersQuery as BTRetrieveUsersQuery } from '../../../beyondtrust-pra-conf-api/user/queries';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { UserCreatedEvent, UserCreationFailedEvent } from '../../events';
 import { UserEntity } from '../../repositories/entities';
@@ -93,11 +95,14 @@ describe('CreateUserCommandHandler', () => {
     let userRepositoryService: UserRepositoryService;
     let handler: CreateUserCommandHandler;
 
+    let queryBus: QueryBus;
+
     beforeEach(() => {
         commandBus = mockCommandBus();
+        queryBus = mockQueryBus();
         eventBus = mockEventBus();
         userRepositoryService = mockUserRepositoryService();
-        handler = new CreateUserCommandHandler(commandBus, eventBus, userRepositoryService);
+        handler = new CreateUserCommandHandler(commandBus, queryBus, eventBus, userRepositoryService);
     });
 
     describe('execute', () => {
@@ -224,7 +229,7 @@ describe('CreateUserCommandHandler', () => {
             },
         );
 
-        it('should throw an error if the command bus fails', async () => {
+        it('should throw an error if the command bus fails with a non-422 error', async () => {
             // Arrange
             const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute').mockRejectedValue(new Error('Error'));
 
@@ -232,11 +237,75 @@ describe('CreateUserCommandHandler', () => {
             await expect(
                 handler.execute(<CreateUserCommand>{
                     transactionId: 'transaction-1',
+                    tenantId: 123,
                     publicDisplayName: 'display-name-1',
                     username: 'user-1',
                 }),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should fetch existing user from BeyondTrust and upsert to local DB when BT returns 422 name-already-taken', async () => {
+            // Arrange
+            const nameAlreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            const existingBtUser: UserRetrievedDtoOutput = {
+                ...TestHelper.mockedUserCreatedDtoOutput,
+                id: 999,
+                username: 'user-1',
+            };
+
+            // commandBus: first call (BTCreateUserCommand) rejects; queryBus (BTRetrieveUsersQuery) resolves
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(nameAlreadyTakenError);
+            const queryBusExecuteMethod = jest.spyOn(queryBus, 'execute').mockResolvedValue([existingBtUser]);
+
+            const userEntityToBeCreated = { id: 999, username: 'user-1' } as UserEntity;
+            jest.spyOn(UserEntity, 'create').mockReturnValue(userEntityToBeCreated);
+
+            const createOrUpdateByIdMethod = jest
+                .spyOn(userRepositoryService, 'createOrUpdateById')
+                .mockResolvedValue(undefined);
+
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+
+            // Act
+            const result = await handler.execute(<CreateUserCommand>{
+                transactionId: 'transaction-1',
+                tenantId: 123,
+                publicDisplayName: 'display-name-1',
+                username: 'user-1',
+            });
+
+            // Assert
+            expect(queryBusExecuteMethod).toHaveBeenCalledWith(
+                new BTRetrieveUsersQuery('transaction-1', 123, 1, 1, undefined, 'user-1'),
+            );
+            expect(createOrUpdateByIdMethod).toHaveBeenCalledWith(123, userEntityToBeCreated);
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: UserCreatedEvent.EVENT_TYPE,
+                }),
+            );
+            expect(result).toBe(userEntityToBeCreated);
+        });
+
+        it('should rethrow 422 if user cannot be found after name-already-taken', async () => {
+            // Arrange
+            const nameAlreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(nameAlreadyTakenError);
+            jest.spyOn(queryBus, 'execute').mockResolvedValue([]);
+
+            // Act & Assert
+            await expect(
+                handler.execute(<CreateUserCommand>{
+                    transactionId: 'transaction-1',
+                    tenantId: 123,
+                    publicDisplayName: 'display-name-1',
+                    username: 'user-1',
+                }),
+            ).rejects.toThrow(nameAlreadyTakenError);
         });
 
         it('should throw an error and publish an event if the repository service fails', async () => {
@@ -294,9 +363,17 @@ function mockCommandBus() {
     return commandBus;
 }
 
+function mockQueryBus() {
+    const queryBus = {} as QueryBus;
+    queryBus.execute = jest.fn().mockResolvedValue([]);
+
+    return queryBus;
+}
+
 function mockUserRepositoryService() {
     const userRepositoryService = {} as UserRepositoryService;
     userRepositoryService.create = jest.fn();
+    userRepositoryService.createOrUpdateById = jest.fn().mockResolvedValue(undefined);
 
     return userRepositoryService;
 }

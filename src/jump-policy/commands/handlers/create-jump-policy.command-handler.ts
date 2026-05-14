@@ -1,6 +1,10 @@
-import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, EventBus, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import { CreateJumpPolicyCommand as BTCreateJumpPolicyCommand } from '../../../beyondtrust-pra-conf-api/jump-policy/commands';
-import { JumpPolicyCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-policy/dtos/outputs';
+import {
+    JumpPolicyCreatedDtoOutput,
+    JumpPolicyRetrievedDtoOutput,
+} from '../../../beyondtrust-pra-conf-api/jump-policy/dtos/outputs';
+import { RetrieveJumpPoliciesQuery as BTRetrieveJumpPoliciesQuery } from '../../../beyondtrust-pra-conf-api/jump-policy/queries';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { JumpPolicyCreatedEvent, JumpPolicyCreationFailedEvent } from '../../events';
 import {
@@ -22,25 +26,35 @@ import { CreateJumpPolicyCommand } from '../create-jump-policy.command';
 export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJumpPolicyCommand> {
     constructor(
         private readonly commandBus: CommandBus,
+        private readonly queryBus: QueryBus,
         private readonly eventBus: EventBus,
         private readonly jumpPolicyRepositoryService: JumpPolicyRepositoryService,
     ) {}
 
     public async execute(command: CreateJumpPolicyCommand): Promise<JumpPolicy> {
-        const btJumpPolicy = await this.createBTJumpPolicy(command);
+        const { btJumpPolicy, existedInBeyondTrust } = await this.getOrCreateBTJumpPolicy(command);
         const jumpPolicyEntity = this.createJumpPolicyEntity(btJumpPolicy);
 
         try {
-            const createdJumpPolicy = await this.jumpPolicyRepositoryService.create(command.tenantId, jumpPolicyEntity);
+            let savedJumpPolicy: JumpPolicy;
+
+            if (existedInBeyondTrust) {
+                // Policy already existed in BeyondTrust but was missing from the local sync DB.
+                // Use upsert to heal the sync DB and avoid a duplicate-key error.
+                await this.jumpPolicyRepositoryService.createOrUpdateById(command.tenantId, jumpPolicyEntity);
+                savedJumpPolicy = jumpPolicyEntity;
+            } else {
+                savedJumpPolicy = await this.jumpPolicyRepositoryService.create(command.tenantId, jumpPolicyEntity);
+            }
 
             this.eventBus.publish(
                 new JumpPolicyCreatedEvent(command.transactionId, {
-                    jumpPolicy: createdJumpPolicy,
+                    jumpPolicy: savedJumpPolicy,
                     tenantId: command.tenantId,
                 }),
             );
 
-            return createdJumpPolicy;
+            return savedJumpPolicy;
         } catch (error) {
             this.eventBus.publish(
                 new JumpPolicyCreationFailedEvent(command.transactionId, {
@@ -52,6 +66,60 @@ export class CreateJumpPolicyCommandHandler implements ICommandHandler<CreateJum
 
             throw error;
         }
+    }
+
+    /**
+     * Attempts to create the jump policy in BeyondTrust.
+     * If BeyondTrust rejects with 422 "already been taken" on any field, the existing policy
+     * is fetched by codeName instead. This ensures true idempotency even when the local sync DB
+     * is out of sync with BeyondTrust (e.g. after a DB reset or before the first discrepancy
+     * scan has run).
+     */
+    private async getOrCreateBTJumpPolicy(
+        command: CreateJumpPolicyCommand,
+    ): Promise<{ btJumpPolicy: JumpPolicyCreatedDtoOutput; existedInBeyondTrust: boolean }> {
+        try {
+            const btJumpPolicy = await this.createBTJumpPolicy(command);
+            return { btJumpPolicy, existedInBeyondTrust: false };
+        } catch (error) {
+            if (ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError(error) && command.codeName !== undefined) {
+                console.warn(
+                    `[${command.transactionId}] Jump policy with codeName "${command.codeName}" already exists in ` +
+                        `BeyondTrust (tenant: ${command.tenantId}). Fetching existing policy to ensure idempotency.`,
+                );
+
+                const existing = await this.fetchExistingBTJumpPolicyByCodeName(
+                    command.transactionId,
+                    command.tenantId,
+                    command.codeName,
+                );
+
+                if (existing) {
+                    // JumpPolicyRetrievedDtoOutput has an identical structure to JumpPolicyCreatedDtoOutput;
+                    // casting is safe here.
+                    return {
+                        btJumpPolicy: existing as unknown as JumpPolicyCreatedDtoOutput,
+                        existedInBeyondTrust: true,
+                    };
+                }
+            }
+
+            throw error;
+        }
+    }
+
+    /**
+     * Fetches the first jump policy from BeyondTrust that matches the given codeName.
+     */
+    private async fetchExistingBTJumpPolicyByCodeName(
+        transactionId: string,
+        tenantId: number,
+        codeName: string,
+    ): Promise<JumpPolicyRetrievedDtoOutput | null> {
+        const policies = await this.queryBus.execute<BTRetrieveJumpPoliciesQuery, JumpPolicyRetrievedDtoOutput[]>(
+            new BTRetrieveJumpPoliciesQuery(transactionId, tenantId, 1, 1, codeName),
+        );
+        return policies[0] ?? null;
     }
 
     private async createBTJumpPolicy(command: CreateJumpPolicyCommand) {

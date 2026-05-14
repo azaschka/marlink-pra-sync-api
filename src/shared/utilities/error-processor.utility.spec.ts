@@ -1,4 +1,4 @@
-import { HttpException } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError, AxiosResponse, HttpStatusCode } from 'axios';
 import { ErrorProcessorUtility } from './error-processor.utility';
 
@@ -65,6 +65,31 @@ describe('ErrorProcessorUtility', () => {
             expect(result).toBeInstanceOf(HttpException);
             expect(result.getResponse()).toEqual(JSON.stringify(nonAxiosError));
             expect(result.getStatus()).toBe(HttpStatusCode.InternalServerError);
+        });
+    });
+
+    describe('isBeyondTrustUnprocessableEntityError', () => {
+        it('should return true for an HttpException with status 422', () => {
+            const error = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+            expect(ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError(error)).toBe(true);
+        });
+
+        it('should return false for an HttpException with a different status (e.g. 409)', () => {
+            const error = new HttpException('Conflict', HttpStatus.CONFLICT);
+            expect(ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError(error)).toBe(false);
+        });
+
+        it('should return false for a plain Error (not an HttpException)', () => {
+            const error = new Error('Something went wrong');
+            expect(ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError(error)).toBe(false);
+        });
+
+        it('should return false for null', () => {
+            expect(ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError(null)).toBe(false);
+        });
+
+        it('should return false for a plain object', () => {
+            expect(ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError({ status: 422 })).toBe(false);
         });
     });
 

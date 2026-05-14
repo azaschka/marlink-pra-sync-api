@@ -1,7 +1,12 @@
-import { CommandBus, EventBus } from '@nestjs/cqrs';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { CreateGroupPolicyCommand as BTCreateGroupPolicyCommand } from '../../../beyondtrust-pra-conf-api/group-policy/commands';
-import { GroupPolicyCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
+import {
+    GroupPolicyCreatedDtoOutput,
+    GroupPolicyRetrievedDtoOutput,
+} from '../../../beyondtrust-pra-conf-api/group-policy/dtos/outputs';
 import { AccessPermissionStatusType as BTAccessPermissionStatusType } from '../../../beyondtrust-pra-conf-api/group-policy/enums';
+import { RetrieveGroupPoliciesQuery as BTRetrieveGroupPoliciesQuery } from '../../../beyondtrust-pra-conf-api/group-policy/queries';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { AccessPermissionStatusType } from '../../enums';
 import { GroupPolicyCreatedEvent, GroupPolicyCreationFailedEvent } from '../../events';
@@ -53,11 +58,14 @@ describe('CreateGroupPolicyCommandHandler', () => {
     let groupPolicyRepositoryService: GroupPolicyRepositoryService;
     let handler: CreateGroupPolicyCommandHandler;
 
+    let queryBus: QueryBus;
+
     beforeEach(() => {
         commandBus = mockCommandBus();
+        queryBus = mockQueryBus();
         eventBus = mockEventBus();
         groupPolicyRepositoryService = mockGroupPolicyRepositoryService();
-        handler = new CreateGroupPolicyCommandHandler(commandBus, eventBus, groupPolicyRepositoryService);
+        handler = new CreateGroupPolicyCommandHandler(commandBus, queryBus, eventBus, groupPolicyRepositoryService);
     });
 
     describe('execute', () => {
@@ -188,7 +196,7 @@ describe('CreateGroupPolicyCommandHandler', () => {
             },
         );
 
-        it('should throw an error if the command bus fails', async () => {
+        it('should throw an error if the command bus fails with a non-422 error', async () => {
             // Arrange
             const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute').mockRejectedValue(new Error('Error'));
 
@@ -201,6 +209,67 @@ describe('CreateGroupPolicyCommandHandler', () => {
                 }),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should fetch the existing policy from BeyondTrust and upsert it to the local DB when BeyondTrust returns 422 name-already-taken', async () => {
+            // Arrange
+            const nameAlreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            const existingBtPolicy: GroupPolicyRetrievedDtoOutput = {
+                ...TestHelper.mockedGroupPolicyCreatedDtoOutput,
+                id: 999,
+                name: 'group-policy-1',
+            };
+
+            // commandBus: first call (BTCreateGroupPolicyCommand) rejects; second call (BTRetrieveGroupPoliciesQuery via queryBus) resolves
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(nameAlreadyTakenError);
+            const queryBusExecuteMethod = jest.spyOn(queryBus, 'execute').mockResolvedValue([existingBtPolicy]);
+
+            const groupPolicyEntityToBeCreated = { id: 999, name: 'group-policy-1' } as GroupPolicyEntity;
+            jest.spyOn(GroupPolicyEntity, 'create').mockReturnValue(groupPolicyEntityToBeCreated);
+
+            const createOrUpdateByIdMethod = jest
+                .spyOn(groupPolicyRepositoryService, 'createOrUpdateById')
+                .mockResolvedValue(undefined);
+
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+
+            // Act
+            const result = await handler.execute(<CreateGroupPolicyCommand>{
+                transactionId: 'transaction-1',
+                tenantId: 123,
+                name: 'group-policy-1',
+            });
+
+            // Assert
+            expect(queryBusExecuteMethod).toHaveBeenCalledWith(
+                new BTRetrieveGroupPoliciesQuery('transaction-1', 123, 1, 1, 'group-policy-1'),
+            );
+            expect(createOrUpdateByIdMethod).toHaveBeenCalledWith(123, groupPolicyEntityToBeCreated);
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: GroupPolicyCreatedEvent.EVENT_TYPE,
+                }),
+            );
+            expect(result).toBe(groupPolicyEntityToBeCreated);
+        });
+
+        it('should rethrow the 422 error if the policy cannot be found in BeyondTrust after name-already-taken', async () => {
+            // Arrange
+            const nameAlreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(nameAlreadyTakenError);
+            jest.spyOn(queryBus, 'execute').mockResolvedValue([]);
+
+            // Act & Assert
+            await expect(
+                handler.execute(<CreateGroupPolicyCommand>{
+                    transactionId: 'transaction-1',
+                    tenantId: 123,
+                    name: 'group-policy-1',
+                }),
+            ).rejects.toThrow(nameAlreadyTakenError);
         });
 
         it('should throw an error and publish an event if the repository service fails', async () => {
@@ -260,9 +329,17 @@ function mockCommandBus() {
     return commandBus;
 }
 
+function mockQueryBus() {
+    const queryBus = {} as QueryBus;
+    queryBus.execute = jest.fn().mockResolvedValue([]);
+
+    return queryBus;
+}
+
 function mockGroupPolicyRepositoryService() {
     const groupPolicyRepositoryService = {} as GroupPolicyRepositoryService;
     groupPolicyRepositoryService.create = jest.fn();
+    groupPolicyRepositoryService.createOrUpdateById = jest.fn().mockResolvedValue(undefined);
 
     return groupPolicyRepositoryService;
 }

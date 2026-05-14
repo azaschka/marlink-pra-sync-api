@@ -1,12 +1,16 @@
-import { CommandBus, EventBus } from '@nestjs/cqrs';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { CreateTeamCommand as BTCreateTeamCommand } from '../../../beyondtrust-pra-conf-api/team/commands';
-import { TeamCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
+import { TeamCreatedDtoOutput, TeamRetrievedDtoOutput } from '../../../beyondtrust-pra-conf-api/team/dtos/outputs';
+import { RetrieveTeamsQuery as BTRetrieveTeamsQuery } from '../../../beyondtrust-pra-conf-api/team/queries';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { TeamCreatedEvent, TeamCreationFailedEvent } from '../../events';
 import { TeamEntity } from '../../repositories/entities';
 import { TeamRepositoryService } from '../../repositories/services/team-repository.service';
 import { CreateTeamCommand } from '../create-team.command';
 import { CreateTeamCommandHandler } from './create-team.command-handler';
+
+/* eslint-disable @typescript-eslint/unbound-method */
 
 abstract class TestHelper {
     public static get mockedTeamCreatedDtoOutput(): TeamCreatedDtoOutput {
@@ -21,15 +25,17 @@ abstract class TestHelper {
 
 describe('CreateTeamCommandHandler', () => {
     let commandBus: CommandBus;
+    let queryBus: QueryBus;
     let eventBus: EventBus;
     let teamRepositoryService: TeamRepositoryService;
     let handler: CreateTeamCommandHandler;
 
     beforeEach(() => {
         commandBus = mockCommandBus();
+        queryBus = mockQueryBus();
         eventBus = mockEventBus();
         teamRepositoryService = mockTeamRepositoryService();
-        handler = new CreateTeamCommandHandler(commandBus, eventBus, teamRepositoryService);
+        handler = new CreateTeamCommandHandler(commandBus, queryBus, eventBus, teamRepositoryService);
     });
 
     describe('execute', () => {
@@ -50,22 +56,24 @@ describe('CreateTeamCommandHandler', () => {
             'should call the command bus and repository service with correct parameters, publish an event and return the result',
             async (command) => {
                 // Arrange
-                const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
-                const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+
+                jest.spyOn(commandBus, 'execute');
+
+                jest.spyOn(eventBus, 'publish');
 
                 const teamEntityToBeCreated = { id: 123 } as TeamEntity;
-                const teamEntityCreateMethod = jest.spyOn(TeamEntity, 'create').mockReturnValue(teamEntityToBeCreated);
+
+                jest.spyOn(TeamEntity, 'create').mockReturnValue(teamEntityToBeCreated);
 
                 const expectedResult = { id: 321 } as TeamEntity;
-                const teamRepositoryServiceCreateMethod = jest
-                    .spyOn(teamRepositoryService, 'create')
-                    .mockResolvedValue(expectedResult);
+
+                jest.spyOn(teamRepositoryService, 'create').mockResolvedValue(expectedResult);
 
                 // Act
                 const result = await handler.execute(command);
 
                 // Assert
-                expect(commandBusExecuteMethod).toHaveBeenCalledWith(
+                expect(commandBus.execute).toHaveBeenCalledWith(
                     new BTCreateTeamCommand(
                         command.transactionId,
                         command.tenantId,
@@ -74,14 +82,14 @@ describe('CreateTeamCommandHandler', () => {
                         command.comments,
                     ),
                 );
-                expect(teamEntityCreateMethod).toHaveBeenCalledWith(
+                expect(TeamEntity.create).toHaveBeenCalledWith(
                     TestHelper.mockedTeamCreatedDtoOutput.id,
                     TestHelper.mockedTeamCreatedDtoOutput.name,
                     TestHelper.mockedTeamCreatedDtoOutput.codeName,
                     TestHelper.mockedTeamCreatedDtoOutput.comments,
                 );
-                expect(teamRepositoryServiceCreateMethod).toHaveBeenCalledWith(123, teamEntityToBeCreated);
-                expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect(teamRepositoryService.create).toHaveBeenCalledWith(123, teamEntityToBeCreated);
+                expect(eventBus.publish).toHaveBeenCalledWith(
                     expect.objectContaining(<TeamCreatedEvent>{
                         transactionId: command.transactionId,
                         eventType: TeamCreatedEvent.EVENT_TYPE,
@@ -95,9 +103,9 @@ describe('CreateTeamCommandHandler', () => {
             },
         );
 
-        it('should throw an error if the command bus fails', async () => {
+        it('should throw an error if the command bus fails with a non-422 error', async () => {
             // Arrange
-            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute').mockRejectedValue(new Error('Error'));
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(new Error('Error'));
 
             // Act & Assert
             await expect(
@@ -106,22 +114,95 @@ describe('CreateTeamCommandHandler', () => {
                     name: 'team-1',
                 }),
             ).rejects.toThrow('Error');
-            expect(commandBusExecuteMethod).toHaveBeenCalled();
+            expect(commandBus.execute).toHaveBeenCalled();
+        });
+
+        it('should fetch existing team from BeyondTrust and upsert to local DB when BT returns 422 name-already-taken', async () => {
+            // Arrange
+            const command = <CreateTeamCommand>{
+                transactionId: 'transaction-1',
+                tenantId: 123,
+                name: 'team-1',
+                codeName: 'team-code-1',
+                comments: 'team-comments-1',
+            };
+
+            const alreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(alreadyTakenError);
+
+            const existingBTTeam: TeamRetrievedDtoOutput = {
+                id: 1,
+                name: 'team-1',
+                codeName: 'team-code-1',
+                comments: 'team-comments-1',
+            };
+
+            jest.spyOn(queryBus, 'execute').mockResolvedValue([existingBTTeam]);
+
+            const teamEntityToBeUpserted = { id: 1, name: 'team-1' } as TeamEntity;
+
+            jest.spyOn(TeamEntity, 'create').mockReturnValue(teamEntityToBeUpserted);
+
+            // Act
+            const result = await handler.execute(command);
+
+            // Assert
+            expect(queryBus.execute).toHaveBeenCalledWith(
+                new BTRetrieveTeamsQuery(command.transactionId, command.tenantId, 1, 1, command.name),
+            );
+            expect(teamRepositoryService.createOrUpdateById).toHaveBeenCalledWith(
+                command.tenantId,
+                teamEntityToBeUpserted,
+            );
+            expect(teamRepositoryService.create).not.toHaveBeenCalled();
+            expect(eventBus.publish).toHaveBeenCalledWith(
+                expect.objectContaining(<TeamCreatedEvent>{
+                    transactionId: command.transactionId,
+                    eventType: TeamCreatedEvent.EVENT_TYPE,
+                    payload: { team: teamEntityToBeUpserted, tenantId: 123 },
+                }),
+            );
+            expect(result).toBe(teamEntityToBeUpserted);
+        });
+
+        it('should rethrow 422 error if team cannot be found in BeyondTrust after name-already-taken', async () => {
+            // Arrange
+            const command = <CreateTeamCommand>{
+                transactionId: 'transaction-1',
+                tenantId: 123,
+                name: 'team-1',
+            };
+
+            const alreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(alreadyTakenError);
+
+            jest.spyOn(queryBus, 'execute').mockResolvedValue([]);
+
+            // Act & Assert
+            await expect(handler.execute(command)).rejects.toThrow(alreadyTakenError);
+            expect(queryBus.execute).toHaveBeenCalledWith(
+                new BTRetrieveTeamsQuery(command.transactionId, command.tenantId, 1, 1, command.name),
+            );
+            expect(teamRepositoryService.createOrUpdateById).not.toHaveBeenCalled();
+            expect(teamRepositoryService.create).not.toHaveBeenCalled();
         });
 
         it('should throw an error and publish an event if the repository service fails', async () => {
             // Arrange
-            const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
+
+            jest.spyOn(commandBus, 'execute');
             const teamEntityToBeCreated = { name: 'team-1', id: 123 } as TeamEntity;
-            const teamEntityCreateMethod = jest.spyOn(TeamEntity, 'create').mockReturnValue(teamEntityToBeCreated);
+
+            jest.spyOn(TeamEntity, 'create').mockReturnValue(teamEntityToBeCreated);
             const expectedError = new Error('Error');
-            const teamRepositoryServiceCreateMethod = jest
-                .spyOn(teamRepositoryService, 'create')
-                .mockRejectedValue(expectedError);
-            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
-            const errorProcessorUtilityStringifyMethod = jest
-                .spyOn(ErrorProcessorUtility, 'stringify')
-                .mockReturnValue('expected-error-message');
+
+            jest.spyOn(teamRepositoryService, 'create').mockRejectedValue(expectedError);
+
+            jest.spyOn(eventBus, 'publish');
+
+            jest.spyOn(ErrorProcessorUtility, 'stringify').mockReturnValue('expected-error-message');
 
             // Act & Assert
             await expect(
@@ -131,11 +212,11 @@ describe('CreateTeamCommandHandler', () => {
                     tenantId: 123,
                 }),
             ).rejects.toThrow(expectedError);
-            expect(commandBusExecuteMethod).toHaveBeenCalled();
-            expect(teamEntityCreateMethod).toHaveBeenCalled();
-            expect(teamRepositoryServiceCreateMethod).toHaveBeenCalled();
-            expect(errorProcessorUtilityStringifyMethod).toHaveBeenCalledWith(expectedError);
-            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+            expect(commandBus.execute).toHaveBeenCalled();
+            expect(TeamEntity.create).toHaveBeenCalled();
+            expect(teamRepositoryService.create).toHaveBeenCalled();
+            expect(ErrorProcessorUtility.stringify).toHaveBeenCalledWith(expectedError);
+            expect(eventBus.publish).toHaveBeenCalledWith(
                 expect.objectContaining({
                     transactionId: 'transaction-1',
                     eventType: TeamCreationFailedEvent.EVENT_TYPE,
@@ -164,9 +245,18 @@ function mockCommandBus() {
     return commandBus;
 }
 
+function mockQueryBus() {
+    const queryBus = {} as QueryBus;
+    queryBus.execute = jest.fn().mockResolvedValue([]);
+
+    return queryBus;
+}
+
 function mockTeamRepositoryService() {
     const teamRepositoryService = {} as TeamRepositoryService;
     teamRepositoryService.create = jest.fn();
+    teamRepositoryService.createOrUpdateById = jest.fn().mockResolvedValue(undefined);
 
     return teamRepositoryService;
 }
+/* eslint-enable @typescript-eslint/unbound-method */

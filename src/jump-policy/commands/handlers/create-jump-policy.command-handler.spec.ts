@@ -1,12 +1,17 @@
-import { CommandBus, EventBus } from '@nestjs/cqrs';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { CreateJumpPolicyCommand as BTCreateJumpPolicyCommand } from '../../../beyondtrust-pra-conf-api/jump-policy/commands';
-import { JumpPolicyCreatedDtoOutput } from '../../../beyondtrust-pra-conf-api/jump-policy/dtos/outputs';
+import {
+    JumpPolicyCreatedDtoOutput,
+    JumpPolicyRetrievedDtoOutput,
+} from '../../../beyondtrust-pra-conf-api/jump-policy/dtos/outputs';
 import {
     ApprovalApproverScopeType as BTApprovalApproverScopeType,
     ApprovalScopeType as BTApprovalScopeType,
     SimultaneousJumpsRdpType as BTSimultaneousJumpsRdpType,
     SimultaneousJumpsType as BTSimultaneousJumpsType,
 } from '../../../beyondtrust-pra-conf-api/jump-policy/enums';
+import { RetrieveJumpPoliciesQuery as BTRetrieveJumpPoliciesQuery } from '../../../beyondtrust-pra-conf-api/jump-policy/queries';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
 import {
     ApprovalApproverScopeType,
@@ -71,11 +76,14 @@ describe('CreateJumpPolicyCommandHandler', () => {
     let jumpPolicyRepositoryService: JumpPolicyRepositoryService;
     let handler: CreateJumpPolicyCommandHandler;
 
+    let queryBus: QueryBus;
+
     beforeEach(() => {
         commandBus = mockCommandBus();
+        queryBus = mockQueryBus();
         eventBus = mockEventBus();
         jumpPolicyRepositoryService = mockJumpPolicyRepositoryService();
-        handler = new CreateJumpPolicyCommandHandler(commandBus, eventBus, jumpPolicyRepositoryService);
+        handler = new CreateJumpPolicyCommandHandler(commandBus, queryBus, eventBus, jumpPolicyRepositoryService);
     });
 
     describe('execute', () => {
@@ -209,7 +217,7 @@ describe('CreateJumpPolicyCommandHandler', () => {
             },
         );
 
-        it('should throw an error if the command bus fails', async () => {
+        it('should throw an error if the command bus fails with a non-422 error', async () => {
             // Arrange
             const commandBusExecuteMethod = jest.spyOn(commandBus, 'execute').mockRejectedValue(new Error('Error'));
 
@@ -217,10 +225,74 @@ describe('CreateJumpPolicyCommandHandler', () => {
             await expect(
                 handler.execute(<CreateJumpPolicyCommand>{
                     transactionId: 'transaction-1',
+                    tenantId: 123,
                     displayName: 'jump-policy-1',
                 }),
             ).rejects.toThrow('Error');
             expect(commandBusExecuteMethod).toHaveBeenCalled();
+        });
+
+        it('should fetch existing jump policy from BeyondTrust and upsert to local DB when BT returns 422 name-already-taken', async () => {
+            // Arrange
+            const nameAlreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            const existingBtPolicy: JumpPolicyRetrievedDtoOutput = {
+                ...TestHelper.mockedJumpPolicyCreatedDtoOutput,
+                id: 999,
+                codeName: 'jump-policy-code-1',
+            };
+
+            // commandBus: first call (BTCreateJumpPolicyCommand) rejects; queryBus (BTRetrieveJumpPoliciesQuery) resolves
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(nameAlreadyTakenError);
+            const queryBusExecuteMethod = jest.spyOn(queryBus, 'execute').mockResolvedValue([existingBtPolicy]);
+
+            const jumpPolicyEntityToBeCreated = { id: 999, codeName: 'jump-policy-code-1' } as JumpPolicyEntity;
+            jest.spyOn(JumpPolicyEntity, 'create').mockReturnValue(jumpPolicyEntityToBeCreated);
+
+            const createOrUpdateByIdMethod = jest
+                .spyOn(jumpPolicyRepositoryService, 'createOrUpdateById')
+                .mockResolvedValue(undefined);
+
+            const eventBusPublishMethod = jest.spyOn(eventBus, 'publish');
+
+            // Act
+            const result = await handler.execute(<CreateJumpPolicyCommand>{
+                transactionId: 'transaction-1',
+                tenantId: 123,
+                displayName: 'jump-policy-1',
+                codeName: 'jump-policy-code-1',
+            });
+
+            // Assert
+            expect(queryBusExecuteMethod).toHaveBeenCalledWith(
+                new BTRetrieveJumpPoliciesQuery('transaction-1', 123, 1, 1, 'jump-policy-code-1'),
+            );
+            expect(createOrUpdateByIdMethod).toHaveBeenCalledWith(123, jumpPolicyEntityToBeCreated);
+            expect(eventBusPublishMethod).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    transactionId: 'transaction-1',
+                    eventType: JumpPolicyCreatedEvent.EVENT_TYPE,
+                }),
+            );
+            expect(result).toBe(jumpPolicyEntityToBeCreated);
+        });
+
+        it('should rethrow 422 if jump policy cannot be found after name-already-taken', async () => {
+            // Arrange
+            const nameAlreadyTakenError = new HttpException({}, HttpStatus.UNPROCESSABLE_ENTITY);
+
+            jest.spyOn(commandBus, 'execute').mockRejectedValue(nameAlreadyTakenError);
+            jest.spyOn(queryBus, 'execute').mockResolvedValue([]);
+
+            // Act & Assert
+            await expect(
+                handler.execute(<CreateJumpPolicyCommand>{
+                    transactionId: 'transaction-1',
+                    tenantId: 123,
+                    displayName: 'jump-policy-1',
+                    codeName: 'jump-policy-code-1',
+                }),
+            ).rejects.toThrow(nameAlreadyTakenError);
         });
 
         it('should throw an error and publish an event if the repository service fails', async () => {
@@ -280,9 +352,17 @@ function mockCommandBus() {
     return commandBus;
 }
 
+function mockQueryBus() {
+    const queryBus = {} as QueryBus;
+    queryBus.execute = jest.fn().mockResolvedValue([]);
+
+    return queryBus;
+}
+
 function mockJumpPolicyRepositoryService() {
     const jumpPolicyRepositoryService = {} as JumpPolicyRepositoryService;
     jumpPolicyRepositoryService.create = jest.fn();
+    jumpPolicyRepositoryService.createOrUpdateById = jest.fn().mockResolvedValue(undefined);
 
     return jumpPolicyRepositoryService;
 }
