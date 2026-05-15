@@ -20,7 +20,7 @@ export class DeleteRemoteRdpCommandHandler implements ICommandHandler<DeleteRemo
                 new BTDeleteRemoteRdpCommand(command.transactionId, command.tenantId, command.id),
             );
         } catch (error) {
-            if (!(error instanceof HttpException && error.getStatus() === HttpStatus.NOT_FOUND)) {
+            if (!(error instanceof HttpException && error.getStatus() === Number(HttpStatus.NOT_FOUND))) {
                 throw error;
             }
             console.log(
