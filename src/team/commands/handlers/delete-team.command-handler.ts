@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteTeamCommand as BTDeleteTeamCommand } from '../../../beyondtrust-pra-conf-api/team/commands';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
@@ -14,9 +15,18 @@ export class DeleteTeamCommandHandler implements ICommandHandler<DeleteTeamComma
     ) {}
 
     public async execute(command: DeleteTeamCommand): Promise<void> {
-        await this.commandBus.execute<BTDeleteTeamCommand, void>(
-            new BTDeleteTeamCommand(command.transactionId, command.tenantId, command.id),
-        );
+        try {
+            await this.commandBus.execute<BTDeleteTeamCommand, void>(
+                new BTDeleteTeamCommand(command.transactionId, command.tenantId, command.id),
+            );
+        } catch (error) {
+            if (!(error instanceof HttpException && error.getStatus() === HttpStatus.NOT_FOUND)) {
+                throw error;
+            }
+            console.log(
+                `[${command.transactionId}] Team ${command.id} not found in BeyondTrust (404) – proceeding with local DB cleanup`,
+            );
+        }
 
         try {
             await this.teamRepositoryService.deleteById(command.tenantId, command.id);

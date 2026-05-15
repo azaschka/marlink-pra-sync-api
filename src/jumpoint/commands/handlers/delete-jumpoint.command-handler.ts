@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteJumpointCommand as BTDeleteJumpointCommand } from '../../../beyondtrust-pra-conf-api/jumpoint/commands';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
@@ -14,9 +15,18 @@ export class DeleteJumpointCommandHandler implements ICommandHandler<DeleteJumpo
     ) {}
 
     public async execute(command: DeleteJumpointCommand): Promise<void> {
-        await this.commandBus.execute<BTDeleteJumpointCommand, void>(
-            new BTDeleteJumpointCommand(command.transactionId, command.tenantId, command.id),
-        );
+        try {
+            await this.commandBus.execute<BTDeleteJumpointCommand, void>(
+                new BTDeleteJumpointCommand(command.transactionId, command.tenantId, command.id),
+            );
+        } catch (error) {
+            if (!(error instanceof HttpException && error.getStatus() === HttpStatus.NOT_FOUND)) {
+                throw error;
+            }
+            console.log(
+                `[${command.transactionId}] Jumpoint ${command.id} not found in BeyondTrust (404) – proceeding with local DB cleanup`,
+            );
+        }
 
         try {
             await this.jumpointRepositoryService.deleteById(command.tenantId, command.id);

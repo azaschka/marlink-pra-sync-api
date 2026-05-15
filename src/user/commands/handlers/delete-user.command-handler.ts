@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteUserCommand as BTDeleteUserCommand } from '../../../beyondtrust-pra-conf-api/user/commands';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
@@ -14,9 +15,18 @@ export class DeleteUserCommandHandler implements ICommandHandler<DeleteUserComma
     ) {}
 
     public async execute(command: DeleteUserCommand): Promise<void> {
-        await this.commandBus.execute<BTDeleteUserCommand, void>(
-            new BTDeleteUserCommand(command.transactionId, command.tenantId, command.id),
-        );
+        try {
+            await this.commandBus.execute<BTDeleteUserCommand, void>(
+                new BTDeleteUserCommand(command.transactionId, command.tenantId, command.id),
+            );
+        } catch (error) {
+            if (!(error instanceof HttpException && error.getStatus() === HttpStatus.NOT_FOUND)) {
+                throw error;
+            }
+            console.log(
+                `[${command.transactionId}] User ${command.id} not found in BeyondTrust (404) – proceeding with local DB cleanup`,
+            );
+        }
 
         try {
             await this.userRepositoryService.deleteById(command.tenantId, command.id);

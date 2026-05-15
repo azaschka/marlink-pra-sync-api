@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteWebJumpCommand as BTDeleteWebJumpCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/web-jump/commands';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
@@ -14,9 +15,18 @@ export class DeleteWebJumpCommandHandler implements ICommandHandler<DeleteWebJum
     ) {}
 
     public async execute(command: DeleteWebJumpCommand): Promise<void> {
-        await this.commandBus.execute<BTDeleteWebJumpCommand, void>(
-            new BTDeleteWebJumpCommand(command.transactionId, command.tenantId, command.id),
-        );
+        try {
+            await this.commandBus.execute<BTDeleteWebJumpCommand, void>(
+                new BTDeleteWebJumpCommand(command.transactionId, command.tenantId, command.id),
+            );
+        } catch (error) {
+            if (!(error instanceof HttpException && error.getStatus() === HttpStatus.NOT_FOUND)) {
+                throw error;
+            }
+            console.log(
+                `[${command.transactionId}] Web jump ${command.id} not found in BeyondTrust (404) – proceeding with local DB cleanup`,
+            );
+        }
 
         try {
             await this.webJumpRepositoryService.deleteById(command.tenantId, command.id);

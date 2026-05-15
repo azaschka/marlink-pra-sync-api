@@ -1,3 +1,4 @@
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { DeleteRemoteVncCommand as BTDeleteRemoteVncCommand } from '../../../../beyondtrust-pra-conf-api/jump-item/remote-vnc/commands';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
@@ -14,9 +15,18 @@ export class DeleteRemoteVncCommandHandler implements ICommandHandler<DeleteRemo
     ) {}
 
     public async execute(command: DeleteRemoteVncCommand): Promise<void> {
-        await this.commandBus.execute<BTDeleteRemoteVncCommand, void>(
-            new BTDeleteRemoteVncCommand(command.transactionId, command.tenantId, command.id),
-        );
+        try {
+            await this.commandBus.execute<BTDeleteRemoteVncCommand, void>(
+                new BTDeleteRemoteVncCommand(command.transactionId, command.tenantId, command.id),
+            );
+        } catch (error) {
+            if (!(error instanceof HttpException && error.getStatus() === HttpStatus.NOT_FOUND)) {
+                throw error;
+            }
+            console.log(
+                `[${command.transactionId}] Remote VNC ${command.id} not found in BeyondTrust (404) – proceeding with local DB cleanup`,
+            );
+        }
 
         try {
             await this.remoteVncRepositoryService.deleteById(command.tenantId, command.id);
