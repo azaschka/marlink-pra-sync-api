@@ -96,6 +96,7 @@ describe('ModifyBeyondtrustInstanceCommandHandler', () => {
                 'https://api.example2.com',
                 BillingType.Asset,
                 BusinessUnit.MT,
+                undefined,
             );
             expect(beyondtrustInstanceRepositoryServiceCreateOrUpdateByIdMethod).toHaveBeenCalledWith(
                 beyondtrustInstanceEntityToBeCreated,

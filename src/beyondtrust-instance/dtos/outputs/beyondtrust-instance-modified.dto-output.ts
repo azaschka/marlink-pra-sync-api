@@ -69,4 +69,12 @@ export class BeyondtrustInstanceModifiedDtoOutput implements BeyondtrustInstance
         description: 'The date and time when this BeyondTrust instance was last modified.',
     })
     public lastModificationDate?: Date;
+
+    @ApiProperty({
+        required: false,
+        nullable: true,
+        type: String,
+        description: 'The custom hostname (CNAME) of the BeyondTrust PRA console.',
+    })
+    public cname!: string | null;
 }

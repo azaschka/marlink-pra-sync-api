@@ -29,6 +29,7 @@ export class ModifyBeyondtrustInstanceCommandHandler implements ICommandHandler<
             command.apiBaseUrl ?? beyondTrustInstanceEntity.apiBaseUrl,
             command.billingType ?? beyondTrustInstanceEntity.billingType,
             command.businessUnit !== undefined ? command.businessUnit : beyondTrustInstanceEntity.businessUnit,
+            command.cname !== undefined ? command.cname : beyondTrustInstanceEntity.cname,
         );
 
         await this.beyondtrustInstanceRepositoryService.createOrUpdateById(modifiedBeyondTrustInstanceEntity);

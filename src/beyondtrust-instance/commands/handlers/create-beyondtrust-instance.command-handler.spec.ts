@@ -41,6 +41,7 @@ describe('CreateBeyondtrustInstanceCommandHandler', () => {
                     'https://api.example.com',
                     BillingType.Asset,
                     BusinessUnit.EG,
+                    'https://pra.example.com',
                 ),
             );
 
@@ -53,6 +54,7 @@ describe('CreateBeyondtrustInstanceCommandHandler', () => {
                 'https://api.example.com',
                 BillingType.Asset,
                 BusinessUnit.EG,
+                'https://pra.example.com',
             );
             expect(beyondtrustInstanceRepositoryServiceCreateMethod).toHaveBeenCalledWith(
                 beyondtrustInstanceEntityToBeCreated,
