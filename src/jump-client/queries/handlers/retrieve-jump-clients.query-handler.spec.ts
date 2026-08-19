@@ -49,6 +49,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
                     'public-ip-1',
                     'private-ip-1',
                     JumpClientConnectionType.Active,
+                    [456],
                 ),
             );
 
@@ -66,6 +67,7 @@ describe('RetrieveJumpClientsQueryHandler', () => {
                     publicIp: 'public-ip-1',
                     privateIp: 'private-ip-1',
                     connectionType: JumpClientConnectionType.Active,
+                    jumpPolicyId: In([456]),
                 },
                 1,
                 10,

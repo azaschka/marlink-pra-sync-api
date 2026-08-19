@@ -80,6 +80,7 @@ export class JumpClientController {
                 dtoInput.publicIp,
                 dtoInput.privateIp,
                 dtoInput.connectionType,
+                dtoInput.jumpPolicyIds,
             ),
         );
 

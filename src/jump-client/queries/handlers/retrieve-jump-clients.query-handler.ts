@@ -52,6 +52,10 @@ export class RetrieveJumpClientsQueryHandler implements IQueryHandler<RetrieveJu
             jumpClientFindByQuery.connectionType = query.connectionType;
         }
 
+        if (query.jumpPolicyIds !== undefined && query.jumpPolicyIds.length > 0) {
+            jumpClientFindByQuery.jumpPolicyId = In(query.jumpPolicyIds);
+        }
+
         const jumpClients = await this.jumpClientRepositoryService.findBy(
             query.tenantId,
             jumpClientFindByQuery,
