@@ -9,15 +9,30 @@ import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
 export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<DiscrepancyScannedEvent> {
     // Note: Might move to env config in the future
     // Checked first to guarantee ExternalToInternal always wins for all discrepancy types on these entities.
+    // Temporarily set to ALL entity types: Marlink is not yet reviewing/approving discrepancies on their side,
+    // so we auto-sync everything (BT always wins) until a long-term review workflow is in place.
+    // Listed explicitly (instead of Object.values(DiscrepancyEntityType)) so individual types can be removed again.
     private static readonly AUTO_SYNC_ENTITY_TYPES = [
-        DiscrepancyEntityType.JumpClient,
-        DiscrepancyEntityType.JumpClientInstaller,
-        DiscrepancyEntityType.Jumpoint,
-        DiscrepancyEntityType.GroupPolicyJumpoint,
+        DiscrepancyEntityType.GroupPolicy,
         DiscrepancyEntityType.GroupPolicyJumpGroup,
+        DiscrepancyEntityType.GroupPolicyJumpoint,
         DiscrepancyEntityType.GroupPolicyMember,
         DiscrepancyEntityType.GroupPolicyTeam,
+        DiscrepancyEntityType.JumpClient,
+        DiscrepancyEntityType.JumpClientInstaller,
+        DiscrepancyEntityType.JumpGroup,
+        DiscrepancyEntityType.JumpItemProtocolTunnelJump,
+        DiscrepancyEntityType.JumpItemRemoteRdp,
+        DiscrepancyEntityType.JumpItemRemoteVnc,
+        DiscrepancyEntityType.JumpItemShellJump,
+        DiscrepancyEntityType.JumpItemWebJump,
+        DiscrepancyEntityType.JumpPolicy,
+        DiscrepancyEntityType.Jumpoint,
+        DiscrepancyEntityType.JumpointNode,
         DiscrepancyEntityType.SessionPolicy,
+        DiscrepancyEntityType.Team,
+        DiscrepancyEntityType.TeamUser,
+        DiscrepancyEntityType.User,
         DiscrepancyEntityType.UserGroupPolicy,
     ];
 
