@@ -277,6 +277,21 @@ export class AppConfigService {
         };
     }
 
+    public get user() {
+        const configuredIds =
+            this.configService.get<string>('USER_LOCAL_SECURITY_PROVIDER_IDS') ??
+            DefaultAppConfig.user.localSecurityProviderIds;
+
+        const localSecurityProviderIds = configuredIds
+            .split(',')
+            .map((id) => Number.parseInt(id.trim(), 10))
+            .filter((id) => Number.isInteger(id));
+
+        return {
+            localSecurityProviderIds,
+        };
+    }
+
     public get throttle() {
         let isEnabled = DefaultAppConfig.throttle.isEnabled;
 
