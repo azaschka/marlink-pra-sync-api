@@ -29,7 +29,6 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
         // Using /2 like ScanDiscrepancyCommandHandler would allow 7 * (maxConnections/2)
         // concurrent DB connections, which exhausts the pool and fills the queue.
         // Dividing by 8 ensures all concurrent instances together stay within the pool:
-        // Note: maxConnections is the pool size of this service, not the MariaDB max_connections.
         //   pool=50 → pLimit(6): 7 handlers * 6 = 42 connections (pool: 50) ✅
         const concurrencyLimit = Math.max(2, Math.floor(maxConnections / 8));
         this.dbConnLimit = pLimit(concurrencyLimit);

@@ -96,7 +96,6 @@ export class BaseRepositoryService<T> {
         );
     }
 
-    // Bounded wait for a pooled connection, see DatabaseConnectionUtility.
     private async createQueryRunnerAndConnect() {
         return DatabaseConnectionUtility.acquireQueryRunner(this.dataSource);
     }
