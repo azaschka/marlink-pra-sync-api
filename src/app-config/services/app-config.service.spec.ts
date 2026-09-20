@@ -638,7 +638,7 @@ describe('AppConfigService', () => {
                     retryDelayInMs: 10000,
                     maxQueryExecutionTimeInMs: 30000,
                     extra: {
-                        connectionLimit: 20,
+                        connectionLimit: 50,
                     },
                 },
             },
@@ -660,7 +660,7 @@ describe('AppConfigService', () => {
                     retryDelayInMs: 10000,
                     maxQueryExecutionTimeInMs: 30000,
                     extra: {
-                        connectionLimit: 20,
+                        connectionLimit: 50,
                     },
                 },
             },
@@ -703,7 +703,7 @@ describe('AppConfigService', () => {
                 retryDelay: expected.retryDelayInMs,
                 maxQueryExecutionTime: expected.maxQueryExecutionTimeInMs,
                 extra: {
-                    connectionLimit: 20,
+                    connectionLimit: 50,
                     maxIdle: 5,
                     idleTimeout: 60000,
                     enableKeepAlive: true,
