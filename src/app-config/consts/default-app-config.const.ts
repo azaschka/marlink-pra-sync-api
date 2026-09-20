@@ -14,35 +14,62 @@ export abstract class DefaultAppConfig {
     private static readonly DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS = 10000;
     private static readonly DISCREPANCY_MAX_BATCH_SIZE = 100;
 
-    // Database connection settings
-    // Current baseline: MariaDB default max_connections = 151, wait_timeout / interactive_timeout = 30 s
+    // ------------------------------------------------------------------------------------------------
+    // Database connection settings (MARLINKPRA-42)
+    //
+    // All values in this section are plain constants on purpose. They are NOT read from environment
+    // variables and cannot be overridden per environment. To tune the database connection, change the
+    // constant here and redeploy. Only the connection endpoint and the credentials (DB_TYPE, DB_HOST,
+    // DB_PORT, DB_USERNAME, DB_PASSWORD, DB_NAME) come from the environment.
+    //
+    // MariaDB server side target on all environments (tracked in MARLINKPRA-42):
+    //   max_connections = 300, wait_timeout = interactive_timeout = 300 s
+    // Until the DC team has applied this on Prod, Prod may still run with the MariaDB defaults
+    // (max_connections = 151, wait_timeout = interactive_timeout = 28800 s). The values below are chosen
+    // to be safe for both, so they must not be tuned against one of the two only.
+    // ------------------------------------------------------------------------------------------------
     private static readonly DB_RETRY_ATTEMPTS = 10; // Reduced from 60 - more reasonable retry count
     private static readonly DB_RETRY_DELAY_IN_MS = 10000; // 10 seconds - faster recovery, less aggressive
     private static readonly DB_MAX_QUERY_EXECUTION_TIME_IN_MS = 30000; // 30 seconds - simple queries should be fast
 
-    // Connection pool — sized for max_connections = 151.
-    // Capacity plan (worst-case saga burst, see ScanEntityRelationDiscrepancyCommandHandler):
-    //   7 relation handlers × pLimit(max(2, floor(20/8)=2)) =  14 DB connections
-    //   1 scan handler      × pLimit(floor(20/2)=10)        =  10 DB connections
-    //   1 sync event handler (static pLimit(3))             =   3 BT-API calls (no extra DB conn)
-    //   Total demand ≈ 24 — fits within pool(20) + queue(100) = 120 capacity ✅
+    // Connection pool (mysql2).
+    // Sizing: pool(20) per instance of this service. Together with the other API this is about 40
+    // connections per deployment and about 80 during a rolling update, which fits max_connections = 151
+    // (Prod today) as well as 300. Do not raise the pool size before max_connections = 300 is confirmed
+    // on Prod, because a rolling update briefly doubles the number of open connections.
     private static readonly DB_EXTRA_MAX_CONNECTIONS = 20;
-    // TODO: After MariaDB upgrade to max_connections = 300 & wait_timeout / interactive_timeout = 300 s,
-    //       increase the connection pool accordingly:
-    //   7 relation handlers × pLimit(max(2, floor(50/8)=6)) =  42 DB connections
-    //   1 scan handler      × pLimit(floor(50/2)=25)        =  25 DB connections
-    //   Total demand ≈ 67 — fits within pool(50) + queue(100) = 150 capacity ✅
-    // private static readonly DB_EXTRA_MAX_CONNECTIONS = 50;
 
-    private static readonly DB_CONNECT_TIMEOUT_IN_MS = 10000; // 10 seconds to establish connection (unchanged for both DB configs)
+    // Idle connections above this number are closed by the pool (mysql2 checks once per second).
+    // IMPORTANT: mysql2 only runs its idle cleanup when maxIdle < connectionLimit. With the default
+    // (maxIdle = connectionLimit) idle connections are never retired and can silently go stale.
+    private static readonly DB_POOL_MAX_IDLE = 5;
 
-    // Sagas can dispatch up to 7 concurrent ScanEntityRelationDiscrepancyCommandHandler instances
-    // (GroupPolicySaga: 4, UserSaga: 1, JumpointSaga: 1, TeamSaga: 1). Each uses pLimit internally,
-    // so burst demand can spike well above connectionLimit. A large queue prevents "Queue limit reached"
-    // errors by making excess requests wait rather than fail outright.
-    private static readonly DB_QUEUE_LIMIT = 100; // Max requests waiting for a free connection slot
+    // Idle connections older than this are closed by the pool.
+    // Must stay well below the MariaDB wait_timeout (300 s) and below the idle timeout of the network
+    // path between the cluster and the database, so the pool retires a connection before the server or a
+    // firewall silently drops it.
+    private static readonly DB_POOL_IDLE_TIMEOUT_IN_MS = 60000; // 60 seconds
 
-    private static readonly DB_WAIT_FOR_CONNECTIONS = true; // Wait for available connection (MySQL2 option)
+    // TCP keep-alive on pooled sockets. mysql2 enables keep-alive by default but without an initial delay,
+    // which leaves the OS default (typically 2 hours) in place and does not help against idle drops.
+    private static readonly DB_KEEP_ALIVE_ENABLED = true;
+    private static readonly DB_KEEP_ALIVE_INITIAL_DELAY_IN_MS = 30000; // 30 seconds
+
+    private static readonly DB_CONNECT_TIMEOUT_IN_MS = 10000; // 10 seconds to establish a connection
+    private static readonly DB_WAIT_FOR_CONNECTIONS = true; // Wait for a free pooled connection (MySQL2 option)
+
+    // Max requests waiting for a free pooled connection before failing (MySQL2 option).
+    // This limits the queue depth only, not the time a request waits in the queue.
+    private static readonly DB_QUEUE_LIMIT = 100;
+
+    // Max time a request waits for a free pooled connection. mysql2 has no acquire timeout of its own, so
+    // this is enforced in DatabaseConnectionUtility. After this time the request fails with 503 instead of
+    // hanging until the client gives up.
+    private static readonly DB_ACQUIRE_TIMEOUT_IN_MS = 30000;
+
+    // Attempts for read-only queries. A read is repeated once with a fresh connection when the pooled
+    // connection turned out to be dead (connection lost or reset). Writes are never repeated automatically.
+    private static readonly DB_READ_MAX_ATTEMPTS = 2;
 
     // Throttle settings
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
@@ -170,8 +197,14 @@ export abstract class DefaultAppConfig {
             connectTimeout: DefaultAppConfig.DB_CONNECT_TIMEOUT_IN_MS,
             queueLimit: DefaultAppConfig.DB_QUEUE_LIMIT,
             waitForConnections: DefaultAppConfig.DB_WAIT_FOR_CONNECTIONS,
+            acquireTimeoutInMs: DefaultAppConfig.DB_ACQUIRE_TIMEOUT_IN_MS,
+            readMaxAttempts: DefaultAppConfig.DB_READ_MAX_ATTEMPTS,
             extra: {
                 connectionLimit: DefaultAppConfig.DB_EXTRA_MAX_CONNECTIONS,
+                maxIdle: DefaultAppConfig.DB_POOL_MAX_IDLE,
+                idleTimeout: DefaultAppConfig.DB_POOL_IDLE_TIMEOUT_IN_MS,
+                enableKeepAlive: DefaultAppConfig.DB_KEEP_ALIVE_ENABLED,
+                keepAliveInitialDelay: DefaultAppConfig.DB_KEEP_ALIVE_INITIAL_DELAY_IN_MS,
             },
         };
     }
