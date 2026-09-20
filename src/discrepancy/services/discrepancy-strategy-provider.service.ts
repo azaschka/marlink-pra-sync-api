@@ -259,6 +259,7 @@ import { User as DBUser } from '../../user/models';
 import { RetrieveUsersQuery as DBRetrieveUsersQuery } from '../../user/queries';
 import { UserEntity } from '../../user/repositories/entities';
 import { UserService } from '../../user/services/user.service';
+import { ErrorProcessorUtility } from '../../shared/utilities';
 import { DiscrepancyEntityType } from '../enums';
 import { DiscrepancyStrategy } from '../types';
 
@@ -1687,16 +1688,28 @@ export class DiscrepancyStrategyProviderService {
                     this.queryBus.execute<BTRetrieveUserGroupPoliciesQuery, BTUserGroupPolicy[]>(
                         new BTRetrieveUserGroupPoliciesQuery(transactionId, tenantId, parentId),
                     ),
-                btCreateFunc: (transactionId, tenantId, entity) =>
-                    this.commandBus.execute(
-                        new BTModifyUserGroupPoliciesCommand(
-                            transactionId,
-                            tenantId,
-                            entity.userId,
-                            [entity.groupPolicyId],
-                            [],
-                        ),
-                    ),
+                // PATCH /user/{id}/group-policy-changes applies to local users only (R3.2-A003, 3.1.1). For a
+                // non-local user this call cannot succeed, and the membership is reconciled through the
+                // GroupPolicyMember entity type instead, which uses POST and DELETE /group-policy/{id}/member.
+                // The error is logged with the detail needed to tell the two cases apart and then rethrown, so
+                // the discrepancy engine keeps its existing error handling.
+                btCreateFunc: async (transactionId, tenantId, entity) => {
+                    try {
+                        await this.commandBus.execute(
+                            new BTModifyUserGroupPoliciesCommand(
+                                transactionId,
+                                tenantId,
+                                entity.userId,
+                                [entity.groupPolicyId],
+                                [],
+                            ),
+                        );
+                    } catch (error) {
+                        this.logUserGroupPolicyWriteFailure(transactionId, tenantId, entity, 'add', error);
+
+                        throw error;
+                    }
+                },
                 btModifyFunc: async (transactionId, tenantId, entity) => {
                     console.log(
                         `No modify operation for User Group Policy in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, user id: ${entity.userId}, group policy id: ${entity.groupPolicyId}.`,
@@ -1704,16 +1717,23 @@ export class DiscrepancyStrategyProviderService {
 
                     return Promise.resolve();
                 },
-                btDeleteFunc: (transactionId, tenantId, entity) =>
-                    this.commandBus.execute(
-                        new BTModifyUserGroupPoliciesCommand(
-                            transactionId,
-                            tenantId,
-                            entity.userId,
-                            [],
-                            [entity.groupPolicyId],
-                        ),
-                    ),
+                btDeleteFunc: async (transactionId, tenantId, entity) => {
+                    try {
+                        await this.commandBus.execute(
+                            new BTModifyUserGroupPoliciesCommand(
+                                transactionId,
+                                tenantId,
+                                entity.userId,
+                                [],
+                                [entity.groupPolicyId],
+                            ),
+                        );
+                    } catch (error) {
+                        this.logUserGroupPolicyWriteFailure(transactionId, tenantId, entity, 'remove', error);
+
+                        throw error;
+                    }
+                },
                 btToDbEntity: (bt) => UserGroupPolicyEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveUserGroupPoliciesQuery, DBUserGroupPolicy[]>(
@@ -1751,5 +1771,29 @@ export class DiscrepancyStrategyProviderService {
         }
 
         throw new Error(`Unsupported entity type: ${entityType}`);
+    }
+
+    /**
+     * Records why a user group policy write against BeyondTrust failed.
+     *
+     * The endpoint behind BTModifyUserGroupPoliciesCommand is documented as local-user-only, so a failure here
+     * is either an ordinary API error or a non-local user that must be reconciled through the group policy
+     * member endpoints instead. The two cannot be told apart from the error alone, which is why the security
+     * provider of the affected user is part of the message: it is the single piece of information needed to
+     * classify these failures once a BeyondTrust instance with externally provisioned users is available.
+     */
+    private logUserGroupPolicyWriteFailure(
+        transactionId: string,
+        tenantId: number,
+        entity: { userId: number; groupPolicyId: number },
+        operation: 'add' | 'remove',
+        error: unknown,
+    ): void {
+        console.error(
+            `[${transactionId}] Failed to ${operation} group policy ${entity.groupPolicyId} for user ${entity.userId} ` +
+                `on tenant ${tenantId} via /user/{id}/group-policy-changes. This endpoint applies to local users only. ` +
+                `If the user is externally provisioned, the membership is reconciled through the GroupPolicyMember ` +
+                `entity type instead. Cause: ${ErrorProcessorUtility.stringify(error)}`,
+        );
     }
 }
