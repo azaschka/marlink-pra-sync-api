@@ -1,5 +1,3 @@
-import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
-import { AppConfigService } from '../../app-config/services/app-config.service';
 import { SortOrderType } from '../../shared/enums';
 import { Log } from '../models';
 import { LogService } from '../services/log.service';
@@ -9,20 +7,16 @@ const DEFAULT_DATE_TIME = new Date('2025-12-01T00:00:00Z');
 
 describe('LogController', () => {
     let controller: LogController;
-    let appConfigService: AppConfigService;
-    let commandBus: CommandBus;
-    let queryBus: QueryBus;
-    let eventBus: EventBus;
     let logService: LogService;
 
     beforeEach(() => {
         jest.useFakeTimers().setSystemTime(DEFAULT_DATE_TIME.getTime());
-        appConfigService = mockAppConfigService();
-        commandBus = mockCommandBus();
-        queryBus = mockQueryBus();
-        eventBus = mockEventBus();
         logService = mockLogService();
-        controller = new LogController(appConfigService, commandBus, queryBus, eventBus, logService);
+        controller = new LogController(logService);
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     describe('retrieveLogs', () => {
@@ -89,36 +83,6 @@ describe('LogController', () => {
         );
     });
 });
-
-function mockAppConfigService() {
-    return {
-        isProduction: false,
-    } as AppConfigService;
-}
-
-function mockCommandBus() {
-    const commandBus = {} as CommandBus;
-    commandBus.execute = jest.fn();
-    commandBus.subscribe = jest.fn();
-
-    return commandBus;
-}
-
-function mockQueryBus() {
-    const queryBus = {} as QueryBus;
-    queryBus.execute = jest.fn();
-    queryBus.subscribe = jest.fn();
-
-    return queryBus;
-}
-
-function mockEventBus() {
-    const eventBus = {} as EventBus;
-    eventBus.publish = jest.fn();
-    eventBus.subscribe = jest.fn();
-
-    return eventBus;
-}
 
 function mockLogService() {
     const logService = {} as LogService;
