@@ -8,6 +8,8 @@ import { DefaultAppConfig } from '../consts';
 export class AppConfigService {
     private static readonly DEFAULT_UNDEFINED_STRING = 'unknown';
     private static readonly DEFAULT_UNDEFINED_NUMBER = 0;
+    // Bounds the single BeyondTrust retry layer even when misconfigured (at most 6 attempts per request).
+    private static readonly MAX_BEYONDTRUST_RETRY_ATTEMPTS = 5;
 
     private readonly logger = new Logger(AppConfigService.name);
     private readonly reportedInvalidKeys = new Set<string>();
@@ -198,12 +200,30 @@ export class AppConfigService {
                     },
                 },
                 communication: {
-                    retryAttempts:
-                        this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS') ??
+                    retryAttempts: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS',
                         DefaultAppConfig.beyondTrust.api.communication.retryAttempts,
-                    retryDelayInMs:
-                        this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS') ??
+                        0,
+                        AppConfigService.MAX_BEYONDTRUST_RETRY_ATTEMPTS,
+                    ),
+                    retryDelayInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS',
                         DefaultAppConfig.beyondTrust.api.communication.retryDelayInMs,
+                        0,
+                        60000,
+                    ),
+                    maxRetryAfterInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_MAX_RETRY_AFTER_IN_MS',
+                        DefaultAppConfig.beyondTrust.api.communication.maxRetryAfterInMs,
+                        0,
+                        300000,
+                    ),
+                    readTimeoutInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_READ_TIMEOUT_IN_MS',
+                        DefaultAppConfig.beyondTrust.api.communication.readTimeoutInMs,
+                        1000,
+                        600000,
+                    ),
                 },
             },
         };

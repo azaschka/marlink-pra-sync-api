@@ -159,9 +159,14 @@ export abstract class DefaultAppConfig {
                 sessionPolicy: {
                     path: '/session-policy',
                 },
+                // The only retry layer for BeyondTrust calls (BtRetryPolicy): at most retryAttempts retries after
+                // the first attempt, exponential backoff from retryDelayInMs (1 s, 2 s, 4 s) plus jitter.
                 communication: {
-                    retryAttempts: 5,
-                    retryDelayInMs: 5000,
+                    retryAttempts: 3,
+                    retryDelayInMs: 1000,
+                    maxRetryAfterInMs: 30000,
+                    // Per-request timeout for reads; writes and the backup download keep the client default.
+                    readTimeoutInMs: 60000,
                 },
             },
         };

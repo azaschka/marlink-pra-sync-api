@@ -1,26 +1,36 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { AxiosError, AxiosResponse, HttpStatusCode } from 'axios';
+import { AxiosResponse, Method } from 'axios';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
-import { catchError, defer, firstValueFrom, map, retry, switchMap, throwError, timer } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { BeyondtrustInstance } from '../../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstanceByIdQuery } from '../../../beyondtrust-instance/queries';
-import { UrlUtility } from '../../../shared/utilities';
-import { ErrorProcessorUtility } from '../../../shared/utilities/error-processor.utility';
+import { RetryUtility, UrlUtility } from '../../../shared/utilities';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
+import { BtApiError, BtApiErrorKind } from '../errors/bt-api-error';
+import { BtErrorClassifier } from '../errors/bt-error-classifier';
+import { BtRetryPolicy } from './bt-retry-policy';
 
+interface BtRequest {
+    readonly method: Method;
+    readonly urlPath: string;
+    readonly params?: unknown;
+    readonly data?: unknown;
+    /** Overrides the client timeout (3 minutes) for this request. */
+    readonly timeoutInMs?: number;
+}
+
+/**
+ * Client for the BeyondTrust configuration API. Owns the only retry layer (BtRetryPolicy) and turns every
+ * failure into a classified BtApiError. Log output per failure is one bounded line (BtApiError.describe()).
+ */
 @Injectable()
 export class HttpClientService {
-    private static readonly RETRYABLE_STATUS_CODES = [
-        HttpStatusCode.Unauthorized,
-        HttpStatusCode.RequestTimeout,
-        HttpStatusCode.TooManyRequests,
-        HttpStatusCode.BadGateway,
-        HttpStatusCode.ServiceUnavailable,
-        HttpStatusCode.GatewayTimeout,
-    ];
+    private static readonly TOKEN_PATH = 'OAuth2 token endpoint';
+
+    private readonly logger = new Logger('BeyondTrustApi');
 
     constructor(
         private readonly appConfigService: AppConfigService,
@@ -38,50 +48,14 @@ export class HttpClientService {
     ): Promise<O> {
         const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
 
-        const result = await firstValueFrom(
-            defer(async () =>
-                this.httpService.get<O>(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
-                    headers: {
-                        Authorization: await this.getAuthHeader(beyondtrustInstance),
-                    },
-                    params: instanceToPlain(params),
-                }),
-            ).pipe(
-                // flatten the Observable<Observable<AxiosResponse>> into Observable<AxiosResponse>
-                // using RxJS's `mergeMap` or `switchMap`
-                switchMap((response) => response), // unwrap inner Observable
-                catchError((error) => {
-                    const errorDetails = this.formatAxiosError(error, 'GET', urlPath, beyondtrustInstance, params);
-                    if (!this.shouldSkipAxiosErrorLog(error)) {
-                        console.error(errorDetails);
-                    }
-                    throw error;
-                }),
-                retry({
-                    count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
-                    delay: (error) => {
-                        if (error instanceof AxiosError) {
-                            if (error.status === HttpStatusCode.Unauthorized) {
-                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
-                            }
+        const response = await this.execute<O>(beyondtrustInstance, {
+            method: 'GET',
+            urlPath,
+            params: instanceToPlain(params),
+            timeoutInMs: this.appConfigService.beyondTrust.api.communication.readTimeoutInMs,
+        });
 
-                            if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
-                                return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
-                            }
-                        }
-
-                        throw error;
-                    },
-                }),
-                map((response) => plainToInstance(cls, response.data)),
-                catchError((error) => {
-                    // Rethrow the error as a nestjs HttpException
-                    throw ErrorProcessorUtility.composeError(error);
-                }),
-            ),
-        );
-
-        return result as O;
+        return plainToInstance(cls, response.data) as unknown as O;
     }
 
     public async post<C, O>(
@@ -93,58 +67,13 @@ export class HttpClientService {
     ): Promise<O> {
         const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
 
-        const result = await firstValueFrom(
-            defer(async () =>
-                this.httpService.post<O>(
-                    UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath),
-                    instanceToPlain(body),
-                    {
-                        headers: {
-                            Authorization: await this.getAuthHeader(beyondtrustInstance),
-                        },
-                    },
-                ),
-            ).pipe(
-                switchMap((response) => response),
-                catchError((error) => {
-                    const errorDetails = this.formatAxiosError(
-                        error,
-                        'POST',
-                        urlPath,
-                        beyondtrustInstance,
-                        undefined,
-                        body,
-                    );
-                    if (!this.shouldSkipAxiosErrorLog(error)) {
-                        console.error(errorDetails);
-                    }
-                    throw error;
-                }),
-                retry({
-                    count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
-                    delay: (error) => {
-                        if (error instanceof AxiosError) {
-                            if (error.status === HttpStatusCode.Unauthorized) {
-                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
-                            }
+        const response = await this.execute<O>(beyondtrustInstance, {
+            method: 'POST',
+            urlPath,
+            data: instanceToPlain(body),
+        });
 
-                            if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
-                                return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
-                            }
-                        }
-
-                        throw error;
-                    },
-                }),
-                map((response) => plainToInstance(cls, response.data)),
-                catchError((error) => {
-                    // Rethrow the error as a nestjs HttpException
-                    throw ErrorProcessorUtility.composeError(error);
-                }),
-            ),
-        );
-
-        return result as O;
+        return plainToInstance(cls, response.data) as unknown as O;
     }
 
     public async patch<C, O>(
@@ -156,58 +85,13 @@ export class HttpClientService {
     ): Promise<O> {
         const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
 
-        const result = await firstValueFrom(
-            defer(async () =>
-                this.httpService.patch<O>(
-                    UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath),
-                    instanceToPlain(body),
-                    {
-                        headers: {
-                            Authorization: await this.getAuthHeader(beyondtrustInstance),
-                        },
-                    },
-                ),
-            ).pipe(
-                switchMap((response) => response),
-                catchError((error) => {
-                    const errorDetails = this.formatAxiosError(
-                        error,
-                        'PATCH',
-                        urlPath,
-                        beyondtrustInstance,
-                        undefined,
-                        body,
-                    );
-                    if (!this.shouldSkipAxiosErrorLog(error)) {
-                        console.error(errorDetails);
-                    }
-                    throw error;
-                }),
-                retry({
-                    count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
-                    delay: (error) => {
-                        if (error instanceof AxiosError) {
-                            if (error.status === HttpStatusCode.Unauthorized) {
-                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
-                            }
+        const response = await this.execute<O>(beyondtrustInstance, {
+            method: 'PATCH',
+            urlPath,
+            data: instanceToPlain(body),
+        });
 
-                            if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
-                                return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
-                            }
-                        }
-
-                        throw error;
-                    },
-                }),
-                map((response) => plainToInstance(cls, response.data)),
-                catchError((error) => {
-                    // Rethrow the error as a nestjs HttpException
-                    throw ErrorProcessorUtility.composeError(error);
-                }),
-            ),
-        );
-
-        return result as O;
+        return plainToInstance(cls, response.data) as unknown as O;
     }
 
     public async delete(
@@ -218,49 +102,10 @@ export class HttpClientService {
     ): Promise<void> {
         const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
 
-        await firstValueFrom(
-            defer(async () =>
-                this.httpService.delete(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
-                    headers: {
-                        Authorization: await this.getAuthHeader(beyondtrustInstance),
-                    },
-                    params: instanceToPlain(params),
-                }),
-            ).pipe(
-                // flatten the Observable<Observable<AxiosResponse>> into Observable<AxiosResponse>
-                // using RxJS's `mergeMap` or `switchMap`
-                switchMap((response) => response), // unwrap inner Observable
-                catchError((error) => {
-                    const errorDetails = this.formatAxiosError(error, 'DELETE', urlPath, beyondtrustInstance, params);
-                    if (!this.shouldSkipAxiosErrorLog(error)) {
-                        console.error(errorDetails);
-                    }
-                    throw error;
-                }),
-                retry({
-                    count: this.appConfigService.beyondTrust.api.communication.retryAttempts,
-                    delay: (error) => {
-                        if (error instanceof AxiosError) {
-                            if (error.status === HttpStatusCode.Unauthorized) {
-                                this.invalidateAuthHeader(beyondtrustInstance); // token will refresh next attempt
-                            }
-
-                            if (error.status && HttpClientService.RETRYABLE_STATUS_CODES.includes(error.status)) {
-                                return timer(this.appConfigService.beyondTrust.api.communication.retryDelayInMs);
-                            }
-                        }
-
-                        throw error;
-                    },
-                }),
-                catchError((error) => {
-                    // Rethrow the error as a nestjs HttpException
-                    throw ErrorProcessorUtility.composeError(error);
-                }),
-            ),
-        );
+        await this.execute(beyondtrustInstance, { method: 'DELETE', urlPath, params: instanceToPlain(params) });
     }
 
+    /** Streamed download (installers). Not retried: a partially consumed stream cannot be repeated. */
     public async stream(
         transactionId: string,
         beyondtrustInstanceId: number,
@@ -269,31 +114,93 @@ export class HttpClientService {
     ): Promise<AxiosResponse<NodeJS.ReadableStream>> {
         const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
 
-        return firstValueFrom(
-            this.httpService
-                .get<NodeJS.ReadableStream>(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
+        try {
+            return await firstValueFrom(
+                this.httpService.get<NodeJS.ReadableStream>(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
                     headers: {
                         Authorization: await this.getAuthHeader(beyondtrustInstance),
                     },
                     params: params ? instanceToPlain(params) : undefined,
                     responseType: 'stream',
-                })
-                .pipe(
-                    catchError((error) => {
-                        const errorDetails = this.formatAxiosError(
-                            error,
-                            'GET (stream)',
-                            urlPath,
-                            beyondtrustInstance,
-                            params,
-                        );
-                        if (!this.shouldSkipAxiosErrorLog(error)) {
-                            console.error(errorDetails);
-                        }
-                        return throwError(() => ErrorProcessorUtility.composeError(error));
+                }),
+            );
+        } catch (rawError) {
+            const error = BtErrorClassifier.classify(rawError, {
+                method: 'GET',
+                path: urlPath,
+                beyondtrustInstanceId: beyondtrustInstance.id,
+                attempts: 1,
+            });
+            this.reportFailure(error);
+
+            throw error;
+        }
+    }
+
+    private async execute<O>(beyondtrustInstance: BeyondtrustInstance, request: BtRequest): Promise<AxiosResponse<O>> {
+        const communication = this.appConfigService.beyondTrust.api.communication;
+        const policy = new BtRetryPolicy({
+            maxRetries: communication.retryAttempts,
+            baseDelayInMs: communication.retryDelayInMs,
+            maxRetryAfterInMs: communication.maxRetryAfterInMs,
+        });
+        const state = BtRetryPolicy.initialState();
+        const url = UrlUtility.join(beyondtrustInstance.apiBaseUrl, request.urlPath);
+
+        for (let attempt = 1; ; attempt++) {
+            let phase: 'token' | 'request' = 'token';
+
+            try {
+                const authorization = await this.getAuthHeader(beyondtrustInstance);
+                phase = 'request';
+
+                return await firstValueFrom(
+                    this.httpService.request<O>({
+                        method: request.method,
+                        url,
+                        params: request.params,
+                        data: request.data,
+                        timeout: request.timeoutInMs,
+                        headers: { Authorization: authorization },
                     }),
-                ),
-        );
+                );
+            } catch (rawError) {
+                const error = BtErrorClassifier.classify(rawError, {
+                    method: request.method,
+                    path: phase === 'token' ? HttpClientService.TOKEN_PATH : request.urlPath,
+                    beyondtrustInstanceId: beyondtrustInstance.id,
+                    attempts: attempt,
+                });
+                const decision = policy.decide(error, state);
+
+                if (!decision.retry) {
+                    this.reportFailure(error);
+
+                    throw error;
+                }
+
+                this.logger.warn(
+                    `${error.describe()}; retry ${state.retries}/${communication.retryAttempts} in ${decision.delayInMs} ms`,
+                );
+
+                if (decision.refreshToken) {
+                    this.invalidateAuthHeader(beyondtrustInstance);
+                }
+
+                await RetryUtility.delay(decision.delayInMs);
+            }
+        }
+    }
+
+    // A JSON 404 is an expected answer for many callers (deleted entities, missing relation parents).
+    private reportFailure(error: BtApiError): void {
+        if (error.kind === BtApiErrorKind.NotFound) {
+            this.logger.debug(error.describe());
+
+            return;
+        }
+
+        this.logger.error(error.describe());
     }
 
     private async getBeyondtrustInstance(
@@ -326,59 +233,5 @@ export class HttpClientService {
             beyondtrustInstance.authClientSecret,
             beyondtrustInstance.oauth2TokenUrl,
         );
-    }
-
-    private shouldSkipAxiosErrorLog(error: unknown): boolean {
-        return error instanceof AxiosError && error.response?.status === HttpStatusCode.NotFound;
-    }
-
-    private formatAxiosError(
-        error: unknown,
-        method: string,
-        urlPath: string,
-        beyondtrustInstance: BeyondtrustInstance,
-        /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-        _params?: unknown,
-        /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-        _body?: unknown,
-    ): string {
-        if (error instanceof AxiosError) {
-            // const fullUrl = UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath);
-            const responseData = error.response?.data ? JSON.stringify(error.response.data) : 'No response data';
-
-            // TODO: Enhance error formatting to include in external monitoring/logging systems, and consider sanitizing sensitive information from logs
-            return [
-                `BT Error: ${error.response?.status || 'Unknown'}, ${error.response?.statusText || 'Unknown'}, ${responseData}`,
-            ]
-                .filter(Boolean)
-                .join('\n');
-
-            // return [
-            //     `BeyondTrust API Error Details:`,
-            //     `  Method: ${method}`,
-            //     `  URL: ${fullUrl}`,
-            //     `  Status Code: ${error.response?.status || 'Unknown'}`,
-            //     `  Status Text: ${error.response?.statusText || 'Unknown'}`,
-            //     `  Error Message: ${error.message}`,
-            //     `  BT Instance ID: ${beyondtrustInstance.id}`,
-            //     `  BT Instance Name: ${beyondtrustInstance.name}`,
-            //     _params ? `  Request Params: ${JSON.stringify(_params)}` : '',
-            //     _body ? `  Request Body: ${JSON.stringify(_body)}` : '',
-            //     `  Response Data: ${responseData}`,
-            //     `  Headers: ${error.response?.headers ? JSON.stringify(error.response.headers) : 'No headers'}`,
-            // ]
-            //     .filter(Boolean)
-            //     .join('\n');
-        } else {
-            const fullUrl = UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath);
-            return [
-                `Non-Axios Error Details:`,
-                `  Method: ${method}`,
-                `  URL: ${fullUrl}`,
-                `  BT Instance ID: ${beyondtrustInstance.id}`,
-                `  BT Instance Name: ${beyondtrustInstance.name}`,
-                `  Error: ${String(error)}`,
-            ].join('\n');
-        }
     }
 }

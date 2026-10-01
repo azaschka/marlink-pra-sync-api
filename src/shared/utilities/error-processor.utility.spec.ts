@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError, AxiosResponse, HttpStatusCode } from 'axios';
+import { BtApiError, BtApiErrorKind } from '../../beyondtrust-pra-conf-api/http-client/errors/bt-api-error';
 import { ErrorProcessorUtility } from './error-processor.utility';
 
 describe('ErrorProcessorUtility', () => {
@@ -94,6 +95,32 @@ describe('ErrorProcessorUtility', () => {
     });
 
     describe('isApiConnectivityError', () => {
+        it.each([
+            { kind: BtApiErrorKind.Transient, expected: true },
+            { kind: BtApiErrorKind.ProxyConnectFailure, expected: true },
+            { kind: BtApiErrorKind.UnexpectedResponse, expected: true },
+            { kind: BtApiErrorKind.RateLimited, expected: true },
+            { kind: BtApiErrorKind.NotFound, expected: false },
+            { kind: BtApiErrorKind.ClientError, expected: false },
+            { kind: BtApiErrorKind.ServerError, expected: false },
+            { kind: BtApiErrorKind.Unauthorized, expected: false },
+            { kind: BtApiErrorKind.Cancelled, expected: false },
+        ])('judges a classified BeyondTrust error of kind $kind by its kind ($expected)', ({ kind, expected }) => {
+            // The snippet contains "503" and "timeout" on purpose: the message text must not decide.
+            const error = new BtApiError({
+                kind,
+                method: 'GET',
+                path: '/user',
+                beyondtrustInstanceId: 1,
+                attempts: 1,
+                snippet: '503 timeout',
+                notSent: false,
+                httpStatus: 503,
+            });
+
+            expect(ErrorProcessorUtility.isApiConnectivityError(error)).toBe(expected);
+        });
+
         it.each([
             { error: new Error('timeout'), expected: true, description: 'API timeout' },
             { error: new Error('ETIMEDOUT'), expected: true, description: 'Database ETIMEDOUT' },

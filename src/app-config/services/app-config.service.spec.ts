@@ -259,8 +259,10 @@ describe('AppConfigService', () => {
                         },
                     },
                     communication: {
-                        retryAttempts: 10,
+                        retryAttempts: 4,
                         retryDelayInMs: 1500,
+                        maxRetryAfterInMs: 20000,
+                        readTimeoutInMs: 45000,
                     },
                 },
                 expected: {
@@ -347,8 +349,10 @@ describe('AppConfigService', () => {
                             },
                         },
                         communication: {
-                            retryAttempts: 10,
+                            retryAttempts: 4,
                             retryDelayInMs: 1500,
+                            maxRetryAfterInMs: 20000,
+                            readTimeoutInMs: 45000,
                         },
                     },
                 },
@@ -439,8 +443,10 @@ describe('AppConfigService', () => {
                             },
                         },
                         communication: {
-                            retryAttempts: 5,
-                            retryDelayInMs: 5000,
+                            retryAttempts: 3,
+                            retryDelayInMs: 1000,
+                            maxRetryAfterInMs: 30000,
+                            readTimeoutInMs: 60000,
                         },
                     },
                 },
@@ -514,6 +520,10 @@ describe('AppConfigService', () => {
                         return input.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
                         return input.communication?.retryDelayInMs;
+                    case 'BEYONDTRUST_API_COMMUNICATION_MAX_RETRY_AFTER_IN_MS':
+                        return input.communication?.maxRetryAfterInMs;
+                    case 'BEYONDTRUST_API_COMMUNICATION_READ_TIMEOUT_IN_MS':
+                        return input.communication?.readTimeoutInMs;
                     default:
                         return undefined;
                 }
@@ -605,9 +615,26 @@ describe('AppConfigService', () => {
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,
                         retryDelayInMs: expected.api.communication.retryDelayInMs,
+                        maxRetryAfterInMs: expected.api.communication.maxRetryAfterInMs,
+                        readTimeoutInMs: expected.api.communication.readTimeoutInMs,
                     },
                 },
             });
+        });
+
+        it('should bound the BeyondTrust retry attempts even when misconfigured', () => {
+            const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+            configService.get = jest
+                .fn()
+                .mockImplementation((key: string) =>
+                    key === 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS' ? '10' : undefined,
+                );
+
+            expect(service.beyondTrust.api.communication.retryAttempts).toBe(
+                DefaultAppConfig.beyondTrust.api.communication.retryAttempts,
+            );
+            expect(warn).toHaveBeenCalledTimes(1);
+            warn.mockRestore();
         });
     });
 

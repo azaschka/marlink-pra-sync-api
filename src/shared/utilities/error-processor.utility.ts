@@ -1,7 +1,15 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError, HttpStatusCode } from 'axios';
+import { BtApiError, BtApiErrorKind } from '../../beyondtrust-pra-conf-api/http-client/errors/bt-api-error';
 
 export abstract class ErrorProcessorUtility {
+    private static readonly CONNECTIVITY_KINDS: ReadonlySet<BtApiErrorKind> = new Set([
+        BtApiErrorKind.Transient,
+        BtApiErrorKind.ProxyConnectFailure,
+        BtApiErrorKind.UnexpectedResponse,
+        BtApiErrorKind.RateLimited,
+    ]);
+
     public static stringify(error: unknown): string {
         if (error instanceof Error) {
             return error.stack ?? error.message;
@@ -50,6 +58,11 @@ export abstract class ErrorProcessorUtility {
      * - Database timeouts (ETIMEDOUT, QueryFailedError with timeout)
      */
     public static isApiConnectivityError(error: unknown): boolean {
+        // Classified BeyondTrust errors are judged by their kind, not by their message text.
+        if (error instanceof BtApiError) {
+            return ErrorProcessorUtility.CONNECTIVITY_KINDS.has(error.kind);
+        }
+
         const errorMessage = error instanceof Error ? error.message : String(error);
         const errorString = String(error); // Full error string including stack
 
