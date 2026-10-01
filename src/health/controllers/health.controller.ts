@@ -1,55 +1,47 @@
-import { Controller, Get, UsePipes, ValidationPipe } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import {
-    DiskHealthIndicator,
-    HealthCheck,
-    HealthCheckResult,
-    HealthCheckService,
-    MemoryHealthIndicator,
-    TypeOrmHealthIndicator,
-} from '@nestjs/terminus';
-import { AppConfigService } from '../../app-config/services/app-config.service';
+import { Controller, Get, Res } from '@nestjs/common';
+import { ApiOkResponse, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { HealthService } from '../services/health.service';
 
+/**
+ * Health contract (see the R3.2 stability plan, section 4):
+ * - GET /health/live: process answers (liveness and startup probes)
+ * - GET /health/ready: database reachable (readiness probe); 503 otherwise
+ * - GET /health: diagnostics with overallStatus healthy, degraded or unavailable; 503 only when unavailable
+ * Responses are sent with their status code directly, without the exception filter, and are never written to
+ * the system log or the monitoring tables.
+ */
 @ApiTags('Health')
 @Controller('health')
-@UsePipes(new ValidationPipe({ transform: true }))
 export class HealthController {
-    constructor(
-        private readonly appConfigService: AppConfigService,
-        private readonly healthCheckService: HealthCheckService,
-        private readonly typeOrmHealthIndicator: TypeOrmHealthIndicator,
-        private readonly diskHealthIndicator: DiskHealthIndicator,
-        private readonly memoryHealthIndicator: MemoryHealthIndicator,
-    ) {}
+    constructor(private readonly healthService: HealthService) {}
 
     @Get()
-    @HealthCheck()
-    public async checkHealth(): Promise<HealthCheckResult> {
-        // Use Promise.race to timeout health checks and prevent hanging
-        const healthCheckPromise = this.healthCheckService.check([
-            async () => this.typeOrmHealthIndicator.pingCheck('database', { timeout: 3000 }),
-            async () =>
-                this.diskHealthIndicator.checkStorage('storage', {
-                    thresholdPercent: this.appConfigService.health.diskStorageUsageThresholdInPercent / 100,
-                    path: '/',
-                }),
-            async () =>
-                this.memoryHealthIndicator.checkHeap(
-                    'memoryHeap',
-                    this.appConfigService.health.memoryHeapUsageThresholdInMB * 1024 * 1024, // Convert MB to bytes
-                ),
-        ]);
+    @ApiOkResponse({ description: 'healthy or degraded' })
+    @ApiServiceUnavailableResponse({ description: 'unavailable: the database is down or the service shuts down' })
+    public async checkHealth(@Res({ passthrough: true }) response: Response) {
+        const { httpStatus, body } = await this.healthService.report();
+        response.status(httpStatus);
 
-        // Overall health check timeout (5 seconds)
-        const timeoutPromise = new Promise<HealthCheckResult>((_, reject) => {
-            setTimeout(() => reject(new Error('Health check timeout after 5 seconds')), 5000);
-        });
+        return body;
+    }
 
-        try {
-            return await Promise.race([healthCheckPromise, timeoutPromise]);
-        } catch (error) {
-            console.error('❌ Health check failed:', error);
-            throw error;
-        }
+    @Get('ready')
+    @ApiOkResponse({ description: 'ready to serve requests' })
+    @ApiServiceUnavailableResponse({ description: 'the database is not reachable' })
+    public async checkReadiness(@Res({ passthrough: true }) response: Response) {
+        const { httpStatus, body } = await this.healthService.ready();
+        response.status(httpStatus);
+
+        return body;
+    }
+
+    @Get('live')
+    @ApiOkResponse({ description: 'the process answers' })
+    public checkLiveness(@Res({ passthrough: true }) response: Response) {
+        const { httpStatus, body } = this.healthService.live();
+        response.status(httpStatus);
+
+        return body;
     }
 }

@@ -1,11 +1,13 @@
 import { CommandBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../app-config/services/app-config.service';
+import { HealthContributorRegistry } from '../../observability/services/health-contributor-registry.service';
 import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
 import { RetryUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommand } from '../commands';
 import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
 import { DiscrepancyOverview } from '../models';
 import { DiscrepancyScanCycleService } from './discrepancy-scan-cycle.service';
+import { DiscrepancyScanStatusService } from './discrepancy-scan-status.service';
 import { DistributedScanLockService } from './distributed-scan-lock.service';
 import { ScanCoordinatorService } from './scan-coordinator.service';
 
@@ -39,6 +41,7 @@ describe('DiscrepancyScanCycleService', () => {
     let commandBus: { execute: jest.Mock };
     let coordinator: ScanCoordinatorService;
     let service: DiscrepancyScanCycleService;
+    let statusService: DiscrepancyScanStatusService;
 
     beforeEach(() => {
         jest.spyOn(RetryUtility, 'delay').mockResolvedValue(undefined);
@@ -57,7 +60,13 @@ describe('DiscrepancyScanCycleService', () => {
             } as unknown as DistributedScanLockService,
             new ResourceReportRegistry(),
         );
-        service = new DiscrepancyScanCycleService(commandBus as unknown as CommandBus, appConfigService, coordinator);
+        statusService = new DiscrepancyScanStatusService(new HealthContributorRegistry());
+        service = new DiscrepancyScanCycleService(
+            commandBus as unknown as CommandBus,
+            appConfigService,
+            coordinator,
+            statusService,
+        );
     });
 
     afterEach(() => {
@@ -178,5 +187,17 @@ describe('DiscrepancyScanCycleService', () => {
 
         expect(first.status).toBe('completed');
         expect(second.status).toBe('completed');
+    });
+
+    it('records the outcome of every cycle for the discrepancyScan health check', async () => {
+        commandBus.execute.mockImplementation((command: ScanDiscrepancyCommand) =>
+            Promise.resolve(overview(command.entityType, DiscrepancyScanState.Failed, 'UnexpectedResponse')),
+        );
+
+        await service.runCycle('tx', 5, 'cron');
+
+        const check = statusService.check();
+        expect(check.status).toBe('warning');
+        expect(check.message).toContain('tenant 5: last cycle failed');
     });
 });

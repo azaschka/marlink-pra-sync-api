@@ -7,6 +7,7 @@ import { ScanDiscrepancyCommand } from '../commands';
 import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
 import { DiscrepancyOverview } from '../models';
 import { DiscrepancyScanOutcome } from './discrepancy-scan-outcome';
+import { DiscrepancyScanStatusService } from './discrepancy-scan-status.service';
 import { CycleOutcome, ScanCoordinatorService, ScanTrigger } from './scan-coordinator.service';
 
 /**
@@ -39,6 +40,7 @@ export class DiscrepancyScanCycleService {
         private readonly commandBus: CommandBus,
         private readonly appConfigService: AppConfigService,
         private readonly scanCoordinatorService: ScanCoordinatorService,
+        private readonly discrepancyScanStatusService: DiscrepancyScanStatusService,
     ) {}
 
     /**
@@ -50,6 +52,8 @@ export class DiscrepancyScanCycleService {
         const outcome = await this.scanCoordinatorService.runCycle(tenantId, trigger, () =>
             this.scanAllTypes(transactionId, tenantId),
         );
+
+        this.discrepancyScanStatusService.record(tenantId, outcome);
 
         if (outcome.status === 'skipped') {
             console.warn(`⏭️ [scan] tenant ${tenantId} ${trigger} cycle skipped: ${outcome.reason}`);

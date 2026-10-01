@@ -171,6 +171,43 @@ describe('AppConfigService', () => {
         });
     });
 
+    describe('health validation', () => {
+        it.each([
+            {
+                key: 'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
+                value: '512Mi',
+                field: 'memoryHeapUsageThresholdInMB',
+                expected: 512,
+            },
+            {
+                key: 'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
+                value: '0',
+                field: 'memoryHeapUsageThresholdInMB',
+                expected: 512,
+            },
+            {
+                key: 'HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT',
+                value: '150',
+                field: 'diskStorageUsageThresholdInPercent',
+                expected: 80,
+            },
+            {
+                key: 'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
+                value: '768',
+                field: 'memoryHeapUsageThresholdInMB',
+                expected: 768,
+            },
+        ])('should use $expected for $key=$value', ({ key, value, field, expected }) => {
+            const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+            configService.get = jest
+                .fn()
+                .mockImplementation((requested: string) => (requested === key ? value : undefined));
+
+            expect((service.health as Record<string, number>)[field]).toBe(expected);
+            warn.mockRestore();
+        });
+    });
+
     describe('beyondTrust', () => {
         it.each([
             {

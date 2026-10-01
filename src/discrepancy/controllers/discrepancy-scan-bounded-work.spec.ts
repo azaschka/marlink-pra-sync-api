@@ -14,12 +14,14 @@ import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { HttpClientService } from '../../beyondtrust-pra-conf-api/http-client/services/http-client.service';
+import { HealthContributorRegistry } from '../../observability/services/health-contributor-registry.service';
 import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
 import { RetryUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommandHandler } from '../commands/handlers/scan-discrepancy.command-handler';
 import { ScanDiscrepancyCommand } from '../commands';
 import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
 import { DiscrepancyScanCycleService } from '../services/discrepancy-scan-cycle.service';
+import { DiscrepancyScanStatusService } from '../services/discrepancy-scan-status.service';
 import { DiscrepancyScannerService } from '../services/discrepancy-scanner.service';
 import { ScanCoordinatorService } from '../services/scan-coordinator.service';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
@@ -104,7 +106,12 @@ describe('Discrepancy scan: bounded retries and cycle budget', () => {
 
         return new DiscrepancyScannerController(
             {} as never,
-            new DiscrepancyScanCycleService(commandBus as never, appConfigService, coordinator),
+            new DiscrepancyScanCycleService(
+                commandBus as never,
+                appConfigService,
+                coordinator,
+                new DiscrepancyScanStatusService(new HealthContributorRegistry()),
+            ),
         );
     };
 

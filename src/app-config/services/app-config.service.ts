@@ -42,14 +42,20 @@ export class AppConfigService {
         };
     }
 
+    // Validated: a value like "512Mi" used to turn the threshold into NaN and silently disable the check.
     public get health() {
         return {
-            diskStorageUsageThresholdInPercent:
-                this.configService.get<number>('HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT') ??
+            diskStorageUsageThresholdInPercent: this.integerOrDefault(
+                'HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT',
                 DefaultAppConfig.health.diskStorageUsageThresholdInPercent,
-            memoryHeapUsageThresholdInMB:
-                this.configService.get<number>('HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB') ??
+                1,
+                100,
+            ),
+            memoryHeapUsageThresholdInMB: this.integerOrDefault(
+                'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
                 DefaultAppConfig.health.memoryHeapUsageThresholdInMB,
+                1,
+            ),
         };
     }
 

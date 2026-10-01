@@ -35,6 +35,7 @@ import { DiscrepancyEntity } from './repositories/entities';
 import { DiscrepancyRepositoryService } from './repositories/services/discrepancy-repository.service';
 import { Sagas } from './sagas';
 import { DiscrepancyScanCycleService } from './services/discrepancy-scan-cycle.service';
+import { DiscrepancyScanStatusService } from './services/discrepancy-scan-status.service';
 import { DiscrepancyScannerService } from './services/discrepancy-scanner.service';
 import { DistributedScanLockService } from './services/distributed-scan-lock.service';
 import { ScanCoordinatorService } from './services/scan-coordinator.service';
@@ -71,6 +72,7 @@ import { DiscrepancyStrategyProviderService } from './services/discrepancy-strat
         ScanCoordinatorService,
         DistributedScanLockService,
         DiscrepancyScanCycleService,
+        DiscrepancyScanStatusService,
         DiscrepancyStrategyProviderService,
         DiscrepancyScannerService,
         ...CommandHandlers,
