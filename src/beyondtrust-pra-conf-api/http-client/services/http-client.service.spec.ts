@@ -5,6 +5,7 @@ import axios from 'axios';
 import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
 import { RetryUtility } from '../../../shared/utilities';
+import { AuthTokenService } from '../../auth/services/auth-token.service';
 import { BtApiError, BtApiErrorKind } from '../errors/bt-api-error';
 import { HttpClientService } from './http-client.service';
 
@@ -194,5 +195,51 @@ describe('HttpClientService against a local BeyondTrust stub', () => {
         expect(logged).toHaveLength(4); // three retry warnings, one final error
         expect(output).not.toMatch(/Bearer|secret-token|client-secret-value|<html|<title/i);
         expect(Math.max(...logged.map((line) => line.length))).toBeLessThan(400);
+    });
+    it('refreshes the token once when parallel requests fail with 401 for the same expired token', async () => {
+        let issuedTokens = 0;
+        let tokenRequests = 0;
+        handler = (req, res) => {
+            if (req.url?.startsWith('/oauth2/token')) {
+                tokenRequests++;
+                const accessToken = `token-${++issuedTokens}`;
+                // Answer token requests with a short delay so that parallel refreshes would overlap.
+                setTimeout(
+                    () =>
+                        reply(200, { access_token: accessToken, expires_in: 3600, token_type: 'Bearer' })(req, res, 0),
+                    20,
+                );
+
+                return;
+            }
+
+            if (req.headers.authorization === 'Bearer token-1') {
+                reply(401, { message: 'Access token is expired.', error: 'access_denied' })(req, res, 0);
+
+                return;
+            }
+
+            reply(200, { ok: true })(req, res, 0);
+        };
+        const port = (server.address() as AddressInfo).port;
+        const realTokenClient = new HttpClientService(
+            { beyondTrust: { api: { communication } } } as never,
+            new HttpService(axios.create({ proxy: false })),
+            new AuthTokenService(new HttpService(axios.create({ proxy: false }))),
+            {
+                execute: jest.fn().mockResolvedValue({
+                    id: 3,
+                    apiBaseUrl: `http://127.0.0.1:${port}/api/config/v1`,
+                    authClientId: 'client',
+                    authClientSecret: 'client-secret-value',
+                    oauth2TokenUrl: `http://127.0.0.1:${port}/oauth2/token`,
+                }),
+            } as never,
+        );
+
+        await Promise.all(Array.from({ length: 5 }, () => realTokenClient.get(Object, 'tx', 3, '/user')));
+
+        expect(tokenRequests).toBe(2); // the initial token and exactly one refresh
+        expect(requests.filter((request) => request.url?.startsWith('/api')).length).toBe(10);
     });
 });

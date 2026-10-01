@@ -122,7 +122,7 @@ export class HttpClientService {
             return await firstValueFrom(
                 this.httpService.get<NodeJS.ReadableStream>(UrlUtility.join(beyondtrustInstance.apiBaseUrl, urlPath), {
                     headers: {
-                        Authorization: await this.getAuthHeader(beyondtrustInstance),
+                        Authorization: `Bearer ${await this.getAccessToken(beyondtrustInstance)}`,
                     },
                     params: params ? instanceToPlain(params) : undefined,
                     responseType: 'stream',
@@ -154,10 +154,12 @@ export class HttpClientService {
 
         for (let attempt = 1; ; attempt++) {
             let phase: 'token' | 'request' = 'token';
+            let usedAccessToken: string | undefined;
 
             try {
                 signal?.throwIfAborted();
-                const authorization = await this.getAuthHeader(beyondtrustInstance);
+                usedAccessToken = await this.getAccessToken(beyondtrustInstance);
+                const authorization = `Bearer ${usedAccessToken}`;
                 phase = 'request';
 
                 return await firstValueFrom(
@@ -192,7 +194,7 @@ export class HttpClientService {
                 );
 
                 if (decision.refreshToken) {
-                    this.invalidateAuthHeader(beyondtrustInstance);
+                    this.invalidateAccessToken(beyondtrustInstance, usedAccessToken);
                 }
 
                 await this.waitBeforeRetry(decision.delayInMs, signal, error);
@@ -248,7 +250,7 @@ export class HttpClientService {
         return beyondtrustInstance;
     }
 
-    private async getAuthHeader(beyondtrustInstance: BeyondtrustInstance): Promise<string> {
+    private async getAccessToken(beyondtrustInstance: BeyondtrustInstance): Promise<string> {
         const authToken = await this.authTokenService.getAuthToken(
             beyondtrustInstance.id,
             beyondtrustInstance.authClientId,
@@ -256,15 +258,17 @@ export class HttpClientService {
             beyondtrustInstance.oauth2TokenUrl,
         );
 
-        return `Bearer ${authToken.accessToken}`;
+        return authToken.accessToken;
     }
 
-    private invalidateAuthHeader(beyondtrustInstance: BeyondtrustInstance): void {
+    // Only drops the cached token if it is still the one the failing request used.
+    private invalidateAccessToken(beyondtrustInstance: BeyondtrustInstance, usedAccessToken: string | undefined): void {
         this.authTokenService.invalidateAuthToken(
             beyondtrustInstance.id,
             beyondtrustInstance.authClientId,
             beyondtrustInstance.authClientSecret,
             beyondtrustInstance.oauth2TokenUrl,
+            usedAccessToken,
         );
     }
 }
