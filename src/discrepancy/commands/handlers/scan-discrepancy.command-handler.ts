@@ -6,6 +6,7 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import pLimit, { LimitFunction } from 'p-limit';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { ErrorProcessorUtility, RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
@@ -76,7 +77,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 identicalData.map((data) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () => discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data),
                             `Mark entity ${data.id} as synced`,
                         ),
@@ -88,7 +89,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 onlyInBt.map((bt) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () =>
                                 this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                     id: existingIdByEntityId.get(bt.id),
@@ -108,7 +109,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 onlyInDb.map((db) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () =>
                                 this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                     id: existingIdByEntityId.get(db.id),
@@ -128,7 +129,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 differentDataPairs.map((pair) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () =>
                                 this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                     id: existingIdByEntityId.get(pair.bt.id),
@@ -144,8 +145,12 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 ),
             );
 
-            // Delete obsolete discrepancies with retry
-            await RetryUtility.executeWithRetry(
+            // An expired scan budget means the data of this run may be incomplete: no cleanup, no event
+            // (and therefore no relation scans and no auto-sync).
+            ScanContext.throwIfAborted();
+
+            // Delete obsolete discrepancies (one retry for transient database errors only)
+            await RetryUtility.executeDatabaseOperation(
                 () =>
                     this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
                         command.tenantId,

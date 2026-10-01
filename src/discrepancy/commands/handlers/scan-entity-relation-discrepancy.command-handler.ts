@@ -3,6 +3,7 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import pLimit, { LimitFunction } from 'p-limit';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
@@ -43,6 +44,13 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
             ...command.onlyInInternalIds,
             ...command.differentDataIds,
         ]) {
+            if (ScanContext.isAborted()) {
+                console.warn(
+                    `⏹️ Relational scan for ${command.entityType} stopped at parent ${parentId}: scan ${ScanContext.current()?.scanId} budget expired`,
+                );
+                return;
+            }
+
             try {
                 const discrepancyStrategy = this.discrepancyStrategyProviderService.getForRelation(
                     parentId,
@@ -96,7 +104,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                 await Promise.all(
                     identicalData.map((data) =>
                         this.dbConnLimit(() =>
-                            RetryUtility.executeWithRetry(
+                            RetryUtility.executeDatabaseOperation(
                                 () =>
                                     discrepancyStrategy.dbMarkAsSyncedFunc(
                                         command.transactionId,
@@ -115,7 +123,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                         const entityId = bt[parentProp] as number;
                         const foreignEntityId = bt[childProp] as number;
                         return this.dbConnLimit(() =>
-                            RetryUtility.executeWithRetry(
+                            RetryUtility.executeDatabaseOperation(
                                 () =>
                                     this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                         id: existingIdByForeignEntityId.get(foreignEntityId),
@@ -138,7 +146,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                         const entityId = db[parentProp] as number;
                         const foreignEntityId = db[childProp] as number;
                         return this.dbConnLimit(() =>
-                            RetryUtility.executeWithRetry(
+                            RetryUtility.executeDatabaseOperation(
                                 () =>
                                     this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                         id: existingIdByForeignEntityId.get(foreignEntityId),
@@ -161,7 +169,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                         const entityId = pair.bt[parentProp] as number;
                         const foreignEntityId = pair.bt[childProp] as number;
                         return this.dbConnLimit(() =>
-                            RetryUtility.executeWithRetry(
+                            RetryUtility.executeDatabaseOperation(
                                 () =>
                                     this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                         id: existingIdByForeignEntityId.get(foreignEntityId),
@@ -178,8 +186,11 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                     }),
                 );
 
-                // Delete obsolete discrepancies with retry
-                await RetryUtility.executeWithRetry(
+                // No cleanup when the budget expired during this parent
+                ScanContext.throwIfAborted();
+
+                // Delete obsolete discrepancies (one retry for transient database errors only)
+                await RetryUtility.executeDatabaseOperation(
                     () =>
                         this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
                             command.tenantId,

@@ -1,4 +1,5 @@
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { AppConfigService } from '../../app-config/services/app-config.service';
 import { DiscrepancyDtoOutput, DiscrepancyOverviewDtoOutput } from '../dtos/outputs';
 import { DiscrepancyEntityType } from '../enums';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
@@ -25,7 +26,9 @@ describe('DiscrepancyScannerController', () => {
         jest.clearAllMocks();
         commandBus = mockCommandBus();
         queryBus = mockQueryBus();
-        controller = new DiscrepancyScannerController(queryBus, commandBus);
+        controller = new DiscrepancyScannerController(queryBus, commandBus, {
+            discrepancy: { scan: { cycleBudgetInMs: 60000 } },
+        } as AppConfigService);
     });
 
     describe('scanAllDiscrepancies', () => {

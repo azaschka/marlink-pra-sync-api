@@ -13,6 +13,12 @@ export abstract class DatabaseConnectionUtility {
 
     private static readonly CLOSED_CONNECTION_MESSAGE = 'connection is in closed state';
 
+    // Lock conflicts resolve themselves; retrying them is safe and cheap.
+    private static readonly RETRYABLE_LOCK_ERROR_CODES: ReadonlySet<string> = new Set([
+        'ER_LOCK_DEADLOCK',
+        'ER_LOCK_WAIT_TIMEOUT',
+    ]);
+
     public static async acquireQueryRunner(
         dataSource: DataSource,
         acquireTimeoutInMs: number = DefaultAppConfig.database.acquireTimeoutInMs,
@@ -126,6 +132,22 @@ export abstract class DatabaseConnectionUtility {
                 (typeof message === 'string' &&
                     message.toLowerCase().includes(DatabaseConnectionUtility.CLOSED_CONNECTION_MESSAGE))
             );
+        });
+    }
+
+    /**
+     * True for database failures that a retry can fix: a lost connection, a deadlock or a lock wait timeout.
+     * Constraint violations, data errors and an exhausted pool are not retried.
+     */
+    public static isRetryableDatabaseError(error: unknown): boolean {
+        if (DatabaseConnectionUtility.isTransientConnectionError(error)) {
+            return true;
+        }
+
+        return [error, (error as { driverError?: unknown } | null | undefined)?.driverError].some((candidate) => {
+            const code = (candidate as { code?: unknown } | null | undefined)?.code;
+
+            return typeof code === 'string' && DatabaseConnectionUtility.RETRYABLE_LOCK_ERROR_CODES.has(code);
         });
     }
 

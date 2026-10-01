@@ -1,4 +1,5 @@
 import { CommandBus } from '@nestjs/cqrs';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand } from '../../commands';
 import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
@@ -23,6 +24,38 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
 
     afterEach(() => {
         jest.clearAllMocks();
+    });
+
+    describe('scan budget', () => {
+        it('starts no auto-sync once the budget of the triggering scan has expired', async () => {
+            await ScanContext.runWithBudget({ scanId: 'scan-1', tenantId: 1, budgetInMs: 1 }, async () => {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.User, {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [],
+                    }),
+                );
+            });
+
+            expect(commandBusExecuteMethod).not.toHaveBeenCalled();
+        });
+
+        it('syncs normally within the budget', async () => {
+            await ScanContext.runWithBudget({ scanId: 'scan-2', tenantId: 1, budgetInMs: 60000 }, () =>
+                handler.handle(
+                    buildEvent(DiscrepancyEntityType.User, {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [],
+                    }),
+                ),
+            );
+
+            expect(commandBusExecuteMethod).toHaveBeenCalledTimes(2);
+        });
     });
 
     describe('AUTO_SYNC_ENTITY_TYPES (currently every known entity type)', () => {

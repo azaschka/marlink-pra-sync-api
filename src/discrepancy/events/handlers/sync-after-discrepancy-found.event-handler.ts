@@ -1,5 +1,6 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import pLimit from 'p-limit';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand } from '../../commands';
 import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
@@ -57,7 +58,7 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
             const results = await Promise.allSettled(
                 allDiscrepancyEntityIds.map((entityId) =>
                     limit(() =>
-                        this.commandBus.execute(
+                        this.executeWithinBudget(
                             new SyncDiscrepancyByEntityIdCommand(
                                 event.transactionId,
                                 event.payload.tenantId,
@@ -89,7 +90,7 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
             const results = await Promise.allSettled(
                 onlyInExternalEntityIds.map((entityId) =>
                     limit(() =>
-                        this.commandBus.execute(
+                        this.executeWithinBudget(
                             new SyncDiscrepancyByEntityIdCommand(
                                 event.transactionId,
                                 event.payload.tenantId,
@@ -122,5 +123,15 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         //         ),
         //     );
         // }
+    }
+
+    /**
+     * Auto-sync triggered by a scan belongs to that scan: once its budget expired, queued syncs are not
+     * started any more (they are redone after the next complete scan).
+     */
+    private async executeWithinBudget(command: SyncDiscrepancyByEntityIdCommand): Promise<void> {
+        ScanContext.throwIfAborted();
+
+        await this.commandBus.execute(command);
     }
 }

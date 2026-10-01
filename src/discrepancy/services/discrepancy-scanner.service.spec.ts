@@ -81,28 +81,18 @@ describe('DiscrepancyScannerService', () => {
             expect(result.transformed).toEqual([]);
         });
 
-        it('should retry individual pages and log page fetches', async () => {
+        it('should not retry a failed page itself (the HTTP client owns the only retry layer)', async () => {
             // Arrange
-            const transactionId = 'txn-123';
-            const tenantId = 1;
-            const entityType = 'User';
-            const mockPageData = [{ id: 1, name: 'User1' }];
-
+            const error = new Error('BeyondTrust GET /user failed with status 503 (UnexpectedResponse)');
             jest.spyOn(RetryUtility, 'delay').mockResolvedValue();
-            jest.spyOn(RetryUtility, 'executeWithRetry').mockResolvedValue(mockPageData);
+            (mockStrategy.btRetrieveFunc as jest.Mock).mockRejectedValue(error);
+            jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockImplementation(async (callback) =>
+                callback(1),
+            );
 
-            // Mock the pagination to call our callback
-            jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockImplementation(async (callback) => {
-                await callback(1);
-                await callback(2);
-                return mockPageData;
-            });
-
-            // Act
-            await service.fetchFromBeyondTrust(mockStrategy, transactionId, tenantId, entityType);
-
-            // Assert
-            expect(RetryUtility.executeWithRetry).toHaveBeenCalledTimes(2);
+            // Act & Assert
+            await expect(service.fetchFromBeyondTrust(mockStrategy, 'txn-123', 1, 'User')).rejects.toThrow(error);
+            expect(mockStrategy.btRetrieveFunc).toHaveBeenCalledTimes(1);
         });
 
         it('should propagate errors from BeyondTrust API', async () => {

@@ -32,15 +32,13 @@ export interface DiscrepancyAnalysis<T = any> {
 
 @Injectable()
 export class DiscrepancyScannerService {
-    private static readonly RETRY_DELAY_BETWEEN_ATTEMPTS_MS = 10000;
-    private static readonly MAX_RETRY_ATTEMPTS = 3;
     private static readonly DELAY_BETWEEN_CALLS_MS = 10;
 
     constructor(private readonly appConfigService: AppConfigService) {}
 
     /**
-     * Fetch data from BeyondTrust API with pagination and retry logic.
-     * Retries individual pages (not entire pagination) to handle timeouts efficiently.
+     * Fetch data from BeyondTrust API with pagination.
+     * Pages are not retried here: HttpClientService owns the only retry layer for BeyondTrust calls.
      */
     public async fetchFromBeyondTrust<T>(
         discrepancyStrategy: DiscrepancyStrategy<unknown, unknown, unknown>,
@@ -52,20 +50,16 @@ export class DiscrepancyScannerService {
 
         await RetryUtility.delay(DiscrepancyScannerService.DELAY_BETWEEN_CALLS_MS);
 
-        const rawData = await PaginationUtility.queryUntilDuplicatePage(async (pageNumber: number) => {
-            return (await RetryUtility.executeWithRetry(
-                () =>
-                    discrepancyStrategy.btRetrieveFunc(
-                        transactionId,
-                        tenantId,
-                        this.appConfigService.discrepancy.maxBatchSize,
-                        pageNumber,
-                    ),
-                `BeyondTrust API page ${pageNumber} for ${entityType}`,
-                DiscrepancyScannerService.MAX_RETRY_ATTEMPTS,
-                DiscrepancyScannerService.RETRY_DELAY_BETWEEN_ATTEMPTS_MS,
-            )) as object[];
-        }, discrepancyStrategy.btOmittedPropsForDuplicateCheck);
+        const rawData = await PaginationUtility.queryUntilDuplicatePage(
+            async (pageNumber: number) =>
+                (await discrepancyStrategy.btRetrieveFunc(
+                    transactionId,
+                    tenantId,
+                    this.appConfigService.discrepancy.maxBatchSize,
+                    pageNumber,
+                )) as object[],
+            discrepancyStrategy.btOmittedPropsForDuplicateCheck,
+        );
 
         console.log(`✅ BeyondTrust API successful for ${entityType}, received ${rawData.length} records`);
 
@@ -108,7 +102,7 @@ export class DiscrepancyScannerService {
     }
 
     /**
-     * Fetch data from local database with pagination and retry logic.
+     * Fetch data from local database with pagination; retried once, and only for transient database errors.
      */
     public async fetchFromDatabase<T>(
         discrepancyStrategy: DiscrepancyStrategy<unknown, unknown, unknown>,
@@ -118,7 +112,7 @@ export class DiscrepancyScannerService {
     ): Promise<T[]> {
         await RetryUtility.delay(DiscrepancyScannerService.DELAY_BETWEEN_CALLS_MS);
 
-        return await RetryUtility.executeWithRetry(async () => {
+        return await RetryUtility.executeDatabaseOperation(async () => {
             return (
                 await PaginationUtility.queryUntilLastPage((pageNumber: number) =>
                     discrepancyStrategy.dbRetrieveFunc(

@@ -199,6 +199,32 @@ describe('DatabaseConnectionUtility', () => {
         });
     });
 
+    describe('isRetryableDatabaseError', () => {
+        it.each([
+            { name: 'deadlock', error: { code: 'ER_LOCK_DEADLOCK' }, expected: true },
+            {
+                name: 'lock wait timeout (driver error)',
+                error: { driverError: { code: 'ER_LOCK_WAIT_TIMEOUT' } },
+                expected: true,
+            },
+            { name: 'lost connection', error: { code: 'PROTOCOL_CONNECTION_LOST' }, expected: true },
+            {
+                name: 'foreign key violation',
+                error: { driverError: { code: 'ER_NO_REFERENCED_ROW_2' } },
+                expected: false,
+            },
+            { name: 'missing default', error: { code: 'ER_NO_DEFAULT_FOR_FIELD' }, expected: false },
+            {
+                name: 'exhausted pool',
+                error: new ServiceUnavailableException('Timed out waiting for a free database connection'),
+                expected: false,
+            },
+            { name: 'plain error', error: new Error('boom'), expected: false },
+        ])('returns $expected for a $name', ({ error, expected }) => {
+            expect(DatabaseConnectionUtility.isRetryableDatabaseError(error)).toBe(expected);
+        });
+    });
+
     describe('isTransientConnectionError', () => {
         it.each([
             {

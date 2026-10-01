@@ -24,6 +24,77 @@ describe('RetryUtility', () => {
         });
     });
 
+    describe('delay with an AbortSignal', () => {
+        it('rejects with the abort reason as soon as the signal fires', async () => {
+            const controller = new AbortController();
+            const reason = new Error('budget expired');
+            const startTime = Date.now();
+
+            const delay = RetryUtility.delay(10000, controller.signal);
+            setTimeout(() => controller.abort(reason), 20);
+
+            await expect(delay).rejects.toBe(reason);
+            expect(Date.now() - startTime).toBeLessThan(1000);
+        });
+
+        it('rejects immediately for an aborted signal', async () => {
+            const controller = new AbortController();
+            controller.abort(new Error('already aborted'));
+
+            await expect(RetryUtility.delay(10000, controller.signal)).rejects.toThrow('already aborted');
+        });
+
+        it('resolves normally when the signal does not fire', async () => {
+            await expect(RetryUtility.delay(10, new AbortController().signal)).resolves.toBeUndefined();
+        });
+    });
+
+    describe('executeWithRetry with a retry predicate', () => {
+        it('rethrows immediately when the predicate rejects the error', async () => {
+            const operation = jest.fn().mockRejectedValue(new Error('deterministic'));
+
+            await expect(RetryUtility.executeWithRetry(operation, 'test operation', 5, 1, () => false)).rejects.toThrow(
+                'deterministic',
+            );
+            expect(operation).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('executeDatabaseOperation', () => {
+        beforeEach(() => {
+            jest.spyOn(RetryUtility, 'delay').mockResolvedValue(undefined);
+        });
+
+        it('retries a deadlock once', async () => {
+            const operation = jest
+                .fn()
+                .mockRejectedValueOnce(Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' }))
+                .mockResolvedValueOnce('ok');
+
+            await expect(RetryUtility.executeDatabaseOperation(operation, 'save')).resolves.toBe('ok');
+            expect(operation).toHaveBeenCalledTimes(2);
+        });
+
+        it('gives up after one retry', async () => {
+            const lost = Object.assign(new Error('Connection lost'), { code: 'PROTOCOL_CONNECTION_LOST' });
+            const operation = jest.fn().mockRejectedValue(lost);
+
+            await expect(RetryUtility.executeDatabaseOperation(operation, 'save')).rejects.toBe(lost);
+            expect(operation).toHaveBeenCalledTimes(2);
+        });
+
+        it.each([
+            { name: 'foreign key violation', code: 'ER_NO_REFERENCED_ROW_2' },
+            { name: 'duplicate entry', code: 'ER_DUP_ENTRY' },
+            { name: 'data too long', code: 'ER_DATA_TOO_LONG' },
+        ])('does not retry a $name', async ({ code }) => {
+            const operation = jest.fn().mockRejectedValue({ driverError: { code }, message: code });
+
+            await expect(RetryUtility.executeDatabaseOperation(operation, 'save')).rejects.toBeDefined();
+            expect(operation).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('executeWithRetry', () => {
         it('should execute operation successfully on first attempt', async () => {
             const mockOperation = jest.fn().mockResolvedValue('success');

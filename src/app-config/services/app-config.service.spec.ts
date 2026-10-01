@@ -830,6 +830,7 @@ describe('AppConfigService', () => {
                         cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
+                        cycleBudgetInMs: '900000',
                     },
                 },
                 expected: {
@@ -839,6 +840,7 @@ describe('AppConfigService', () => {
                         cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
+                        cycleBudgetInMs: 900000,
                     },
                 },
             },
@@ -851,6 +853,7 @@ describe('AppConfigService', () => {
                         cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
+                        cycleBudgetInMs: 1200000,
                     },
                 },
             },
@@ -871,6 +874,9 @@ describe('AppConfigService', () => {
                 if (key === 'DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS') {
                     return input?.scan?.cronJobRetryDelayInMs;
                 }
+                if (key === 'DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS') {
+                    return input?.scan?.cycleBudgetInMs;
+                }
 
                 return undefined;
             });
@@ -882,6 +888,7 @@ describe('AppConfigService', () => {
                     cronJobExpressions: expected.scan.cronJobExpressions,
                     cronJobRetryAttempts: expected.scan.cronJobRetryAttempts,
                     cronJobRetryDelayInMs: expected.scan.cronJobRetryDelayInMs,
+                    cycleBudgetInMs: expected.scan.cycleBudgetInMs,
                 },
             });
         });

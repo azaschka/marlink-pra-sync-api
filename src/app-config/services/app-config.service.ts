@@ -296,6 +296,11 @@ export class AppConfigService {
                 cronJobRetryDelayInMs:
                     this.configService.get<number>('DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS') ??
                     DefaultAppConfig.discrepancy.scan.cronJobRetryDelayInMs,
+                cycleBudgetInMs: this.integerOrDefault(
+                    'DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS',
+                    DefaultAppConfig.discrepancy.scan.cycleBudgetInMs,
+                    60000,
+                ),
             },
         };
     }

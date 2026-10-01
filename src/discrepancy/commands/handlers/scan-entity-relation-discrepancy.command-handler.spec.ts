@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { EventBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyEntityType } from '../../enums';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
@@ -100,6 +101,22 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
         );
 
         jest.spyOn(RetryUtility, 'executeWithRetry').mockImplementation((fn) => fn());
+    });
+
+    describe('scan budget', () => {
+        it('stops before the next parent and cleans up nothing once the budget expired', async () => {
+            const command = makeCommand({ identicalDataIds: [10, 11, 12] });
+            jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+            await ScanContext.runWithBudget({ scanId: 'scan-1', tenantId: 1, budgetInMs: 1 }, async () => {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+                await handler.execute(command);
+            });
+
+            expect(discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling).not.toHaveBeenCalled();
+            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
+            expect(eventBus.publish).not.toHaveBeenCalled();
+        });
     });
 
     describe('execute', () => {

@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { BeyondtrustInstance } from '../../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstanceByIdQuery } from '../../../beyondtrust-instance/queries';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { RetryUtility, UrlUtility } from '../../../shared/utilities';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
 import { BtApiError, BtApiErrorKind } from '../errors/bt-api-error';
@@ -25,6 +26,9 @@ interface BtRequest {
 /**
  * Client for the BeyondTrust configuration API. Owns the only retry layer (BtRetryPolicy) and turns every
  * failure into a classified BtApiError. Log output per failure is one bounded line (BtApiError.describe()).
+ *
+ * Inside a scan (ScanContext) the scan's AbortSignal is passed to axios and to the retry delay, so an
+ * expired scan budget aborts the in-flight request and prevents further attempts.
  */
 @Injectable()
 export class HttpClientService {
@@ -146,11 +150,13 @@ export class HttpClientService {
         });
         const state = BtRetryPolicy.initialState();
         const url = UrlUtility.join(beyondtrustInstance.apiBaseUrl, request.urlPath);
+        const signal = ScanContext.current()?.signal;
 
         for (let attempt = 1; ; attempt++) {
             let phase: 'token' | 'request' = 'token';
 
             try {
+                signal?.throwIfAborted();
                 const authorization = await this.getAuthHeader(beyondtrustInstance);
                 phase = 'request';
 
@@ -162,6 +168,7 @@ export class HttpClientService {
                         data: request.data,
                         timeout: request.timeoutInMs,
                         headers: { Authorization: authorization },
+                        signal,
                     }),
                 );
             } catch (rawError) {
@@ -170,6 +177,7 @@ export class HttpClientService {
                     path: phase === 'token' ? HttpClientService.TOKEN_PATH : request.urlPath,
                     beyondtrustInstanceId: beyondtrustInstance.id,
                     attempts: attempt,
+                    aborted: signal?.aborted,
                 });
                 const decision = policy.decide(error, state);
 
@@ -187,8 +195,27 @@ export class HttpClientService {
                     this.invalidateAuthHeader(beyondtrustInstance);
                 }
 
-                await RetryUtility.delay(decision.delayInMs);
+                await this.waitBeforeRetry(decision.delayInMs, signal, error);
             }
+        }
+    }
+
+    private async waitBeforeRetry(delayInMs: number, signal: AbortSignal | undefined, error: BtApiError) {
+        try {
+            await RetryUtility.delay(delayInMs, signal);
+        } catch {
+            // The scan budget expired while waiting: report the request as cancelled, without another attempt.
+            const cancelled = BtErrorClassifier.classify(undefined, {
+                method: error.method,
+                path: error.path,
+                beyondtrustInstanceId: error.beyondtrustInstanceId,
+                attempts: error.attempts,
+                aborted: true,
+            });
+            cancelled.ambiguousWriteOutcome = error.ambiguousWriteOutcome;
+            this.reportFailure(cancelled);
+
+            throw cancelled;
         }
     }
 
@@ -196,6 +223,12 @@ export class HttpClientService {
     private reportFailure(error: BtApiError): void {
         if (error.kind === BtApiErrorKind.NotFound) {
             this.logger.debug(error.describe());
+
+            return;
+        }
+
+        if (error.kind === BtApiErrorKind.Cancelled) {
+            this.logger.warn(error.describe());
 
             return;
         }

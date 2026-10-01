@@ -13,6 +13,9 @@ export abstract class DefaultAppConfig {
     private static readonly DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS = 5;
     private static readonly DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS = 10000;
     private static readonly DISCREPANCY_MAX_BATCH_SIZE = 100;
+    // Time budget of one scan cycle per tenant, below the 30 minute cron interval. When it expires, in-flight
+    // BeyondTrust requests are aborted and unfinished entity types get neither cleanup nor auto-sync.
+    private static readonly DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS = 20 * 60 * 1000;
 
     // Database tuning is constant-only; the environment supplies just the endpoint and credentials.
     // Sized for MariaDB max_connections = 300 and wait_timeout = 300 s. Both service pools, counted twice
@@ -228,6 +231,7 @@ export abstract class DefaultAppConfig {
                 cronJobExpressions: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_EXPRESSION,
                 cronJobRetryAttempts: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS,
                 cronJobRetryDelayInMs: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS,
+                cycleBudgetInMs: DefaultAppConfig.DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS,
             },
         };
     }

@@ -1,7 +1,9 @@
 import { BadRequestException, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ApiTenantIdHeader, TenantIdHeader, TransactionIdHeader } from '../../core/decorators';
+import { ScanContext } from '../../shared/context/scan-context';
 import { RetryUtility, UuidUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommand } from '../commands';
 import { RetrieveDiscrepanciesDtoInput } from '../dtos/inputs';
@@ -14,13 +16,12 @@ import { RetrieveDiscrepanciesQuery } from '../queries';
 @ApiTags('Discrepancies')
 @Controller('discrepancies')
 export class DiscrepancyScannerController {
-    private static readonly RETRY_DELAY_BETWEEN_ATTEMPTS_MS = 10000;
-    private static readonly MAX_RETRY_ATTEMPTS = 3;
     private static readonly DELAY_BETWEEN_ENTITY_SCANS_MS = 1000;
 
     constructor(
         private readonly queryBus: QueryBus,
         private readonly commandBus: CommandBus,
+        private readonly appConfigService: AppConfigService,
     ) {}
 
     @Get()
@@ -68,38 +69,40 @@ export class DiscrepancyScannerController {
             DiscrepancyEntityType.JumpClientInstaller,
         ];
 
-        const scanResults = [];
+        return this.withScanBudget(tenantId, async () => {
+            const scanResults: DiscrepancyOverview[] = [];
 
-        for (const entityType of entityTypeOrder) {
-            try {
-                const scanResult = await RetryUtility.executeWithRetry(
-                    () => this.scanDiscrepancies(transactionId, tenantId, entityType),
-                    `Scan for ${entityType}`,
+            for (const [index, entityType] of entityTypeOrder.entries()) {
+                if (ScanContext.isAborted()) {
+                    const remaining = entityTypeOrder.slice(index);
+                    console.warn(
+                        `⏹️ Scan ${ScanContext.current()?.scanId} for tenant ${tenantId} aborted, budget expired; not scanned: ${remaining.join(', ')}`,
+                    );
+                    scanResults.push(...remaining.map((type) => DiscrepancyScannerController.emptyOverview(type)));
+                    break;
+                }
+
+                try {
+                    // No retry here: BeyondTrust calls are retried in HttpClientService only.
+                    scanResults.push(await this.scanDiscrepancies(transactionId, tenantId, entityType));
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error(`❌ Discrepancy scan failed for ${entityType}:`, errorMessage);
+
+                    // Add a placeholder result to indicate the entity was attempted but failed
+                    scanResults.push(DiscrepancyScannerController.emptyOverview(entityType));
+                }
+
+                // Add delay between entity scans to prevent overwhelming the system
+                await RetryUtility.delay(DiscrepancyScannerController.DELAY_BETWEEN_ENTITY_SCANS_MS).catch(
+                    () => undefined,
                 );
-                scanResults.push(scanResult);
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                console.error(`❌ Discrepancy scan failed for ${entityType}:`, errorMessage);
-
-                // Add a placeholder result to indicate the entity was attempted but failed
-                scanResults.push({
-                    entityType,
-                    totalBtData: 0,
-                    totalDbData: 0,
-                    identicalIds: [],
-                    onlyInExternalIds: [],
-                    onlyInInternalIds: [],
-                    mismatchedIds: [],
-                });
             }
 
-            // Add delay between entity scans to prevent overwhelming the system
-            await RetryUtility.delay(DiscrepancyScannerController.DELAY_BETWEEN_ENTITY_SCANS_MS);
-        }
+            console.log(`🎉 Completed all discrepancy scans: ${scanResults.length} entity types processed`);
 
-        console.log(`🎉 Completed all discrepancy scans: ${scanResults.length} entity types processed`);
-
-        return scanResults;
+            return scanResults;
+        });
     }
 
     @Post('/scan/:entityType')
@@ -121,37 +124,51 @@ export class DiscrepancyScannerController {
             throw new BadRequestException(`Invalid entity type: ${entityType}`);
         }
 
-        try {
-            const result = await RetryUtility.executeWithRetry(
-                () =>
-                    this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
-                        new ScanDiscrepancyCommand(transactionId, tenantId, entityType),
-                    ),
-                `Command execution for ${entityType}`,
-                DiscrepancyScannerController.MAX_RETRY_ATTEMPTS,
-                DiscrepancyScannerController.RETRY_DELAY_BETWEEN_ATTEMPTS_MS,
-            );
-            return result;
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error(`❌ Command execution failed for ${entityType}:`, errorMessage);
+        return this.withScanBudget(tenantId, async () => {
+            try {
+                return await this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
+                    new ScanDiscrepancyCommand(transactionId, tenantId, entityType),
+                );
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                console.error(`❌ Command execution failed for ${entityType}:`, errorMessage);
 
-            // Return empty result for timeout/connectivity issues to allow scan/all to continue
-            if (errorMessage.includes('timeout') || errorMessage.includes('connectivity')) {
-                console.warn(`⚠️ Returning empty result for ${entityType} due to timeout/connectivity issues`);
-                return {
-                    entityType,
-                    totalBtData: 0,
-                    totalDbData: 0,
-                    identicalIds: [],
-                    onlyInExternalIds: [],
-                    onlyInInternalIds: [],
-                    mismatchedIds: [],
-                };
+                // Return empty result for timeout/connectivity issues to allow scan/all to continue
+                if (errorMessage.includes('timeout') || errorMessage.includes('connectivity')) {
+                    console.warn(`⚠️ Returning empty result for ${entityType} due to timeout/connectivity issues`);
+                    return DiscrepancyScannerController.emptyOverview(entityType);
+                }
+
+                // Re-throw other errors (validation errors, etc.)
+                throw error;
             }
+        });
+    }
 
-            // Re-throw other errors (validation errors, etc.)
-            throw error;
-        }
+    /**
+     * Runs a scan within the cycle budget (DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS). A per-type scan called from
+     * scanAllDiscrepancies joins the budget of the surrounding cycle.
+     */
+    private withScanBudget<T>(tenantId: number, operation: () => Promise<T>): Promise<T> {
+        return ScanContext.runWithBudget(
+            {
+                scanId: UuidUtility.generate(),
+                tenantId,
+                budgetInMs: this.appConfigService.discrepancy.scan.cycleBudgetInMs,
+            },
+            operation,
+        );
+    }
+
+    private static emptyOverview(entityType: DiscrepancyEntityType): DiscrepancyOverview {
+        return {
+            entityType,
+            totalBtData: 0,
+            totalDbData: 0,
+            identicalIds: [],
+            onlyInExternalIds: [],
+            onlyInInternalIds: [],
+            mismatchedIds: [],
+        };
     }
 }
