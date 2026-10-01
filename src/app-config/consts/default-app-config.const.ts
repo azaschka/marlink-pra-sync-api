@@ -46,6 +46,9 @@ export abstract class DefaultAppConfig {
     // Stays below the 65,535 byte limit of the TEXT payload column, measured in bytes (utf8mb4).
     private static readonly LOG_PAYLOAD_MAX_BYTES = 60000;
 
+    // One JSON line with memory, pool and background work figures per interval; 0 disables the report.
+    private static readonly RESOURCE_REPORT_INTERVAL_IN_MS = 300000; // 5 minutes
+
     // Throttle settings
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
     private static readonly THROTTLE_LIMIT = 1500; // 1500 requests per TTL
@@ -178,6 +181,12 @@ export abstract class DefaultAppConfig {
 
     public static get logPayloadMaxBytes(): number {
         return DefaultAppConfig.LOG_PAYLOAD_MAX_BYTES;
+    }
+
+    public static get observability() {
+        return {
+            resourceReportIntervalInMs: DefaultAppConfig.RESOURCE_REPORT_INTERVAL_IN_MS,
+        };
     }
 
     public static get database() {

@@ -23,6 +23,7 @@ import { JumpItemModule } from './jump-item/jump-item.module';
 import { JumpPolicyModule } from './jump-policy/jump-policy.module';
 import { JumpointModule } from './jumpoint/jumpoint.module';
 import { LogModule } from './log/log.module';
+import { ObservabilityModule } from './observability/observability.module';
 import { ServiceManagerApiModule } from './service-manager-api/service-manager-api.module';
 import { TeamUserModule } from './team-user/team-user.module';
 import { TeamModule } from './team/team.module';
@@ -49,6 +50,7 @@ import { UserModule } from './user/user.module';
             inject: [AppConfigService],
         }),
         CqrsModule.forRoot(),
+        ObservabilityModule,
         BeyondtrustPraConfApiModule,
         HealthModule,
         BeyondtrustInstanceModule,
