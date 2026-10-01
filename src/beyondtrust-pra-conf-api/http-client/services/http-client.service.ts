@@ -1,14 +1,19 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { AxiosResponse, Method } from 'axios';
+import { AxiosError, AxiosResponse, Method, ResponseType } from 'axios';
 import { ClassConstructor, instanceToPlain, plainToInstance } from 'class-transformer';
+import { randomUUID } from 'crypto';
+import { createWriteStream } from 'fs';
+import { rename, unlink } from 'fs/promises';
 import { firstValueFrom } from 'rxjs';
+import { Readable, Transform } from 'stream';
+import { pipeline } from 'stream/promises';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
 import { BeyondtrustInstance } from '../../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstanceByIdQuery } from '../../../beyondtrust-instance/queries';
 import { ScanContext } from '../../../shared/context/scan-context';
-import { RetryUtility, UrlUtility } from '../../../shared/utilities';
+import { IdleTimeoutStreamUtility, RetryUtility, UrlUtility } from '../../../shared/utilities';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
 import { BtApiError, BtApiErrorKind } from '../errors/bt-api-error';
 import { BtErrorClassifier } from '../errors/bt-error-classifier';
@@ -21,6 +26,7 @@ interface BtRequest {
     readonly data?: unknown;
     /** Overrides the client timeout (3 minutes) for this request. */
     readonly timeoutInMs?: number;
+    readonly responseType?: ResponseType;
 }
 
 /**
@@ -109,6 +115,71 @@ export class HttpClientService {
         await this.execute(beyondtrustInstance, { method: 'DELETE', urlPath, params: instanceToPlain(params) });
     }
 
+    /**
+     * Binary POST whose response is streamed byte-for-byte into targetFilePath (BeyondTrust backup). Memory stays
+     * bounded: the body goes through a temporary file next to the target, which is renamed atomically after the
+     * complete body arrived (size checked against Content-Length) and removed on any failure. A body that makes
+     * no progress for bodyIdleTimeoutInMs fails. Retried like any write: only when BeyondTrust provably did not
+     * process the request.
+     */
+    public async postToFile(
+        transactionId: string,
+        beyondtrustInstanceId: number,
+        urlPath: string,
+        body: unknown,
+        targetFilePath: string,
+    ): Promise<{ bytes: number }> {
+        const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
+        const response = await this.execute<Readable>(beyondtrustInstance, {
+            method: 'POST',
+            urlPath,
+            data: instanceToPlain(body),
+            responseType: 'stream',
+        });
+        const temporaryFilePath = `${targetFilePath}.${randomUUID()}.part`;
+        let bytes = 0;
+        const counter = new Transform({
+            transform(chunk: Buffer, _encoding, callback) {
+                bytes += chunk.length;
+                callback(null, chunk);
+            },
+        });
+
+        try {
+            await pipeline(
+                response.data,
+                IdleTimeoutStreamUtility.create(
+                    this.appConfigService.beyondTrust.api.communication.bodyIdleTimeoutInMs,
+                    'backup download',
+                ),
+                counter,
+                createWriteStream(temporaryFilePath, { flags: 'wx' }),
+            );
+            const expectedBytes = HttpClientService.expectedBytes(response);
+
+            if (expectedBytes !== undefined && expectedBytes !== bytes) {
+                throw new Error(`incomplete download: ${bytes} of ${expectedBytes} bytes`);
+            }
+
+            await rename(temporaryFilePath, targetFilePath);
+
+            return { bytes };
+        } catch (rawError) {
+            response.data.destroy();
+            await unlink(temporaryFilePath).catch(() => undefined);
+            const error = BtErrorClassifier.classify(rawError, {
+                method: 'POST',
+                path: urlPath,
+                beyondtrustInstanceId: beyondtrustInstance.id,
+                attempts: 1,
+            });
+            error.ambiguousWriteOutcome = true;
+            this.reportFailure(error);
+
+            throw error;
+        }
+    }
+
     /** Streamed download (installers). Not retried: a partially consumed stream cannot be repeated. */
     public async stream(
         transactionId: string,
@@ -171,9 +242,13 @@ export class HttpClientService {
                         timeout: request.timeoutInMs,
                         headers: { Authorization: authorization },
                         signal,
+                        responseType: request.responseType,
                     }),
                 );
             } catch (rawError) {
+                // An error answer of a streamed request must be discarded, otherwise it holds the socket.
+                ((rawError as AxiosError | undefined)?.response?.data as Readable | undefined)?.destroy?.();
+
                 const error = BtErrorClassifier.classify(rawError, {
                     method: request.method,
                     path: phase === 'token' ? HttpClientService.TOKEN_PATH : request.urlPath,
@@ -219,6 +294,14 @@ export class HttpClientService {
 
             throw cancelled;
         }
+    }
+
+    // Content-Length counts the bytes on the wire; with a content encoding axios has decoded them already.
+    private static expectedBytes(response: AxiosResponse): number | undefined {
+        const encoding = String(response.headers['content-encoding'] ?? 'identity').toLowerCase();
+        const length = Number(response.headers['content-length']);
+
+        return encoding === 'identity' && Number.isInteger(length) && length >= 0 ? length : undefined;
     }
 
     // A JSON 404 is an expected answer for many callers (deleted entities, missing relation parents).

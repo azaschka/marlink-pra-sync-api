@@ -88,18 +88,11 @@ export class CreateBeyondtrustInstanceBackupCommandHandler implements ICommandHa
         // Ensure the directory exists
         fs.mkdirSync(path.dirname(absoluteFilePath), { recursive: true });
 
-        const backupFileBuffer = await this.commandBus.execute<CreateBackupCommand, Buffer>(
-            new CreateBackupCommand(transactionId, beyondtrustInstanceId, password),
+        // Streamed to disk byte-for-byte; the file only exists after a complete download.
+        await this.commandBus.execute<CreateBackupCommand, { bytes: number }>(
+            new CreateBackupCommand(transactionId, beyondtrustInstanceId, password, absoluteFilePath),
         );
 
-        return new Promise((resolve, reject) => {
-            fs.writeFile(absoluteFilePath, backupFileBuffer, (error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(relativeFilePath);
-                }
-            });
-        });
+        return relativeFilePath;
     }
 }

@@ -230,6 +230,12 @@ export class AppConfigService {
                         1000,
                         600000,
                     ),
+                    bodyIdleTimeoutInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_BODY_IDLE_TIMEOUT_IN_MS',
+                        DefaultAppConfig.beyondTrust.api.communication.bodyIdleTimeoutInMs,
+                        1000,
+                        3600000,
+                    ),
                 },
             },
         };

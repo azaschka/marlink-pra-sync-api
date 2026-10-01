@@ -183,6 +183,9 @@ export abstract class DefaultAppConfig {
                     maxRetryAfterInMs: 30000,
                     // Per-request timeout for reads; writes and the backup download keep the client default.
                     readTimeoutInMs: 60000,
+                    // A streamed body (backup download) fails when no data arrived for this long. axios' timeout
+                    // only covers the time until the response headers; see IdleTimeoutStreamUtility.
+                    bodyIdleTimeoutInMs: 180000,
                 },
             },
         };

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention -- HTTP header and BeyondTrust query parameter names */
 import { AxiosError, AxiosHeaders, AxiosResponse, CanceledError, InternalAxiosRequestConfig } from 'axios';
+import { StreamIdleTimeoutError } from '../../../shared/utilities/idle-timeout-stream.utility';
 import { BtApiError, BtApiErrorKind } from './bt-api-error';
 import { BtErrorClassifier, BtRequestContext } from './bt-error-classifier';
 
@@ -86,6 +87,11 @@ describe('BtErrorClassifier', () => {
         },
         { name: 'cancellation', error: new CanceledError('canceled'), kind: BtApiErrorKind.Cancelled },
         { name: 'non-axios error', error: new TypeError('x is undefined'), kind: BtApiErrorKind.UnexpectedResponse },
+        {
+            name: 'a streamed body without progress',
+            error: new StreamIdleTimeoutError(180000, 'backup download'),
+            kind: BtApiErrorKind.Transient,
+        },
     ])('classifies $name as $kind', ({ error, kind }) => {
         expect(BtErrorClassifier.classify(error, context).kind).toBe(kind);
     });

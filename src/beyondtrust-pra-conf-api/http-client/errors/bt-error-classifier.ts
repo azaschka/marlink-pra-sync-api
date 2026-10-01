@@ -1,4 +1,5 @@
 import { AxiosError, isCancel } from 'axios';
+import { StreamIdleTimeoutError } from '../../../shared/utilities/idle-timeout-stream.utility';
 import { BtApiError, BtApiErrorKind } from './bt-api-error';
 
 export interface BtRequestContext {
@@ -56,6 +57,15 @@ export abstract class BtErrorClassifier {
                 kind: BtApiErrorKind.Cancelled,
                 code: 'ERR_CANCELED',
                 snippet: 'request aborted',
+                notSent: false,
+            });
+        }
+
+        if (error instanceof StreamIdleTimeoutError) {
+            return BtErrorClassifier.create(context, {
+                kind: BtApiErrorKind.Transient,
+                code: error.code,
+                snippet: error.message,
                 notSent: false,
             });
         }

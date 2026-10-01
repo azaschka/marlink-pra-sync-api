@@ -300,6 +300,7 @@ describe('AppConfigService', () => {
                         retryDelayInMs: 1500,
                         maxRetryAfterInMs: 20000,
                         readTimeoutInMs: 45000,
+                        bodyIdleTimeoutInMs: 90000,
                     },
                 },
                 expected: {
@@ -390,6 +391,7 @@ describe('AppConfigService', () => {
                             retryDelayInMs: 1500,
                             maxRetryAfterInMs: 20000,
                             readTimeoutInMs: 45000,
+                            bodyIdleTimeoutInMs: 90000,
                         },
                     },
                 },
@@ -484,6 +486,7 @@ describe('AppConfigService', () => {
                             retryDelayInMs: 1000,
                             maxRetryAfterInMs: 30000,
                             readTimeoutInMs: 60000,
+                            bodyIdleTimeoutInMs: 180000,
                         },
                     },
                 },
@@ -561,6 +564,8 @@ describe('AppConfigService', () => {
                         return input.communication?.maxRetryAfterInMs;
                     case 'BEYONDTRUST_API_COMMUNICATION_READ_TIMEOUT_IN_MS':
                         return input.communication?.readTimeoutInMs;
+                    case 'BEYONDTRUST_API_COMMUNICATION_BODY_IDLE_TIMEOUT_IN_MS':
+                        return input.communication?.bodyIdleTimeoutInMs;
                     default:
                         return undefined;
                 }
@@ -654,6 +659,7 @@ describe('AppConfigService', () => {
                         retryDelayInMs: expected.api.communication.retryDelayInMs,
                         maxRetryAfterInMs: expected.api.communication.maxRetryAfterInMs,
                         readTimeoutInMs: expected.api.communication.readTimeoutInMs,
+                        bodyIdleTimeoutInMs: expected.api.communication.bodyIdleTimeoutInMs,
                     },
                 },
             });
