@@ -10,6 +10,10 @@ export class UserService {
         await this.userRepositoryService.createOrUpdateById(tenantId, entity);
     }
 
+    public async findOneById(tenantId: number, id: number): Promise<UserEntity | null> {
+        return await this.userRepositoryService.findOneById(tenantId, id);
+    }
+
     public async deleteById(tenantId: number, id: number): Promise<void> {
         return await this.userRepositoryService.deleteById(tenantId, id);
     }

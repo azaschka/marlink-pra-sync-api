@@ -259,12 +259,17 @@ import { User as DBUser } from '../../user/models';
 import { RetrieveUsersQuery as DBRetrieveUsersQuery } from '../../user/queries';
 import { UserEntity } from '../../user/repositories/entities';
 import { UserService } from '../../user/services/user.service';
+import { AppConfigService } from '../../app-config/services/app-config.service';
+import { PaginationUtility } from '../../shared/utilities';
 import { DiscrepancyEntityType } from '../enums';
 import { DiscrepancyStrategy } from '../types';
 
 @Injectable()
 export class DiscrepancyStrategyProviderService {
+    private static readonly MAX_GROUP_POLICY_MEMBER_PAGE_SIZE = 100;
+
     constructor(
+        private readonly appConfigService: AppConfigService,
         private readonly queryBus: QueryBus,
         private readonly commandBus: CommandBus,
         private readonly groupPolicyService: GroupPolicyService,
@@ -1687,8 +1692,26 @@ export class DiscrepancyStrategyProviderService {
                     this.queryBus.execute<BTRetrieveUserGroupPoliciesQuery, BTUserGroupPolicy[]>(
                         new BTRetrieveUserGroupPoliciesQuery(transactionId, tenantId, parentId),
                     ),
-                btCreateFunc: (transactionId, tenantId, entity) =>
-                    this.commandBus.execute(
+                // PATCH /user/{id}/group-policy-changes applies to local users only (R3.2-A003, 3.1.1).
+                // An externally provisioned user has to go through POST /group-policy/{id}/member instead.
+                btCreateFunc: async (transactionId, tenantId, entity) => {
+                    const user = await this.userService.findOneById(tenantId, entity.userId);
+
+                    if (user && this.isExternallyProvisioned(user)) {
+                        await this.commandBus.execute(
+                            new AddMemberToGroupPolicyCommand(
+                                transactionId,
+                                tenantId,
+                                entity.groupPolicyId,
+                                entity.userId,
+                                user.securityProviderId as number,
+                            ),
+                        );
+
+                        return;
+                    }
+
+                    await this.commandBus.execute(
                         new BTModifyUserGroupPoliciesCommand(
                             transactionId,
                             tenantId,
@@ -1696,7 +1719,8 @@ export class DiscrepancyStrategyProviderService {
                             [entity.groupPolicyId],
                             [],
                         ),
-                    ),
+                    );
+                },
                 btModifyFunc: async (transactionId, tenantId, entity) => {
                     console.log(
                         `No modify operation for User Group Policy in BT API. Skipping transaction ${transactionId}, tenant ${tenantId}, user id: ${entity.userId}, group policy id: ${entity.groupPolicyId}.`,
@@ -1704,8 +1728,34 @@ export class DiscrepancyStrategyProviderService {
 
                     return Promise.resolve();
                 },
-                btDeleteFunc: (transactionId, tenantId, entity) =>
-                    this.commandBus.execute(
+                btDeleteFunc: async (transactionId, tenantId, entity) => {
+                    const user = await this.userService.findOneById(tenantId, entity.userId);
+
+                    if (user && this.isExternallyProvisioned(user)) {
+                        // The member endpoint is addressed by member id, not by user id, so the membership has
+                        // to be resolved first. One that is already gone needs no removal.
+                        const memberId = await this.findGroupPolicyMemberId(
+                            transactionId,
+                            tenantId,
+                            entity.groupPolicyId,
+                            entity.userId,
+                        );
+
+                        if (memberId !== null) {
+                            await this.commandBus.execute(
+                                new RemoveMemberFromGroupPolicyCommand(
+                                    transactionId,
+                                    tenantId,
+                                    entity.groupPolicyId,
+                                    memberId,
+                                ),
+                            );
+                        }
+
+                        return;
+                    }
+
+                    await this.commandBus.execute(
                         new BTModifyUserGroupPoliciesCommand(
                             transactionId,
                             tenantId,
@@ -1713,7 +1763,8 @@ export class DiscrepancyStrategyProviderService {
                             [],
                             [entity.groupPolicyId],
                         ),
-                    ),
+                    );
+                },
                 btToDbEntity: (bt) => UserGroupPolicyEntity.createFromBT(parentId, bt),
                 dbRetrieveFunc: (transactionId, tenantId, maxBatchSize, pageNumber) =>
                     this.queryBus.execute<DBRetrieveUserGroupPoliciesQuery, DBUserGroupPolicy[]>(
@@ -1751,5 +1802,39 @@ export class DiscrepancyStrategyProviderService {
         }
 
         throw new Error(`Unsupported entity type: ${entityType}`);
+    }
+
+    /**
+     * Local accounts belong to BeyondTrust's built-in security provider, id 1 by default. Every provider added
+     * afterwards increments from there, so any other provider means the account is externally provisioned and
+     * the local-user-only group policy endpoint cannot be used for it.
+     */
+    private isExternallyProvisioned(user: { securityProviderId?: number }): boolean {
+        if (user.securityProviderId === undefined || user.securityProviderId === null) {
+            return false;
+        }
+
+        return !this.appConfigService.user.localSecurityProviderIds.includes(user.securityProviderId);
+    }
+
+    private async findGroupPolicyMemberId(
+        transactionId: string,
+        tenantId: number,
+        groupPolicyId: number,
+        userId: number,
+    ): Promise<number | null> {
+        const members = await PaginationUtility.queryUntilLastPage<BTGroupPolicyMember>((pageNumber) =>
+            this.queryBus.execute<BTRetrieveGroupPolicyMembersQuery, BTGroupPolicyMember[]>(
+                new BTRetrieveGroupPolicyMembersQuery(
+                    transactionId,
+                    tenantId,
+                    DiscrepancyStrategyProviderService.MAX_GROUP_POLICY_MEMBER_PAGE_SIZE,
+                    pageNumber,
+                    groupPolicyId,
+                ),
+            ),
+        );
+
+        return members.find((member) => member.userId === userId)?.id ?? null;
     }
 }

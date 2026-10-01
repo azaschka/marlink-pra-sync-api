@@ -190,6 +190,20 @@ export abstract class DefaultAppConfig {
         };
     }
 
+    public static get user() {
+        return {
+            /**
+             * Ids of the BeyondTrust security providers that hold local accounts.
+             *
+             * Local accounts belong to the built-in provider, which is id 1: it exists before any provider is
+             * configured, and every provider added afterwards increments from there. A user with any other
+             * security provider is externally provisioned and its group policy memberships have to be applied
+             * through the group policy member endpoints.
+             */
+            localSecurityProviderIds: '1',
+        };
+    }
+
     public static get throttle() {
         return {
             isEnabled: DefaultAppConfig.THROTTLE_IS_ENABLED,
