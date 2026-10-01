@@ -284,6 +284,27 @@ export class AppConfigService {
         };
     }
 
+    public get backupRetention() {
+        return {
+            retentionDays: this.integerOrDefault(
+                'BACKUP_RETENTION_DAYS',
+                DefaultAppConfig.backupRetention.retentionDays,
+                1,
+            ),
+            keepLatest: this.integerOrDefault(
+                'BACKUP_RETENTION_KEEP_LATEST',
+                DefaultAppConfig.backupRetention.keepLatest,
+                0,
+            ),
+            cronExpression:
+                this.configService.get<string>('BACKUP_RETENTION_CRON') ??
+                DefaultAppConfig.backupRetention.cronExpression,
+            timezone: DefaultAppConfig.discrepancy.scan.cronJobTimezone,
+            // Same switch as the scan lock: both depend on GET_LOCK support of the database (not on Galera).
+            distributedLockEnabled: this.discrepancy.scan.distributedLockEnabled,
+        };
+    }
+
     public get discrepancy() {
         return {
             maxBatchSize:

@@ -24,6 +24,12 @@ export abstract class DefaultAppConfig {
     // MariaDB GET_LOCK per tenant so that several replicas never run the same tenant's cycle at the same time.
     private static readonly DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED = true;
 
+    // BeyondTrust backups (STAB-08): files and rows older than the retention are deleted daily, after the backup
+    // creation at 02:35 (PRA API cron). The newest backups per instance are always kept (decision of 2026-10-01).
+    private static readonly BACKUP_RETENTION_DAYS = 90;
+    private static readonly BACKUP_RETENTION_KEEP_LATEST = 1;
+    private static readonly BACKUP_RETENTION_CRON = '5 4 * * *';
+
     // Database tuning is constant-only; the environment supplies just the endpoint and credentials.
     // Sized for MariaDB max_connections = 300 and wait_timeout = 300 s. Both service pools, counted twice
     // for a rolling update, must stay below max_connections (see the spec).
@@ -221,6 +227,14 @@ export abstract class DefaultAppConfig {
                 enableKeepAlive: DefaultAppConfig.DB_KEEP_ALIVE_ENABLED,
                 keepAliveInitialDelay: DefaultAppConfig.DB_KEEP_ALIVE_INITIAL_DELAY_IN_MS,
             },
+        };
+    }
+
+    public static get backupRetention() {
+        return {
+            retentionDays: DefaultAppConfig.BACKUP_RETENTION_DAYS,
+            keepLatest: DefaultAppConfig.BACKUP_RETENTION_KEEP_LATEST,
+            cronExpression: DefaultAppConfig.BACKUP_RETENTION_CRON,
         };
     }
 
