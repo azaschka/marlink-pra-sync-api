@@ -6,6 +6,7 @@ import { AppConfigService } from '../../app-config/services/app-config.service';
 import { BeyondtrustInstance } from '../../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../../beyondtrust-instance/queries';
 import { PaginationUtility, RetryUtility, UuidUtility } from '../../shared/utilities';
+import { DiscrepancyScanOutcome } from '../services/discrepancy-scan-outcome';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
 
 @Controller('discrepancies/scan/job')
@@ -49,10 +50,14 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
                     const startTime = Date.now();
 
                     try {
+                        let allSucceeded = true;
+
                         for (const beyondtrustInstance of beyondtrustInstances) {
                             try {
-                                await func(transactionId, beyondtrustInstance.id);
+                                const overviews = await func(transactionId, beyondtrustInstance.id);
+                                allSucceeded &&= DiscrepancyScanOutcome.summarize(overviews).allSucceeded;
                             } catch (error) {
+                                allSucceeded = false;
                                 // IMPORTANT: Do not throw the error, otherwise it will kill the process
                                 this.logger.error(
                                     `[${name}] failed for BeyondTrust instance ID ${beyondtrustInstance.id}: ${
@@ -63,10 +68,15 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap {
                             }
                         }
 
-                        // Log memory usage and duration after job execution
+                        // Log memory usage and duration after job execution. "successfully" only if nothing failed;
+                        // the per-tenant lines "[scan <id>] tenant <t> finished: ..." carry the details.
                         const memAfter = process.memoryUsage();
                         const duration = Date.now() - startTime;
-                        this.logger.log(`[${name}] finished successfully in ${Math.round(duration / 1000)}s`);
+                        this.logger.log(
+                            `[${name}] finished ${allSucceeded ? 'successfully' : 'with failures'} in ${Math.round(
+                                duration / 1000,
+                            )}s`,
+                        );
                         this.logger.debug(
                             `[${name}] Memory after: ${Math.round(memAfter.heapUsed / 1024 / 1024)} MB ` +
                                 `(delta: ${Math.round((memAfter.heapUsed - memBefore.heapUsed) / 1024 / 1024)} MB)`,

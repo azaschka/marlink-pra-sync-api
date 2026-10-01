@@ -8,15 +8,17 @@ import { RetryUtility, UuidUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommand } from '../commands';
 import { RetrieveDiscrepanciesDtoInput } from '../dtos/inputs';
 import { DiscrepancyDtoOutput, DiscrepancyOverviewDtoOutput } from '../dtos/outputs';
-import { DiscrepancyEntityType } from '../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
 import { Discrepancy, DiscrepancyOverview } from '../models';
 import { RetrieveDiscrepanciesQuery } from '../queries';
+import { DiscrepancyScanOutcome } from '../services/discrepancy-scan-outcome';
 
 @ApiTenantIdHeader()
 @ApiTags('Discrepancies')
 @Controller('discrepancies')
 export class DiscrepancyScannerController {
     private static readonly DELAY_BETWEEN_ENTITY_SCANS_MS = 1000;
+    private static readonly UNAVAILABLE_AFTER_CONSECUTIVE_FAILURES = 3;
 
     constructor(
         private readonly queryBus: QueryBus,
@@ -70,28 +72,62 @@ export class DiscrepancyScannerController {
         ];
 
         return this.withScanBudget(tenantId, async () => {
+            const logPrefix = DiscrepancyScanOutcome.logPrefix(tenantId);
+            const startedAt = Date.now();
             const scanResults: DiscrepancyOverview[] = [];
+            let consecutiveUnavailable = 0;
+
+            console.log(`🔎 ${logPrefix} started (heapUsed ${DiscrepancyScannerController.heapUsedMb()} MB)`);
 
             for (const [index, entityType] of entityTypeOrder.entries()) {
+                const remaining = entityTypeOrder.slice(index);
+
                 if (ScanContext.isAborted()) {
-                    const remaining = entityTypeOrder.slice(index);
-                    console.warn(
-                        `⏹️ Scan ${ScanContext.current()?.scanId} for tenant ${tenantId} aborted, budget expired; not scanned: ${remaining.join(', ')}`,
+                    console.warn(`⏹️ ${logPrefix} budget expired; not scanned: ${remaining.join(', ')}`);
+                    scanResults.push(
+                        ...remaining.map((type) =>
+                            DiscrepancyScanOutcome.incomplete(type, DiscrepancyScanState.Aborted, 'Cancelled'),
+                        ),
                     );
-                    scanResults.push(...remaining.map((type) => DiscrepancyScannerController.emptyOverview(type)));
                     break;
                 }
 
+                // Circuit breaker: the instance is treated as unavailable for the rest of this cycle. The next
+                // cycle tries again. A broken instance costs seconds instead of the full retry budget per type.
+                if (consecutiveUnavailable >= DiscrepancyScannerController.UNAVAILABLE_AFTER_CONSECUTIVE_FAILURES) {
+                    console.warn(
+                        `⏭️ ${logPrefix} BeyondTrust instance unavailable after ${consecutiveUnavailable} failed types; skipped: ${remaining.join(', ')}`,
+                    );
+                    scanResults.push(
+                        ...remaining.map((type) =>
+                            DiscrepancyScanOutcome.incomplete(
+                                type,
+                                DiscrepancyScanState.Skipped,
+                                DiscrepancyScanOutcome.INSTANCE_UNAVAILABLE,
+                            ),
+                        ),
+                    );
+                    break;
+                }
+
+                let overview: DiscrepancyOverview;
+
                 try {
                     // No retry here: BeyondTrust calls are retried in HttpClientService only.
-                    scanResults.push(await this.scanDiscrepancies(transactionId, tenantId, entityType));
+                    overview = await this.scanDiscrepancies(transactionId, tenantId, entityType);
                 } catch (error) {
+                    overview = DiscrepancyScanOutcome.fromError(entityType, error);
                     const errorMessage = error instanceof Error ? error.message : String(error);
-                    console.error(`❌ Discrepancy scan failed for ${entityType}:`, errorMessage);
-
-                    // Add a placeholder result to indicate the entity was attempted but failed
-                    scanResults.push(DiscrepancyScannerController.emptyOverview(entityType));
+                    console.error(
+                        `❌ ${logPrefix} ${entityType} ${overview.state}(${overview.failureKind}):`,
+                        errorMessage,
+                    );
                 }
+
+                scanResults.push(overview);
+                consecutiveUnavailable = DiscrepancyScanOutcome.indicatesUnavailableInstance(overview)
+                    ? consecutiveUnavailable + 1
+                    : 0;
 
                 // Add delay between entity scans to prevent overwhelming the system
                 await RetryUtility.delay(DiscrepancyScannerController.DELAY_BETWEEN_ENTITY_SCANS_MS).catch(
@@ -99,7 +135,12 @@ export class DiscrepancyScannerController {
                 );
             }
 
-            console.log(`🎉 Completed all discrepancy scans: ${scanResults.length} entity types processed`);
+            const summary = DiscrepancyScanOutcome.summarize(scanResults);
+            console.log(
+                `${summary.allSucceeded ? '🎉' : '⚠️'} ${logPrefix} finished: ${summary.text} in ${Math.round(
+                    (Date.now() - startedAt) / 1000,
+                )}s (heapUsed ${DiscrepancyScannerController.heapUsedMb()} MB)`,
+            );
 
             return scanResults;
         });
@@ -124,25 +165,13 @@ export class DiscrepancyScannerController {
             throw new BadRequestException(`Invalid entity type: ${entityType}`);
         }
 
-        return this.withScanBudget(tenantId, async () => {
-            try {
-                return await this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
-                    new ScanDiscrepancyCommand(transactionId, tenantId, entityType),
-                );
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                console.error(`❌ Command execution failed for ${entityType}:`, errorMessage);
-
-                // Return empty result for timeout/connectivity issues to allow scan/all to continue
-                if (errorMessage.includes('timeout') || errorMessage.includes('connectivity')) {
-                    console.warn(`⚠️ Returning empty result for ${entityType} due to timeout/connectivity issues`);
-                    return DiscrepancyScannerController.emptyOverview(entityType);
-                }
-
-                // Re-throw other errors (validation errors, etc.)
-                throw error;
-            }
-        });
+        // The handler reports BeyondTrust and database failures as an overview with state failed or aborted;
+        // the ID lists of such an overview are empty and mean "unknown", not "nothing found".
+        return this.withScanBudget(tenantId, () =>
+            this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
+                new ScanDiscrepancyCommand(transactionId, tenantId, entityType),
+            ),
+        );
     }
 
     /**
@@ -152,7 +181,8 @@ export class DiscrepancyScannerController {
     private withScanBudget<T>(tenantId: number, operation: () => Promise<T>): Promise<T> {
         return ScanContext.runWithBudget(
             {
-                scanId: UuidUtility.generate(),
+                // Short ID for log correlation; not used as a key.
+                scanId: UuidUtility.generate().slice(0, 8),
                 tenantId,
                 budgetInMs: this.appConfigService.discrepancy.scan.cycleBudgetInMs,
             },
@@ -160,15 +190,7 @@ export class DiscrepancyScannerController {
         );
     }
 
-    private static emptyOverview(entityType: DiscrepancyEntityType): DiscrepancyOverview {
-        return {
-            entityType,
-            totalBtData: 0,
-            totalDbData: 0,
-            identicalIds: [],
-            onlyInExternalIds: [],
-            onlyInInternalIds: [],
-            mismatchedIds: [],
-        };
+    private static heapUsedMb(): number {
+        return Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
     }
 }

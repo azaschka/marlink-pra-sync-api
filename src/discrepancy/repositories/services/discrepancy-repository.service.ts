@@ -65,6 +65,20 @@ export class DiscrepancyRepositoryService extends BaseTenantRepositoryService<Di
         return await super.deleteBy(tenantId, { id: id });
     }
 
+    /** Cleanup of one relation parent: only records of that parent that were not refreshed since the date. */
+    public async deleteByEntityIdAndLastModificationDateBefore(
+        tenantId: number,
+        entityType: DiscrepancyEntityType,
+        entityId: number,
+        date: Date,
+    ): Promise<void> {
+        return await super.deleteBy(tenantId, {
+            entityType: entityType,
+            entityId: entityId,
+            lastModificationDate: LessThan(date),
+        });
+    }
+
     public async deleteByLastModificationDateBefore(
         tenantId: number,
         entityType: DiscrepancyEntityType,

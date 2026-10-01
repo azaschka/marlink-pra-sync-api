@@ -1,7 +1,7 @@
 import { CommandBus } from '@nestjs/cqrs';
 import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand } from '../../commands';
-import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState, DiscrepancySyncType } from '../../enums';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
 import { SyncAfterDiscrepancyFoundEventHandler } from './sync-after-discrepancy-found.event-handler';
 
@@ -17,6 +17,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
 
     beforeEach(() => {
         jest.spyOn(console, 'warn').mockImplementation();
+        jest.spyOn(console, 'log').mockImplementation();
         commandBus = mockCommandBus();
         commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
         handler = new SyncAfterDiscrepancyFoundEventHandler(commandBus);
@@ -24,6 +25,40 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
 
     afterEach(() => {
         jest.clearAllMocks();
+    });
+
+    describe('outcome counting', () => {
+        it('counts failures that the by-entity-ID handler reports instead of throwing', async () => {
+            commandBusExecuteMethod
+                .mockResolvedValueOnce({ synced: true })
+                .mockResolvedValueOnce({ synced: false, failureKind: 'Database' })
+                .mockResolvedValueOnce({ synced: false, failureKind: 'Database' });
+
+            await handler.handle(
+                buildEvent(DiscrepancyEntityType.GroupPolicyMember, {
+                    mismatchedIds: [1],
+                    onlyInExternalIds: [2],
+                    onlyInInternalIds: [3],
+                }),
+            );
+
+            expect(console.warn).toHaveBeenCalledWith(
+                expect.stringContaining('auto-sync group-policy-member: 1 synced, 2 failed (Database x2), 0 skipped'),
+            );
+        });
+
+        it('does not auto-sync an overview of a scan that did not succeed', async () => {
+            const event = buildEvent(DiscrepancyEntityType.User, {
+                mismatchedIds: [],
+                onlyInExternalIds: [],
+                onlyInInternalIds: [1, 2],
+            });
+            event.payload.discrepancyOverview.state = DiscrepancyScanState.Failed;
+
+            await handler.handle(event);
+
+            expect(commandBusExecuteMethod).not.toHaveBeenCalled();
+        });
     });
 
     describe('scan budget', () => {
@@ -144,7 +179,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
             );
 
             expect(console.warn).toHaveBeenCalledWith(
-                expect.stringContaining('1/3 auto-sync operations failed for jumpoint'),
+                expect.stringContaining('auto-sync jumpoint: 2 synced, 1 failed'),
             );
             expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Will retry on next scan'));
         });
@@ -160,7 +195,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 }),
             );
 
-            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('2/2 auto-sync operations failed'));
+            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('0 synced, 2 failed'));
         });
 
         it('should not warn when all sync operations succeed', async () => {
@@ -321,9 +356,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
             );
 
             expect(commandBusExecuteMethod).toHaveBeenCalledTimes(3);
-            expect(console.warn).toHaveBeenCalledWith(
-                expect.stringContaining('1/3 ExternalToInternal sync operations failed'),
-            );
+            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('2 synced, 1 failed'));
         });
 
         it('should not warn when all onlyInExternalIds sync successfully', async () => {

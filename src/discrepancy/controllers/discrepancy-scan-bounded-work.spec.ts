@@ -17,7 +17,7 @@ import { HttpClientService } from '../../beyondtrust-pra-conf-api/http-client/se
 import { RetryUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommandHandler } from '../commands/handlers/scan-discrepancy.command-handler';
 import { ScanDiscrepancyCommand } from '../commands';
-import { DiscrepancyEntityType } from '../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
 import { DiscrepancyScannerService } from '../services/discrepancy-scanner.service';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
 
@@ -180,6 +180,28 @@ describe('Discrepancy scan: bounded retries and cycle budget', () => {
 
         await controller.scanDiscrepancies('tx', 1, DiscrepancyEntityType.User).catch(() => undefined);
 
+        expect(repository.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
+        expect(eventBus.publish).not.toHaveBeenCalled();
+    });
+    it('stops after 3 types when the instance answers 404 for every list endpoint (PP case)', async () => {
+        handler = (_req, res) => {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Document Not Found' }));
+        };
+        controller = createController(20 * 60 * 1000);
+
+        const overviews = await controller.scanAllDiscrepancies('tx', 1);
+
+        // Before: 45 requests and about 408 s of waiting per entity type, for all 14 types.
+        expect(requests).toBe(3);
+        expect(
+            overviews.filter((o) => o.state === DiscrepancyScanState.Failed && o.failureKind === 'NotFound'),
+        ).toHaveLength(3);
+        expect(
+            overviews.filter(
+                (o) => o.state === DiscrepancyScanState.Skipped && o.failureKind === 'InstanceUnavailable',
+            ),
+        ).toHaveLength(11);
         expect(repository.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
         expect(eventBus.publish).not.toHaveBeenCalled();
     });

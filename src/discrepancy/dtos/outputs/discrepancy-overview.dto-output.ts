@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DiscrepancyEntityType } from '../../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../../enums';
 import { DiscrepancyOverview } from '../../models';
 
 export class DiscrepancyOverviewDtoOutput implements DiscrepancyOverview {
@@ -23,4 +23,18 @@ export class DiscrepancyOverviewDtoOutput implements DiscrepancyOverview {
 
     @ApiProperty({ required: true, type: [Number], description: 'Mismatched IDs' })
     public mismatchedIds!: number[];
+
+    @ApiProperty({
+        required: false,
+        enum: DiscrepancyScanState,
+        description: 'Outcome of the scan. The ID lists are only meaningful for succeeded scans.',
+    })
+    public state?: DiscrepancyScanState;
+
+    @ApiProperty({
+        required: false,
+        type: String,
+        description: 'Why the scan failed or was skipped, e.g. UnexpectedResponse, NotFound, InstanceUnavailable',
+    })
+    public failureKind?: string;
 }

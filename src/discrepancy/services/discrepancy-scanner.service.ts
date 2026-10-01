@@ -72,8 +72,10 @@ export class DiscrepancyScannerService {
     }
 
     /**
-     * Fetch data from BeyondTrust API with error handling for 404 responses.
-     * Used for relation entities where parent might not exist.
+     * Fetch the relations of one parent from BeyondTrust.
+     * Every failure propagates, including 404: an empty list is only returned when BeyondTrust returned one.
+     * Treating an error (for example an HTML 404 from a proxy) as "no relations" made every relation look
+     * "only in DB" and let auto-sync delete them locally.
      */
     public async fetchFromBeyondTrustWithErrorHandling<T>(
         discrepancyStrategy: DiscrepancyStrategy<unknown, unknown, unknown>,
@@ -82,14 +84,12 @@ export class DiscrepancyScannerService {
     ): Promise<FetchedData<T>> {
         const rawData = await PaginationUtility.queryUntilDuplicatePage(
             (pageNumber: number) =>
-                discrepancyStrategy
-                    .btRetrieveFunc(transactionId, tenantId, this.appConfigService.discrepancy.maxBatchSize, pageNumber)
-                    .catch((error: any) => {
-                        if (error instanceof Error && error.message.includes('404')) {
-                            return [];
-                        }
-                        throw error;
-                    }) as Promise<object[]>,
+                discrepancyStrategy.btRetrieveFunc(
+                    transactionId,
+                    tenantId,
+                    this.appConfigService.discrepancy.maxBatchSize,
+                    pageNumber,
+                ) as Promise<object[]>,
             discrepancyStrategy.btOmittedPropsForDuplicateCheck,
         );
 
@@ -253,9 +253,16 @@ export class DiscrepancyScannerService {
     /**
      * Get timestamp for marking when sync started.
      * Used to delete obsolete discrepancies that weren't updated during current scan.
+     *
+     * Callers stamp every record of a run with this one value, and the cleanup deletes what is older. The value
+     * is truncated to whole seconds so that this also holds for a column without fractional seconds (TypeORM
+     * creates last_modification_date as timestamp(6); a timestamp(0) column, e.g. from a manual migration, would
+     * store a record of the start second as earlier than an untruncated start and lose it in the cleanup).
      */
     public getSyncStartDate(): Date {
-        return DateUtility.getCurrentUtcDate();
+        const now = DateUtility.getCurrentUtcDate();
+
+        return new Date(Math.floor(now.getTime() / 1000) * 1000);
     }
 
     /**

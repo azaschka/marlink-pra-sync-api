@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/unbound-method */
 import { EventBus } from '@nestjs/cqrs';
+import { QueryFailedError } from 'typeorm';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { BtApiError, BtApiErrorKind } from '../../../beyondtrust-pra-conf-api/http-client/errors/bt-api-error';
 import { RetryUtility } from '../../../shared/utilities';
-import { DiscrepancyEntityType } from '../../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../../enums';
 import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
@@ -135,6 +137,7 @@ describe('ScanDiscrepancyCommandHandler', () => {
                 onlyInExternalIds: [],
                 onlyInInternalIds: [],
                 mismatchedIds: [],
+                state: DiscrepancyScanState.Succeeded,
             });
         });
 
@@ -316,88 +319,104 @@ describe('ScanDiscrepancyCommandHandler', () => {
                 onlyInExternalIds: [3],
                 onlyInInternalIds: [4],
                 mismatchedIds: [2],
+                state: DiscrepancyScanState.Succeeded,
             });
         });
 
-        it('should handle BeyondTrust API errors gracefully for connectivity issues', async () => {
-            // Arrange
-            const command = new ScanDiscrepancyCommand('txn-error', 6, DiscrepancyEntityType.User);
-            const error = new Error('ECONNRESET: Connection reset by peer');
+        it.each([
+            { kind: BtApiErrorKind.Transient, httpStatus: undefined },
+            { kind: BtApiErrorKind.UnexpectedResponse, httpStatus: 503 },
+            { kind: BtApiErrorKind.NotFound, httpStatus: 404 },
+        ])(
+            'should report a $kind BeyondTrust failure as failed, without cleanup and without event',
+            async ({ kind, httpStatus }) => {
+                // Arrange
+                const command = new ScanDiscrepancyCommand('txn-error', 6, DiscrepancyEntityType.User);
+                const error = new BtApiError({
+                    kind,
+                    method: 'GET',
+                    path: '/user',
+                    beyondtrustInstanceId: 6,
+                    attempts: 4,
+                    snippet: '',
+                    notSent: false,
+                    httpStatus,
+                });
+                (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockRejectedValue(error);
 
-            (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockRejectedValue(error);
+                // Act
+                const result = await handler.execute(command);
 
-            // Act
-            const result = await handler.execute(command);
+                // Assert: a failed fetch is never treated as an empty result
+                expect(result).toEqual<DiscrepancyOverview>({
+                    entityType: DiscrepancyEntityType.User,
+                    totalBtData: 0,
+                    totalDbData: 0,
+                    identicalIds: [],
+                    onlyInExternalIds: [],
+                    onlyInInternalIds: [],
+                    mismatchedIds: [],
+                    state: DiscrepancyScanState.Failed,
+                    failureKind: kind,
+                });
+                expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
+                expect(eventBus.publish).not.toHaveBeenCalled();
+            },
+        );
 
-            // Assert
-            expect(console.error).toHaveBeenCalledWith(expect.stringContaining('❌ Error scanning'), error.message);
-            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('⚠️ Skipping entity'));
-            expect(eventBus.publish).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    payload: {
-                        tenantId: 6,
-                        discrepancyOverview: expect.objectContaining({
-                            entityType: DiscrepancyEntityType.User,
-                            totalBtData: 0,
-                            totalDbData: 0,
-                        }),
-                    },
-                }),
-            );
-            expect(result.totalBtData).toBe(0);
-        });
-
-        it('should handle timeout errors gracefully', async () => {
-            // Arrange
-            const command = new ScanDiscrepancyCommand('txn-timeout', 7, DiscrepancyEntityType.Team);
-            const error = new Error('Request timeout after 30000ms');
-
-            (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockRejectedValue(error);
-
-            // Act
-            const result = await handler.execute(command);
-
-            // Assert
-            expect(console.error).toHaveBeenCalledWith(expect.stringContaining('❌ Error scanning'), error.message);
-            expect(result).toEqual<DiscrepancyOverview>({
-                entityType: DiscrepancyEntityType.Team,
-                totalBtData: 0,
-                totalDbData: 0,
-                identicalIds: [],
-                onlyInExternalIds: [],
-                onlyInInternalIds: [],
-                mismatchedIds: [],
-            });
-        });
-
-        it('should handle 502 Bad Gateway errors gracefully', async () => {
-            // Arrange
-            const command = new ScanDiscrepancyCommand('txn-502', 8, DiscrepancyEntityType.GroupPolicy);
-            const error = new Error('502 Bad Gateway');
-
-            (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockRejectedValue(error);
-
-            // Act
-            const result = await handler.execute(command);
-
-            // Assert
-            expect(result.totalBtData).toBe(0);
-            expect(result.totalDbData).toBe(0);
-        });
-
-        it('should re-throw non-API connectivity errors', async () => {
+        it('should report a database failure as failed without cleanup and without event', async () => {
             // Arrange
             const command = new ScanDiscrepancyCommand('txn-fatal', 9, DiscrepancyEntityType.User);
-            const error = new Error('Database constraint violation');
-
             (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockResolvedValue({
                 raw: [],
                 transformed: [],
             });
-            (discrepancyScannerService.fetchFromDatabase as jest.Mock).mockRejectedValue(error);
+            (discrepancyScannerService.fetchFromDatabase as jest.Mock).mockRejectedValue(
+                new QueryFailedError('SELECT', [], new Error('Lost connection')),
+            );
 
-            // Act & Assert
-            await expect(handler.execute(command)).rejects.toThrow(error);
+            // Act
+            const result = await handler.execute(command);
+
+            // Assert
+            expect(result.state).toBe(DiscrepancyScanState.Failed);
+            expect(result.failureKind).toBe('Database');
+            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
+            expect(eventBus.publish).not.toHaveBeenCalled();
+        });
+
+        it('should stamp every record with the same start, truncated to whole seconds', async () => {
+            // Arrange
+            const command = new ScanDiscrepancyCommand('txn-start', 1, DiscrepancyEntityType.User);
+            const start = new Date('2026-09-30T23:58:42.000Z');
+            (discrepancyScannerService.getSyncStartDate as jest.Mock).mockReturnValue(start);
+            const btData = [{ id: 1 }, { id: 2 }];
+            (discrepancyScannerService.fetchFromBeyondTrust as jest.Mock).mockResolvedValue({
+                raw: btData,
+                transformed: btData,
+            });
+            (discrepancyScannerService.fetchFromDatabase as jest.Mock).mockResolvedValue([]);
+            (discrepancyScannerService.analyzeDiscrepancies as jest.Mock).mockReturnValue({
+                identical: [],
+                onlyInBt: btData,
+                onlyInDb: [],
+                differentPairs: [],
+            });
+
+            // Act
+            await handler.execute(command);
+
+            // Assert
+            const stamps = (discrepancyRepositoryService.createOrUpdateById as jest.Mock).mock.calls.map(
+                ([, entity]) => (entity as { lastModificationDate: Date }).lastModificationDate,
+            );
+            expect(stamps).toEqual([start, start]);
+            expect(discrepancyScannerService.getSyncStartDate).toHaveBeenCalledTimes(1);
+            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).toHaveBeenCalledWith(
+                1,
+                DiscrepancyEntityType.User,
+                start,
+            );
         });
 
         it('should use existing discrepancy id from pre-fetched Map when saving', async () => {

@@ -3,11 +3,14 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import pLimit, { LimitFunction } from 'p-limit';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { BtApiErrorKind } from '../../../beyondtrust-pra-conf-api/http-client/errors/bt-api-error';
 import { ScanContext } from '../../../shared/context/scan-context';
 import { RetryUtility } from '../../../shared/utilities';
 import { DiscrepancyScannedEvent } from '../../events';
+import { DiscrepancyScanState } from '../../enums';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
+import { DiscrepancyScanOutcome } from '../../services/discrepancy-scan-outcome';
 import { DiscrepancyScannerService } from '../../services/discrepancy-scanner.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
 import { DiscrepancyStrategy } from '../../types';
@@ -35,20 +38,29 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
         this.dbConnLimit = pLimit(concurrencyLimit);
     }
 
-    public async execute(command: ScanEntityRelationDiscrepancyCommand): Promise<void> {
+    /**
+     * Scans the relations of every parent. A parent whose fetch fails (including 404) is skipped: its existing
+     * discrepancies stay untouched and no event (auto-sync) is published for it. Cleanup is scoped to the
+     * parent; the type-wide cleanup of parents that no longer exist only runs when every parent succeeded.
+     */
+    public async execute(command: ScanEntityRelationDiscrepancyCommand): Promise<DiscrepancyScanState> {
+        // Whole seconds and constant for every record of this run (see getSyncStartDate).
         const startSyncUtcDate = this.discrepancyScannerService.getSyncStartDate();
-
-        for (const parentId of [
+        const logPrefix = `${DiscrepancyScanOutcome.logPrefix(command.tenantId)} relation ${command.entityType}`;
+        const parentIds = [
             ...command.identicalDataIds,
             ...command.onlyInExternalIds,
             ...command.onlyInInternalIds,
             ...command.differentDataIds,
-        ]) {
+        ];
+        const failureKinds = new Map<string, number>();
+        let succeeded = 0;
+        let aborted = false;
+
+        for (const parentId of parentIds) {
             if (ScanContext.isAborted()) {
-                console.warn(
-                    `⏹️ Relational scan for ${command.entityType} stopped at parent ${parentId}: scan ${ScanContext.current()?.scanId} budget expired`,
-                );
-                return;
+                aborted = true;
+                break;
             }
 
             try {
@@ -132,7 +144,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                                         foreignEntityId: foreignEntityId,
                                         internalData: undefined,
                                         externalData: bt as unknown as Record<string, unknown>,
-                                        lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                        lastModificationDate: startSyncUtcDate,
                                     }),
                                 `Save discrepancy for entity (parent: ${parentId}, child: ${foreignEntityId}) (only in BT)`,
                             ),
@@ -155,7 +167,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                                         foreignEntityId: foreignEntityId,
                                         internalData: db as unknown as Record<string, unknown>,
                                         externalData: undefined,
-                                        lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                        lastModificationDate: startSyncUtcDate,
                                     }),
                                 `Save discrepancy for entity (parent: ${parentId}, child: ${foreignEntityId}) (only in DB)`,
                             ),
@@ -178,7 +190,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                                         foreignEntityId: foreignEntityId,
                                         internalData: pair.db as unknown as Record<string, unknown>,
                                         externalData: pair.bt as unknown as Record<string, unknown>,
-                                        lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                        lastModificationDate: startSyncUtcDate,
                                     }),
                                 `Save discrepancy for mismatched entity (parent: ${parentId}, child: ${foreignEntityId})`,
                             ),
@@ -189,12 +201,13 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                 // No cleanup when the budget expired during this parent
                 ScanContext.throwIfAborted();
 
-                // Delete obsolete discrepancies (one retry for transient database errors only)
+                // Delete obsolete discrepancies of this parent only (one retry for transient database errors only)
                 await RetryUtility.executeDatabaseOperation(
                     () =>
-                        this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
+                        this.discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore(
                             command.tenantId,
                             command.entityType,
+                            parentId,
                             startSyncUtcDate,
                         ),
                     `Delete obsolete discrepancies for ${command.entityType} (parent: ${parentId})`,
@@ -209,6 +222,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                     onlyInExternalIds: onlyInBt.map((d) => d[childProp] as number),
                     onlyInInternalIds: onlyInDb.map((d) => d[childProp] as number),
                     mismatchedIds: differentDataPairs.map((pair) => pair.bt[childProp] as number),
+                    state: DiscrepancyScanState.Succeeded,
                 };
 
                 this.eventBus.publish(
@@ -217,17 +231,56 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                         discrepancyOverview: discrepancyOverview,
                     }),
                 );
+                succeeded++;
             } catch (error) {
-                // Log and continue with next parent - errors like 404 are already handled
-                // but may still bubble up through RxJS chain causing EventBus warnings
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                if (errorMessage === 'Document Not Found') {
-                    continue;
+                if (DiscrepancyScanOutcome.isAbort(error)) {
+                    aborted = true;
+                    break;
                 }
-                console.warn(
-                    `⚠️ Skipping relational scan for ${command.entityType} parent ${parentId}: ${errorMessage}`,
-                );
+
+                // Skip this parent and continue with the next one.
+                const kind = DiscrepancyScanOutcome.failureKindOf(error);
+                failureKinds.set(kind, (failureKinds.get(kind) ?? 0) + 1);
+
+                if (kind !== String(BtApiErrorKind.NotFound)) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.warn(`⚠️ ${logPrefix} parent ${parentId} skipped (${kind}): ${errorMessage}`);
+                }
             }
         }
+
+        const failed = [...failureKinds.values()].reduce((sum, n) => sum + n, 0);
+
+        // Discrepancies of parents that no longer exist anywhere are only removed after a complete run.
+        if (!aborted && failed === 0 && parentIds.length > 0) {
+            await RetryUtility.executeDatabaseOperation(
+                () =>
+                    this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
+                        command.tenantId,
+                        command.entityType,
+                        startSyncUtcDate,
+                    ),
+                `Delete obsolete discrepancies for ${command.entityType} (all parents)`,
+            );
+        }
+
+        const state = aborted
+            ? DiscrepancyScanState.Aborted
+            : failed === 0
+              ? DiscrepancyScanState.Succeeded
+              : succeeded > 0
+                ? DiscrepancyScanState.Partial
+                : DiscrepancyScanState.Failed;
+
+        if (parentIds.length > 0) {
+            const kinds = [...failureKinds.entries()].map(([kind, n]) => `${kind} x${n}`).join(', ');
+            console.log(
+                `${state === DiscrepancyScanState.Succeeded ? '✅' : '⚠️'} ${logPrefix} ${state}: ${succeeded}/${parentIds.length} parents succeeded${
+                    failed > 0 ? `, ${failed} skipped (${kinds})` : ''
+                }${aborted ? `, stopped after ${succeeded + failed} parents because the budget expired` : ''}`,
+            );
+        }
+
+        return state;
     }
 }
