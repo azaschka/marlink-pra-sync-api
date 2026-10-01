@@ -831,6 +831,7 @@ describe('AppConfigService', () => {
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                         cycleBudgetInMs: '900000',
+                        distributedLockEnabled: 'FALSE',
                     },
                 },
                 expected: {
@@ -841,6 +842,10 @@ describe('AppConfigService', () => {
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                         cycleBudgetInMs: 900000,
+                        relationScanConcurrency: 2,
+                        autoSyncConcurrency: 3,
+                        backgroundQueueCapacity: 5000,
+                        distributedLockEnabled: false,
                     },
                 },
             },
@@ -854,6 +859,10 @@ describe('AppConfigService', () => {
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
                         cycleBudgetInMs: 1200000,
+                        relationScanConcurrency: 2,
+                        autoSyncConcurrency: 3,
+                        backgroundQueueCapacity: 5000,
+                        distributedLockEnabled: true,
                     },
                 },
             },
@@ -877,6 +886,9 @@ describe('AppConfigService', () => {
                 if (key === 'DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS') {
                     return input?.scan?.cycleBudgetInMs;
                 }
+                if (key === 'DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED') {
+                    return input?.scan?.distributedLockEnabled;
+                }
 
                 return undefined;
             });
@@ -889,6 +901,10 @@ describe('AppConfigService', () => {
                     cronJobRetryAttempts: expected.scan.cronJobRetryAttempts,
                     cronJobRetryDelayInMs: expected.scan.cronJobRetryDelayInMs,
                     cycleBudgetInMs: expected.scan.cycleBudgetInMs,
+                    relationScanConcurrency: expected.scan.relationScanConcurrency,
+                    autoSyncConcurrency: expected.scan.autoSyncConcurrency,
+                    backgroundQueueCapacity: expected.scan.backgroundQueueCapacity,
+                    distributedLockEnabled: expected.scan.distributedLockEnabled,
                 },
             });
         });

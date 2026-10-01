@@ -37,7 +37,7 @@ export abstract class ScanContext {
      * and fires once at the deadline.
      */
     public static runWithBudget<T>(
-        scan: { scanId: string; tenantId: number; budgetInMs: number },
+        scan: { scanId: string; tenantId: number; budgetInMs: number; signal?: AbortSignal },
         operation: () => Promise<T>,
     ): Promise<T> {
         if (ScanContext.current()) {
@@ -47,6 +47,10 @@ export abstract class ScanContext {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(new ScanAbortedError(scan.scanId)), scan.budgetInMs);
         timer.unref();
+        // An additional signal (e.g. application shutdown) aborts the scan as well.
+        scan.signal?.addEventListener('abort', () => controller.abort(new ScanAbortedError(scan.scanId)), {
+            once: true,
+        });
 
         return ScanContext.STORAGE.run(
             {

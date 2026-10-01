@@ -1,9 +1,10 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import pLimit from 'p-limit';
 import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand, SyncDiscrepancyByEntityIdResult } from '../../commands';
 import { DiscrepancyEntityType, DiscrepancyScanState, DiscrepancySyncType } from '../../enums';
+import { TASK_DROPPED } from '../../services/bounded-task-limiter';
 import { DiscrepancyScanOutcome } from '../../services/discrepancy-scan-outcome';
+import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
 
 // Note: Not saga because we want to limit concurrency of db operations.
@@ -38,11 +39,12 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         DiscrepancyEntityType.UserGroupPolicy,
     ];
 
-    // Limit concurrent BeyondTrust API sync calls to avoid overwhelming the external API
-    // while keeping the frontend responsive. Failures are tolerated — next 30-min scan retries.
-    private static readonly SYNC_CONCURRENCY_LIMIT = 3;
-
-    constructor(private readonly commandBus: CommandBus) {}
+    // Concurrency is limited globally (all tenants and events) by ScanCoordinatorService. Failures are
+    // tolerated — next 30-min scan retries.
+    constructor(
+        private readonly commandBus: CommandBus,
+        private readonly scanCoordinatorService: ScanCoordinatorService,
+    ) {}
 
     public async handle(event: DiscrepancyScannedEvent) {
         const { entityType, mismatchedIds, onlyInExternalIds, onlyInInternalIds, state } =
@@ -90,24 +92,29 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         }
 
         const { entityType } = event.payload.discrepancyOverview;
-        const limit = pLimit(SyncAfterDiscrepancyFoundEventHandler.SYNC_CONCURRENCY_LIMIT);
         const results = await Promise.allSettled(
             entityIds.map((entityId) =>
-                limit(async (): Promise<SyncDiscrepancyByEntityIdResult | 'skipped'> => {
-                    if (ScanContext.isAborted()) {
-                        return 'skipped';
-                    }
+                this.scanCoordinatorService.runAutoSync(
+                    async (): Promise<SyncDiscrepancyByEntityIdResult | 'skipped'> => {
+                        if (ScanContext.isAborted()) {
+                            return 'skipped';
+                        }
 
-                    return this.commandBus.execute<SyncDiscrepancyByEntityIdCommand, SyncDiscrepancyByEntityIdResult>(
-                        new SyncDiscrepancyByEntityIdCommand(
-                            event.transactionId,
-                            event.payload.tenantId,
-                            entityId,
-                            entityType,
-                            DiscrepancySyncType.ExternalToInternal,
-                        ),
-                    );
-                }),
+                        return this.commandBus.execute<
+                            SyncDiscrepancyByEntityIdCommand,
+                            SyncDiscrepancyByEntityIdResult
+                        >(
+                            new SyncDiscrepancyByEntityIdCommand(
+                                event.transactionId,
+                                event.payload.tenantId,
+                                entityId,
+                                entityType,
+                                DiscrepancySyncType.ExternalToInternal,
+                            ),
+                        );
+                    },
+                    (result) => result !== 'skipped' && result?.synced === false,
+                ),
             ),
         );
 
@@ -120,6 +127,8 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         for (const result of results) {
             if (result.status === 'rejected') {
                 recordFailure(DiscrepancyScanOutcome.failureKindOf(result.reason));
+            } else if (result.value === TASK_DROPPED) {
+                recordFailure('QueueFull');
             } else if (result.value === 'skipped') {
                 skipped++;
             } else if (result.value?.synced ?? true) {

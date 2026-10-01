@@ -1,17 +1,18 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import pLimit from 'p-limit';
 import { DiscrepancySyncType } from '../../enums';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
+import { TASK_DROPPED } from '../../services/bounded-task-limiter';
+import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { SyncAllExternalDiscrepanciesCommand, SyncAllExternalResult } from '../sync-all-external-discrepancies.command';
 import { SyncDiscrepancyCommand } from '../sync-discrepancy.command';
 
 @CommandHandler(SyncAllExternalDiscrepanciesCommand)
 export class SyncAllExternalDiscrepanciesCommandHandler implements ICommandHandler<SyncAllExternalDiscrepanciesCommand> {
-    private static readonly CONCURRENCY_LIMIT = 3;
-
+    // Runs exclusively per tenant (DiscrepancySyncController) and under the global auto-sync limit.
     constructor(
         private readonly commandBus: CommandBus,
         private readonly discrepancyRepositoryService: DiscrepancyRepositoryService,
+        private readonly scanCoordinatorService: ScanCoordinatorService,
     ) {}
 
     public async execute(command: SyncAllExternalDiscrepanciesCommand): Promise<SyncAllExternalResult> {
@@ -28,11 +29,9 @@ export class SyncAllExternalDiscrepanciesCommandHandler implements ICommandHandl
             return { total: 0, synced: 0, failed: 0 };
         }
 
-        const limit = pLimit(SyncAllExternalDiscrepanciesCommandHandler.CONCURRENCY_LIMIT);
-
         const results = await Promise.allSettled(
             discrepancies.map((discrepancy) =>
-                limit(async () => {
+                this.scanCoordinatorService.runAutoSync(async () => {
                     try {
                         await this.commandBus.execute(
                             new SyncDiscrepancyCommand(
@@ -59,7 +58,8 @@ export class SyncAllExternalDiscrepanciesCommandHandler implements ICommandHandl
             ),
         );
 
-        const failureCount = results.filter((r) => r.status === 'rejected').length;
+        // A task dropped because the queue was full counts as not synced.
+        const failureCount = results.filter((r) => r.status === 'rejected' || r.value === TASK_DROPPED).length;
         const synced = total - failureCount;
 
         if (failureCount > 0) {

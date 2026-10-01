@@ -301,6 +301,13 @@ export class AppConfigService {
                     DefaultAppConfig.discrepancy.scan.cycleBudgetInMs,
                     60000,
                 ),
+                relationScanConcurrency: DefaultAppConfig.discrepancy.scan.relationScanConcurrency,
+                autoSyncConcurrency: DefaultAppConfig.discrepancy.scan.autoSyncConcurrency,
+                backgroundQueueCapacity: DefaultAppConfig.discrepancy.scan.backgroundQueueCapacity,
+                distributedLockEnabled: this.booleanOrDefault(
+                    'DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED',
+                    DefaultAppConfig.discrepancy.scan.distributedLockEnabled,
+                ),
             },
         };
     }
@@ -386,6 +393,28 @@ export class AppConfigService {
                 },
             },
         };
+    }
+
+    /** Reads a boolean setting ("true"/"false", case-insensitive); anything else falls back to the default. */
+    private booleanOrDefault(key: string, defaultValue: boolean): boolean {
+        const raw = this.configService.get<string | boolean>(key);
+
+        if (raw === undefined || raw === null || String(raw).trim() === '') {
+            return defaultValue;
+        }
+
+        const normalized = String(raw).trim().toLowerCase();
+
+        if (normalized === 'true' || normalized === 'false') {
+            return normalized === 'true';
+        }
+
+        if (!this.reportedInvalidKeys.has(key)) {
+            this.reportedInvalidKeys.add(key);
+            this.logger.warn(`Ignoring invalid ${key}=${String(raw)} (expected true or false); using ${defaultValue}.`);
+        }
+
+        return defaultValue;
     }
 
     /**

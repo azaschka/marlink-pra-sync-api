@@ -16,6 +16,13 @@ export abstract class DefaultAppConfig {
     // Time budget of one scan cycle per tenant, below the 30 minute cron interval. When it expires, in-flight
     // BeyondTrust requests are aborted and unfinished entity types get neither cleanup nor auto-sync.
     private static readonly DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS = 20 * 60 * 1000;
+    // Background work of scans is bounded globally (all tenants): relation scans and auto-sync. Tasks beyond
+    // the queue capacity are dropped and counted; they are re-derived by the next complete scan.
+    private static readonly DISCREPANCY_RELATION_SCAN_CONCURRENCY = 2;
+    private static readonly DISCREPANCY_AUTO_SYNC_CONCURRENCY = 3;
+    private static readonly DISCREPANCY_BACKGROUND_QUEUE_CAPACITY = 5000;
+    // MariaDB GET_LOCK per tenant so that several replicas never run the same tenant's cycle at the same time.
+    private static readonly DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED = true;
 
     // Database tuning is constant-only; the environment supplies just the endpoint and credentials.
     // Sized for MariaDB max_connections = 300 and wait_timeout = 300 s. Both service pools, counted twice
@@ -232,6 +239,10 @@ export abstract class DefaultAppConfig {
                 cronJobRetryAttempts: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS,
                 cronJobRetryDelayInMs: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS,
                 cycleBudgetInMs: DefaultAppConfig.DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS,
+                relationScanConcurrency: DefaultAppConfig.DISCREPANCY_RELATION_SCAN_CONCURRENCY,
+                autoSyncConcurrency: DefaultAppConfig.DISCREPANCY_AUTO_SYNC_CONCURRENCY,
+                backgroundQueueCapacity: DefaultAppConfig.DISCREPANCY_BACKGROUND_QUEUE_CAPACITY,
+                distributedLockEnabled: DefaultAppConfig.DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED,
             },
         };
     }

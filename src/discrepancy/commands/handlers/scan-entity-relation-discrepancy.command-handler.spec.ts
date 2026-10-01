@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { EventBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { ResourceReportRegistry } from '../../../observability/services/resource-report-registry.service';
 import { ScanContext } from '../../../shared/context/scan-context';
 import { RetryUtility } from '../../../shared/utilities';
 import { BtApiError, BtApiErrorKind } from '../../../beyondtrust-pra-conf-api/http-client/errors/bt-api-error';
@@ -9,6 +10,7 @@ import { DiscrepancyEntityType, DiscrepancyScanState } from '../../enums';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
 import { DiscrepancyScannerService } from '../../services/discrepancy-scanner.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
+import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyStrategy } from '../../types';
 import { ScanEntityRelationDiscrepancyCommand } from '../scan-entity-relation-discrepancy.command';
 import { ScanEntityRelationDiscrepancyCommandHandler } from './scan-entity-relation-discrepancy.command-handler';
@@ -100,6 +102,21 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             discrepancyRepositoryService,
             discrepancyScannerService,
             eventBus,
+            new ScanCoordinatorService(
+                {
+                    discrepancy: {
+                        scan: {
+                            cycleBudgetInMs: 60000,
+                            relationScanConcurrency: 2,
+                            autoSyncConcurrency: 3,
+                            backgroundQueueCapacity: 5000,
+                            distributedLockEnabled: false,
+                        },
+                    },
+                } as never,
+                { tryAcquire: () => Promise.resolve({ release: () => Promise.resolve() }) } as never,
+                new ResourceReportRegistry(),
+            ),
         );
 
         jest.spyOn(RetryUtility, 'executeWithRetry').mockImplementation((fn) => fn());

@@ -1,7 +1,9 @@
 import { CommandBus } from '@nestjs/cqrs';
+import { ResourceReportRegistry } from '../../../observability/services/resource-report-registry.service';
 import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand } from '../../commands';
 import { DiscrepancyEntityType, DiscrepancyScanState, DiscrepancySyncType } from '../../enums';
+import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
 import { SyncAfterDiscrepancyFoundEventHandler } from './sync-after-discrepancy-found.event-handler';
 
@@ -20,7 +22,24 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
         jest.spyOn(console, 'log').mockImplementation();
         commandBus = mockCommandBus();
         commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
-        handler = new SyncAfterDiscrepancyFoundEventHandler(commandBus);
+        handler = new SyncAfterDiscrepancyFoundEventHandler(
+            commandBus,
+            new ScanCoordinatorService(
+                {
+                    discrepancy: {
+                        scan: {
+                            cycleBudgetInMs: 60000,
+                            relationScanConcurrency: 2,
+                            autoSyncConcurrency: 3,
+                            backgroundQueueCapacity: 5000,
+                            distributedLockEnabled: false,
+                        },
+                    },
+                } as never,
+                { tryAcquire: () => Promise.resolve({ release: () => Promise.resolve() }) } as never,
+                new ResourceReportRegistry(),
+            ),
+        );
     });
 
     afterEach(() => {

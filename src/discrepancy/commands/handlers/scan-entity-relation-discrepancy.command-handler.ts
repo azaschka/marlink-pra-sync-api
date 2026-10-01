@@ -11,7 +11,9 @@ import { DiscrepancyScanState } from '../../enums';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
 import { DiscrepancyScanOutcome } from '../../services/discrepancy-scan-outcome';
+import { TASK_DROPPED } from '../../services/bounded-task-limiter';
 import { DiscrepancyScannerService } from '../../services/discrepancy-scanner.service';
+import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
 import { DiscrepancyStrategy } from '../../types';
 import { ScanEntityRelationDiscrepancyCommand } from '../scan-entity-relation-discrepancy.command';
@@ -26,6 +28,7 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
         private readonly discrepancyRepositoryService: DiscrepancyRepositoryService,
         private readonly discrepancyScannerService: DiscrepancyScannerService,
         private readonly eventBus: EventBus,
+        private readonly scanCoordinatorService: ScanCoordinatorService,
     ) {
         const maxConnections = this.appConfigService.databaseMaxConnections;
         // Sagas dispatch up to 7 concurrent instances of this handler simultaneously
@@ -43,7 +46,28 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
      * discrepancies stay untouched and no event (auto-sync) is published for it. Cleanup is scoped to the
      * parent; the type-wide cleanup of parents that no longer exist only runs when every parent succeeded.
      */
+    /**
+     * Relation scans are dispatched by sagas without a concurrency limit; they run under the global relation
+     * limit of ScanCoordinatorService and count as background work of the scan that triggered them.
+     */
     public async execute(command: ScanEntityRelationDiscrepancyCommand): Promise<DiscrepancyScanState> {
+        const result = await this.scanCoordinatorService.runRelationScan(
+            () => this.scanRelations(command),
+            (state) => state !== DiscrepancyScanState.Succeeded,
+        );
+
+        if (result === TASK_DROPPED) {
+            console.warn(
+                `⚠️ ${DiscrepancyScanOutcome.logPrefix(command.tenantId)} relation ${command.entityType} dropped: the relation scan queue is full`,
+            );
+
+            return DiscrepancyScanState.Skipped;
+        }
+
+        return result;
+    }
+
+    private async scanRelations(command: ScanEntityRelationDiscrepancyCommand): Promise<DiscrepancyScanState> {
         // Whole seconds and constant for every record of this run (see getSyncStartDate).
         const startSyncUtcDate = this.discrepancyScannerService.getSyncStartDate();
         const logPrefix = `${DiscrepancyScanOutcome.logPrefix(command.tenantId)} relation ${command.entityType}`;

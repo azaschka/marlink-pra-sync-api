@@ -14,11 +14,14 @@ import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { HttpClientService } from '../../beyondtrust-pra-conf-api/http-client/services/http-client.service';
+import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
 import { RetryUtility } from '../../shared/utilities';
 import { ScanDiscrepancyCommandHandler } from '../commands/handlers/scan-discrepancy.command-handler';
 import { ScanDiscrepancyCommand } from '../commands';
 import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
+import { DiscrepancyScanCycleService } from '../services/discrepancy-scan-cycle.service';
 import { DiscrepancyScannerService } from '../services/discrepancy-scanner.service';
+import { ScanCoordinatorService } from '../services/scan-coordinator.service';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
 
 const SQUID_PAGE = `<!DOCTYPE html><html><head><title>ERROR: The requested URL could not be retrieved</title></head>
@@ -53,7 +56,16 @@ describe('Discrepancy scan: bounded retries and cycle budget', () => {
                     },
                 },
             },
-            discrepancy: { maxBatchSize: 100, scan: { cycleBudgetInMs } },
+            discrepancy: {
+                maxBatchSize: 100,
+                scan: {
+                    cycleBudgetInMs,
+                    relationScanConcurrency: 2,
+                    autoSyncConcurrency: 3,
+                    backgroundQueueCapacity: 5000,
+                    distributedLockEnabled: false,
+                },
+            },
             databaseMaxConnections: 50,
         } as unknown as AppConfigService;
         const httpClientService = new HttpClientService(
@@ -84,8 +96,16 @@ describe('Discrepancy scan: bounded retries and cycle budget', () => {
             eventBus as never,
         );
         const commandBus = { execute: (command: ScanDiscrepancyCommand) => scanHandler.execute(command) };
+        const coordinator = new ScanCoordinatorService(
+            appConfigService,
+            { tryAcquire: () => Promise.resolve({ release: () => Promise.resolve() }) } as never,
+            new ResourceReportRegistry(),
+        );
 
-        return new DiscrepancyScannerController({} as never, commandBus as never, appConfigService);
+        return new DiscrepancyScannerController(
+            {} as never,
+            new DiscrepancyScanCycleService(commandBus as never, appConfigService, coordinator),
+        );
     };
 
     beforeAll(async () => {
