@@ -62,6 +62,8 @@ export class BtApiError extends HttpException {
     public attempts: number;
     /** Set for a write that failed after it may have reached BeyondTrust; it is never repeated automatically. */
     public ambiguousWriteOutcome = false;
+    /** Set when an earlier attempt of the same request failed after it may have reached BeyondTrust. */
+    public earlierAttemptMayHaveSucceeded = false;
 
     constructor(details: BtApiErrorDetails, jsonBody?: Record<string, unknown>) {
         super(

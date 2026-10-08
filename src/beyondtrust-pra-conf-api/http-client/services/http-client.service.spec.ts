@@ -241,6 +241,45 @@ describe('HttpClientService against a local BeyondTrust stub', () => {
         expect(apiRequests()).toHaveLength(10);
     });
 
+    describe('DELETE after a retry', () => {
+        const answers = (...handlers: Handler[]): Handler => {
+            return (req, res, requestNumber) =>
+                handlers[Math.min(requestNumber, handlers.length) - 1]?.(req, res, requestNumber);
+        };
+
+        it('treats a 404 as deleted when an earlier attempt may have deleted it', async () => {
+            handler = answers(
+                reply(504, { message: 'Gateway Timeout' }),
+                reply(404, { message: 'Document Not Found' }),
+            );
+
+            await expect(client.delete('tx', 3, '/group-policy/5/member/9')).resolves.toBeUndefined();
+
+            expect(requests.map((request) => request.method)).toEqual(['DELETE', 'DELETE']);
+            expect(logged.join('\n')).toContain('treated as deleted by an earlier attempt');
+        });
+
+        it('keeps a 404 of the first attempt a failure', async () => {
+            handler = reply(404, { message: 'Document Not Found' });
+
+            const error = await failure(client.delete('tx', 3, '/group-policy/5/member/9'));
+
+            expect(error.kind).toBe(BtApiErrorKind.NotFound);
+        });
+
+        it('keeps a 404 a failure when the earlier attempt provably did not reach BeyondTrust', async () => {
+            handler = answers(
+                reply(503, SQUID_PAGE, { 'X-Squid-Error': 'ERR_CONNECT_FAIL 101' }),
+                reply(404, { message: 'Document Not Found' }),
+            );
+
+            const error = await failure(client.delete('tx', 3, '/group-policy/5/member/9'));
+
+            expect(requests).toHaveLength(2);
+            expect(error.kind).toBe(BtApiErrorKind.NotFound);
+        });
+    });
+
     describe('failures of the token request', () => {
         it('retries a POST whose token request failed, because the POST itself was not sent', async () => {
             let tokenRequests = 0;

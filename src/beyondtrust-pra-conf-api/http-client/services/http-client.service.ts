@@ -112,7 +112,23 @@ export class HttpClientService {
     ): Promise<void> {
         const beyondtrustInstance = await this.getBeyondtrustInstance(transactionId, beyondtrustInstanceId);
 
-        await this.execute(beyondtrustInstance, { method: 'DELETE', urlPath, params: instanceToPlain(params) });
+        try {
+            await this.execute(beyondtrustInstance, { method: 'DELETE', urlPath, params: instanceToPlain(params) });
+        } catch (error) {
+            // A retried DELETE answered 404 after an earlier attempt may have reached BeyondTrust (for example a
+            // timeout or a 504 after BeyondTrust deleted it): the requested state is reached, so it is no failure.
+            if (
+                error instanceof BtApiError &&
+                error.kind === BtApiErrorKind.NotFound &&
+                error.earlierAttemptMayHaveSucceeded
+            ) {
+                this.logger.warn(`${error.describe()}; treated as deleted by an earlier attempt`);
+
+                return;
+            }
+
+            throw error;
+        }
     }
 
     /**
@@ -222,6 +238,7 @@ export class HttpClientService {
         const state = BtRetryPolicy.initialState();
         const url = UrlUtility.join(beyondtrustInstance.apiBaseUrl, request.urlPath);
         const signal = ScanContext.current()?.signal;
+        let earlierAttemptMayHaveSucceeded = false;
 
         for (let attempt = 1; ; attempt++) {
             let phase: 'token' | 'request' = 'token';
@@ -263,6 +280,8 @@ export class HttpClientService {
                     aborted: signal?.aborted,
                     tokenRequest,
                 });
+                error.earlierAttemptMayHaveSucceeded = earlierAttemptMayHaveSucceeded;
+                earlierAttemptMayHaveSucceeded ||= !error.notSent;
                 const decision = policy.decide(error, state);
 
                 if (!decision.retry) {
