@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { createHash, randomBytes } from 'crypto';
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'fs';
 import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
 import { tmpdir } from 'os';
@@ -34,12 +34,11 @@ describe('HttpClientService.postToFile (BeyondTrust backup download)', () => {
         await new Promise<void>((resolve) => server.close(() => resolve()));
     });
 
-    beforeEach(() => {
-        jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-        jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-        directory = mkdtempSync(join(tmpdir(), 'post-to-file-'));
+    /** The stall test needs a short idle timeout; transfers under full-suite load need a generous one. */
+    const createClient = (bodyIdleTimeoutInMs: number) => {
         const port = (server.address() as AddressInfo).port;
-        client = new HttpClientService(
+
+        return new HttpClientService(
             {
                 beyondTrust: {
                     api: {
@@ -48,7 +47,7 @@ describe('HttpClientService.postToFile (BeyondTrust backup download)', () => {
                             retryDelayInMs: 1,
                             maxRetryAfterInMs: 30000,
                             readTimeoutInMs: 60000,
-                            bodyIdleTimeoutInMs: 300,
+                            bodyIdleTimeoutInMs,
                         },
                     },
                 },
@@ -60,6 +59,13 @@ describe('HttpClientService.postToFile (BeyondTrust backup download)', () => {
             } as never,
             { execute: jest.fn().mockResolvedValue({ id: 1, apiBaseUrl: `http://127.0.0.1:${port}/api` }) } as never,
         );
+    };
+
+    beforeEach(() => {
+        jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+        jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+        directory = mkdtempSync(join(tmpdir(), 'post-to-file-'));
+        client = createClient(10000);
     });
 
     afterEach(() => {
@@ -67,7 +73,9 @@ describe('HttpClientService.postToFile (BeyondTrust backup download)', () => {
         jest.restoreAllMocks();
     });
 
-    it('stores a 50 MB binary body byte-for-byte with bounded memory', async () => {
+    // heapUsed catches a body that is decoded into a string (the old JSON path); Buffers live outside the heap,
+    // so collecting the body in memory is caught by the next test.
+    it('stores a 50 MB binary body byte-for-byte without decoding it into the heap', async () => {
         handler = (_req, res) => {
             res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': body.length });
             res.end(body);
@@ -83,6 +91,32 @@ describe('HttpClientService.postToFile (BeyondTrust backup download)', () => {
         expect(sha256(readFileSync(target))).toBe(sha256(body));
         expect(heapGrowthMb).toBeLessThan(10);
         expect(readdirSync(directory)).toEqual(['backup.nsb']);
+    }, 60000);
+
+    it('writes the body to disk while it arrives instead of collecting it in memory first', async () => {
+        let writtenBeforeEnd = 0;
+        handler = (_req, res) => {
+            res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': body.length });
+            res.write(body.subarray(0, 8 * 1024 * 1024));
+            // Only send the rest once part of the body has reached the temporary file.
+            const startedAt = Date.now();
+            const poll = setInterval(() => {
+                const partFile = readdirSync(directory).find((file) => file.endsWith('.part'));
+                writtenBeforeEnd = partFile ? statSync(join(directory, partFile)).size : 0;
+
+                if (writtenBeforeEnd > 0 || Date.now() - startedAt > 5000) {
+                    clearInterval(poll);
+                    res.end(body.subarray(8 * 1024 * 1024));
+                }
+            }, 20);
+        };
+        const target = join(directory, 'backup.nsb');
+
+        const result = await client.postToFile('tx', 1, '/backup', {}, target);
+
+        expect(writtenBeforeEnd).toBeGreaterThan(0);
+        expect(result.bytes).toBe(body.length);
+        expect(sha256(readFileSync(target))).toBe(sha256(body));
     }, 60000);
 
     it('leaves no file behind when the connection breaks during the body', async () => {
@@ -102,6 +136,7 @@ describe('HttpClientService.postToFile (BeyondTrust backup download)', () => {
     }, 60000);
 
     it('fails a body that stalls instead of waiting forever, and leaves no file behind', async () => {
+        client = createClient(300);
         let socketClosed = false;
         handler = (req, res) => {
             res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Content-Length': body.length });
