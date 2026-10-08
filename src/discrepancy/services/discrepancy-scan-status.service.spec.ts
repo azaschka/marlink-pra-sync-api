@@ -108,6 +108,57 @@ describe('DiscrepancyScanStatusService', () => {
         );
     });
 
+    it('counts a tenant that another replica scans as current, also after an earlier failure here', () => {
+        const start = new Date(); // staleness also counts from the process start
+        service.record(
+            1,
+            {
+                status: 'completed',
+                scanId: 'a',
+                overviews: [overview(DiscrepancyScanState.Failed, 'NotFound')],
+                background,
+                backgroundUnfinished: false,
+            },
+            start,
+        );
+        for (let hour = 1; hour <= 4; hour++) {
+            service.record(
+                1,
+                { status: 'skipped', reason: 'cycle active in another Sync API instance' },
+                new Date(start.getTime() + hour * 60 * 60 * 1000),
+            );
+        }
+
+        expect(service.check(start.getTime() + 4.5 * 60 * 60 * 1000)).toEqual(
+            expect.objectContaining({ status: 'up' }),
+        );
+        // Without the other replica the staleness rule applies again after 2 h.
+        expect(service.check(start.getTime() + (6 * 60 + 1) * 60 * 1000).status).toBe('warning');
+    });
+
+    it('forgets tenants whose BeyondTrust instance no longer exists', () => {
+        service.record(1, {
+            status: 'completed',
+            scanId: 'a',
+            overviews: [overview(DiscrepancyScanState.Failed)],
+            background,
+            backgroundUnfinished: false,
+        });
+        service.record(2, {
+            status: 'completed',
+            scanId: 'b',
+            overviews: [overview(DiscrepancyScanState.Succeeded)],
+            background,
+            backgroundUnfinished: false,
+        });
+
+        service.retainOnly([2]);
+
+        expect(service.check()).toEqual(
+            expect.objectContaining({ status: 'up', tenants: [expect.objectContaining({ tenantId: 2 })] }),
+        );
+    });
+
     it('reports a cycle whose background work did not finish in time as partial', () => {
         service.record(1, {
             status: 'completed',

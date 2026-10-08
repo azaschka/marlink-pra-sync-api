@@ -74,6 +74,11 @@ export class DiscrepancyScanCycleService {
         return outcome;
     }
 
+    /** Forgets the scan status of tenants whose BeyondTrust instance no longer exists. */
+    public retainTenants(tenantIds: number[]): void {
+        this.discrepancyScanStatusService.retainOnly(tenantIds);
+    }
+
     /**
      * Scans one entity type. A request for a type whose scan is already in flight for the tenant joins it (no
      * second BeyondTrust fetch). Outside a cycle the scan gets its own budget.

@@ -9,13 +9,14 @@ describe('DiscrepancyScannerJobController', () => {
     let controller: DiscrepancyScannerJobController;
     let schedulerRegistry: { addCronJob: jest.Mock };
     let queryBus: { execute: jest.Mock };
-    let cycleService: { runCycle: jest.Mock };
+    let cycleService: { runCycle: jest.Mock; retainTenants: jest.Mock };
 
     beforeEach(() => {
         jest.spyOn(console, 'warn').mockImplementation(() => undefined);
         schedulerRegistry = { addCronJob: jest.fn() };
         queryBus = { execute: jest.fn() };
         cycleService = {
+            retainTenants: jest.fn(),
             runCycle: jest.fn().mockResolvedValue({
                 status: 'completed',
                 scanId: 'abc',
@@ -61,6 +62,8 @@ describe('DiscrepancyScannerJobController', () => {
         const calls = cycleService.runCycle.mock.calls as unknown[][];
         expect(calls.map((call) => call[1])).toEqual([1, 2, 3]);
         expect(calls.every((call) => call[2] === 'cron')).toBe(true);
+        // The scan status forgets instances that no longer exist (instance 1 and 2 after the second tick).
+        expect(cycleService.retainTenants.mock.calls).toEqual([[[1, 2]], [[3]]]);
     });
 
     it('keeps going with the next instance when a cycle throws', async () => {

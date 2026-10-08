@@ -57,6 +57,7 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap, 
 
         try {
             const beyondtrustInstances = await this.getAllBeyondtrustInstances();
+            this.discrepancyScanCycleService.retainTenants(beyondtrustInstances.map((instance) => instance.id));
             let allSucceeded = true;
 
             for (const beyondtrustInstance of beyondtrustInstances) {
