@@ -5,7 +5,6 @@ import {
 import { BillingType } from '../../beyondtrust-instance/enums';
 import { BaseCommand } from '../../core/commands';
 import { BaseEvent } from '../../core/events';
-import { BaseQuery } from '../../core/queries';
 import { SortOrderType } from '../../shared/enums';
 import { DateUtility } from '../../shared/utilities';
 import { LogActionType } from '../enums';
@@ -60,36 +59,6 @@ describe('LogService', () => {
             }),
         );
         expect(logFilterServiceFilterCommandMethod).toHaveBeenCalledWith(command);
-    });
-
-    it('should log a query', () => {
-        const logWriterEnqueueMethod = jest.spyOn(logWriterService, 'enqueue');
-
-        logService.logQuery({
-            queryType: 'TestQuery',
-            transactionId: 'transaction-2',
-            data: {
-                someData: 'test',
-            },
-        } as BaseQuery);
-
-        expect(logWriterEnqueueMethod).toHaveBeenCalledWith(
-            expect.objectContaining({
-                serviceName: mockServiceName,
-                actionType: LogActionType.Query,
-                actionName: 'TestQuery',
-                transactionId: 'transaction-2',
-                initiatedBy: undefined,
-                creationDate: new Date('2025-01-01T00:00:00Z'),
-                payload: JSON.stringify({
-                    queryType: 'TestQuery',
-                    transactionId: 'transaction-2',
-                    data: {
-                        someData: 'test',
-                    },
-                }),
-            }),
-        );
     });
 
     it('should log an event', () => {
@@ -157,18 +126,6 @@ describe('LogService', () => {
         expect(Buffer.byteLength(entry.payload, 'utf8')).toBeLessThanOrEqual(60000);
         expect(entry.payload).not.toContain('\uFFFD');
         expect(entry.payload.endsWith('…[truncated]')).toBe(true);
-    });
-
-    it('should write durable entries directly and wait for the database', async () => {
-        const create = jest.spyOn(logRepositoryService, 'create');
-        const enqueue = jest.spyOn(logWriterService, 'enqueue');
-
-        await logService.logDurably('RESET', 'transaction-1', 'user-1', '{}');
-
-        expect(create).toHaveBeenCalledWith(
-            expect.objectContaining({ actionType: LogActionType.System, actionName: 'RESET', initiatedBy: 'user-1' }),
-        );
-        expect(enqueue).not.toHaveBeenCalled();
     });
 
     it('should redact secrets in command payloads at any depth', () => {

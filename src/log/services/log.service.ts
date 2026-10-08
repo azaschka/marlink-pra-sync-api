@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ICommand, IEvent, IQuery } from '@nestjs/cqrs';
+import { ICommand, IEvent } from '@nestjs/cqrs';
 import { name as serviceName } from '../../../package.json';
 import { DefaultAppConfig } from '../../app-config/consts';
 import { BaseCommand } from '../../core/commands';
 import { BaseEvent } from '../../core/events';
-import { BaseQuery } from '../../core/queries';
 import { SortOrderType } from '../../shared/enums';
 import { DateUtility } from '../../shared/utilities';
 import { LogActionType } from '../enums';
@@ -59,22 +58,6 @@ export class LogService {
         );
     }
 
-    /** Queues the query for the system log. Never waits for the database. */
-    public logQuery(query: IQuery): void {
-        const queryData = query as BaseQuery;
-
-        this.logWriterService.enqueue(
-            this.createEntry(
-                LogActionType.Query,
-                queryData.queryType,
-                queryData.transactionId,
-                queryData.initiatedBy,
-                DateUtility.getCurrentUtcDate(),
-                queryData,
-            ),
-        );
-    }
-
     /** Queues the event for the system log. Never waits for the database. */
     public logEvent(event: IEvent): void {
         const eventData = event as BaseEvent;
@@ -97,28 +80,6 @@ export class LogService {
      */
     public log(actionName: string, transactionId: string, initiatedBy: string | undefined, payload: unknown): void {
         this.logWriterService.enqueue(
-            this.createEntry(
-                LogActionType.System,
-                actionName,
-                transactionId,
-                initiatedBy,
-                DateUtility.getCurrentUtcDate(),
-                payload,
-            ),
-        );
-    }
-
-    /**
-     * Writes a system entry immediately and waits for the database. Only for rare entries that must not be
-     * lost, never for anything on a hot path.
-     */
-    public async logDurably(
-        actionName: string,
-        transactionId: string,
-        initiatedBy: string | undefined,
-        payload: string,
-    ): Promise<void> {
-        await this.logRepositoryService.create(
             this.createEntry(
                 LogActionType.System,
                 actionName,
