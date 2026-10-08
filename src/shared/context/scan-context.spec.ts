@@ -83,6 +83,9 @@ describe('ScanContext', () => {
         );
 
         expect(reason).toBeInstanceOf(ScanAbortedError);
+        expect((reason as ScanAbortedError).message).toBe(
+            'Scan running was aborted because the application is shutting down',
+        );
         expect(getEventListeners(shutdown.signal, 'abort')).toHaveLength(0);
     });
 
@@ -111,6 +114,6 @@ describe('ScanContext', () => {
         });
         jest.advanceTimersByTime(20);
 
-        await expect(scan).rejects.toBeInstanceOf(ScanAbortedError);
+        await expect(scan).rejects.toThrow('Scan scan-3 was aborted because its time budget expired');
     });
 });
