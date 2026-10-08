@@ -6,6 +6,7 @@ import { join } from 'path';
 import { DataSource } from 'typeorm';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { BeyondtrustInstanceBackupEntity } from '../repositories/entities';
+import { BeyondtrustInstanceBackupRepositoryService } from '../repositories/services/beyondtrust-instance-backup-repository.service';
 import { BackupRetentionService } from './backup-retention.service';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -14,7 +15,7 @@ const now = new Date('2026-10-01T04:05:00Z');
 describe('BackupRetentionService', () => {
     let root: string;
     let rows: BeyondtrustInstanceBackupEntity[];
-    let repository: { find: jest.Mock; delete: jest.Mock };
+    let repository: { findAllNewestFirstPerInstance: jest.Mock; deleteById: jest.Mock };
     let keepLatest: number;
     let service: BackupRetentionService;
 
@@ -29,7 +30,7 @@ describe('BackupRetentionService', () => {
         rows.push(entity);
     };
     const exists = (id: number) => fs.existsSync(join(root, `bt-backups/${id}.nsb`));
-    const deletedIds = () => repository.delete.mock.calls.map(([where]) => (where as { id: number }).id);
+    const deletedIds = () => repository.deleteById.mock.calls.map(([id]) => id as number);
 
     beforeEach(() => {
         jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
@@ -40,7 +41,7 @@ describe('BackupRetentionService', () => {
         keepLatest = 1;
         repository = {
             // Sorted like the real query: per instance, newest first.
-            find: jest.fn(() =>
+            findAllNewestFirstPerInstance: jest.fn(() =>
                 Promise.resolve(
                     [...rows].sort(
                         (a, b) =>
@@ -49,16 +50,17 @@ describe('BackupRetentionService', () => {
                     ),
                 ),
             ),
-            delete: jest.fn().mockResolvedValue(undefined),
+            deleteById: jest.fn().mockResolvedValue(undefined),
         };
         service = new BackupRetentionService(
-            { getRepository: () => repository } as unknown as DataSource,
+            {} as DataSource,
             {
                 storage: { rootPath: root },
                 get backupRetention() {
                     return { retentionDays: 90, keepLatest, distributedLockEnabled: false };
                 },
             } as unknown as AppConfigService,
+            repository as unknown as BeyondtrustInstanceBackupRepositoryService,
         );
     });
 
@@ -118,7 +120,7 @@ describe('BackupRetentionService', () => {
         const report = await service.run(now);
 
         expect(report).toEqual(expect.objectContaining({ deleted: 0, failures: 1 }));
-        expect(repository.delete).not.toHaveBeenCalled();
+        expect(repository.deleteById).not.toHaveBeenCalled();
     });
 
     it('never deletes a file outside the storage root', async () => {
@@ -133,12 +135,14 @@ describe('BackupRetentionService', () => {
 
         expect(report.failures).toBe(1);
         expect(unlink).not.toHaveBeenCalled();
-        expect(repository.delete).not.toHaveBeenCalled();
+        expect(repository.deleteById).not.toHaveBeenCalled();
     });
 
     it('does not run twice at the same time', async () => {
         let release: (value: BeyondtrustInstanceBackupEntity[]) => void = () => undefined;
-        repository.find.mockImplementationOnce(() => new Promise((resolve) => (release = resolve)));
+        repository.findAllNewestFirstPerInstance.mockImplementationOnce(
+            () => new Promise((resolve) => (release = resolve)),
+        );
 
         const first = service.run(now);
         const second = await service.run(now);

@@ -17,6 +17,15 @@ export class BeyondtrustInstanceBackupRepositoryService extends BaseRepositorySe
         return await super.findOneBy({ id: id });
     }
 
+    /** Every backup, per instance newest first (the order the backup retention relies on). */
+    public async findAllNewestFirstPerInstance(): Promise<BeyondtrustInstanceBackupEntity[]> {
+        return await super.findBy({}, undefined, undefined, {
+            beyondtrustInstanceId: 'ASC',
+            creationDate: 'DESC',
+            id: 'DESC',
+        });
+    }
+
     public async deleteById(id: number): Promise<void> {
         return await super.deleteBy({ id: id });
     }

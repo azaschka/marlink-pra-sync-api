@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import { BeforeApplicationShutdown, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { AppConfigService } from '../../app-config/services/app-config.service';
@@ -6,7 +6,7 @@ import { BackupRetentionService } from './backup-retention.service';
 
 /** Schedules the backup retention daily (BACKUP_RETENTION_CRON, default 04:05 Europe/Berlin). */
 @Injectable()
-export class BackupRetentionJob implements OnApplicationBootstrap, OnApplicationShutdown {
+export class BackupRetentionJob implements OnApplicationBootstrap, BeforeApplicationShutdown {
     private static readonly JOB_NAME = 'backupRetention';
 
     private readonly logger = new Logger(BackupRetentionJob.name);
@@ -39,7 +39,8 @@ export class BackupRetentionJob implements OnApplicationBootstrap, OnApplication
         this.job.start();
     }
 
-    public onApplicationShutdown(): void {
+    // Like the scan job: no new run once the shutdown has started, before TypeORM closes the DataSource.
+    public beforeApplicationShutdown(): void {
         void this.job?.stop();
     }
 }

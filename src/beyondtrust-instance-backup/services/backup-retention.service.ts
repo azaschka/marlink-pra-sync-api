@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { NamedLockUtility } from '../../shared/utilities/named-lock.utility';
 import { BeyondtrustInstanceBackupEntity } from '../repositories/entities';
+import { BeyondtrustInstanceBackupRepositoryService } from '../repositories/services/beyondtrust-instance-backup-repository.service';
 
 export interface BackupRetentionReport {
     readonly status: 'completed' | 'skipped' | 'failed';
@@ -34,8 +35,10 @@ export class BackupRetentionService {
     private running = false;
 
     constructor(
+        // Only for the named lock; rows are read and deleted through the repository service.
         private readonly dataSource: DataSource,
         private readonly appConfigService: AppConfigService,
+        private readonly backupRepositoryService: BeyondtrustInstanceBackupRepositoryService,
     ) {}
 
     public async run(now: Date = new Date()): Promise<BackupRetentionReport> {
@@ -75,11 +78,7 @@ export class BackupRetentionService {
     private async deleteExpired(now: Date): Promise<BackupRetentionReport> {
         const { retentionDays, keepLatest } = this.appConfigService.backupRetention;
         const cutoff = now.getTime() - retentionDays * BackupRetentionService.DAY_IN_MS;
-        const repository = this.dataSource.getRepository(BeyondtrustInstanceBackupEntity);
-        const backups = await repository.find({
-            select: { id: true, beyondtrustInstanceId: true, backupFilePath: true, creationDate: true },
-            order: { beyondtrustInstanceId: 'ASC', creationDate: 'DESC', id: 'DESC' },
-        });
+        const backups = await this.backupRepositoryService.findAllNewestFirstPerInstance();
         const seenPerInstance = new Map<number, number>();
         let deleted = 0;
         let missingFiles = 0;
@@ -110,7 +109,7 @@ export class BackupRetentionService {
                 missingFiles++;
             }
 
-            await repository.delete({ id: backup.id });
+            await this.backupRepositoryService.deleteById(backup.id);
             deleted++;
         }
 
