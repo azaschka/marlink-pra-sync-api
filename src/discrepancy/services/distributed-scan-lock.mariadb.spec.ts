@@ -2,6 +2,7 @@
  * Opt-in integration test against a real MariaDB (skipped unless PRA_TEST_MARIADB_HOST is set), see
  * discrepancy-repository.mariadb.spec.ts for the variables. Two DataSources play two Sync API replicas.
  */
+import { Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
@@ -78,6 +79,32 @@ describeWithMariaDb('DistributedScanLockService on MariaDB', () => {
         await expect(b.coordinator.runCycle(424242, 'cron', () => Promise.resolve([]))).resolves.toEqual(
             expect.objectContaining({ status: 'completed' }),
         );
+    }, 30000);
+
+    it('frees the lock when RELEASE_LOCK fails, by closing the connection instead of pooling it', async () => {
+        const a = await replica();
+        const b = await replica();
+        jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+        const createQueryRunner = a.dataSource.createQueryRunner.bind(a.dataSource);
+        jest.spyOn(a.dataSource, 'createQueryRunner').mockImplementation((mode) => {
+            const queryRunner = createQueryRunner(mode);
+            const query = queryRunner.query.bind(queryRunner);
+            queryRunner.query = (sql: string, parameters?: unknown[]) =>
+                sql.startsWith('SELECT RELEASE_LOCK')
+                    ? Promise.reject(new Error('simulated failure'))
+                    : (query(sql, parameters) as Promise<unknown>);
+
+            return queryRunner;
+        });
+
+        const lockOfA = await new DistributedScanLockService(a.dataSource, appConfigService).tryAcquire(424245, 60000);
+        await lockOfA?.release();
+        await new Promise((resolve) => setTimeout(resolve, 200)); // the server ends the closed session
+        const lockOfB = await new DistributedScanLockService(b.dataSource, appConfigService).tryAcquire(424245, 60000);
+
+        expect(lockOfB).toBeDefined();
+        await lockOfB?.release();
+        jest.restoreAllMocks();
     }, 30000);
 
     it('restores the session wait_timeout before the connection goes back to the pool', async () => {

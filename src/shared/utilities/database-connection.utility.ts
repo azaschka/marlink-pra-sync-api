@@ -113,6 +113,22 @@ export abstract class DatabaseConnectionUtility {
         }
     }
 
+    /**
+     * Closes the connection of the query runner instead of returning it to the pool: for a connection with a
+     * hanging query, or one that may still hold a named lock. Never throws.
+     */
+    public static async discard(queryRunner: QueryRunner): Promise<void> {
+        try {
+            (
+                queryRunner as unknown as { databaseConnection?: { destroy?: () => void } }
+            ).databaseConnection?.destroy?.();
+        } catch {
+            // already closed
+        }
+
+        await queryRunner.release().catch(() => undefined);
+    }
+
     public static isTransientConnectionError(error: unknown): boolean {
         const candidates = [
             error,

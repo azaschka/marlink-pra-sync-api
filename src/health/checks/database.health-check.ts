@@ -67,14 +67,10 @@ export class DatabaseHealthCheck {
         } finally {
             clearTimeout(timer);
 
-            if (timedOut) {
-                // A connection with a hanging query must not go back to the pool.
-                (
-                    queryRunner as unknown as { databaseConnection?: { destroy?: () => void } }
-                ).databaseConnection?.destroy?.();
-            }
-
-            await queryRunner.release().catch(() => undefined);
+            // A connection with a hanging query must not go back to the pool.
+            await (timedOut
+                ? DatabaseConnectionUtility.discard(queryRunner)
+                : queryRunner.release().catch(() => undefined));
         }
     }
 

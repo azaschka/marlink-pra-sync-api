@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { DataSource } from 'typeorm';
 import { AppConfigService } from '../../app-config/services/app-config.service';
-import { tryNamedLock } from '../../shared/utilities/named-lock.utility';
+import { NamedLockUtility } from '../../shared/utilities/named-lock.utility';
 import { BeyondtrustInstanceBackupEntity } from '../repositories/entities';
 
 export interface BackupRetentionReport {
@@ -46,7 +46,7 @@ export class BackupRetentionService {
         this.running = true;
 
         try {
-            const lock = await tryNamedLock(
+            const lock = await NamedLockUtility.tryAcquire(
                 this.dataSource,
                 BackupRetentionService.LOCK_NAME,
                 BackupRetentionService.LOCK_HOLD_IN_MS,
