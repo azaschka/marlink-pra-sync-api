@@ -171,7 +171,7 @@ describe('AllExceptionsFilter', () => {
             expect.stringContaining('EXCEPTION'),
             'n/a',
             expect.anything(),
-            expect.stringContaining('connect ECONNREFUSED 10.0.0.7:443'),
+            expect.objectContaining({ status: 502, message: 'connect ECONNREFUSED 10.0.0.7:443' }),
         );
     });
 
