@@ -33,8 +33,8 @@ interface BtRequest {
  * Client for the BeyondTrust configuration API. Owns the only retry layer (BtRetryPolicy) and turns every
  * failure into a classified BtApiError. Log output per failure is one bounded line (BtApiError.describe()).
  *
- * Inside a scan (ScanContext) the scan's AbortSignal is passed to axios and to the retry delay, so an
- * expired scan budget aborts the in-flight request and prevents further attempts.
+ * Inside a scan (ScanContext) the scan's AbortSignal is passed to axios, to the wait for the token and to the
+ * retry delay, so an expired scan budget aborts the in-flight request and prevents further attempts.
  */
 @Injectable()
 export class HttpClientService {
@@ -229,7 +229,10 @@ export class HttpClientService {
 
             try {
                 signal?.throwIfAborted();
-                usedAccessToken = await this.getAccessToken(beyondtrustInstance);
+                usedAccessToken = await HttpClientService.untilAborted(
+                    this.getAccessToken(beyondtrustInstance),
+                    signal,
+                );
                 const authorization = `Bearer ${usedAccessToken}`;
                 phase = 'request';
 
@@ -298,6 +301,23 @@ export class HttpClientService {
 
             throw cancelled;
         }
+    }
+
+    /**
+     * Settles like the promise, or rejects with the abort reason as soon as the signal fires. The promise keeps
+     * running: the token request is shared with other callers and must not be cancelled for one scan.
+     */
+    private static untilAborted<T>(promise: Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+        if (!signal) {
+            return promise;
+        }
+
+        return new Promise<T>((resolve, reject) => {
+            const onAbort = () => reject(signal.reason as Error);
+
+            signal.addEventListener('abort', onAbort, { once: true });
+            promise.then(resolve, reject).finally(() => signal.removeEventListener('abort', onAbort));
+        });
     }
 
     // Content-Length counts the bytes on the wire; with a content encoding axios has decoded them already.

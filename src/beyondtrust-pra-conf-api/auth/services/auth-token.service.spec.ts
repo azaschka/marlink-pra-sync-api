@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/unbound-method */
 import { HttpService } from '@nestjs/axios';
+import { Logger } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
 import { from, of, throwError } from 'rxjs';
 import { DateUtility } from '../../../shared/utilities';
@@ -51,6 +52,7 @@ describe('AuthTokenService', () => {
                     headers: {
                         Authorization: 'Basic Y2xpZW50LWlkLTEyMzpjbGllbnQtc2VjcmV0LTEyMw==',
                     },
+                    timeout: AuthTokenService.TOKEN_REQUEST_TIMEOUT_IN_MS,
                 },
             );
         });
@@ -286,6 +288,87 @@ describe('AuthTokenService', () => {
             const token = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
 
             expect(token.accessToken).toBe('token-a');
+        });
+
+        describe('when the refresh fails', () => {
+            const unavailable = () => throwError(() => new Error('token endpoint unavailable'));
+
+            beforeEach(() => {
+                jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+            });
+
+            afterEach(() => {
+                jest.restoreAllMocks();
+            });
+
+            it('keeps using the current token until it expires and tries again after 5 s', async () => {
+                httpService.post = jest
+                    .fn()
+                    .mockReturnValueOnce(tokenResponse('token-a', 3600))
+                    .mockReturnValueOnce(unavailable())
+                    .mockReturnValueOnce(tokenResponse('token-b', 3600));
+                mockCurrentDate('2025-10-01T00:00:00Z');
+                await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+                mockCurrentDate('2025-10-01T00:59:01Z'); // within the refresh margin, token-a is still valid
+                const afterFailedRefresh = await service.getAuthToken(
+                    1,
+                    mockClientId,
+                    mockClientSecret,
+                    mockOauth2TokenUrl,
+                );
+                mockCurrentDate('2025-10-01T00:59:04Z');
+                const withinRetryInterval = await service.getAuthToken(
+                    1,
+                    mockClientId,
+                    mockClientSecret,
+                    mockOauth2TokenUrl,
+                );
+                mockCurrentDate('2025-10-01T00:59:07Z');
+                const afterRetryInterval = await service.getAuthToken(
+                    1,
+                    mockClientId,
+                    mockClientSecret,
+                    mockOauth2TokenUrl,
+                );
+
+                expect(afterFailedRefresh.accessToken).toBe('token-a');
+                expect(withinRetryInterval.accessToken).toBe('token-a');
+                expect(afterRetryInterval.accessToken).toBe('token-b');
+                expect(httpService.post).toHaveBeenCalledTimes(3);
+                expect(Logger.prototype.warn).toHaveBeenCalledWith(
+                    expect.stringContaining('Refreshing the token of BeyondTrust instance 1 failed'),
+                );
+            });
+
+            it('fails once the current token has expired', async () => {
+                httpService.post = jest
+                    .fn()
+                    .mockReturnValueOnce(tokenResponse('token-a', 3600))
+                    .mockReturnValueOnce(unavailable());
+                mockCurrentDate('2025-10-01T00:00:00Z');
+                await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+                mockCurrentDate('2025-10-01T01:00:01Z');
+
+                await expect(
+                    service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl),
+                ).rejects.toThrow('token endpoint unavailable');
+            });
+
+            it('never falls back to a token that was invalidated after a 401', async () => {
+                httpService.post = jest
+                    .fn()
+                    .mockReturnValueOnce(tokenResponse('token-a', 3600))
+                    .mockReturnValueOnce(unavailable());
+                await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+                service.invalidateAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl, 'token-a');
+
+                await expect(
+                    service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl),
+                ).rejects.toThrow('token endpoint unavailable');
+            });
         });
 
         it('does not keep the client secret in plain text in the cache key', async () => {

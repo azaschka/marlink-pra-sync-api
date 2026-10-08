@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { createServer, IncomingMessage, Server, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { RetryUtility } from '../../../shared/utilities';
 import { AuthTokenService } from '../../auth/services/auth-token.service';
 import { BtApiError, BtApiErrorKind } from '../errors/bt-api-error';
@@ -259,6 +260,22 @@ describe('HttpClientService against a local BeyondTrust stub', () => {
             expect(apiRequests()).toHaveLength(1);
             expect(logged.join('\n')).toContain('BeyondTrust POST OAuth2 token endpoint');
             expect(logged.join('\n')).not.toContain('outcome unknown');
+        });
+
+        it('stops waiting for a hanging token request when the scan budget expires', async () => {
+            authTokenService.getAuthToken.mockReturnValue(new Promise(() => undefined));
+            const startedAt = Date.now();
+
+            const error = await failure(
+                ScanContext.runWithBudget({ scanId: 'scan-1', tenantId: 1, budgetInMs: 50 }, () =>
+                    client.get(Object, 'tx', 3, '/user'),
+                ),
+            );
+
+            expect(error.kind).toBe(BtApiErrorKind.Cancelled);
+            expect(error.notSent).toBe(true);
+            expect(Date.now() - startedAt).toBeLessThan(2000);
+            expect(requests).toHaveLength(0);
         });
 
         it('reports a token endpoint that answers 404 as a client error that was not sent', async () => {
