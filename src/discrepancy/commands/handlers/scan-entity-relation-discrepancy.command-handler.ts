@@ -42,18 +42,13 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
     }
 
     /**
-     * Scans the relations of every parent. A parent whose fetch fails (including 404) is skipped: its existing
-     * discrepancies stay untouched and no event (auto-sync) is published for it. Cleanup is scoped to the
-     * parent; the type-wide cleanup of parents that no longer exist only runs when every parent succeeded.
-     */
-    /**
      * Relation scans are dispatched by sagas without a concurrency limit; they run under the global relation
-     * limit of ScanCoordinatorService and count as background work of the scan that triggered them.
+     * limit of ScanCoordinatorService, at most one per tenant and relation type, and count as background work
+     * of the scan that triggered them.
      */
     public async execute(command: ScanEntityRelationDiscrepancyCommand): Promise<DiscrepancyScanState> {
-        const result = await this.scanCoordinatorService.runRelationScan(
-            () => this.scanRelations(command),
-            (state) => state !== DiscrepancyScanState.Succeeded,
+        const result = await this.scanCoordinatorService.runRelationScan(command.tenantId, command.entityType, () =>
+            this.scanRelations(command),
         );
 
         if (result === TASK_DROPPED) {
@@ -67,6 +62,11 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
         return result;
     }
 
+    /**
+     * Scans the relations of every parent. A parent whose fetch fails (including 404) is skipped: its existing
+     * discrepancies stay untouched and no event (auto-sync) is published for it. Cleanup is scoped to the
+     * parent; the type-wide cleanup of parents that no longer exist only runs when every parent succeeded.
+     */
     private async scanRelations(command: ScanEntityRelationDiscrepancyCommand): Promise<DiscrepancyScanState> {
         // Whole seconds and constant for every record of this run (see getSyncStartDate).
         const startSyncUtcDate = this.discrepancyScannerService.getSyncStartDate();

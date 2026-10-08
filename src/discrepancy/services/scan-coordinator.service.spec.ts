@@ -15,7 +15,7 @@ import { Observable, map } from 'rxjs';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
 import { ScanContext } from '../../shared/context/scan-context';
-import { DiscrepancyEntityType } from '../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
 import { TASK_DROPPED } from './bounded-task-limiter';
 import { DistributedScanLockService } from './distributed-scan-lock.service';
 import { ScanCoordinatorService } from './scan-coordinator.service';
@@ -58,8 +58,17 @@ function gate() {
         }
     };
 
-    return { task, releaseAll, max: () => maxActive };
+    const relationTask = () => task().then(() => DiscrepancyScanState.Succeeded);
+
+    return { task, relationTask, releaseAll, max: () => maxActive };
 }
+
+const RELATION_TYPES = [
+    DiscrepancyEntityType.GroupPolicyJumpGroup,
+    DiscrepancyEntityType.GroupPolicyJumpoint,
+    DiscrepancyEntityType.GroupPolicyMember,
+    DiscrepancyEntityType.GroupPolicyTeam,
+];
 
 describe('ScanCoordinatorService', () => {
     let lock: { tryAcquire: jest.Mock; release: jest.Mock };
@@ -131,9 +140,9 @@ describe('ScanCoordinatorService', () => {
         });
 
         it('waits for the background work the cycle triggered and reports it', async () => {
-            const { task, releaseAll } = gate();
+            const { task, relationTask, releaseAll } = gate();
             const outcome = coordinator.runCycle(1, 'cron', () => {
-                void coordinator.runRelationScan(task);
+                void coordinator.runRelationScan(1, DiscrepancyEntityType.GroupPolicyMember, relationTask);
                 void coordinator.runAutoSync(task);
                 void coordinator.runAutoSync(() => Promise.reject(new Error('fk')));
 
@@ -161,7 +170,7 @@ describe('ScanCoordinatorService', () => {
             coordinator = create(config({ cycleBudgetInMs: 50 }));
 
             const result = await coordinator.runCycle(1, 'cron', () => {
-                void coordinator.runRelationScan(() => new Promise(() => undefined)); // never finishes
+                void coordinator.runRelationScan(1, DiscrepancyEntityType.TeamUser, () => new Promise(() => undefined)); // never finishes
 
                 return Promise.resolve([]);
             });
@@ -227,14 +236,61 @@ describe('ScanCoordinatorService', () => {
         });
     });
 
+    describe('relation scan join', () => {
+        it('joins a relation scan of the same tenant and type, but not of another type or tenant', async () => {
+            coordinator = create(config({ relationScanConcurrency: 5 }));
+            const { task, releaseAll } = gate();
+            const run = jest.fn(() => task().then(() => DiscrepancyScanState.Succeeded));
+
+            const first = coordinator.runRelationScan(1, DiscrepancyEntityType.GroupPolicyMember, run);
+            const joined = coordinator.runRelationScan(1, DiscrepancyEntityType.GroupPolicyMember, run);
+            const otherType = coordinator.runRelationScan(1, DiscrepancyEntityType.GroupPolicyTeam, run);
+            const otherTenant = coordinator.runRelationScan(2, DiscrepancyEntityType.GroupPolicyMember, run);
+            await tick();
+            await releaseAll();
+
+            expect(joined).toBe(first);
+            await expect(Promise.all([first, otherType, otherTenant])).resolves.toEqual([
+                DiscrepancyScanState.Succeeded,
+                DiscrepancyScanState.Succeeded,
+                DiscrepancyScanState.Succeeded,
+            ]);
+            expect(run).toHaveBeenCalledTimes(3);
+            // Once it has finished, the next request scans again.
+            await coordinator.runRelationScan(1, DiscrepancyEntityType.GroupPolicyMember, () =>
+                Promise.resolve(DiscrepancyScanState.Succeeded),
+            );
+            expect(coordinator.stats().relation).toEqual(expect.objectContaining({ active: 0, queued: 0 }));
+        });
+
+        it('lets the cycle of a joining request wait for the joined relation scan', async () => {
+            const { relationTask, releaseAll } = gate();
+            // A relation scan started outside a cycle, e.g. by a manual scan of one entity type.
+            void coordinator.runRelationScan(1, DiscrepancyEntityType.GroupPolicyMember, relationTask);
+            const outcome = coordinator.runCycle(1, 'cron', () => {
+                void coordinator.runRelationScan(1, DiscrepancyEntityType.GroupPolicyMember, relationTask);
+
+                return Promise.resolve([]);
+            });
+            let finished = false;
+            void outcome.then(() => (finished = true));
+            await tick();
+            expect(finished).toBe(false);
+
+            await releaseAll();
+
+            expect((await outcome).status).toBe('completed');
+        });
+    });
+
     describe('global limits', () => {
         it('runs at most 2 relation scans at once across cycles of several tenants', async () => {
-            const { task, releaseAll, max } = gate();
+            const { relationTask, releaseAll, max } = gate();
 
             const cycles = [1, 2, 3].map((tenantId) =>
                 coordinator.runCycle(tenantId, 'cron', () => {
-                    for (let i = 0; i < 4; i++) {
-                        void coordinator.runRelationScan(task);
+                    for (const relationType of RELATION_TYPES) {
+                        void coordinator.runRelationScan(tenantId, relationType, relationTask);
                     }
 
                     return Promise.resolve([]);

@@ -3,7 +3,7 @@ import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
 import { ScanContext } from '../../shared/context/scan-context';
 import { UuidUtility } from '../../shared/utilities';
-import { DiscrepancyEntityType } from '../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
 import { DiscrepancyOverview } from '../models';
 import { BoundedTaskLimiter, TASK_DROPPED } from './bounded-task-limiter';
 import { DistributedScanLockService } from './distributed-scan-lock.service';
@@ -39,7 +39,8 @@ interface ActiveCycle {
  * Coordinates all scan work of this process:
  * - at most one cycle per tenant (cron and scan/all), and none while an exclusive operation such as
  *   sync-all-external or background work of an earlier scan of that tenant is running;
- * - at most one main scan per tenant and entity type; concurrent requests for the same scan join it;
+ * - at most one main scan per tenant and entity type, and at most one relation scan per tenant and relation
+ *   type; concurrent requests for the same scan join it;
  * - relation scans and auto-sync run under global limits with bounded queues and are attributed to the scan
  *   that triggered them (via ScanContext); a cycle waits for them within its budget;
  * - with several replicas, a MariaDB named lock per tenant prevents parallel cycles across processes.
@@ -52,6 +53,7 @@ export class ScanCoordinatorService implements BeforeApplicationShutdown {
     private readonly cycles = new Map<number, ActiveCycle>();
     private readonly exclusiveOperations = new Map<number, { name: string; startedAt: Date }>();
     private readonly typeScans = new Map<string, Promise<DiscrepancyOverview>>();
+    private readonly relationScans = new Map<string, Promise<DiscrepancyScanState | typeof TASK_DROPPED>>();
     private readonly pendingBackground = new Map<number, Set<Promise<unknown>>>();
     private readonly cycleCounters = new Map<string, BackgroundCounters>();
     private readonly relationLimiter: BoundedTaskLimiter;
@@ -265,9 +267,36 @@ export class ScanCoordinatorService implements BeforeApplicationShutdown {
         return scan;
     }
 
-    /** Relation scan under the global relation limit; resolves with TASK_DROPPED when the queue is full. */
-    public runRelationScan<T>(task: () => Promise<T>, isFailure?: (result: T) => boolean) {
-        return this.runBackground(this.relationLimiter, 'relation', task, isFailure);
+    /**
+     * Relation scan under the global relation limit; resolves with TASK_DROPPED when the queue is full.
+     * At most one per tenant and relation type: a request while one is queued or running joins it (and counts as
+     * pending work of the requesting scan), so a manual scan during a cycle does not fetch the same relations
+     * from BeyondTrust twice.
+     */
+    public runRelationScan(
+        tenantId: number,
+        relationType: DiscrepancyEntityType,
+        task: () => Promise<DiscrepancyScanState>,
+    ): Promise<DiscrepancyScanState | typeof TASK_DROPPED> {
+        const key = `${tenantId}:${relationType}`;
+        const inFlight = this.relationScans.get(key);
+
+        if (inFlight) {
+            this.logger.log(`Tenant ${tenantId}: joining the ${relationType} relation scan already queued or running`);
+            this.trackPending(inFlight);
+
+            return inFlight;
+        }
+
+        const scan = this.runBackground(
+            this.relationLimiter,
+            'relation',
+            task,
+            (state) => state !== DiscrepancyScanState.Succeeded,
+        ).finally(() => this.relationScans.delete(key));
+        this.relationScans.set(key, scan);
+
+        return scan;
     }
 
     /** Auto-sync task under the global auto-sync limit; resolves with TASK_DROPPED when the queue is full. */
@@ -322,25 +351,38 @@ export class ScanCoordinatorService implements BeforeApplicationShutdown {
             }
         };
 
-        const tracked = promise.then(
-            (result) => record(result !== TASK_DROPPED && !!isFailure?.(result), result === TASK_DROPPED),
-            () => record(true),
+        this.trackPending(
+            promise.then(
+                (result) => record(result !== TASK_DROPPED && !!isFailure?.(result), result === TASK_DROPPED),
+                () => record(true),
+            ),
         );
 
-        if (context) {
-            const pending = this.pendingBackground.get(context.tenantId) ?? new Set<Promise<unknown>>();
-            pending.add(tracked);
-            this.pendingBackground.set(context.tenantId, pending);
-            void tracked.finally(() => {
-                pending.delete(tracked);
+        return promise;
+    }
 
-                if (pending.size === 0) {
-                    this.pendingBackground.delete(context.tenantId);
-                }
-            });
+    /** Counts the work as pending background work of the current scan's tenant; its cycle waits for it. */
+    private trackPending(work: Promise<unknown>): void {
+        const context = ScanContext.current();
+
+        if (!context) {
+            return;
         }
 
-        return promise;
+        const settled = work.then(
+            () => undefined,
+            () => undefined,
+        );
+        const pending = this.pendingBackground.get(context.tenantId) ?? new Set<Promise<unknown>>();
+        pending.add(settled);
+        this.pendingBackground.set(context.tenantId, pending);
+        void settled.finally(() => {
+            pending.delete(settled);
+
+            if (pending.size === 0) {
+                this.pendingBackground.delete(context.tenantId);
+            }
+        });
     }
 
     /** Waits for the tenant's background work within the budget. Returns false if work was still pending. */
