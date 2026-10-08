@@ -50,7 +50,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 command.entityType,
             ) as DiscrepancyStrategy<unknown, unknown, unknown>;
 
-            // Fetch BeyondTrust data with retry mechanism per page (not entire pagination)
+            // Fetch BeyondTrust data; single requests are retried by HttpClientService (BtRetryPolicy) only.
             const { transformed: btData } = await this.discrepancyScannerService.fetchFromBeyondTrust(
                 discrepancyStrategy,
                 command.transactionId,
@@ -58,7 +58,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 command.entityType,
             );
 
-            // Fetch DB data with retry mechanism
+            // Fetch DB data; retried once, and only for transient database errors.
             const dbData = await this.discrepancyScannerService.fetchFromDatabase(
                 discrepancyStrategy,
                 command.transactionId,

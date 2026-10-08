@@ -112,7 +112,7 @@ describe('DiscrepancyScannerService', () => {
         });
     });
 
-    describe('fetchFromBeyondTrustWithErrorHandling', () => {
+    describe('fetchRelationsFromBeyondTrust', () => {
         it.each([
             { name: 'an HTML 404 from a proxy', error: new Error('404 Not Found') },
             { name: 'a JSON 404 from BeyondTrust', error: new Error('Document Not Found') },
@@ -122,9 +122,7 @@ describe('DiscrepancyScannerService', () => {
             mockStrategy.btRetrieveFunc = jest.fn().mockRejectedValue(error);
 
             // Act & Assert
-            await expect(service.fetchFromBeyondTrustWithErrorHandling(mockStrategy, 'txn-123', 1)).rejects.toThrow(
-                error,
-            );
+            await expect(service.fetchRelationsFromBeyondTrust(mockStrategy, 'txn-123', 1)).rejects.toThrow(error);
         });
 
         it('should propagate non-404 errors', async () => {
@@ -136,9 +134,9 @@ describe('DiscrepancyScannerService', () => {
             jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockRejectedValue(error);
 
             // Act & Assert
-            await expect(
-                service.fetchFromBeyondTrustWithErrorHandling(mockStrategy, transactionId, tenantId),
-            ).rejects.toThrow(error);
+            await expect(service.fetchRelationsFromBeyondTrust(mockStrategy, transactionId, tenantId)).rejects.toThrow(
+                error,
+            );
         });
     });
 
@@ -203,7 +201,7 @@ describe('DiscrepancyScannerService', () => {
         });
     });
 
-    describe('fetchFromDatabaseWithErrorHandling', () => {
+    describe('fetchRelationsFromDatabase', () => {
         it('should handle NotFoundException by returning empty array', async () => {
             // Arrange
             const transactionId = 'txn-123';
@@ -223,7 +221,7 @@ describe('DiscrepancyScannerService', () => {
             });
 
             // Act
-            const result = await service.fetchFromDatabaseWithErrorHandling(mockStrategy, transactionId, tenantId);
+            const result = await service.fetchRelationsFromDatabase(mockStrategy, transactionId, tenantId);
 
             // Assert
             expect(result).toEqual([]);
@@ -238,9 +236,9 @@ describe('DiscrepancyScannerService', () => {
             jest.spyOn(PaginationUtility, 'queryUntilLastPage').mockRejectedValue(error);
 
             // Act & Assert
-            await expect(
-                service.fetchFromDatabaseWithErrorHandling(mockStrategy, transactionId, tenantId),
-            ).rejects.toThrow(error);
+            await expect(service.fetchRelationsFromDatabase(mockStrategy, transactionId, tenantId)).rejects.toThrow(
+                error,
+            );
         });
     });
 

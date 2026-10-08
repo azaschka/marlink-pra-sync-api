@@ -93,16 +93,15 @@ export class ScanEntityRelationDiscrepancyCommandHandler implements ICommandHand
                     command.entityType,
                 ) as DiscrepancyStrategy<unknown, unknown, unknown>;
 
-                // Fetch BeyondTrust data with error handling for 404 (parent might not exist)
-                const { transformed: btData } =
-                    await this.discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling(
-                        discrepancyStrategy,
-                        command.transactionId,
-                        command.tenantId,
-                    );
+                // Every failure propagates, also the 404 of a parent that no longer exists; the parent is skipped.
+                const { transformed: btData } = await this.discrepancyScannerService.fetchRelationsFromBeyondTrust(
+                    discrepancyStrategy,
+                    command.transactionId,
+                    command.tenantId,
+                );
 
-                // Fetch DB data with error handling for NotFoundException (parent might not exist)
-                const dbData = await this.discrepancyScannerService.fetchFromDatabaseWithErrorHandling(
+                // A parent that is missing in the database has no relations there.
+                const dbData = await this.discrepancyScannerService.fetchRelationsFromDatabase(
                     discrepancyStrategy,
                     command.transactionId,
                     command.tenantId,

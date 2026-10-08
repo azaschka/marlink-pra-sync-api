@@ -77,7 +77,7 @@ export class DiscrepancyScannerService {
      * Treating an error (for example an HTML 404 from a proxy) as "no relations" made every relation look
      * "only in DB" and let auto-sync delete them locally.
      */
-    public async fetchFromBeyondTrustWithErrorHandling<T>(
+    public async fetchRelationsFromBeyondTrust<T>(
         discrepancyStrategy: DiscrepancyStrategy<unknown, unknown, unknown>,
         transactionId: string,
         tenantId: number,
@@ -129,10 +129,10 @@ export class DiscrepancyScannerService {
     }
 
     /**
-     * Fetch data from local database with error handling for not found errors.
-     * Used for relation entities where parent might not exist.
+     * Fetch the relations of one parent from the local database. A parent that does not exist in the database
+     * (NotFoundException) has no relations there.
      */
-    public async fetchFromDatabaseWithErrorHandling<T>(
+    public async fetchRelationsFromDatabase<T>(
         discrepancyStrategy: DiscrepancyStrategy<unknown, unknown, unknown>,
         transactionId: string,
         tenantId: number,

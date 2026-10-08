@@ -84,8 +84,8 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
 
         discrepancyScannerService = {
             getSyncStartDate: jest.fn().mockReturnValue(new Date('2025-11-13T10:00:00Z')),
-            fetchFromBeyondTrustWithErrorHandling: jest.fn().mockResolvedValue({ transformed: [] }),
-            fetchFromDatabaseWithErrorHandling: jest.fn().mockResolvedValue([]),
+            fetchRelationsFromBeyondTrust: jest.fn().mockResolvedValue({ transformed: [] }),
+            fetchRelationsFromDatabase: jest.fn().mockResolvedValue([]),
             analyzeRelationalDiscrepancies: jest.fn().mockReturnValue({
                 identical: [],
                 onlyInBt: [],
@@ -132,7 +132,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
                 await handler.execute(command);
             });
 
-            expect(discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling).not.toHaveBeenCalled();
+            expect(discrepancyScannerService.fetchRelationsFromBeyondTrust).not.toHaveBeenCalled();
             expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
             expect(eventBus.publish).not.toHaveBeenCalled();
         });
@@ -148,7 +148,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
 
             // Assert – loop body never entered
             expect(discrepancyStrategyProviderService.getForRelation).not.toHaveBeenCalled();
-            expect(discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling).not.toHaveBeenCalled();
+            expect(discrepancyScannerService.fetchRelationsFromBeyondTrust).not.toHaveBeenCalled();
             expect(discrepancyRepositoryService.findManyByEntityTypeAndEntityId).not.toHaveBeenCalled();
             expect(eventBus.publish).not.toHaveBeenCalled();
         });
@@ -355,7 +355,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             const command = makeCommand({ onlyInExternalIds: [10] });
             const btRec = rec(10, 20);
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock).mockResolvedValue({
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockResolvedValue({
                 transformed: [btRec],
             });
             (discrepancyScannerService.analyzeRelationalDiscrepancies as jest.Mock).mockReturnValue({
@@ -421,7 +421,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             // Arrange: parent A succeeds, parent B fails
             const command = makeCommand({ identicalDataIds: [10, 20] });
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock)
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock)
                 .mockResolvedValueOnce({ transformed: [] })
                 .mockRejectedValueOnce(new Error('Network error'));
 
@@ -430,7 +430,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
 
             // Assert – only A's discrepancies are cleaned, nothing type-wide, one event
             expect(state).toBe(DiscrepancyScanState.Partial);
-            expect(discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling).toHaveBeenCalledTimes(2);
+            expect(discrepancyScannerService.fetchRelationsFromBeyondTrust).toHaveBeenCalledTimes(2);
             expect(discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore).toHaveBeenCalledTimes(1);
             expect(discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore).toHaveBeenCalledWith(
                 1,
@@ -445,7 +445,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
         it('should skip a parent whose relation fetch fails with an HTML 404 and keep its discrepancies', async () => {
             // Arrange
             const command = makeCommand({ identicalDataIds: [10] });
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock).mockRejectedValue(
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockRejectedValue(
                 new BtApiError({
                     kind: BtApiErrorKind.UnexpectedResponse,
                     method: 'GET',
@@ -473,7 +473,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             // Arrange
             const command = makeCommand({ onlyInExternalIds: [10] });
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock).mockRejectedValue(
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockRejectedValue(
                 new Error('Something went wrong'),
             );
 
@@ -491,7 +491,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             // Arrange
             const command = makeCommand({ identicalDataIds: [10] });
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock).mockRejectedValue(
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockRejectedValue(
                 new Error('Unexpected error'),
             );
 
