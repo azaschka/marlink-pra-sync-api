@@ -9,6 +9,11 @@ export interface BtRequestContext {
     readonly attempts: number;
     /** True when the caller's AbortSignal fired. */
     readonly aborted?: boolean;
+    /**
+     * True when the failure happened while the OAuth2 token was fetched. The BeyondTrust request itself was not
+     * sent then (so it is never an ambiguous write), and a 404 means a wrong token URL, not a missing entity.
+     */
+    readonly tokenRequest?: boolean;
 }
 
 /**
@@ -96,7 +101,12 @@ export abstract class BtErrorClassifier {
             !!squidError &&
             BtErrorClassifier.PROXY_CONNECT_FAILURE_PATTERN.test(squidError);
 
-        const kind = BtErrorClassifier.kindForStatus(status, body.json !== undefined, proxyConnectFailure);
+        const kind = BtErrorClassifier.kindForStatus(
+            status,
+            body.json !== undefined,
+            proxyConnectFailure,
+            context.tokenRequest === true,
+        );
 
         return BtErrorClassifier.create(
             context,
@@ -116,7 +126,12 @@ export abstract class BtErrorClassifier {
         );
     }
 
-    private static kindForStatus(status: number, isJson: boolean, proxyConnectFailure: boolean): BtApiErrorKind {
+    private static kindForStatus(
+        status: number,
+        isJson: boolean,
+        proxyConnectFailure: boolean,
+        tokenRequest: boolean,
+    ): BtApiErrorKind {
         if (status === 401) {
             return BtApiErrorKind.Unauthorized;
         }
@@ -135,7 +150,8 @@ export abstract class BtErrorClassifier {
         }
 
         if (status === 404) {
-            return BtApiErrorKind.NotFound;
+            // A missing token endpoint is a configuration error; it must not read as "entity not found".
+            return tokenRequest ? BtApiErrorKind.ClientError : BtApiErrorKind.NotFound;
         }
 
         if (BtErrorClassifier.TRANSIENT_STATUSES.has(status)) {
@@ -187,6 +203,7 @@ export abstract class BtErrorClassifier {
                 beyondtrustInstanceId: context.beyondtrustInstanceId,
                 attempts: context.attempts,
                 ...details,
+                notSent: details.notSent || context.tokenRequest === true,
             },
             json,
         );

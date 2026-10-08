@@ -66,11 +66,17 @@ describe('HttpClientService against a local BeyondTrust stub', () => {
             invalidateAuthToken: jest.fn(),
         };
         communication = { retryAttempts: 3, retryDelayInMs: 1000, maxRetryAfterInMs: 30000, readTimeoutInMs: 60000 };
+        client = createClient(authTokenService);
+    });
+
+    /** A client for the stub, with a mocked token service or a real one that fetches tokens from the stub. */
+    const createClient = (tokens: unknown) => {
         const port = (server.address() as AddressInfo).port;
-        client = new HttpClientService(
+
+        return new HttpClientService(
             { beyondTrust: { api: { communication } } } as never,
             new HttpService(axios.create({ proxy: false })),
-            authTokenService as never,
+            tokens as never,
             {
                 execute: jest.fn().mockResolvedValue({
                     id: 3,
@@ -81,7 +87,8 @@ describe('HttpClientService against a local BeyondTrust stub', () => {
                 }),
             } as never,
         );
-    });
+    };
+    const realTokenService = () => new AuthTokenService(new HttpService(axios.create({ proxy: false })));
 
     afterEach(() => {
         jest.restoreAllMocks();
@@ -94,6 +101,10 @@ describe('HttpClientService against a local BeyondTrust stub', () => {
             res.end(isText ? body : JSON.stringify(body));
         };
     };
+
+    const tokenAnswer = reply(200, { access_token: 'token-1', expires_in: 3600, token_type: 'Bearer' });
+    const isTokenRequest = (req: IncomingMessage) => req.url?.startsWith('/oauth2/token') ?? false;
+    const apiRequests = () => requests.filter((request) => request.url?.startsWith('/api'));
 
     const failure = (promise: Promise<unknown>) =>
         promise.then(
@@ -221,25 +232,49 @@ describe('HttpClientService against a local BeyondTrust stub', () => {
 
             reply(200, { ok: true })(req, res, 0);
         };
-        const port = (server.address() as AddressInfo).port;
-        const realTokenClient = new HttpClientService(
-            { beyondTrust: { api: { communication } } } as never,
-            new HttpService(axios.create({ proxy: false })),
-            new AuthTokenService(new HttpService(axios.create({ proxy: false }))),
-            {
-                execute: jest.fn().mockResolvedValue({
-                    id: 3,
-                    apiBaseUrl: `http://127.0.0.1:${port}/api/config/v1`,
-                    authClientId: 'client',
-                    authClientSecret: 'client-secret-value',
-                    oauth2TokenUrl: `http://127.0.0.1:${port}/oauth2/token`,
-                }),
-            } as never,
-        );
+        const realTokenClient = createClient(realTokenService());
 
         await Promise.all(Array.from({ length: 5 }, () => realTokenClient.get(Object, 'tx', 3, '/user')));
 
         expect(tokenRequests).toBe(2); // the initial token and exactly one refresh
-        expect(requests.filter((request) => request.url?.startsWith('/api')).length).toBe(10);
+        expect(apiRequests()).toHaveLength(10);
+    });
+
+    describe('failures of the token request', () => {
+        it('retries a POST whose token request failed, because the POST itself was not sent', async () => {
+            let tokenRequests = 0;
+            handler = (req, res, requestNumber) => {
+                if (isTokenRequest(req)) {
+                    return ++tokenRequests === 1
+                        ? reply(503, SQUID_PAGE)(req, res, requestNumber)
+                        : tokenAnswer(req, res, requestNumber);
+                }
+
+                reply(201, { id: 9 })(req, res, requestNumber);
+            };
+
+            await createClient(realTokenService()).post(Object, 'tx', 3, '/user', { username: 'new-user' });
+
+            expect(tokenRequests).toBe(2);
+            expect(apiRequests()).toHaveLength(1);
+            expect(logged.join('\n')).toContain('BeyondTrust POST OAuth2 token endpoint');
+            expect(logged.join('\n')).not.toContain('outcome unknown');
+        });
+
+        it('reports a token endpoint that answers 404 as a client error that was not sent', async () => {
+            handler = (req, res, requestNumber) =>
+                isTokenRequest(req)
+                    ? reply(404, { message: 'Not Found' })(req, res, requestNumber)
+                    : reply(201, { id: 9 })(req, res, requestNumber);
+
+            const error = await failure(
+                createClient(realTokenService()).post(Object, 'tx', 3, '/user', { username: 'new-user' }),
+            );
+
+            expect(apiRequests()).toHaveLength(0);
+            expect(error.kind).toBe(BtApiErrorKind.ClientError);
+            expect(error.notSent).toBe(true);
+            expect(error.ambiguousWriteOutcome).toBe(false);
+        });
     });
 });

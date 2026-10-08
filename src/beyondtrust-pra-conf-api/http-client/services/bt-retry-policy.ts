@@ -30,8 +30,9 @@ export interface BtRetryDecision {
  * refresh. NotFound, ClientError and Cancelled are never retried.
  *
  * Writes (POST, PATCH, PUT): only retried when BeyondTrust provably did not process the request (proxy connect
- * failure, connect-phase network error, 429, 401). Any other failure may have been processed and is
- * marked as an ambiguous outcome instead of being repeated.
+ * failure, connect-phase network error, 429, 401, or a failed token request before the write was sent); such
+ * failures are retried like reads. Any other failure may have been processed and is marked as an ambiguous
+ * outcome instead of being repeated.
  */
 export class BtRetryPolicy {
     private static readonly READ_METHODS: ReadonlySet<string> = new Set(['GET', 'DELETE', 'HEAD']);
@@ -59,7 +60,8 @@ export class BtRetryPolicy {
             return BtRetryPolicy.NO_RETRY;
         }
 
-        const decision = this.decideWithinBudget(error, state, isRead);
+        // A request that was not sent cannot have been processed, so repeating it is as safe as repeating a read.
+        const decision = this.decideWithinBudget(error, state, isRead || error.notSent);
 
         if (decision.retry) {
             state.retries++;
@@ -68,7 +70,7 @@ export class BtRetryPolicy {
         return decision;
     }
 
-    private decideWithinBudget(error: BtApiError, state: BtRetryState, isRead: boolean): BtRetryDecision {
+    private decideWithinBudget(error: BtApiError, state: BtRetryState, safeToRepeat: boolean): BtRetryDecision {
         switch (error.kind) {
             case BtApiErrorKind.Unauthorized:
                 if (state.unauthorizedRetries >= 1) {
@@ -85,13 +87,13 @@ export class BtRetryPolicy {
                 return this.backoff(state);
 
             case BtApiErrorKind.Transient:
-                return isRead || error.notSent ? this.backoff(state) : BtRetryPolicy.NO_RETRY;
+                return safeToRepeat ? this.backoff(state) : BtRetryPolicy.NO_RETRY;
 
             case BtApiErrorKind.UnexpectedResponse:
-                return isRead && (error.httpStatus ?? 0) >= 500 ? this.backoff(state) : BtRetryPolicy.NO_RETRY;
+                return safeToRepeat && (error.httpStatus ?? 0) >= 500 ? this.backoff(state) : BtRetryPolicy.NO_RETRY;
 
             case BtApiErrorKind.ServerError:
-                if (!isRead || state.serverErrorRetries >= 1) {
+                if (!safeToRepeat || state.serverErrorRetries >= 1) {
                     return BtRetryPolicy.NO_RETRY;
                 }
                 state.serverErrorRetries++;

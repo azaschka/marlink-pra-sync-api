@@ -249,12 +249,16 @@ export class HttpClientService {
                 // An error answer of a streamed request must be discarded, otherwise it holds the socket.
                 ((rawError as AxiosError | undefined)?.response?.data as Readable | undefined)?.destroy?.();
 
+                // Until the token is there, nothing was sent to the BeyondTrust API: a token failure is reported
+                // for the token request (POST), never as an ambiguous outcome of the request itself.
+                const tokenRequest = phase === 'token';
                 const error = BtErrorClassifier.classify(rawError, {
-                    method: request.method,
-                    path: phase === 'token' ? HttpClientService.TOKEN_PATH : request.urlPath,
+                    method: tokenRequest ? 'POST' : request.method,
+                    path: tokenRequest ? HttpClientService.TOKEN_PATH : request.urlPath,
                     beyondtrustInstanceId: beyondtrustInstance.id,
                     attempts: attempt,
                     aborted: signal?.aborted,
+                    tokenRequest,
                 });
                 const decision = policy.decide(error, state);
 

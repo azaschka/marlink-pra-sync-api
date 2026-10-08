@@ -151,6 +151,25 @@ describe('BtRetryPolicy', () => {
             expect(created.ambiguousWriteOutcome).toBe(false);
         });
 
+        it.each([
+            {
+                name: 'an HTML 503',
+                failure: () => error(BtApiErrorKind.UnexpectedResponse, 'POST', { httpStatus: 503, notSent: true }),
+                attempts: 4,
+            },
+            {
+                name: 'a server error',
+                failure: () => error(BtApiErrorKind.ServerError, 'POST', { httpStatus: 500, notSent: true }),
+                attempts: 2,
+            },
+        ])('retries a write whose token request failed with $name like a read', ({ failure, attempts }) => {
+            const created = failure();
+
+            expect(simulate(policy, failure).attempts).toBe(attempts);
+            expect(policy.decide(created, BtRetryPolicy.initialState()).retry).toBe(true);
+            expect(created.ambiguousWriteOutcome).toBe(false);
+        });
+
         it('does not mark a rejected write as ambiguous', () => {
             const failure = error(BtApiErrorKind.ClientError, 'POST', { httpStatus: 422 });
 

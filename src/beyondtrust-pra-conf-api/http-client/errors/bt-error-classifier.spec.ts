@@ -112,6 +112,25 @@ describe('BtErrorClassifier', () => {
         expect(BtErrorClassifier.classify(networkError(code, code), context).notSent).toBe(notSent);
     });
 
+    describe('failures of the token request', () => {
+        const tokenContext: BtRequestContext = { ...context, method: 'POST', tokenRequest: true };
+
+        it.each([
+            { name: 'an HTML 503', error: responseError(503, SQUID_PAGE) },
+            { name: 'a JSON 500', error: responseError(500, { message: 'Internal error' }) },
+            { name: 'a connection reset', error: networkError('ECONNRESET', 'socket hang up') },
+        ])('marks $name as not sent, because the BeyondTrust request was not sent yet', ({ error }) => {
+            expect(BtErrorClassifier.classify(error, tokenContext).notSent).toBe(true);
+            expect(BtErrorClassifier.classify(error, context).notSent).toBe(false);
+        });
+
+        it('classifies a JSON 404 of the token endpoint as a client error, not as a missing entity', () => {
+            const error = BtErrorClassifier.classify(responseError(404, { message: 'Not Found' }), tokenContext);
+
+            expect(error.kind).toBe(BtApiErrorKind.ClientError);
+        });
+    });
+
     it('keeps the BeyondTrust JSON body and status for existing callers', () => {
         const error = BtErrorClassifier.classify(responseError(422, { message: 'Name already exists' }), context);
 
