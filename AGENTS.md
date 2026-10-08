@@ -2,7 +2,7 @@
 
 Integration service of the Marlink PRA Platform (NestJS 11, TypeScript 5, CQRS, TypeORM, MariaDB). The only component that calls BeyondTrust, and the only one that calls the Marlink Service Manager (jumpoint node deployment, `src/deployment/`, `src/service-manager-api/`). Keeps a per-tenant mirror of BeyondTrust objects and reconciles it through the discrepancy engine. Called by pra-api only, never by the console.
 
-Last reviewed: 2026-10-22
+Last reviewed: 2026-11-12
 
 ## Read first
 
@@ -33,6 +33,12 @@ Last reviewed: 2026-10-22
 - Mappers stay tolerant of missing fields; BeyondTrust versions differ across customer environments.
 - Service Manager (jumpoint node deployment): `hypervisor_id`, `hypervisor_type` and `vm_id` are optional (VMM-172) and not used for PRA. Pass them through only when the caller sends them, never inject placeholder values (MARLINKPRA-30). The `deployment_jumpoint_nodes` table is global, not per tenant. Its POST calls are retried on 401, 408, 429, 502, 503 and 504 although node creation is not idempotent. Details: `../docs/knowledge/domains/jumpoint-node-deployment.md`.
 - Container image: `Dockerfile` pins an exact Node.js release (`node:24.22.1-alpine3.24`). Node.js validates outbound TLS against the root store compiled into the Node.js binary, so the Node.js release, not the OS `ca-certificates`, decides which CAs this service trusts. Raise the pin deliberately (Node.js security releases), keep pra-api and pra-sync-api on the same release, and never return to a floating tag such as `node:lts-alpine` (SEC-01, `../docs/knowledge/operations/environments-and-delivery.md`).
+- Stability invariants (release 3.2, see `../docs/knowledge/investigations/r3.2-stability/` and the Operations section of `README.md`):
+  - BeyondTrust requests are retried only in `HttpClientService` (`src/beyondtrust-pra-conf-api/http-client/`, `BtRetryPolicy`). The Service Manager client in `src/service-manager-api/` has its own retry layer (see the Service Manager rule above). Callers never retry; a write is repeated only when it provably did not reach BeyondTrust (`BtApiError.notSent`), otherwise it is marked `ambiguousWriteOutcome`. Judge failures by `BtApiError.kind`, never by message text.
+  - Scans run through `ScanCoordinatorService`: one cycle per tenant (named lock across replicas, `NamedLockUtility`), one main scan per tenant and type, one relation scan per tenant and relation type, background work under global limits and within the cycle budget (`ScanContext` carries the AbortSignal). Report incomplete data as failed, partial, skipped or aborted; never clean up or auto-sync on it.
+  - System log rows go only through `LogService` and the bounded `LogWriterService`; never insert into `pra_logs` on a hot path. Pass payloads as objects, so secrets are redacted.
+  - Database access goes through repository services and `DatabaseConnectionUtility`; a connection whose state is unknown is closed with `DatabaseConnectionUtility.discard()`, never returned to the pool.
+  - Shutdown work that needs the database runs in `beforeApplicationShutdown` (TypeORM closes the DataSource in `onApplicationShutdown`).
 
 ## Documentation duty
 
