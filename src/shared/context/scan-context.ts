@@ -3,8 +3,6 @@ import { AsyncLocalStorage } from 'async_hooks';
 export interface ScanContextData {
     readonly scanId: string;
     readonly tenantId: number;
-    /** Epoch milliseconds after which the scan is aborted. */
-    readonly deadline: number;
     readonly signal: AbortSignal;
 }
 
@@ -35,6 +33,10 @@ export abstract class ScanContext {
      * The budget also bounds background work the operation started (relation scans, auto-sync), which keeps
      * the context after the operation returned. Therefore the timer is not cleared on return; it is unref'd
      * and fires once at the deadline.
+     *
+     * An additional signal (application shutdown) aborts the scan as well; when it has already fired, the scan
+     * starts aborted. Its listener is removed once the scan is over (deadline or abort), so a long-lived
+     * signal does not collect one listener per scan.
      */
     public static runWithBudget<T>(
         scan: { scanId: string; tenantId: number; budgetInMs: number; signal?: AbortSignal },
@@ -45,20 +47,23 @@ export abstract class ScanContext {
         }
 
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(new ScanAbortedError(scan.scanId)), scan.budgetInMs);
+        const parent = scan.signal;
+        const end = () => {
+            clearTimeout(timer);
+            parent?.removeEventListener('abort', end);
+            controller.abort(new ScanAbortedError(scan.scanId));
+        };
+        const timer = setTimeout(end, scan.budgetInMs);
         timer.unref();
-        // An additional signal (e.g. application shutdown) aborts the scan as well.
-        scan.signal?.addEventListener('abort', () => controller.abort(new ScanAbortedError(scan.scanId)), {
-            once: true,
-        });
+
+        if (parent?.aborted) {
+            end();
+        } else {
+            parent?.addEventListener('abort', end, { once: true });
+        }
 
         return ScanContext.STORAGE.run(
-            {
-                scanId: scan.scanId,
-                tenantId: scan.tenantId,
-                deadline: Date.now() + scan.budgetInMs,
-                signal: controller.signal,
-            },
+            { scanId: scan.scanId, tenantId: scan.tenantId, signal: controller.signal },
             operation,
         );
     }

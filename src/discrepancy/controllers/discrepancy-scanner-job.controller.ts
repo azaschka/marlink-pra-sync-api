@@ -1,4 +1,4 @@
-import { Controller, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import { BeforeApplicationShutdown, Controller, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
@@ -10,7 +10,7 @@ import { DiscrepancyScanCycleService } from '../services/discrepancy-scan-cycle.
 import { DiscrepancyScanOutcome } from '../services/discrepancy-scan-outcome';
 
 @Controller('discrepancies/scan/job')
-export class DiscrepancyScannerJobController implements OnApplicationBootstrap, OnApplicationShutdown {
+export class DiscrepancyScannerJobController implements OnApplicationBootstrap, BeforeApplicationShutdown {
     private static readonly JOB_NAME = 'scanAll';
     private static readonly MAX_PAGE_SIZE = 50;
 
@@ -39,7 +39,8 @@ export class DiscrepancyScannerJobController implements OnApplicationBootstrap, 
         this.job.start();
     }
 
-    public onApplicationShutdown(): void {
+    // Before the scans are aborted (ScanCoordinatorService) and the database closes: no new tick starts.
+    public beforeApplicationShutdown(): void {
         void this.job?.stop();
     }
 

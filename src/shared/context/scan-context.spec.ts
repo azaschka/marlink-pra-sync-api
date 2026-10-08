@@ -1,3 +1,4 @@
+import { getEventListeners } from 'events';
 import { ScanAbortedError, ScanContext } from './scan-context';
 
 describe('ScanContext', () => {
@@ -52,6 +53,53 @@ describe('ScanContext', () => {
         });
 
         await expect(background).resolves.toBe(true);
+    });
+
+    it('starts aborted when the additional signal (shutdown) has already fired', async () => {
+        const shutdown = new AbortController();
+        shutdown.abort();
+
+        const aborted = await ScanContext.runWithBudget(
+            { scanId: 'late', tenantId: 1, budgetInMs: 60000, signal: shutdown.signal },
+            () => Promise.resolve(ScanContext.isAborted()),
+        );
+
+        expect(aborted).toBe(true);
+        expect(getEventListeners(shutdown.signal, 'abort')).toHaveLength(0);
+    });
+
+    it('aborts a running scan when the additional signal fires', async () => {
+        const shutdown = new AbortController();
+
+        const reason = await ScanContext.runWithBudget(
+            { scanId: 'running', tenantId: 1, budgetInMs: 60000, signal: shutdown.signal },
+            async () => {
+                const signal = ScanContext.current()?.signal;
+                shutdown.abort();
+                await Promise.resolve();
+
+                return signal?.reason as unknown;
+            },
+        );
+
+        expect(reason).toBeInstanceOf(ScanAbortedError);
+        expect(getEventListeners(shutdown.signal, 'abort')).toHaveLength(0);
+    });
+
+    it('does not leave one listener per scan on the long-lived shutdown signal', async () => {
+        const shutdown = new AbortController();
+
+        for (let cycle = 0; cycle < 12; cycle++) {
+            await ScanContext.runWithBudget(
+                { scanId: `cycle-${cycle}`, tenantId: 1, budgetInMs: 20, signal: shutdown.signal },
+                () => Promise.resolve(),
+            );
+        }
+        // Background work may still be running until the deadline, so the listener stays until then.
+        expect(getEventListeners(shutdown.signal, 'abort').length).toBeLessThanOrEqual(12);
+        await new Promise((resolve) => setTimeout(resolve, 60));
+
+        expect(getEventListeners(shutdown.signal, 'abort')).toHaveLength(0);
     });
 
     it('throws ScanAbortedError from throwIfAborted after the deadline', async () => {

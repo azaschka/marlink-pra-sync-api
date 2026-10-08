@@ -35,7 +35,7 @@ describe('DiscrepancyScannerJobController', () => {
     });
 
     afterEach(() => {
-        controller.onApplicationShutdown();
+        controller.beforeApplicationShutdown();
         jest.restoreAllMocks();
     });
 

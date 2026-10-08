@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
+import { BeforeApplicationShutdown, ConflictException, Injectable, Logger } from '@nestjs/common';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
 import { ScanContext } from '../../shared/context/scan-context';
@@ -47,7 +47,7 @@ interface ActiveCycle {
  * Every guard is released in a finally block, so a failing scan never blocks the next one.
  */
 @Injectable()
-export class ScanCoordinatorService implements OnApplicationShutdown {
+export class ScanCoordinatorService implements BeforeApplicationShutdown {
     private readonly logger = new Logger(ScanCoordinatorService.name);
     private readonly cycles = new Map<number, ActiveCycle>();
     private readonly exclusiveOperations = new Map<number, { name: string; startedAt: Date }>();
@@ -57,6 +57,7 @@ export class ScanCoordinatorService implements OnApplicationShutdown {
     private readonly relationLimiter: BoundedTaskLimiter;
     private readonly autoSyncLimiter: BoundedTaskLimiter;
     private readonly shutdown = new AbortController();
+    private readonly runningCycles = new Set<Promise<unknown>>();
 
     constructor(
         private readonly appConfigService: AppConfigService,
@@ -77,9 +78,42 @@ export class ScanCoordinatorService implements OnApplicationShutdown {
         resourceReportRegistry.register('scan', () => this.stats());
     }
 
-    /** Aborts running scans so that their connections and locks are released before the database closes. */
-    public onApplicationShutdown(): void {
+    public static readonly SHUTTING_DOWN_REASON = 'the Sync API is shutting down';
+    public static readonly LOCKED_ELSEWHERE_REASON = 'cycle active in another Sync API instance';
+
+    /** Grace period for running scans to end after the abort, before the database closes. */
+    public static readonly SHUTDOWN_GRACE_IN_MS = 5000;
+
+    /** Aborts every scan of this process: running ones and those that would start during shutdown. */
+    public get shutdownSignal(): AbortSignal {
+        return this.shutdown.signal;
+    }
+
+    /**
+     * Runs before TypeORM closes the DataSource (onApplicationShutdown): aborts running scans, refuses new
+     * cycles and waits up to SHUTDOWN_GRACE_IN_MS for running cycles and type scans to end, so that their
+     * named locks are released and their connections returned while the database is still open.
+     */
+    public async beforeApplicationShutdown(): Promise<void> {
         this.shutdown.abort();
+        const running = [...this.runningCycles, ...this.typeScans.values()];
+
+        if (running.length === 0) {
+            return;
+        }
+
+        let timer: NodeJS.Timeout | undefined;
+        const grace = new Promise<'timeout'>((resolve) => {
+            timer = setTimeout(() => resolve('timeout'), ScanCoordinatorService.SHUTDOWN_GRACE_IN_MS);
+        });
+        const outcome = await Promise.race([Promise.allSettled(running), grace]);
+        clearTimeout(timer);
+
+        if (outcome === 'timeout') {
+            this.logger.warn(
+                `${running.length} scans did not end within ${ScanCoordinatorService.SHUTDOWN_GRACE_IN_MS} ms of the shutdown`,
+            );
+        }
     }
 
     /** Why a new cycle for the tenant cannot start now, or undefined. */
@@ -114,6 +148,10 @@ export class ScanCoordinatorService implements OnApplicationShutdown {
         trigger: ScanTrigger,
         run: () => Promise<DiscrepancyOverview[]>,
     ): Promise<CycleOutcome> {
+        if (this.shutdown.signal.aborted) {
+            return { status: 'skipped', reason: ScanCoordinatorService.SHUTTING_DOWN_REASON };
+        }
+
         const busy = this.busyReason(tenantId);
 
         if (busy) {
@@ -132,12 +170,28 @@ export class ScanCoordinatorService implements OnApplicationShutdown {
         };
         this.cycles.set(tenantId, { scanId, trigger, startedAt: new Date() });
         this.cycleCounters.set(scanId, counters);
+        const cycle = this.executeCycle(tenantId, scanId, budgetInMs, counters, run);
+        this.runningCycles.add(cycle);
 
+        try {
+            return await cycle;
+        } finally {
+            this.runningCycles.delete(cycle);
+        }
+    }
+
+    private async executeCycle(
+        tenantId: number,
+        scanId: string,
+        budgetInMs: number,
+        counters: BackgroundCounters,
+        run: () => Promise<DiscrepancyOverview[]>,
+    ): Promise<CycleOutcome> {
         try {
             const lock = await this.distributedScanLockService.tryAcquire(tenantId, budgetInMs);
 
             if (!lock) {
-                return { status: 'skipped', reason: 'cycle active in another Sync API instance' };
+                return { status: 'skipped', reason: ScanCoordinatorService.LOCKED_ELSEWHERE_REASON };
             }
 
             try {

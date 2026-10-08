@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import {
     CommandBus,
     CommandHandler,
@@ -278,18 +278,54 @@ describe('ScanCoordinatorService', () => {
         });
     });
 
-    it('aborts running cycles on application shutdown', async () => {
-        const outcome = coordinator.runCycle(1, 'cron', async () => {
-            const signal = ScanContext.current()?.signal;
-            await new Promise<void>((resolve) => signal?.addEventListener('abort', () => resolve(), { once: true }));
+    describe('shutdown', () => {
+        it('aborts running cycles and waits for them before the database closes', async () => {
+            let finished = false;
+            const outcome = coordinator.runCycle(1, 'cron', async () => {
+                const signal = ScanContext.current()?.signal;
+                await new Promise<void>((resolve) =>
+                    signal?.addEventListener('abort', () => resolve(), { once: true }),
+                );
+                await tick();
+                finished = true;
 
-            return [];
+                return [];
+            });
+            await tick();
+
+            await coordinator.beforeApplicationShutdown();
+
+            expect(finished).toBe(true);
+            expect(lock.release).toHaveBeenCalledTimes(1);
+            await expect(outcome).resolves.toEqual(expect.objectContaining({ status: 'completed' }));
         });
-        await tick();
 
-        coordinator.onApplicationShutdown();
+        it('refuses cycles that would start during shutdown, e.g. the next tenant of a running tick', async () => {
+            await coordinator.beforeApplicationShutdown();
+            const run = jest.fn().mockResolvedValue([]);
 
-        await expect(outcome).resolves.toEqual(expect.objectContaining({ status: 'completed' }));
+            const outcome = await coordinator.runCycle(2, 'cron', run);
+
+            expect(outcome).toEqual({ status: 'skipped', reason: 'the Sync API is shutting down' });
+            expect(run).not.toHaveBeenCalled();
+            expect(lock.tryAcquire).not.toHaveBeenCalled();
+        });
+
+        it('waits at most the grace period for a cycle that ignores the abort', async () => {
+            jest.useFakeTimers();
+            jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+            void coordinator.runCycle(1, 'cron', () => new Promise(() => undefined));
+            await jest.advanceTimersByTimeAsync(0);
+
+            const shutdown = coordinator.beforeApplicationShutdown();
+            await jest.advanceTimersByTimeAsync(ScanCoordinatorService.SHUTDOWN_GRACE_IN_MS);
+
+            await expect(shutdown).resolves.toBeUndefined();
+            expect((Logger.prototype.warn as jest.Mock).mock.calls.flat()).toContainEqual(
+                expect.stringContaining('did not end within 5000 ms of the shutdown'),
+            );
+            jest.useRealTimers();
+        });
     });
 });
 

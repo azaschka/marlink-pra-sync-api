@@ -89,6 +89,7 @@ export class DiscrepancyScanCycleService {
                     scanId: UuidUtility.generate().slice(0, 8),
                     tenantId,
                     budgetInMs: this.appConfigService.discrepancy.scan.cycleBudgetInMs,
+                    signal: this.scanCoordinatorService.shutdownSignal,
                 },
                 () =>
                     this.commandBus.execute<ScanDiscrepancyCommand, DiscrepancyOverview>(
