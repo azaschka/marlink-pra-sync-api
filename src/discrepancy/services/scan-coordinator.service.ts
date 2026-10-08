@@ -1,4 +1,5 @@
 import { BeforeApplicationShutdown, ConflictException, Injectable, Logger } from '@nestjs/common';
+import pLimit from 'p-limit';
 import { AppConfigService } from '../../app-config/services/app-config.service';
 import { ResourceReportRegistry } from '../../observability/services/resource-report-registry.service';
 import { ScanContext } from '../../shared/context/scan-context';
@@ -58,6 +59,7 @@ export class ScanCoordinatorService implements BeforeApplicationShutdown {
     private readonly cycleCounters = new Map<string, BackgroundCounters>();
     private readonly relationLimiter: BoundedTaskLimiter;
     private readonly autoSyncLimiter: BoundedTaskLimiter;
+    private readonly autoSyncWindowSize: number;
     private readonly shutdown = new AbortController();
     private readonly runningCycles = new Set<Promise<unknown>>();
 
@@ -77,6 +79,10 @@ export class ScanCoordinatorService implements BeforeApplicationShutdown {
             scan.autoSyncConcurrency,
             scan.backgroundQueueCapacity,
         );
+        this.autoSyncWindowSize = Math.max(
+            1,
+            scan.autoSyncConcurrency * ScanCoordinatorService.AUTO_SYNC_WINDOW_PER_SLOT,
+        );
         resourceReportRegistry.register('scan', () => this.stats());
     }
 
@@ -85,6 +91,9 @@ export class ScanCoordinatorService implements BeforeApplicationShutdown {
 
     /** Grace period for running scans to end after the abort, before the database closes. */
     public static readonly SHUTDOWN_GRACE_IN_MS = 5000;
+
+    /** Tasks of one windowed auto-sync run that are queued or running at a time, per auto-sync slot. */
+    private static readonly AUTO_SYNC_WINDOW_PER_SLOT = 2;
 
     /** Aborts every scan of this process: running ones and those that would start during shutdown. */
     public get shutdownSignal(): AbortSignal {
@@ -302,6 +311,19 @@ export class ScanCoordinatorService implements BeforeApplicationShutdown {
     /** Auto-sync task under the global auto-sync limit; resolves with TASK_DROPPED when the queue is full. */
     public runAutoSync<T>(task: () => Promise<T>, isFailure?: (result: T) => boolean) {
         return this.runBackground(this.autoSyncLimiter, 'autoSync', task, isFailure);
+    }
+
+    /**
+     * Runs many auto-sync tasks of one operation (sync-all-external) without overflowing the shared queue: at most
+     * twice the auto-sync concurrency of them are queued or running at a time, so a large tenant neither gets
+     * tasks dropped nor crowds out the auto-sync of other tenants. Settles like Promise.allSettled.
+     */
+    public runAutoSyncWindowed<T>(
+        tasks: readonly (() => Promise<T>)[],
+    ): Promise<PromiseSettledResult<T | typeof TASK_DROPPED>[]> {
+        const window = pLimit(this.autoSyncWindowSize);
+
+        return Promise.allSettled(tasks.map((task) => window(() => this.runAutoSync(task))));
     }
 
     public backgroundSummary(counters: BackgroundCounters): string {
