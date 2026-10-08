@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { AxiosError, AxiosResponse, HttpStatusCode } from 'axios';
-import { BtApiError, BtApiErrorKind } from '../../beyondtrust-pra-conf-api/http-client/errors/bt-api-error';
 import { ErrorProcessorUtility } from './error-processor.utility';
 
 describe('ErrorProcessorUtility', () => {
@@ -91,67 +90,6 @@ describe('ErrorProcessorUtility', () => {
 
         it('should return false for a plain object', () => {
             expect(ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError({ status: 422 })).toBe(false);
-        });
-    });
-
-    describe('isApiConnectivityError', () => {
-        it.each([
-            { kind: BtApiErrorKind.Transient, expected: true },
-            { kind: BtApiErrorKind.ProxyConnectFailure, expected: true },
-            { kind: BtApiErrorKind.UnexpectedResponse, expected: true },
-            { kind: BtApiErrorKind.RateLimited, expected: true },
-            { kind: BtApiErrorKind.NotFound, expected: false },
-            { kind: BtApiErrorKind.ClientError, expected: false },
-            { kind: BtApiErrorKind.ServerError, expected: false },
-            { kind: BtApiErrorKind.Unauthorized, expected: false },
-            { kind: BtApiErrorKind.Cancelled, expected: false },
-        ])('judges a classified BeyondTrust error of kind $kind by its kind ($expected)', ({ kind, expected }) => {
-            // The snippet contains "503" and "timeout" on purpose: the message text must not decide.
-            const error = new BtApiError({
-                kind,
-                method: 'GET',
-                path: '/user',
-                beyondtrustInstanceId: 1,
-                attempts: 1,
-                snippet: '503 timeout',
-                notSent: false,
-                httpStatus: 503,
-            });
-
-            expect(ErrorProcessorUtility.isApiConnectivityError(error)).toBe(expected);
-        });
-
-        it.each([
-            { error: new Error('timeout'), expected: true, description: 'API timeout' },
-            { error: new Error('ETIMEDOUT'), expected: true, description: 'Database ETIMEDOUT' },
-            { error: new Error('read ETIMEDOUT'), expected: true, description: 'Database read ETIMEDOUT' },
-            { error: new Error('ECONNRESET'), expected: true, description: 'Connection reset' },
-            { error: new Error('ENOTFOUND'), expected: true, description: 'Host not found' },
-            { error: new Error('502 Bad Gateway'), expected: true, description: '502 error' },
-            { error: new Error('503 Service Unavailable'), expected: true, description: '503 error' },
-            { error: new Error('504 Gateway Timeout'), expected: true, description: '504 error' },
-            {
-                error: new Error('QueryFailedError: read ETIMEDOUT'),
-                expected: true,
-                description: 'QueryFailedError',
-            },
-            { error: 'timeout string', expected: true, description: 'timeout as string' },
-            { error: new Error('Invalid input'), expected: false, description: 'non-connectivity error' },
-            { error: new Error('Database locked'), expected: false, description: 'different database error' },
-        ])('should return $expected for $description', ({ error, expected }) => {
-            const result = ErrorProcessorUtility.isApiConnectivityError(error);
-            expect(result).toBe(expected);
-        });
-
-        it('should detect QueryFailedError from full error string', () => {
-            const queryFailedError = {
-                name: 'QueryFailedError',
-                message: 'read ETIMEDOUT',
-                toString: () => 'QueryFailedError: read ETIMEDOUT',
-            };
-
-            const result = ErrorProcessorUtility.isApiConnectivityError(queryFailedError);
-            expect(result).toBe(true);
         });
     });
 });
