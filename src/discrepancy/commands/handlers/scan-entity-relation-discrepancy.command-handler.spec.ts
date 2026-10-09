@@ -2,11 +2,15 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { EventBus } from '@nestjs/cqrs';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
+import { ResourceReportRegistry } from '../../../observability/services/resource-report-registry.service';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { RetryUtility } from '../../../shared/utilities';
-import { DiscrepancyEntityType } from '../../enums';
+import { BtApiError, BtApiErrorKind } from '../../../beyondtrust-pra-conf-api/http-client/errors/bt-api-error';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../../enums';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
 import { DiscrepancyScannerService } from '../../services/discrepancy-scanner.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
+import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyStrategy } from '../../types';
 import { ScanEntityRelationDiscrepancyCommand } from '../scan-entity-relation-discrepancy.command';
 import { ScanEntityRelationDiscrepancyCommandHandler } from './scan-entity-relation-discrepancy.command-handler';
@@ -75,12 +79,13 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             findManyByEntityTypeAndEntityId: jest.fn().mockResolvedValue([]),
             createOrUpdateById: jest.fn().mockResolvedValue(undefined),
             deleteByLastModificationDateBefore: jest.fn().mockResolvedValue(undefined),
+            deleteByEntityIdAndLastModificationDateBefore: jest.fn().mockResolvedValue(undefined),
         } as unknown as DiscrepancyRepositoryService;
 
         discrepancyScannerService = {
             getSyncStartDate: jest.fn().mockReturnValue(new Date('2025-11-13T10:00:00Z')),
-            fetchFromBeyondTrustWithErrorHandling: jest.fn().mockResolvedValue({ transformed: [] }),
-            fetchFromDatabaseWithErrorHandling: jest.fn().mockResolvedValue([]),
+            fetchRelationsFromBeyondTrust: jest.fn().mockResolvedValue({ transformed: [] }),
+            fetchRelationsFromDatabase: jest.fn().mockResolvedValue([]),
             analyzeRelationalDiscrepancies: jest.fn().mockReturnValue({
                 identical: [],
                 onlyInBt: [],
@@ -97,9 +102,40 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             discrepancyRepositoryService,
             discrepancyScannerService,
             eventBus,
+            new ScanCoordinatorService(
+                {
+                    discrepancy: {
+                        scan: {
+                            cycleBudgetInMs: 60000,
+                            relationScanConcurrency: 2,
+                            autoSyncConcurrency: 3,
+                            backgroundQueueCapacity: 5000,
+                            distributedLockEnabled: false,
+                        },
+                    },
+                } as never,
+                { tryAcquire: () => Promise.resolve({ release: () => Promise.resolve() }) } as never,
+                new ResourceReportRegistry(),
+            ),
         );
 
         jest.spyOn(RetryUtility, 'executeWithRetry').mockImplementation((fn) => fn());
+    });
+
+    describe('scan budget', () => {
+        it('stops before the next parent and cleans up nothing once the budget expired', async () => {
+            const command = makeCommand({ identicalDataIds: [10, 11, 12] });
+            jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+            await ScanContext.runWithBudget({ scanId: 'scan-1', tenantId: 1, budgetInMs: 1 }, async () => {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+                await handler.execute(command);
+            });
+
+            expect(discrepancyScannerService.fetchRelationsFromBeyondTrust).not.toHaveBeenCalled();
+            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
+            expect(eventBus.publish).not.toHaveBeenCalled();
+        });
     });
 
     describe('execute', () => {
@@ -112,7 +148,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
 
             // Assert – loop body never entered
             expect(discrepancyStrategyProviderService.getForRelation).not.toHaveBeenCalled();
-            expect(discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling).not.toHaveBeenCalled();
+            expect(discrepancyScannerService.fetchRelationsFromBeyondTrust).not.toHaveBeenCalled();
             expect(discrepancyRepositoryService.findManyByEntityTypeAndEntityId).not.toHaveBeenCalled();
             expect(eventBus.publish).not.toHaveBeenCalled();
         });
@@ -319,7 +355,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             const command = makeCommand({ onlyInExternalIds: [10] });
             const btRec = rec(10, 20);
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock).mockResolvedValue({
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockResolvedValue({
                 transformed: [btRec],
             });
             (discrepancyScannerService.analyzeRelationalDiscrepancies as jest.Mock).mockReturnValue({
@@ -353,17 +389,27 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             );
         });
 
-        it('should delete obsolete discrepancies after each parentId scan', async () => {
-            // Arrange: 2 parent IDs → delete called twice
+        it('should clean up per parent and, after a complete run, the parents that no longer exist', async () => {
+            // Arrange: 2 parent IDs, both succeed
             const command = makeCommand({ identicalDataIds: [10, 20] });
             const startDate = new Date('2025-11-13T10:00:00Z');
             (discrepancyScannerService.getSyncStartDate as jest.Mock).mockReturnValue(startDate);
 
             // Act
-            await handler.execute(command);
+            const state = await handler.execute(command);
 
             // Assert
-            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).toHaveBeenCalledTimes(2);
+            expect(state).toBe(DiscrepancyScanState.Succeeded);
+            expect(discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore).toHaveBeenCalledTimes(2);
+            for (const parentId of [10, 20]) {
+                expect(discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore).toHaveBeenCalledWith(
+                    1,
+                    DiscrepancyEntityType.GroupPolicyJumpGroup,
+                    parentId,
+                    startDate,
+                );
+            }
+            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).toHaveBeenCalledTimes(1);
             expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).toHaveBeenCalledWith(
                 1,
                 DiscrepancyEntityType.GroupPolicyJumpGroup,
@@ -371,28 +417,63 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             );
         });
 
-        it('should continue processing other parentIds when one parentId scan fails', async () => {
-            // Arrange: first parentId throws, second should still be processed
+        it('should only clean up the parent that succeeded when another parent fails', async () => {
+            // Arrange: parent A succeeds, parent B fails
             const command = makeCommand({ identicalDataIds: [10, 20] });
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock)
-                .mockRejectedValueOnce(new Error('Network error'))
-                .mockResolvedValueOnce({ transformed: [] });
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock)
+                .mockResolvedValueOnce({ transformed: [] })
+                .mockRejectedValueOnce(new Error('Network error'));
 
             // Act
-            await handler.execute(command);
+            const state = await handler.execute(command);
 
-            // Assert – both parentIds attempted; only second one produces delete + event
-            expect(discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling).toHaveBeenCalledTimes(2);
-            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).toHaveBeenCalledTimes(1);
+            // Assert – only A's discrepancies are cleaned, nothing type-wide, one event
+            expect(state).toBe(DiscrepancyScanState.Partial);
+            expect(discrepancyScannerService.fetchRelationsFromBeyondTrust).toHaveBeenCalledTimes(2);
+            expect(discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore).toHaveBeenCalledTimes(1);
+            expect(discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore).toHaveBeenCalledWith(
+                1,
+                DiscrepancyEntityType.GroupPolicyJumpGroup,
+                10,
+                expect.any(Date),
+            );
+            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
             expect(eventBus.publish).toHaveBeenCalledTimes(1);
+        });
+
+        it('should skip a parent whose relation fetch fails with an HTML 404 and keep its discrepancies', async () => {
+            // Arrange
+            const command = makeCommand({ identicalDataIds: [10] });
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockRejectedValue(
+                new BtApiError({
+                    kind: BtApiErrorKind.UnexpectedResponse,
+                    method: 'GET',
+                    path: '/group-policy/10/jump-group',
+                    beyondtrustInstanceId: 1,
+                    attempts: 1,
+                    snippet: 'HTML page "404 Not Found"',
+                    notSent: false,
+                    httpStatus: 404,
+                }),
+            );
+
+            // Act
+            const state = await handler.execute(command);
+
+            // Assert – no delete dispatched, no event (so no auto-sync deletes the local relations)
+            expect(state).toBe(DiscrepancyScanState.Failed);
+            expect(discrepancyRepositoryService.createOrUpdateById).not.toHaveBeenCalled();
+            expect(discrepancyRepositoryService.deleteByEntityIdAndLastModificationDateBefore).not.toHaveBeenCalled();
+            expect(discrepancyRepositoryService.deleteByLastModificationDateBefore).not.toHaveBeenCalled();
+            expect(eventBus.publish).not.toHaveBeenCalled();
         });
 
         it('should log a warning when a parentId scan fails', async () => {
             // Arrange
             const command = makeCommand({ onlyInExternalIds: [10] });
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock).mockRejectedValue(
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockRejectedValue(
                 new Error('Something went wrong'),
             );
 
@@ -401,7 +482,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
 
             // Assert
             expect(console.warn).toHaveBeenCalledWith(
-                expect.stringContaining('⚠️ Skipping relational scan for group-policy-jump-group parent 10'),
+                expect.stringContaining('relation group-policy-jump-group parent 10 skipped (Internal)'),
             );
             expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Something went wrong'));
         });
@@ -410,7 +491,7 @@ describe('ScanEntityRelationDiscrepancyCommandHandler', () => {
             // Arrange
             const command = makeCommand({ identicalDataIds: [10] });
 
-            (discrepancyScannerService.fetchFromBeyondTrustWithErrorHandling as jest.Mock).mockRejectedValue(
+            (discrepancyScannerService.fetchRelationsFromBeyondTrust as jest.Mock).mockRejectedValue(
                 new Error('Unexpected error'),
             );
 

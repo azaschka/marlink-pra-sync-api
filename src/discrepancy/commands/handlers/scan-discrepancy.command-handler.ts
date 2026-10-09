@@ -6,10 +6,13 @@
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import pLimit, { LimitFunction } from 'p-limit';
 import { AppConfigService } from '../../../app-config/services/app-config.service';
-import { ErrorProcessorUtility, RetryUtility } from '../../../shared/utilities';
+import { ScanContext } from '../../../shared/context/scan-context';
+import { RetryUtility } from '../../../shared/utilities';
+import { DiscrepancyScanState } from '../../enums';
 import { DiscrepancyScannedEvent } from '../../events';
 import { DiscrepancyOverview } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
+import { DiscrepancyScanOutcome } from '../../services/discrepancy-scan-outcome';
 import { DiscrepancyScannerService } from '../../services/discrepancy-scanner.service';
 import { DiscrepancyStrategyProviderService } from '../../services/discrepancy-strategy-provider.service';
 import { DiscrepancyStrategy } from '../../types/discrepancy-strategy.type';
@@ -31,15 +34,23 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
         this.dbConnLimit = pLimit(concurrencyLimit);
     }
 
+    /**
+     * Scans one entity type. Only a complete fetch from BeyondTrust and the database leads to cleanup and to the
+     * DiscrepancyScannedEvent (relation scans, auto-sync). Any failure returns an overview with state failed or
+     * aborted and leaves the existing discrepancies untouched.
+     */
     public async execute(command: ScanDiscrepancyCommand): Promise<DiscrepancyOverview> {
+        // One value for every record of this run (whole seconds, see getSyncStartDate), so the cleanup below
+        // cannot delete records this run has just written.
         const startSyncUtcDate = this.discrepancyScannerService.getSyncStartDate();
+        const logPrefix = `${DiscrepancyScanOutcome.logPrefix(command.tenantId)} ${command.entityType}`;
 
         try {
             const discrepancyStrategy = this.discrepancyStrategyProviderService.get(
                 command.entityType,
             ) as DiscrepancyStrategy<unknown, unknown, unknown>;
 
-            // Fetch BeyondTrust data with retry mechanism per page (not entire pagination)
+            // Fetch BeyondTrust data; single requests are retried by HttpClientService (BtRetryPolicy) only.
             const { transformed: btData } = await this.discrepancyScannerService.fetchFromBeyondTrust(
                 discrepancyStrategy,
                 command.transactionId,
@@ -47,7 +58,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 command.entityType,
             );
 
-            // Fetch DB data with retry mechanism
+            // Fetch DB data; retried once, and only for transient database errors.
             const dbData = await this.discrepancyScannerService.fetchFromDatabase(
                 discrepancyStrategy,
                 command.transactionId,
@@ -76,7 +87,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 identicalData.map((data) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () => discrepancyStrategy.dbMarkAsSyncedFunc(command.transactionId, command.tenantId, data),
                             `Mark entity ${data.id} as synced`,
                         ),
@@ -88,7 +99,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 onlyInBt.map((bt) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () =>
                                 this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                     id: existingIdByEntityId.get(bt.id),
@@ -96,7 +107,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                                     entityId: bt.id,
                                     internalData: undefined,
                                     externalData: bt as unknown as Record<string, unknown>,
-                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                    lastModificationDate: startSyncUtcDate,
                                 }),
                             `Save discrepancy for entity ${bt.id} (only in BT)`,
                         ),
@@ -108,7 +119,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 onlyInDb.map((db) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () =>
                                 this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                     id: existingIdByEntityId.get(db.id),
@@ -116,7 +127,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                                     entityId: db.id,
                                     internalData: db as unknown as Record<string, unknown>,
                                     externalData: undefined,
-                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                    lastModificationDate: startSyncUtcDate,
                                 }),
                             `Save discrepancy for entity ${db.id} (only in DB)`,
                         ),
@@ -128,7 +139,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             await Promise.all(
                 differentDataPairs.map((pair) =>
                     this.dbConnLimit(() =>
-                        RetryUtility.executeWithRetry(
+                        RetryUtility.executeDatabaseOperation(
                             () =>
                                 this.discrepancyRepositoryService.createOrUpdateById(command.tenantId, {
                                     id: existingIdByEntityId.get(pair.bt.id),
@@ -136,7 +147,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                                     entityId: pair.bt.id,
                                     internalData: pair.db as unknown as Record<string, unknown>,
                                     externalData: pair.bt as unknown as Record<string, unknown>,
-                                    lastModificationDate: this.discrepancyScannerService.getSyncStartDate(),
+                                    lastModificationDate: startSyncUtcDate,
                                 }),
                             `Save discrepancy for mismatched entity ${pair.bt.id}`,
                         ),
@@ -144,8 +155,12 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 ),
             );
 
-            // Delete obsolete discrepancies with retry
-            await RetryUtility.executeWithRetry(
+            // An expired scan budget means the data of this run may be incomplete: no cleanup, no event
+            // (and therefore no relation scans and no auto-sync).
+            ScanContext.throwIfAborted();
+
+            // Delete obsolete discrepancies (one retry for transient database errors only)
+            await RetryUtility.executeDatabaseOperation(
                 () =>
                     this.discrepancyRepositoryService.deleteByLastModificationDateBefore(
                         command.tenantId,
@@ -163,6 +178,7 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
                 onlyInExternalIds: onlyInBt.map((d) => d.id),
                 onlyInInternalIds: onlyInDb.map((d) => d.id),
                 mismatchedIds: differentDataPairs.map((pair) => pair.bt.id),
+                state: DiscrepancyScanState.Succeeded,
             };
 
             this.eventBus.publish(
@@ -173,38 +189,17 @@ export class ScanDiscrepancyCommandHandler implements ICommandHandler<ScanDiscre
             );
 
             console.log(
-                `✅ Successfully completed discrepancy scan for ${command.entityType}: ${btData.length} BT records, ${dbData.length} DB records, ${identicalData.length} identical, ${onlyInBt.length} only in BT, ${onlyInDb.length} only in DB, ${differentDataPairs.length} mismatched`,
+                `✅ ${logPrefix} succeeded: ${btData.length} BT records, ${dbData.length} DB records, ${identicalData.length} identical, ${onlyInBt.length} only in BT, ${onlyInDb.length} only in DB, ${differentDataPairs.length} mismatched`,
             );
 
             return discrepancyOverview;
         } catch (error) {
+            // No event and no cleanup: a failed fetch is never treated as an empty result.
+            const overview = DiscrepancyScanOutcome.fromError(command.entityType, error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            console.error(`❌ Error scanning ${command.entityType}:`, errorMessage);
+            console.error(`❌ ${logPrefix} ${overview.state}(${overview.failureKind}): ${errorMessage}`);
 
-            if (ErrorProcessorUtility.isApiConnectivityError(error)) {
-                console.warn(`⚠️ Skipping entity ${command.entityType} due to BeyondTrust API connectivity issues`);
-
-                const emptyResult: DiscrepancyOverview = {
-                    entityType: command.entityType,
-                    totalBtData: 0,
-                    totalDbData: 0,
-                    identicalIds: [],
-                    onlyInExternalIds: [],
-                    onlyInInternalIds: [],
-                    mismatchedIds: [],
-                };
-
-                this.eventBus.publish(
-                    new DiscrepancyScannedEvent(command.transactionId, {
-                        tenantId: command.tenantId,
-                        discrepancyOverview: emptyResult,
-                    }),
-                );
-
-                return emptyResult;
-            }
-
-            throw error;
+            return overview;
         }
     }
 }

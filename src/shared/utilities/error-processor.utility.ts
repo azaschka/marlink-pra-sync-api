@@ -40,29 +40,4 @@ export abstract class ErrorProcessorUtility {
     public static isBeyondTrustUnprocessableEntityError(error: unknown): boolean {
         return error instanceof HttpException && (error.getStatus() as HttpStatus) === HttpStatus.UNPROCESSABLE_ENTITY;
     }
-
-    /**
-     * Check if an error is related to API or database connectivity issues (timeouts, connection resets, server errors).
-     * Used to determine if an operation should be gracefully skipped vs. thrown as a critical error.
-     *
-     * Covers:
-     * - API timeouts and connectivity issues (timeout, ECONNRESET, ENOTFOUND, 502, 503, 504)
-     * - Database timeouts (ETIMEDOUT, QueryFailedError with timeout)
-     */
-    public static isApiConnectivityError(error: unknown): boolean {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const errorString = String(error); // Full error string including stack
-
-        return (
-            errorMessage.includes('timeout') ||
-            errorMessage.includes('ETIMEDOUT') ||
-            errorMessage.includes('ECONNRESET') ||
-            errorMessage.includes('ENOTFOUND') ||
-            errorMessage.includes('502') ||
-            errorMessage.includes('503') ||
-            errorMessage.includes('504') ||
-            errorString.includes('QueryFailedError') ||
-            errorString.includes('read ETIMEDOUT')
-        );
-    }
 }

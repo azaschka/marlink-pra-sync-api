@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/unbound-method */
 import { HttpService } from '@nestjs/axios';
+import { Logger } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
-import { of } from 'rxjs';
+import { from, of, throwError } from 'rxjs';
 import { DateUtility } from '../../../shared/utilities';
 import { AuthTokenGrantType } from '../enums';
 import { AuthTokenService } from './auth-token.service';
@@ -50,6 +52,7 @@ describe('AuthTokenService', () => {
                     headers: {
                         Authorization: 'Basic Y2xpZW50LWlkLTEyMzpjbGllbnQtc2VjcmV0LTEyMw==',
                     },
+                    timeout: AuthTokenService.TOKEN_REQUEST_TIMEOUT_IN_MS,
                 },
             );
         });
@@ -189,6 +192,193 @@ describe('AuthTokenService', () => {
             expect(newFirstToken).not.toStrictEqual(firstToken);
             expect(cachedSecondToken).toStrictEqual(secondToken);
             expect(httpServicePostMethod).toHaveBeenCalledTimes(3); // 2 initial + 1 regenerated
+        });
+    });
+    describe('refresh ahead of expiry, single-flight and compare-and-invalidate', () => {
+        const tokenResponse = (accessToken: string, expiresIn: number) =>
+            of({ data: { access_token: accessToken, expires_in: expiresIn, token_type: 'Bearer' } } as AxiosResponse);
+
+        afterEach(() => {
+            jest.useRealTimers();
+        });
+
+        it('refreshes a one-hour token 60 s before it expires', async () => {
+            httpService.post = jest
+                .fn()
+                .mockReturnValueOnce(tokenResponse('token-a', 3600))
+                .mockReturnValueOnce(tokenResponse('token-b', 3600));
+            mockCurrentDate('2025-10-01T00:00:00Z');
+            await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            mockCurrentDate('2025-10-01T00:58:59Z');
+            const beforeMargin = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+            mockCurrentDate('2025-10-01T00:59:01Z');
+            const withinMargin = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            expect(beforeMargin.accessToken).toBe('token-a');
+            expect(withinMargin.accessToken).toBe('token-b');
+        });
+
+        it('uses 10 % of the lifetime as margin for short-lived tokens', async () => {
+            httpService.post = jest
+                .fn()
+                .mockReturnValueOnce(tokenResponse('token-a', 30))
+                .mockReturnValueOnce(tokenResponse('token-b', 30));
+            mockCurrentDate('2025-10-01T00:00:00Z');
+            await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            mockCurrentDate('2025-10-01T00:00:26Z');
+            const reused = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+            mockCurrentDate('2025-10-01T00:00:28Z');
+            const refreshed = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            expect(reused.accessToken).toBe('token-a');
+            expect(refreshed.accessToken).toBe('token-b');
+        });
+
+        it('sends one token request for 20 parallel requests at expiry', async () => {
+            let release: () => void = () => undefined;
+            const gate = new Promise<void>((resolve) => (release = resolve));
+            httpService.post = jest.fn().mockReturnValue(
+                from(
+                    gate.then(() => ({
+                        data: { access_token: 'token-a', expires_in: 3600, token_type: 'Bearer' },
+                    })),
+                ),
+            );
+
+            const tokens = Promise.all(
+                Array.from({ length: 20 }, () =>
+                    service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl),
+                ),
+            );
+            release();
+
+            expect((await tokens).every((token) => token.accessToken === 'token-a')).toBe(true);
+            expect(httpService.post).toHaveBeenCalledTimes(1);
+        });
+
+        it('keeps a refreshed token when a late 401 for the old token arrives', async () => {
+            httpService.post = jest
+                .fn()
+                .mockReturnValueOnce(tokenResponse('token-old', 3600))
+                .mockReturnValueOnce(tokenResponse('token-new', 3600));
+            await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            service.invalidateAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl, 'token-old');
+            const refreshed = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+            // A second request that also used the old token fails late with 401:
+            service.invalidateAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl, 'token-old');
+            const afterLate401 = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            expect(refreshed.accessToken).toBe('token-new');
+            expect(afterLate401.accessToken).toBe('token-new');
+            expect(httpService.post).toHaveBeenCalledTimes(2);
+        });
+
+        it('does not cache a failed token request', async () => {
+            httpService.post = jest
+                .fn()
+                .mockReturnValueOnce(throwError(() => new Error('token endpoint unavailable')))
+                .mockReturnValueOnce(tokenResponse('token-a', 3600));
+
+            await expect(service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl)).rejects.toThrow(
+                'token endpoint unavailable',
+            );
+            const token = await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            expect(token.accessToken).toBe('token-a');
+        });
+
+        describe('when the refresh fails', () => {
+            const unavailable = () => throwError(() => new Error('token endpoint unavailable'));
+
+            beforeEach(() => {
+                jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+            });
+
+            afterEach(() => {
+                jest.restoreAllMocks();
+            });
+
+            it('keeps using the current token until it expires and tries again after 5 s', async () => {
+                httpService.post = jest
+                    .fn()
+                    .mockReturnValueOnce(tokenResponse('token-a', 3600))
+                    .mockReturnValueOnce(unavailable())
+                    .mockReturnValueOnce(tokenResponse('token-b', 3600));
+                mockCurrentDate('2025-10-01T00:00:00Z');
+                await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+                mockCurrentDate('2025-10-01T00:59:01Z'); // within the refresh margin, token-a is still valid
+                const afterFailedRefresh = await service.getAuthToken(
+                    1,
+                    mockClientId,
+                    mockClientSecret,
+                    mockOauth2TokenUrl,
+                );
+                mockCurrentDate('2025-10-01T00:59:04Z');
+                const withinRetryInterval = await service.getAuthToken(
+                    1,
+                    mockClientId,
+                    mockClientSecret,
+                    mockOauth2TokenUrl,
+                );
+                mockCurrentDate('2025-10-01T00:59:07Z');
+                const afterRetryInterval = await service.getAuthToken(
+                    1,
+                    mockClientId,
+                    mockClientSecret,
+                    mockOauth2TokenUrl,
+                );
+
+                expect(afterFailedRefresh.accessToken).toBe('token-a');
+                expect(withinRetryInterval.accessToken).toBe('token-a');
+                expect(afterRetryInterval.accessToken).toBe('token-b');
+                expect(httpService.post).toHaveBeenCalledTimes(3);
+                expect(Logger.prototype.warn).toHaveBeenCalledWith(
+                    expect.stringContaining('Refreshing the token of BeyondTrust instance 1 failed'),
+                );
+            });
+
+            it('fails once the current token has expired', async () => {
+                httpService.post = jest
+                    .fn()
+                    .mockReturnValueOnce(tokenResponse('token-a', 3600))
+                    .mockReturnValueOnce(unavailable());
+                mockCurrentDate('2025-10-01T00:00:00Z');
+                await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+                mockCurrentDate('2025-10-01T01:00:01Z');
+
+                await expect(
+                    service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl),
+                ).rejects.toThrow('token endpoint unavailable');
+            });
+
+            it('never falls back to a token that was invalidated after a 401', async () => {
+                httpService.post = jest
+                    .fn()
+                    .mockReturnValueOnce(tokenResponse('token-a', 3600))
+                    .mockReturnValueOnce(unavailable());
+                await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+                service.invalidateAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl, 'token-a');
+
+                await expect(
+                    service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl),
+                ).rejects.toThrow('token endpoint unavailable');
+            });
+        });
+
+        it('does not keep the client secret in plain text in the cache key', async () => {
+            await service.getAuthToken(1, mockClientId, mockClientSecret, mockOauth2TokenUrl);
+
+            const keys = [...(service as unknown as { authTokensCache: Map<string, unknown> }).authTokensCache.keys()];
+
+            expect(keys).toHaveLength(1);
+            expect(keys[0]).toMatch(/^[0-9a-f]{64}$/);
+            expect(keys[0]).not.toContain(mockClientSecret);
         });
     });
 });

@@ -4,7 +4,11 @@ import { ErrorProcessorUtility } from '../../../shared/utilities';
 import { DiscrepancyEntityType } from '../../enums';
 import { SyncDiscrepancyByEntityIdFailedEvent } from '../../events';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
-import { SyncDiscrepancyByEntityIdCommand } from '../sync-discrepancy-by-entity-id.command';
+import { DiscrepancyScanOutcome } from '../../services/discrepancy-scan-outcome';
+import {
+    SyncDiscrepancyByEntityIdCommand,
+    SyncDiscrepancyByEntityIdResult,
+} from '../sync-discrepancy-by-entity-id.command';
 import { SyncDiscrepancyCommand } from '../sync-discrepancy.command';
 
 @CommandHandler(SyncDiscrepancyByEntityIdCommand)
@@ -15,13 +19,15 @@ export class SyncDiscrepancyByEntityIdCommandHandler implements ICommandHandler<
         private readonly eventBus: EventBus,
     ) {}
 
-    public async execute(command: SyncDiscrepancyByEntityIdCommand): Promise<void> {
+    public async execute(command: SyncDiscrepancyByEntityIdCommand): Promise<SyncDiscrepancyByEntityIdResult> {
         try {
             const discrepancy = await this.getDiscrepancy(command.tenantId, command.entityType, command.entityId);
 
             await this.commandBus.execute(
                 new SyncDiscrepancyCommand(command.transactionId, command.tenantId, discrepancy.id, command.syncType),
             );
+
+            return { synced: true };
         } catch (error) {
             const errorMessage = ErrorProcessorUtility.stringify(error);
             this.eventBus.publish(
@@ -30,6 +36,8 @@ export class SyncDiscrepancyByEntityIdCommandHandler implements ICommandHandler<
                     errorMessage,
                 }),
             );
+
+            return { synced: false, failureKind: DiscrepancyScanOutcome.failureKindOf(error) };
         }
     }
 

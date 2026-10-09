@@ -254,4 +254,56 @@ describe('SyncDiscrepancyCommandHandler', () => {
             });
         });
     });
+    describe('retries (real RetryUtility)', () => {
+        const command = (syncType: DiscrepancySyncType) =>
+            new SyncDiscrepancyCommand(TRANSACTION_ID, TENANT_ID, DISCREPANCY_ID, syncType);
+        const driverError = (code: string, message: string) =>
+            new QueryFailedError('INSERT INTO ...', [], Object.assign(new Error(message), { code }));
+
+        beforeEach(() => {
+            (RetryUtility.executeWithRetry as jest.Mock).mockRestore();
+            jest.spyOn(RetryUtility, 'delay').mockResolvedValue(undefined);
+            jest.spyOn(console, 'error').mockImplementation(() => undefined);
+            jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+            jest.spyOn(console, 'log').mockImplementation(() => undefined);
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('does not retry a foreign key violation', async () => {
+            const fkError = driverError('ER_NO_REFERENCED_ROW_2', 'a foreign key constraint fails');
+            mockStrategy.dbCreateOrUpdateFunc.mockRejectedValue(fkError);
+
+            await expect(handler.execute(command(DiscrepancySyncType.ExternalToInternal))).rejects.toThrow(fkError);
+
+            expect(mockStrategy.dbCreateOrUpdateFunc).toHaveBeenCalledTimes(1);
+        });
+
+        it('retries a deadlock once', async () => {
+            mockStrategy.dbCreateOrUpdateFunc
+                .mockRejectedValueOnce(driverError('ER_LOCK_DEADLOCK', 'Deadlock found'))
+                .mockResolvedValueOnce(undefined);
+
+            await handler.execute(command(DiscrepancySyncType.ExternalToInternal));
+
+            expect(mockStrategy.dbCreateOrUpdateFunc).toHaveBeenCalledTimes(2);
+            expect(eventBus.publish).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not repeat a failed BeyondTrust write', async () => {
+            (discrepancyRepositoryService.findOneById as jest.Mock).mockResolvedValue({
+                ...mockDiscrepancy,
+                internalData: { id: 99 },
+                externalData: undefined,
+            });
+            const writeError = new Error('BeyondTrust POST /user failed with status 504 (Transient)');
+            mockStrategy.btCreateFunc.mockRejectedValue(writeError);
+
+            await expect(handler.execute(command(DiscrepancySyncType.InternalToExternal))).rejects.toThrow(writeError);
+
+            expect(mockStrategy.btCreateFunc).toHaveBeenCalledTimes(1);
+        });
+    });
 });

@@ -28,9 +28,6 @@ describe('CreateBeyondtrustInstanceBackupCommandHandler', () => {
         jest.mocked(fs.mkdirSync).mockImplementation(() => {
             return undefined;
         });
-        (fs.writeFile as unknown as jest.Mock).mockImplementation((_path, _data, callback: (err: null) => void) => {
-            callback(null);
-        });
         // eslint-disable-next-line @typescript-eslint/unbound-method
         jest.mocked(path.dirname).mockReturnValue('/mock/dir');
         jest.useFakeTimers().setSystemTime(new Date('2025-10-01T00:00:00Z').getTime());
@@ -95,7 +92,14 @@ describe('CreateBeyondtrustInstanceBackupCommandHandler', () => {
             // Act
             const result = await handler.execute(new CreateBeyondtrustInstanceBackupCommand('transaction-1', 123));
 
-            // Assert
+            // Assert: the backup is streamed straight into its final location under the storage root
+            const [dispatched] = (commandBus.execute as jest.Mock).mock.calls[0] as unknown[];
+            expect(dispatched).toEqual(
+                expect.objectContaining({
+                    beyondtrustInstanceId: 123,
+                    targetFilePath: `/root/path//backup/beyondtrust/transaction-1-${Date.now()}.nsb`,
+                }),
+            );
             expect(beyondtrustInstanceBackupEntityCreateWithoutIdMethod).toHaveBeenCalledWith(
                 123,
                 `/backup/beyondtrust/transaction-1-${Date.now()}.nsb`,

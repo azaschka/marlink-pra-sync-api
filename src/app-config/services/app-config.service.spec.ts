@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DefaultAppConfig } from '../consts';
 import { AppConfigService } from './app-config.service';
@@ -170,6 +171,43 @@ describe('AppConfigService', () => {
         });
     });
 
+    describe('health validation', () => {
+        it.each([
+            {
+                key: 'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
+                value: '512Mi',
+                field: 'memoryHeapUsageThresholdInMB',
+                expected: 512,
+            },
+            {
+                key: 'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
+                value: '0',
+                field: 'memoryHeapUsageThresholdInMB',
+                expected: 512,
+            },
+            {
+                key: 'HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT',
+                value: '150',
+                field: 'diskStorageUsageThresholdInPercent',
+                expected: 80,
+            },
+            {
+                key: 'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
+                value: '768',
+                field: 'memoryHeapUsageThresholdInMB',
+                expected: 768,
+            },
+        ])('should use $expected for $key=$value', ({ key, value, field, expected }) => {
+            const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+            configService.get = jest
+                .fn()
+                .mockImplementation((requested: string) => (requested === key ? value : undefined));
+
+            expect((service.health as Record<string, number>)[field]).toBe(expected);
+            warn.mockRestore();
+        });
+    });
+
     describe('beyondTrust', () => {
         it.each([
             {
@@ -258,8 +296,11 @@ describe('AppConfigService', () => {
                         },
                     },
                     communication: {
-                        retryAttempts: 10,
+                        retryAttempts: 4,
                         retryDelayInMs: 1500,
+                        maxRetryAfterInMs: 20000,
+                        readTimeoutInMs: 45000,
+                        bodyIdleTimeoutInMs: 90000,
                     },
                 },
                 expected: {
@@ -346,8 +387,11 @@ describe('AppConfigService', () => {
                             },
                         },
                         communication: {
-                            retryAttempts: 10,
+                            retryAttempts: 4,
                             retryDelayInMs: 1500,
+                            maxRetryAfterInMs: 20000,
+                            readTimeoutInMs: 45000,
+                            bodyIdleTimeoutInMs: 90000,
                         },
                     },
                 },
@@ -438,8 +482,11 @@ describe('AppConfigService', () => {
                             },
                         },
                         communication: {
-                            retryAttempts: 5,
-                            retryDelayInMs: 5000,
+                            retryAttempts: 3,
+                            retryDelayInMs: 1000,
+                            maxRetryAfterInMs: 30000,
+                            readTimeoutInMs: 60000,
+                            bodyIdleTimeoutInMs: 180000,
                         },
                     },
                 },
@@ -513,6 +560,12 @@ describe('AppConfigService', () => {
                         return input.communication?.retryAttempts;
                     case 'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS':
                         return input.communication?.retryDelayInMs;
+                    case 'BEYONDTRUST_API_COMMUNICATION_MAX_RETRY_AFTER_IN_MS':
+                        return input.communication?.maxRetryAfterInMs;
+                    case 'BEYONDTRUST_API_COMMUNICATION_READ_TIMEOUT_IN_MS':
+                        return input.communication?.readTimeoutInMs;
+                    case 'BEYONDTRUST_API_COMMUNICATION_BODY_IDLE_TIMEOUT_IN_MS':
+                        return input.communication?.bodyIdleTimeoutInMs;
                     default:
                         return undefined;
                 }
@@ -604,9 +657,27 @@ describe('AppConfigService', () => {
                     communication: {
                         retryAttempts: expected.api.communication.retryAttempts,
                         retryDelayInMs: expected.api.communication.retryDelayInMs,
+                        maxRetryAfterInMs: expected.api.communication.maxRetryAfterInMs,
+                        readTimeoutInMs: expected.api.communication.readTimeoutInMs,
+                        bodyIdleTimeoutInMs: expected.api.communication.bodyIdleTimeoutInMs,
                     },
                 },
             });
+        });
+
+        it('should bound the BeyondTrust retry attempts even when misconfigured', () => {
+            const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+            configService.get = jest
+                .fn()
+                .mockImplementation((key: string) =>
+                    key === 'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS' ? '10' : undefined,
+                );
+
+            expect(service.beyondTrust.api.communication.retryAttempts).toBe(
+                DefaultAppConfig.beyondTrust.api.communication.retryAttempts,
+            );
+            expect(warn).toHaveBeenCalledTimes(1);
+            warn.mockRestore();
         });
     });
 
@@ -802,6 +873,8 @@ describe('AppConfigService', () => {
                         cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
+                        cycleBudgetInMs: '900000',
+                        distributedLockEnabled: 'FALSE',
                     },
                 },
                 expected: {
@@ -811,6 +884,11 @@ describe('AppConfigService', () => {
                         cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
+                        cycleBudgetInMs: 900000,
+                        relationScanConcurrency: 2,
+                        autoSyncConcurrency: 3,
+                        backgroundQueueCapacity: 5000,
+                        distributedLockEnabled: false,
                     },
                 },
             },
@@ -823,6 +901,11 @@ describe('AppConfigService', () => {
                         cronJobExpressions: '*/30 * * * *',
                         cronJobRetryAttempts: 5,
                         cronJobRetryDelayInMs: 10000,
+                        cycleBudgetInMs: 1200000,
+                        relationScanConcurrency: 2,
+                        autoSyncConcurrency: 3,
+                        backgroundQueueCapacity: 5000,
+                        distributedLockEnabled: true,
                     },
                 },
             },
@@ -843,6 +926,12 @@ describe('AppConfigService', () => {
                 if (key === 'DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS') {
                     return input?.scan?.cronJobRetryDelayInMs;
                 }
+                if (key === 'DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS') {
+                    return input?.scan?.cycleBudgetInMs;
+                }
+                if (key === 'DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED') {
+                    return input?.scan?.distributedLockEnabled;
+                }
 
                 return undefined;
             });
@@ -854,6 +943,11 @@ describe('AppConfigService', () => {
                     cronJobExpressions: expected.scan.cronJobExpressions,
                     cronJobRetryAttempts: expected.scan.cronJobRetryAttempts,
                     cronJobRetryDelayInMs: expected.scan.cronJobRetryDelayInMs,
+                    cycleBudgetInMs: expected.scan.cycleBudgetInMs,
+                    relationScanConcurrency: expected.scan.relationScanConcurrency,
+                    autoSyncConcurrency: expected.scan.autoSyncConcurrency,
+                    backgroundQueueCapacity: expected.scan.backgroundQueueCapacity,
+                    distributedLockEnabled: expected.scan.distributedLockEnabled,
                 },
             });
         });
@@ -903,6 +997,44 @@ describe('AppConfigService', () => {
                 limit: expected.limit,
             });
         });
+    });
+
+    describe('observability', () => {
+        it('should use the default report interval when nothing is configured', () => {
+            jest.spyOn(configService, 'get').mockReturnValue(undefined);
+
+            expect(service.observability.resourceReportIntervalInMs).toBe(
+                DefaultAppConfig.observability.resourceReportIntervalInMs,
+            );
+        });
+
+        it.each([
+            { input: '60000', expected: 60000 },
+            { input: ' 0 ', expected: 0 },
+            { input: 120000, expected: 120000 },
+        ])('should parse the configured report interval $input', ({ input, expected }) => {
+            const get = jest.spyOn(configService, 'get').mockReturnValue(input);
+
+            expect(service.observability.resourceReportIntervalInMs).toBe(expected);
+            expect(get).toHaveBeenCalledWith('RESOURCE_REPORT_INTERVAL_IN_MS');
+        });
+
+        it.each(['abc', '-1', '1.5', '5m'])(
+            'should fall back to the default for the invalid value %s and report it only once',
+            (input) => {
+                const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+                jest.spyOn(configService, 'get').mockReturnValue(input);
+
+                expect(service.observability.resourceReportIntervalInMs).toBe(
+                    DefaultAppConfig.observability.resourceReportIntervalInMs,
+                );
+                expect(service.observability.resourceReportIntervalInMs).toBe(
+                    DefaultAppConfig.observability.resourceReportIntervalInMs,
+                );
+                expect(warn).toHaveBeenCalledTimes(1);
+                warn.mockRestore();
+            },
+        );
     });
 
     describe('serviceManager', () => {

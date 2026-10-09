@@ -81,28 +81,18 @@ describe('DiscrepancyScannerService', () => {
             expect(result.transformed).toEqual([]);
         });
 
-        it('should retry individual pages and log page fetches', async () => {
+        it('should not retry a failed page itself (the HTTP client owns the only retry layer)', async () => {
             // Arrange
-            const transactionId = 'txn-123';
-            const tenantId = 1;
-            const entityType = 'User';
-            const mockPageData = [{ id: 1, name: 'User1' }];
-
+            const error = new Error('BeyondTrust GET /user failed with status 503 (UnexpectedResponse)');
             jest.spyOn(RetryUtility, 'delay').mockResolvedValue();
-            jest.spyOn(RetryUtility, 'executeWithRetry').mockResolvedValue(mockPageData);
+            (mockStrategy.btRetrieveFunc as jest.Mock).mockRejectedValue(error);
+            jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockImplementation(async (callback) =>
+                callback(1),
+            );
 
-            // Mock the pagination to call our callback
-            jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockImplementation(async (callback) => {
-                await callback(1);
-                await callback(2);
-                return mockPageData;
-            });
-
-            // Act
-            await service.fetchFromBeyondTrust(mockStrategy, transactionId, tenantId, entityType);
-
-            // Assert
-            expect(RetryUtility.executeWithRetry).toHaveBeenCalledTimes(2);
+            // Act & Assert
+            await expect(service.fetchFromBeyondTrust(mockStrategy, 'txn-123', 1, 'User')).rejects.toThrow(error);
+            expect(mockStrategy.btRetrieveFunc).toHaveBeenCalledTimes(1);
         });
 
         it('should propagate errors from BeyondTrust API', async () => {
@@ -122,30 +112,17 @@ describe('DiscrepancyScannerService', () => {
         });
     });
 
-    describe('fetchFromBeyondTrustWithErrorHandling', () => {
-        it('should fetch data and handle 404 errors by returning empty array', async () => {
-            // Arrange
-            const transactionId = 'txn-123';
-            const tenantId = 1;
-            const error404 = new Error('404 Not Found');
+    describe('fetchRelationsFromBeyondTrust', () => {
+        it.each([
+            { name: 'an HTML 404 from a proxy', error: new Error('404 Not Found') },
+            { name: 'a JSON 404 from BeyondTrust', error: new Error('Document Not Found') },
+        ])('should propagate $name instead of returning an empty list', async ({ error }) => {
+            // Arrange: real pagination, the first page fails
+            jest.restoreAllMocks();
+            mockStrategy.btRetrieveFunc = jest.fn().mockRejectedValue(error);
 
-            mockStrategy.btRetrieveFunc = jest.fn().mockRejectedValue(error404);
-
-            jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockImplementation(async (callback) => {
-                try {
-                    await callback(1);
-                } catch (e) {
-                    // Should be caught by error handling
-                }
-                return [];
-            });
-
-            // Act
-            const result = await service.fetchFromBeyondTrustWithErrorHandling(mockStrategy, transactionId, tenantId);
-
-            // Assert
-            expect(result.raw).toEqual([]);
-            expect(result.transformed).toEqual([]);
+            // Act & Assert
+            await expect(service.fetchRelationsFromBeyondTrust(mockStrategy, 'txn-123', 1)).rejects.toThrow(error);
         });
 
         it('should propagate non-404 errors', async () => {
@@ -157,9 +134,9 @@ describe('DiscrepancyScannerService', () => {
             jest.spyOn(PaginationUtility, 'queryUntilDuplicatePage').mockRejectedValue(error);
 
             // Act & Assert
-            await expect(
-                service.fetchFromBeyondTrustWithErrorHandling(mockStrategy, transactionId, tenantId),
-            ).rejects.toThrow(error);
+            await expect(service.fetchRelationsFromBeyondTrust(mockStrategy, transactionId, tenantId)).rejects.toThrow(
+                error,
+            );
         });
     });
 
@@ -224,7 +201,7 @@ describe('DiscrepancyScannerService', () => {
         });
     });
 
-    describe('fetchFromDatabaseWithErrorHandling', () => {
+    describe('fetchRelationsFromDatabase', () => {
         it('should handle NotFoundException by returning empty array', async () => {
             // Arrange
             const transactionId = 'txn-123';
@@ -244,7 +221,7 @@ describe('DiscrepancyScannerService', () => {
             });
 
             // Act
-            const result = await service.fetchFromDatabaseWithErrorHandling(mockStrategy, transactionId, tenantId);
+            const result = await service.fetchRelationsFromDatabase(mockStrategy, transactionId, tenantId);
 
             // Assert
             expect(result).toEqual([]);
@@ -259,9 +236,9 @@ describe('DiscrepancyScannerService', () => {
             jest.spyOn(PaginationUtility, 'queryUntilLastPage').mockRejectedValue(error);
 
             // Act & Assert
-            await expect(
-                service.fetchFromDatabaseWithErrorHandling(mockStrategy, transactionId, tenantId),
-            ).rejects.toThrow(error);
+            await expect(service.fetchRelationsFromDatabase(mockStrategy, transactionId, tenantId)).rejects.toThrow(
+                error,
+            );
         });
     });
 
@@ -541,6 +518,12 @@ describe('DiscrepancyScannerService', () => {
     });
 
     describe('getSyncStartDate', () => {
+        it('should truncate to whole seconds, as stored by the timestamp column', () => {
+            jest.spyOn(DateUtility, 'getCurrentUtcDate').mockReturnValue(new Date('2026-09-30T23:58:42.900Z'));
+
+            expect(service.getSyncStartDate()).toEqual(new Date('2026-09-30T23:58:42.000Z'));
+        });
+
         it('should return current UTC date', () => {
             // Arrange
             const mockDate = new Date('2025-11-13T10:00:00Z');

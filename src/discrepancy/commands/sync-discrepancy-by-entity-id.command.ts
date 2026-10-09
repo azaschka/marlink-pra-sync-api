@@ -11,3 +11,9 @@ export class SyncDiscrepancyByEntityIdCommand {
         public readonly syncType: DiscrepancySyncType,
     ) {}
 }
+
+/** Outcome of one auto-sync; failures are reported, not thrown, so callers can count them. */
+export interface SyncDiscrepancyByEntityIdResult {
+    readonly synced: boolean;
+    readonly failureKind?: string;
+}

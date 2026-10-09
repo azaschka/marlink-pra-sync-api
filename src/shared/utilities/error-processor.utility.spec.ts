@@ -92,39 +92,4 @@ describe('ErrorProcessorUtility', () => {
             expect(ErrorProcessorUtility.isBeyondTrustUnprocessableEntityError({ status: 422 })).toBe(false);
         });
     });
-
-    describe('isApiConnectivityError', () => {
-        it.each([
-            { error: new Error('timeout'), expected: true, description: 'API timeout' },
-            { error: new Error('ETIMEDOUT'), expected: true, description: 'Database ETIMEDOUT' },
-            { error: new Error('read ETIMEDOUT'), expected: true, description: 'Database read ETIMEDOUT' },
-            { error: new Error('ECONNRESET'), expected: true, description: 'Connection reset' },
-            { error: new Error('ENOTFOUND'), expected: true, description: 'Host not found' },
-            { error: new Error('502 Bad Gateway'), expected: true, description: '502 error' },
-            { error: new Error('503 Service Unavailable'), expected: true, description: '503 error' },
-            { error: new Error('504 Gateway Timeout'), expected: true, description: '504 error' },
-            {
-                error: new Error('QueryFailedError: read ETIMEDOUT'),
-                expected: true,
-                description: 'QueryFailedError',
-            },
-            { error: 'timeout string', expected: true, description: 'timeout as string' },
-            { error: new Error('Invalid input'), expected: false, description: 'non-connectivity error' },
-            { error: new Error('Database locked'), expected: false, description: 'different database error' },
-        ])('should return $expected for $description', ({ error, expected }) => {
-            const result = ErrorProcessorUtility.isApiConnectivityError(error);
-            expect(result).toBe(expected);
-        });
-
-        it('should detect QueryFailedError from full error string', () => {
-            const queryFailedError = {
-                name: 'QueryFailedError',
-                message: 'read ETIMEDOUT',
-                toString: () => 'QueryFailedError: read ETIMEDOUT',
-            };
-
-            const result = ErrorProcessorUtility.isApiConnectivityError(queryFailedError);
-            expect(result).toBe(true);
-        });
-    });
 });

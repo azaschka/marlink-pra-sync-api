@@ -13,6 +13,12 @@ export abstract class DatabaseConnectionUtility {
 
     private static readonly CLOSED_CONNECTION_MESSAGE = 'connection is in closed state';
 
+    // Lock conflicts resolve themselves; retrying them is safe and cheap.
+    private static readonly RETRYABLE_LOCK_ERROR_CODES: ReadonlySet<string> = new Set([
+        'ER_LOCK_DEADLOCK',
+        'ER_LOCK_WAIT_TIMEOUT',
+    ]);
+
     public static async acquireQueryRunner(
         dataSource: DataSource,
         acquireTimeoutInMs: number = DefaultAppConfig.database.acquireTimeoutInMs,
@@ -77,6 +83,52 @@ export abstract class DatabaseConnectionUtility {
         }
     }
 
+    /**
+     * Runs the operation inside a transaction on its own pooled connection. The connection is released on every
+     * path, including a failing START TRANSACTION, and a rollback is only attempted once a transaction was started.
+     * A failing rollback does not hide the original error.
+     */
+    public static async executeInTransaction<R>(
+        dataSource: DataSource,
+        operation: (queryRunner: QueryRunner) => Promise<R>,
+    ): Promise<R> {
+        const queryRunner = await DatabaseConnectionUtility.acquireQueryRunner(dataSource);
+        let transactionStarted = false;
+
+        try {
+            await queryRunner.startTransaction();
+            transactionStarted = true;
+            const result = await operation(queryRunner);
+            await queryRunner.commitTransaction();
+
+            return result;
+        } catch (error) {
+            if (transactionStarted) {
+                await DatabaseConnectionUtility.rollbackQuietly(queryRunner);
+            }
+
+            throw error;
+        } finally {
+            await queryRunner.release();
+        }
+    }
+
+    /**
+     * Closes the connection of the query runner instead of returning it to the pool: for a connection with a
+     * hanging query, or one that may still hold a named lock. Never throws.
+     */
+    public static async discard(queryRunner: QueryRunner): Promise<void> {
+        try {
+            (
+                queryRunner as unknown as { databaseConnection?: { destroy?: () => void } }
+            ).databaseConnection?.destroy?.();
+        } catch {
+            // already closed
+        }
+
+        await queryRunner.release().catch(() => undefined);
+    }
+
     public static isTransientConnectionError(error: unknown): boolean {
         const candidates = [
             error,
@@ -97,5 +149,33 @@ export abstract class DatabaseConnectionUtility {
                     message.toLowerCase().includes(DatabaseConnectionUtility.CLOSED_CONNECTION_MESSAGE))
             );
         });
+    }
+
+    /**
+     * True for database failures that a retry can fix: a lost connection, a deadlock or a lock wait timeout.
+     * Constraint violations, data errors and an exhausted pool are not retried.
+     */
+    public static isRetryableDatabaseError(error: unknown): boolean {
+        if (DatabaseConnectionUtility.isTransientConnectionError(error)) {
+            return true;
+        }
+
+        return [error, (error as { driverError?: unknown } | null | undefined)?.driverError].some((candidate) => {
+            const code = (candidate as { code?: unknown } | null | undefined)?.code;
+
+            return typeof code === 'string' && DatabaseConnectionUtility.RETRYABLE_LOCK_ERROR_CODES.has(code);
+        });
+    }
+
+    private static async rollbackQuietly(queryRunner: QueryRunner): Promise<void> {
+        try {
+            await queryRunner.rollbackTransaction();
+        } catch (rollbackError) {
+            DatabaseConnectionUtility.LOGGER.warn(
+                `Rollback failed, the connection is released anyway: ${
+                    rollbackError instanceof Error ? rollbackError.message : String(rollbackError)
+                }`,
+            );
+        }
     }
 }

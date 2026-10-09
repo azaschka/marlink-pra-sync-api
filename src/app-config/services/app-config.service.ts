@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { resolve } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
@@ -8,6 +8,11 @@ import { DefaultAppConfig } from '../consts';
 export class AppConfigService {
     private static readonly DEFAULT_UNDEFINED_STRING = 'unknown';
     private static readonly DEFAULT_UNDEFINED_NUMBER = 0;
+    // Bounds the single BeyondTrust retry layer even when misconfigured (at most 6 attempts per request).
+    private static readonly MAX_BEYONDTRUST_RETRY_ATTEMPTS = 5;
+
+    private readonly logger = new Logger(AppConfigService.name);
+    private readonly reportedInvalidKeys = new Set<string>();
 
     constructor(private readonly configService: ConfigService) {}
 
@@ -37,14 +42,20 @@ export class AppConfigService {
         };
     }
 
+    // Validated: a value like "512Mi" used to turn the threshold into NaN and silently disable the check.
     public get health() {
         return {
-            diskStorageUsageThresholdInPercent:
-                this.configService.get<number>('HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT') ??
+            diskStorageUsageThresholdInPercent: this.integerOrDefault(
+                'HEALTH_DISK_STORAGE_USAGE_THRESHOLD_IN_PERCENT',
                 DefaultAppConfig.health.diskStorageUsageThresholdInPercent,
-            memoryHeapUsageThresholdInMB:
-                this.configService.get<number>('HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB') ??
+                1,
+                100,
+            ),
+            memoryHeapUsageThresholdInMB: this.integerOrDefault(
+                'HEALTH_MEMORY_HEAP_USAGE_THRESHOLD_IN_MB',
                 DefaultAppConfig.health.memoryHeapUsageThresholdInMB,
+                1,
+            ),
         };
     }
 
@@ -195,12 +206,36 @@ export class AppConfigService {
                     },
                 },
                 communication: {
-                    retryAttempts:
-                        this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS') ??
+                    retryAttempts: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_RETRY_ATTEMPTS',
                         DefaultAppConfig.beyondTrust.api.communication.retryAttempts,
-                    retryDelayInMs:
-                        this.configService.get<number>('BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS') ??
+                        0,
+                        AppConfigService.MAX_BEYONDTRUST_RETRY_ATTEMPTS,
+                    ),
+                    retryDelayInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_RETRY_DELAY_IN_MS',
                         DefaultAppConfig.beyondTrust.api.communication.retryDelayInMs,
+                        0,
+                        60000,
+                    ),
+                    maxRetryAfterInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_MAX_RETRY_AFTER_IN_MS',
+                        DefaultAppConfig.beyondTrust.api.communication.maxRetryAfterInMs,
+                        0,
+                        300000,
+                    ),
+                    readTimeoutInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_READ_TIMEOUT_IN_MS',
+                        DefaultAppConfig.beyondTrust.api.communication.readTimeoutInMs,
+                        1000,
+                        600000,
+                    ),
+                    bodyIdleTimeoutInMs: this.integerOrDefault(
+                        'BEYONDTRUST_API_COMMUNICATION_BODY_IDLE_TIMEOUT_IN_MS',
+                        DefaultAppConfig.beyondTrust.api.communication.bodyIdleTimeoutInMs,
+                        1000,
+                        3600000,
+                    ),
                 },
             },
         };
@@ -255,6 +290,27 @@ export class AppConfigService {
         };
     }
 
+    public get backupRetention() {
+        return {
+            retentionDays: this.integerOrDefault(
+                'BACKUP_RETENTION_DAYS',
+                DefaultAppConfig.backupRetention.retentionDays,
+                1,
+            ),
+            keepLatest: this.integerOrDefault(
+                'BACKUP_RETENTION_KEEP_LATEST',
+                DefaultAppConfig.backupRetention.keepLatest,
+                0,
+            ),
+            cronExpression:
+                this.configService.get<string>('BACKUP_RETENTION_CRON') ??
+                DefaultAppConfig.backupRetention.cronExpression,
+            timezone: DefaultAppConfig.discrepancy.scan.cronJobTimezone,
+            // Same switch as the scan lock: both depend on GET_LOCK support of the database (not on Galera).
+            distributedLockEnabled: this.discrepancy.scan.distributedLockEnabled,
+        };
+    }
+
     public get discrepancy() {
         return {
             maxBatchSize:
@@ -273,6 +329,18 @@ export class AppConfigService {
                 cronJobRetryDelayInMs:
                     this.configService.get<number>('DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS') ??
                     DefaultAppConfig.discrepancy.scan.cronJobRetryDelayInMs,
+                cycleBudgetInMs: this.integerOrDefault(
+                    'DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS',
+                    DefaultAppConfig.discrepancy.scan.cycleBudgetInMs,
+                    60000,
+                ),
+                relationScanConcurrency: DefaultAppConfig.discrepancy.scan.relationScanConcurrency,
+                autoSyncConcurrency: DefaultAppConfig.discrepancy.scan.autoSyncConcurrency,
+                backgroundQueueCapacity: DefaultAppConfig.discrepancy.scan.backgroundQueueCapacity,
+                distributedLockEnabled: this.booleanOrDefault(
+                    'DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED',
+                    DefaultAppConfig.discrepancy.scan.distributedLockEnabled,
+                ),
             },
         };
     }
@@ -305,6 +373,16 @@ export class AppConfigService {
             isEnabled: isEnabled,
             ttlInMs: this.configService.get<number>('THROTTLE_TTL_IN_MS') ?? DefaultAppConfig.throttle.ttlInMs,
             limit: this.configService.get<number>('THROTTLE_LIMIT') ?? DefaultAppConfig.throttle.limit,
+        };
+    }
+
+    public get observability() {
+        return {
+            resourceReportIntervalInMs: this.integerOrDefault(
+                'RESOURCE_REPORT_INTERVAL_IN_MS',
+                DefaultAppConfig.observability.resourceReportIntervalInMs,
+                0,
+            ),
         };
     }
 
@@ -348,5 +426,55 @@ export class AppConfigService {
                 },
             },
         };
+    }
+
+    /** Reads a boolean setting ("true"/"false", case-insensitive); anything else falls back to the default. */
+    private booleanOrDefault(key: string, defaultValue: boolean): boolean {
+        const raw = this.configService.get<string | boolean>(key);
+
+        if (raw === undefined || raw === null || String(raw).trim() === '') {
+            return defaultValue;
+        }
+
+        const normalized = String(raw).trim().toLowerCase();
+
+        if (normalized === 'true' || normalized === 'false') {
+            return normalized === 'true';
+        }
+
+        if (!this.reportedInvalidKeys.has(key)) {
+            this.reportedInvalidKeys.add(key);
+            this.logger.warn(`Ignoring invalid ${key}=${String(raw)} (expected true or false); using ${defaultValue}.`);
+        }
+
+        return defaultValue;
+    }
+
+    /**
+     * Reads an integer setting. Environment values arrive as strings; a value that is not an integer or lies
+     * outside [min, max] falls back to the default and is reported once, so a typo cannot silently disable or
+     * overload a mechanism.
+     */
+    private integerOrDefault(key: string, defaultValue: number, min: number, max = Number.MAX_SAFE_INTEGER): number {
+        const raw = this.configService.get<string | number>(key);
+
+        if (raw === undefined || raw === null || String(raw).trim() === '') {
+            return defaultValue;
+        }
+
+        const value = Number(String(raw).trim());
+
+        if (Number.isInteger(value) && value >= min && value <= max) {
+            return value;
+        }
+
+        if (!this.reportedInvalidKeys.has(key)) {
+            this.reportedInvalidKeys.add(key);
+            this.logger.warn(
+                `Ignoring invalid ${key}=${String(raw)} (expected an integer between ${min} and ${max}); using ${defaultValue}.`,
+            );
+        }
+
+        return defaultValue;
     }
 }

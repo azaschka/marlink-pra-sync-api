@@ -41,6 +41,22 @@ describe('BeyondtrustInstanceBackupRepositoryService', () => {
         });
     });
 
+    describe('findAllNewestFirstPerInstance', () => {
+        it('reads every backup ordered per instance, newest first', async () => {
+            const baseRepositoryFindByMethod = jest
+                .spyOn(BaseRepositoryService.prototype, 'findBy')
+                .mockReturnValue(Promise.resolve([]));
+
+            await service.findAllNewestFirstPerInstance();
+
+            expect(baseRepositoryFindByMethod).toHaveBeenCalledWith({}, undefined, undefined, {
+                beyondtrustInstanceId: 'ASC',
+                creationDate: 'DESC',
+                id: 'DESC',
+            });
+        });
+    });
+
     describe('deleteById', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const id = 1;

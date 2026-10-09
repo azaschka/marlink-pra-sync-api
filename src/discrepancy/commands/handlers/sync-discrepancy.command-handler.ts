@@ -27,7 +27,7 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
         try {
             if (command.syncType === DiscrepancySyncType.ExternalToInternal) {
                 if (discrepancy.externalData) {
-                    await RetryUtility.executeWithRetry(
+                    await RetryUtility.executeDatabaseOperation(
                         () =>
                             discrepancyStrategy.dbCreateOrUpdateFunc(
                                 command.tenantId,
@@ -36,7 +36,7 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                         `Create/Update internal data for discrepancy ${command.id}`,
                     );
                 } else {
-                    await RetryUtility.executeWithRetry(
+                    await RetryUtility.executeDatabaseOperation(
                         () =>
                             discrepancyStrategy.dbDeleteFunc(
                                 command.tenantId,
@@ -46,37 +46,27 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
                     );
                 }
             } else {
+                // BeyondTrust writes are not repeated here: HttpClientService retries only requests that
+                // BeyondTrust provably did not process, anything else would risk duplicates.
                 if (discrepancy.internalData) {
                     if (discrepancy.externalData) {
-                        await RetryUtility.executeWithRetry(
-                            () =>
-                                discrepancyStrategy.btModifyFunc(
-                                    command.transactionId,
-                                    command.tenantId,
-                                    discrepancy.internalData as unknown as any,
-                                ),
-                            `Modify external data for discrepancy ${command.id}`,
+                        await discrepancyStrategy.btModifyFunc(
+                            command.transactionId,
+                            command.tenantId,
+                            discrepancy.internalData as unknown as any,
                         );
                     } else {
-                        await RetryUtility.executeWithRetry(
-                            () =>
-                                discrepancyStrategy.btCreateFunc(
-                                    command.transactionId,
-                                    command.tenantId,
-                                    discrepancy.internalData as unknown as any,
-                                ),
-                            `Create external data for discrepancy ${command.id}`,
+                        await discrepancyStrategy.btCreateFunc(
+                            command.transactionId,
+                            command.tenantId,
+                            discrepancy.internalData as unknown as any,
                         );
                     }
                 } else {
-                    await RetryUtility.executeWithRetry(
-                        () =>
-                            discrepancyStrategy.btDeleteFunc(
-                                command.transactionId,
-                                command.tenantId,
-                                discrepancy.externalData as unknown as any,
-                            ),
-                        `Delete external data for discrepancy ${command.id}`,
+                    await discrepancyStrategy.btDeleteFunc(
+                        command.transactionId,
+                        command.tenantId,
+                        discrepancy.externalData as unknown as any,
                     );
                 }
             }
@@ -102,7 +92,7 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
             throw error;
         }
 
-        await RetryUtility.executeWithRetry(
+        await RetryUtility.executeDatabaseOperation(
             () => this.discrepancyRepositoryService.deleteById(command.tenantId, command.id),
             `Delete discrepancy record ${command.id}`,
         );

@@ -13,6 +13,22 @@ export abstract class DefaultAppConfig {
     private static readonly DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS = 5;
     private static readonly DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS = 10000;
     private static readonly DISCREPANCY_MAX_BATCH_SIZE = 100;
+    // Time budget of one scan cycle per tenant, below the 30 minute cron interval. When it expires, in-flight
+    // BeyondTrust requests are aborted and unfinished entity types get neither cleanup nor auto-sync.
+    private static readonly DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS = 20 * 60 * 1000;
+    // Background work of scans is bounded globally (all tenants): relation scans and auto-sync. Tasks beyond
+    // the queue capacity are dropped and counted; they are re-derived by the next complete scan.
+    private static readonly DISCREPANCY_RELATION_SCAN_CONCURRENCY = 2;
+    private static readonly DISCREPANCY_AUTO_SYNC_CONCURRENCY = 3;
+    private static readonly DISCREPANCY_BACKGROUND_QUEUE_CAPACITY = 5000;
+    // MariaDB GET_LOCK per tenant so that several replicas never run the same tenant's cycle at the same time.
+    private static readonly DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED = true;
+
+    // BeyondTrust backups (STAB-08): files and rows older than the retention are deleted daily, after the backup
+    // creation at 02:35 (PRA API cron). The newest backups per instance are always kept (decision of 2026-10-01).
+    private static readonly BACKUP_RETENTION_DAYS = 90;
+    private static readonly BACKUP_RETENTION_KEEP_LATEST = 1;
+    private static readonly BACKUP_RETENTION_CRON = '5 4 * * *';
 
     // Database tuning is constant-only; the environment supplies just the endpoint and credentials.
     // Sized for MariaDB max_connections = 300 and wait_timeout = 300 s. Both service pools, counted twice
@@ -33,6 +49,21 @@ export abstract class DefaultAppConfig {
     // mysql2 has no acquire timeout, it is enforced in DatabaseConnectionUtility.
     private static readonly DB_ACQUIRE_TIMEOUT_IN_MS = 30000;
     private static readonly DB_READ_MAX_ATTEMPTS = 2;
+
+    // System log and monitoring records are persisted asynchronously in bounded batches (one connection per
+    // writer). A full buffer drops new rows and documents the gap; see BufferedEntityWriter.
+    private static readonly LOG_WRITER_CAPACITY = 10000;
+    private static readonly LOG_WRITER_BATCH_SIZE = 200;
+    private static readonly LOG_WRITER_FLUSH_INTERVAL_IN_MS = 1000;
+    private static readonly LOG_WRITER_ACQUIRE_TIMEOUT_IN_MS = 5000;
+    private static readonly LOG_WRITER_MAX_BACKOFF_IN_MS = 30000;
+    private static readonly LOG_WRITER_SHUTDOWN_TIMEOUT_IN_MS = 5000;
+    private static readonly LOG_WRITER_DROP_REPORT_INTERVAL_IN_MS = 60000;
+    // Stays below the 65,535 byte limit of the TEXT payload column, measured in bytes (utf8mb4).
+    private static readonly LOG_PAYLOAD_MAX_BYTES = 60000;
+
+    // One JSON line with memory, pool and background work figures per interval; 0 disables the report.
+    private static readonly RESOURCE_REPORT_INTERVAL_IN_MS = 300000; // 5 minutes
 
     // Throttle settings
     private static readonly THROTTLE_TTL_IN_MS = 60000; // 1 minute
@@ -144,11 +175,41 @@ export abstract class DefaultAppConfig {
                 sessionPolicy: {
                     path: '/session-policy',
                 },
+                // The only retry layer for BeyondTrust calls (BtRetryPolicy): at most retryAttempts retries after
+                // the first attempt, exponential backoff from retryDelayInMs (1 s, 2 s, 4 s) plus jitter.
                 communication: {
-                    retryAttempts: 5,
-                    retryDelayInMs: 5000,
+                    retryAttempts: 3,
+                    retryDelayInMs: 1000,
+                    maxRetryAfterInMs: 30000,
+                    // Per-request timeout for reads; writes and the backup download keep the client default.
+                    readTimeoutInMs: 60000,
+                    // A streamed body (backup download) fails when no data arrived for this long. axios' timeout
+                    // only covers the time until the response headers; see IdleTimeoutStreamUtility.
+                    bodyIdleTimeoutInMs: 180000,
                 },
             },
+        };
+    }
+
+    public static get logWriter() {
+        return {
+            capacity: DefaultAppConfig.LOG_WRITER_CAPACITY,
+            batchSize: DefaultAppConfig.LOG_WRITER_BATCH_SIZE,
+            flushIntervalInMs: DefaultAppConfig.LOG_WRITER_FLUSH_INTERVAL_IN_MS,
+            acquireTimeoutInMs: DefaultAppConfig.LOG_WRITER_ACQUIRE_TIMEOUT_IN_MS,
+            maxBackoffInMs: DefaultAppConfig.LOG_WRITER_MAX_BACKOFF_IN_MS,
+            shutdownTimeoutInMs: DefaultAppConfig.LOG_WRITER_SHUTDOWN_TIMEOUT_IN_MS,
+            dropReportIntervalInMs: DefaultAppConfig.LOG_WRITER_DROP_REPORT_INTERVAL_IN_MS,
+        };
+    }
+
+    public static get logPayloadMaxBytes(): number {
+        return DefaultAppConfig.LOG_PAYLOAD_MAX_BYTES;
+    }
+
+    public static get observability() {
+        return {
+            resourceReportIntervalInMs: DefaultAppConfig.RESOURCE_REPORT_INTERVAL_IN_MS,
         };
     }
 
@@ -172,6 +233,14 @@ export abstract class DefaultAppConfig {
         };
     }
 
+    public static get backupRetention() {
+        return {
+            retentionDays: DefaultAppConfig.BACKUP_RETENTION_DAYS,
+            keepLatest: DefaultAppConfig.BACKUP_RETENTION_KEEP_LATEST,
+            cronExpression: DefaultAppConfig.BACKUP_RETENTION_CRON,
+        };
+    }
+
     public static get storage() {
         return {
             jumpointNodeIsoPath: 'jumpoint-node-iso',
@@ -186,6 +255,11 @@ export abstract class DefaultAppConfig {
                 cronJobExpressions: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_EXPRESSION,
                 cronJobRetryAttempts: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_RETRY_ATTEMPTS,
                 cronJobRetryDelayInMs: DefaultAppConfig.DISCREPANCY_SCAN_CRON_JOB_RETRY_DELAY_IN_MS,
+                cycleBudgetInMs: DefaultAppConfig.DISCREPANCY_SCAN_CYCLE_BUDGET_IN_MS,
+                relationScanConcurrency: DefaultAppConfig.DISCREPANCY_RELATION_SCAN_CONCURRENCY,
+                autoSyncConcurrency: DefaultAppConfig.DISCREPANCY_AUTO_SYNC_CONCURRENCY,
+                backgroundQueueCapacity: DefaultAppConfig.DISCREPANCY_BACKGROUND_QUEUE_CAPACITY,
+                distributedLockEnabled: DefaultAppConfig.DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED,
             },
         };
     }

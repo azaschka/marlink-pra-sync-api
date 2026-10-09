@@ -1,6 +1,9 @@
 import { CommandBus } from '@nestjs/cqrs';
+import { ResourceReportRegistry } from '../../../observability/services/resource-report-registry.service';
+import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand } from '../../commands';
-import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
+import { DiscrepancyEntityType, DiscrepancyScanState, DiscrepancySyncType } from '../../enums';
+import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
 import { SyncAfterDiscrepancyFoundEventHandler } from './sync-after-discrepancy-found.event-handler';
 
@@ -16,13 +19,97 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
 
     beforeEach(() => {
         jest.spyOn(console, 'warn').mockImplementation();
+        jest.spyOn(console, 'log').mockImplementation();
         commandBus = mockCommandBus();
         commandBusExecuteMethod = jest.spyOn(commandBus, 'execute');
-        handler = new SyncAfterDiscrepancyFoundEventHandler(commandBus);
+        handler = new SyncAfterDiscrepancyFoundEventHandler(
+            commandBus,
+            new ScanCoordinatorService(
+                {
+                    discrepancy: {
+                        scan: {
+                            cycleBudgetInMs: 60000,
+                            relationScanConcurrency: 2,
+                            autoSyncConcurrency: 3,
+                            backgroundQueueCapacity: 5000,
+                            distributedLockEnabled: false,
+                        },
+                    },
+                } as never,
+                { tryAcquire: () => Promise.resolve({ release: () => Promise.resolve() }) } as never,
+                new ResourceReportRegistry(),
+            ),
+        );
     });
 
     afterEach(() => {
         jest.clearAllMocks();
+    });
+
+    describe('outcome counting', () => {
+        it('counts failures that the by-entity-ID handler reports instead of throwing', async () => {
+            commandBusExecuteMethod
+                .mockResolvedValueOnce({ synced: true })
+                .mockResolvedValueOnce({ synced: false, failureKind: 'Database' })
+                .mockResolvedValueOnce({ synced: false, failureKind: 'Database' });
+
+            await handler.handle(
+                buildEvent(DiscrepancyEntityType.GroupPolicyMember, {
+                    mismatchedIds: [1],
+                    onlyInExternalIds: [2],
+                    onlyInInternalIds: [3],
+                }),
+            );
+
+            expect(console.warn).toHaveBeenCalledWith(
+                expect.stringContaining('auto-sync group-policy-member: 1 synced, 2 failed (Database x2), 0 skipped'),
+            );
+        });
+
+        it('does not auto-sync an overview of a scan that did not succeed', async () => {
+            const event = buildEvent(DiscrepancyEntityType.User, {
+                mismatchedIds: [],
+                onlyInExternalIds: [],
+                onlyInInternalIds: [1, 2],
+            });
+            event.payload.discrepancyOverview.state = DiscrepancyScanState.Failed;
+
+            await handler.handle(event);
+
+            expect(commandBusExecuteMethod).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('scan budget', () => {
+        it('starts no auto-sync once the budget of the triggering scan has expired', async () => {
+            await ScanContext.runWithBudget({ scanId: 'scan-1', tenantId: 1, budgetInMs: 1 }, async () => {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+
+                await handler.handle(
+                    buildEvent(DiscrepancyEntityType.User, {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [],
+                    }),
+                );
+            });
+
+            expect(commandBusExecuteMethod).not.toHaveBeenCalled();
+        });
+
+        it('syncs normally within the budget', async () => {
+            await ScanContext.runWithBudget({ scanId: 'scan-2', tenantId: 1, budgetInMs: 60000 }, () =>
+                handler.handle(
+                    buildEvent(DiscrepancyEntityType.User, {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [],
+                    }),
+                ),
+            );
+
+            expect(commandBusExecuteMethod).toHaveBeenCalledTimes(2);
+        });
     });
 
     describe('AUTO_SYNC_ENTITY_TYPES (currently every known entity type)', () => {
@@ -111,7 +198,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
             );
 
             expect(console.warn).toHaveBeenCalledWith(
-                expect.stringContaining('1/3 auto-sync operations failed for jumpoint'),
+                expect.stringContaining('auto-sync jumpoint: 2 synced, 1 failed'),
             );
             expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Will retry on next scan'));
         });
@@ -127,7 +214,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 }),
             );
 
-            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('2/2 auto-sync operations failed'));
+            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('0 synced, 2 failed'));
         });
 
         it('should not warn when all sync operations succeed', async () => {
@@ -288,9 +375,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
             );
 
             expect(commandBusExecuteMethod).toHaveBeenCalledTimes(3);
-            expect(console.warn).toHaveBeenCalledWith(
-                expect.stringContaining('1/3 ExternalToInternal sync operations failed'),
-            );
+            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('2 synced, 1 failed'));
         });
 
         it('should not warn when all onlyInExternalIds sync successfully', async () => {

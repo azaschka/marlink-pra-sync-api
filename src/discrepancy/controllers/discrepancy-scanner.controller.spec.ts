@@ -1,57 +1,63 @@
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { DiscrepancyDtoOutput, DiscrepancyOverviewDtoOutput } from '../dtos/outputs';
-import { DiscrepancyEntityType } from '../enums';
+import { BadRequestException, ConflictException } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
+import { DiscrepancyDtoOutput } from '../dtos/outputs';
+import { DiscrepancyEntityType, DiscrepancyScanState } from '../enums';
+import { DiscrepancyOverview } from '../models';
+import { DiscrepancyScanCycleService } from '../services/discrepancy-scan-cycle.service';
 import { DiscrepancyScannerController } from './discrepancy-scanner.controller';
 
-// Mock RetryUtility
-// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-jest.mock('../../shared/utilities', () => ({
-    ...jest.requireActual('../../shared/utilities'),
-    RetryUtility: {
-        delay: jest.fn().mockResolvedValue(undefined),
-        executeWithRetry: jest.fn((operation: () => Promise<unknown>) => operation()),
-    },
-}));
-
 describe('DiscrepancyScannerController', () => {
-    let commandBus: CommandBus;
     let queryBus: QueryBus;
+    let cycleService: { runCycle: jest.Mock; scanType: jest.Mock };
     let controller: DiscrepancyScannerController;
 
+    const overview: DiscrepancyOverview = {
+        entityType: DiscrepancyEntityType.User,
+        totalBtData: 10,
+        totalDbData: 10,
+        identicalIds: [1, 2, 3],
+        onlyInExternalIds: [],
+        onlyInInternalIds: [],
+        mismatchedIds: [],
+        state: DiscrepancyScanState.Succeeded,
+    };
+
     beforeEach(() => {
-        // Mock console.log and console.error to prevent cluttering the test output
-        jest.spyOn(console, 'log').mockImplementation(() => {});
         jest.spyOn(console, 'error').mockImplementation(() => {});
-        jest.clearAllMocks();
-        commandBus = mockCommandBus();
         queryBus = mockQueryBus();
-        controller = new DiscrepancyScannerController(queryBus, commandBus);
+        cycleService = { runCycle: jest.fn(), scanType: jest.fn() };
+        controller = new DiscrepancyScannerController(queryBus, cycleService as unknown as DiscrepancyScanCycleService);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
     describe('scanAllDiscrepancies', () => {
-        it('should attempt to scan discrepancies for all entity types', async () => {
-            const mockOverview: DiscrepancyOverviewDtoOutput = {
-                entityType: DiscrepancyEntityType.User,
-                totalBtData: 10,
-                totalDbData: 10,
-                identicalIds: [1, 2, 3],
-                onlyInExternalIds: [],
-                onlyInInternalIds: [],
-                mismatchedIds: [],
-            };
+        it('should run a manual cycle and return its overviews', async () => {
+            cycleService.runCycle.mockResolvedValue({ status: 'completed', scanId: 'abc', overviews: [overview] });
 
-            const scanDiscrepanciesSpy = jest.spyOn(controller, 'scanDiscrepancies').mockResolvedValue(mockOverview);
+            await expect(controller.scanAllDiscrepancies('transaction-id-1', 123)).resolves.toEqual([overview]);
+            expect(cycleService.runCycle).toHaveBeenCalledWith('transaction-id-1', 123, 'manual');
+        });
 
-            await controller.scanAllDiscrepancies('transaction-id-1', 123);
+        it('should answer 409 with the running scan ID while a cycle is active for the tenant', async () => {
+            cycleService.runCycle.mockResolvedValue({
+                status: 'skipped',
+                reason: 'cycle 1a2b3c4d (cron) active since 2026-10-01T10:00:00.000Z',
+                activeScanId: '1a2b3c4d',
+            });
 
-            expect(scanDiscrepanciesSpy).toHaveBeenCalledTimes(14);
+            const error = await controller.scanAllDiscrepancies('transaction-id-1', 123).catch((e: unknown) => e);
+
+            expect(error).toBeInstanceOf(ConflictException);
+            expect((error as ConflictException).getResponse()).toEqual(expect.objectContaining({ scanId: '1a2b3c4d' }));
         });
     });
 
     describe('scanDiscrepancies', () => {
-        it('should execute the ScanDiscrepancyCommand with correct parameters', async () => {
-            const expectedOverview = {} as DiscrepancyOverviewDtoOutput;
-            const commandBusExecuteSpy = jest.spyOn(commandBus, 'execute').mockResolvedValue(expectedOverview);
+        it('should scan through the cycle service, which joins a scan already in flight', async () => {
+            cycleService.scanType.mockResolvedValue(overview);
 
             const result = await controller.scanDiscrepancies(
                 'transaction-id-2',
@@ -59,14 +65,19 @@ describe('DiscrepancyScannerController', () => {
                 DiscrepancyEntityType.GroupPolicy,
             );
 
-            expect(result).toBe(expectedOverview);
-            expect(commandBusExecuteSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    transactionId: 'transaction-id-2',
-                    tenantId: 456,
-                    entityType: DiscrepancyEntityType.GroupPolicy,
-                }),
+            expect(result).toBe(overview);
+            expect(cycleService.scanType).toHaveBeenCalledWith(
+                'transaction-id-2',
+                456,
+                DiscrepancyEntityType.GroupPolicy,
             );
+        });
+
+        it('should reject an unknown entity type', async () => {
+            await expect(
+                controller.scanDiscrepancies('transaction-id-2', 456, 'unknown' as DiscrepancyEntityType),
+            ).rejects.toBeInstanceOf(BadRequestException);
+            expect(cycleService.scanType).not.toHaveBeenCalled();
         });
     });
 
@@ -96,14 +107,6 @@ describe('DiscrepancyScannerController', () => {
         });
     });
 });
-
-function mockCommandBus() {
-    const commandBus = {} as CommandBus;
-
-    commandBus.execute = jest.fn();
-
-    return commandBus;
-}
 
 function mockQueryBus() {
     const queryBus = {} as QueryBus;

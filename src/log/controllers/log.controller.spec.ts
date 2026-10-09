@@ -80,6 +80,10 @@ describe('LogController', () => {
         controller = new LogController(commandBus, queryBus, eventBus, logService);
     });
 
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
     it('should instantiate without errors', () => {
         expect(controller).toBeDefined();
     });
