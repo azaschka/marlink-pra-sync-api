@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CommandBus, EventBus, QueryBus } from '@nestjs/cqrs';
 import { ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { AppConfigService } from '../../app-config/services/app-config.service';
+
 import { DateUtility } from '../../shared/utilities';
 import { DeleteLogsDtoInput, RetrieveLogsDtoInput } from '../dtos/inputs';
 import { LogsRetrievedDtoOutput } from '../dtos/outputs';
@@ -12,30 +12,35 @@ import { LogService } from '../services/log.service';
 @UsePipes(new ValidationPipe({ transform: true }))
 export class LogController {
     constructor(
-        private readonly appConfigService: AppConfigService,
+        // appConfigService kept here for re-enabling verbose logging — see comments below
+        // private readonly appConfigService: AppConfigService,
         private readonly commandBus: CommandBus,
         private readonly queryBus: QueryBus,
         private readonly eventBus: EventBus,
         private readonly logService: LogService,
     ) {
         this.commandBus.subscribe((command) => {
-            if (!this.appConfigService.isProduction) {
-                console.log(`\x1b[34mCommand received:\n${JSON.stringify(command, null, 2)}\x1b[0m`);
-            }
+            // Verbose command logging disabled — uncomment locally if needed for deep debugging
+            // if (!this.appConfigService.isProduction) {
+            //     console.log(`\x1b[34mCommand received:\n${JSON.stringify(command, null, 2)}\x1b[0m`);
+            // }
 
             void this.logService.logCommand(command);
         });
 
-        this.queryBus.subscribe((query) => {
-            if (!this.appConfigService.isProduction) {
-                console.log(`\x1b[35mQuery received:\n${JSON.stringify(query, null, 2)}\x1b[0m`);
-            }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        this.queryBus.subscribe((_query) => {
+            // Verbose query logging disabled — uncomment locally if needed for deep debugging
+            // if (!this.appConfigService.isProduction) {
+            //     console.log(`\x1b[35mQuery received:\n${JSON.stringify(query, null, 2)}\x1b[0m`);
+            // }
         });
 
         this.eventBus.subscribe((event) => {
-            if (!this.appConfigService.isProduction) {
-                console.log(`\x1b[32mEvent received:\n${JSON.stringify(event, null, 2)}\x1b[0m`);
-            }
+            // Verbose event logging disabled — uncomment locally if needed for deep debugging
+            // if (!this.appConfigService.isProduction) {
+            //     console.log(`\x1b[32mEvent received:\n${JSON.stringify(event, null, 2)}\x1b[0m`);
+            // }
 
             void this.logService.logEvent(event);
         });
@@ -54,10 +59,7 @@ export class LogController {
 
         const totalCount = await this.logService.countLogs(dto.creationDateFrom, dto.creationDateTo);
 
-        return {
-            logs: logs,
-            totalCount: totalCount,
-        };
+        return { logs, totalCount };
     }
 
     @Delete()
