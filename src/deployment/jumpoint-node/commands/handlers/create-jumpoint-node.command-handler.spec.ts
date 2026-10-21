@@ -2,7 +2,7 @@ import { CommandBus, EventBus } from '@nestjs/cqrs';
 import { CreateNodeCommand } from '../../../../service-manager-api/nodes/commands';
 import { BusinessUnit, BusinessUnitFullName, HypervisorType } from '../../../../service-manager-api/nodes/enums';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
-import { JumpointNodeBusinessUnit } from '../../enums';
+import { JumpointNodeBusinessUnit, JumpointNodeHypervisorType } from '../../enums';
 import { JumpointNodeCreatedEvent, JumpointNodeCreationFailedEvent } from '../../events';
 import { JumpointNode } from '../../models';
 import { JumpointNodeEntity } from '../../repositories/entities';
@@ -33,10 +33,125 @@ describe('CreateJumpointNodeCommandHandler', () => {
             handler.execute(new CreateJumpointNodeCommand('transaction-1', 'site-1', JumpointNodeBusinessUnit.EG)),
         ).rejects.toThrow(expectedError);
 
-        // Dummy fallbacks are injected by the handler until the SM API makes these fields optional.
         expect(commandBusExecute).toHaveBeenCalledWith(
-            new CreateNodeCommand('transaction-1', 'site-1', BusinessUnit.EG, '1', HypervisorType.OneEdge, 1),
+            new CreateNodeCommand('transaction-1', 'site-1', BusinessUnit.EG, undefined, undefined, undefined),
         );
+    });
+
+    describe('optional hypervisor and VM fields (MARLINKPRA-30)', () => {
+        it('should not inject placeholder values when the caller omits them', async () => {
+            const commandBusExecute = jest.spyOn(commandBus, 'execute');
+
+            await handler.execute(
+                new CreateJumpointNodeCommand('transaction-1', 'site-1', JumpointNodeBusinessUnit.MT),
+            );
+
+            const sentCommand = (commandBusExecute.mock.calls[0] as unknown[])[0] as CreateNodeCommand;
+            expect(sentCommand).toBeInstanceOf(CreateNodeCommand);
+            expect(sentCommand.siteId).toBe('site-1');
+            expect(sentCommand.businessUnit).toBe(BusinessUnit.MT);
+            expect(sentCommand.hypervisorId).toBeUndefined();
+            expect(sentCommand.hypervisorType).toBeUndefined();
+            expect(sentCommand.vmId).toBeUndefined();
+        });
+
+        it.each([
+            {
+                hypervisorType: JumpointNodeHypervisorType.OneEdge,
+                expectedSMHypervisorType: HypervisorType.OneEdge,
+            },
+            {
+                hypervisorType: JumpointNodeHypervisorType.XCPower,
+                expectedSMHypervisorType: HypervisorType.XCPower,
+            },
+        ])(
+            'should pass provided values through and map hypervisor type $hypervisorType',
+            async ({ hypervisorType, expectedSMHypervisorType }) => {
+                const commandBusExecute = jest.spyOn(commandBus, 'execute');
+
+                await handler.execute(
+                    new CreateJumpointNodeCommand(
+                        'transaction-1',
+                        'site-1',
+                        JumpointNodeBusinessUnit.OA,
+                        'hypervisor-7',
+                        hypervisorType,
+                        42,
+                    ),
+                );
+
+                expect(commandBusExecute).toHaveBeenCalledWith(
+                    new CreateNodeCommand(
+                        'transaction-1',
+                        'site-1',
+                        BusinessUnit.OA,
+                        'hypervisor-7',
+                        expectedSMHypervisorType,
+                        42,
+                    ),
+                );
+            },
+        );
+
+        it('should persist the hypervisor and VM values returned by the Service Manager', async () => {
+            jest.spyOn(commandBus, 'execute').mockResolvedValue({
+                certname: 'cert-1',
+                businessUnit: BusinessUnitFullName.EEG,
+                puppetServerDomain: 'puppet-server-domain-1',
+                status: 'CREATED',
+                siteId: 'site-1',
+                hypervisorId: 'hypervisor-7',
+                hypervisorType: HypervisorType.XCPower,
+                vmId: 42,
+            });
+            const jumpointNodeRepositoryServiceCreateMethod = jest.spyOn(jumpointNodeRepositoryService, 'create');
+
+            await handler.execute(
+                new CreateJumpointNodeCommand(
+                    'transaction-1',
+                    'site-1',
+                    JumpointNodeBusinessUnit.EG,
+                    'hypervisor-7',
+                    JumpointNodeHypervisorType.XCPower,
+                    42,
+                ),
+            );
+
+            expect(jumpointNodeRepositoryServiceCreateMethod).toHaveBeenCalledWith(
+                JumpointNodeEntity.createWithoutId(
+                    'cert-1',
+                    JumpointNodeBusinessUnit.EG,
+                    'site-1',
+                    'CREATED',
+                    'puppet-server-domain-1',
+                    'hypervisor-7',
+                    JumpointNodeHypervisorType.XCPower,
+                    undefined,
+                    42,
+                    undefined,
+                    undefined,
+                    undefined,
+                ),
+            );
+        });
+
+        it('should reject an unknown hypervisor type before calling the Service Manager', async () => {
+            const commandBusExecute = jest.spyOn(commandBus, 'execute');
+
+            await expect(
+                handler.execute(
+                    new CreateJumpointNodeCommand(
+                        'transaction-1',
+                        'site-1',
+                        JumpointNodeBusinessUnit.EG,
+                        undefined,
+                        'unknown' as JumpointNodeHypervisorType,
+                    ),
+                ),
+            ).rejects.toThrow('Unknown JumpointNodeHypervisorType: unknown');
+
+            expect(commandBusExecute).not.toHaveBeenCalled();
+        });
     });
 
     it('should publish an error event and throw an error if the repository fails', async () => {

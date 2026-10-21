@@ -1,7 +1,6 @@
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CreateNodeCommand } from '../../../../service-manager-api/nodes/commands';
 import { NodeCreatedDtoOutput } from '../../../../service-manager-api/nodes/dtos/outputs';
-import { HypervisorType as SMHypervisorType } from '../../../../service-manager-api/nodes/enums';
 import { ErrorProcessorUtility } from '../../../../shared/utilities';
 import { JumpointNodeCreatedEvent, JumpointNodeCreationFailedEvent } from '../../events';
 import {
@@ -24,17 +23,17 @@ export class CreateJumpointNodeCommandHandler implements ICommandHandler<CreateJ
     ) {}
 
     public async execute(command: CreateJumpointNodeCommand): Promise<JumpointNode> {
-        // TODO: Remove these dummy fallbacks once the Service Manager API marks
-        //       hypervisor_id, hypervisor_type and vm_id as truly optional.
-        //       Until then the SM API returns 422 if they are absent.
+        // hypervisor_id, hypervisor_type and vm_id are optional in the Service Manager (VMM-172) and
+        // not used for PRA. They are passed through only when the caller sends them; absent values
+        // are omitted from the request body. Never inject placeholder values here (MARLINKPRA-30).
         const createdNode = await this.commandBus.execute<CreateNodeCommand, NodeCreatedDtoOutput>(
             new CreateNodeCommand(
                 command.transactionId,
                 command.siteKey,
                 mapToSMBusinessUnit(command.businessUnit),
-                command.hypervisorId ?? '1',
-                command.hypervisorType ? mapToSMHypervisorType(command.hypervisorType) : SMHypervisorType.OneEdge,
-                command.vmId ?? 1,
+                command.hypervisorId,
+                command.hypervisorType ? mapToSMHypervisorType(command.hypervisorType) : undefined,
+                command.vmId,
             ),
         );
 

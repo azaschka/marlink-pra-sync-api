@@ -1,8 +1,8 @@
 # pra-sync-api: instructions for AI agents
 
-Integration service of the Marlink PRA Platform (NestJS 11, TypeScript 5, CQRS, TypeORM, MariaDB). The only component that calls BeyondTrust. Keeps a per-tenant mirror of BeyondTrust objects and reconciles it through the discrepancy engine. Called by pra-api only, never by the console.
+Integration service of the Marlink PRA Platform (NestJS 11, TypeScript 5, CQRS, TypeORM, MariaDB). The only component that calls BeyondTrust, and the only one that calls the Marlink Service Manager (jumpoint node deployment, `src/deployment/`, `src/service-manager-api/`). Keeps a per-tenant mirror of BeyondTrust objects and reconciles it through the discrepancy engine. Called by pra-api only, never by the console.
 
-Last reviewed: 2026-10-01
+Last reviewed: 2026-10-21
 
 ## Read first
 
@@ -29,6 +29,7 @@ Last reviewed: 2026-10-01
 - Automatic discrepancy sync runs External to Internal only (BeyondTrust wins, mirror is updated). Writes to BeyondTrust happen only through explicit commands or a manual Internal to External sync.
 - Local versus non-local users: `PATCH /user/{id}/group-policy-changes` is local-only in BeyondTrust; non-local users go through the group policy member endpoints. Classification uses `USER_LOCAL_SECURITY_PROVIDER_IDS` (default `1`), mirrored in pra-api.
 - Mappers stay tolerant of missing fields; BeyondTrust versions differ across customer environments.
+- Service Manager (jumpoint node deployment): `hypervisor_id`, `hypervisor_type` and `vm_id` are optional (VMM-172) and not used for PRA. Pass them through only when the caller sends them, never inject placeholder values (MARLINKPRA-30). The `deployment_jumpoint_nodes` table is global, not per tenant. Its POST calls are retried on 401, 408, 429, 502, 503 and 504 although node creation is not idempotent. Details: `../docs/knowledge/domains/jumpoint-node-deployment.md`.
 
 ## Documentation duty
 
