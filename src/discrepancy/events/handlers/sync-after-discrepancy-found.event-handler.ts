@@ -1,11 +1,22 @@
 import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand, SyncDiscrepancyByEntityIdResult } from '../../commands';
-import { DiscrepancyEntityType, DiscrepancyScanState, DiscrepancySyncType } from '../../enums';
+import {
+    DiscrepancyEntityType,
+    DiscrepancyScanState,
+    DiscrepancySyncType,
+    isRelationDiscrepancyEntityType,
+} from '../../enums';
 import { TASK_DROPPED } from '../../services/bounded-task-limiter';
 import { DiscrepancyScanOutcome } from '../../services/discrepancy-scan-outcome';
 import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
+
+/** Identifies one discrepancy record: the entity id, or for a relation type the parent and child id. */
+interface AutoSyncTarget {
+    readonly entityId: number;
+    readonly foreignEntityId?: number;
+}
 
 // Note: Not saga because we want to limit concurrency of db operations.
 @EventsHandler(DiscrepancyScannedEvent)
@@ -56,16 +67,17 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
         }
 
         if (SyncAfterDiscrepancyFoundEventHandler.AUTO_SYNC_ENTITY_TYPES.includes(entityType)) {
-            await this.syncExternalToInternal(event, [
-                ...new Set([...mismatchedIds, ...onlyInExternalIds, ...onlyInInternalIds]),
-            ]);
+            await this.syncExternalToInternal(
+                event,
+                this.toTargets(event, [...new Set([...mismatchedIds, ...onlyInExternalIds, ...onlyInInternalIds])]),
+            );
 
             return;
         }
 
         // For all other entity types: sync onlyInExternalIds ExternalToInternal (create missing records in DB).
         // Use the same fault-tolerant pattern so one failed entity does not block remaining BT-only records.
-        await this.syncExternalToInternal(event, [...new Set(onlyInExternalIds)]);
+        await this.syncExternalToInternal(event, this.toTargets(event, [...new Set(onlyInExternalIds)]));
 
         // For all other entity types: sync onlyInInternalIds InternalToExternal (push missing records to BT)
         // for (const entityId of onlyInInternalIds) {
@@ -82,18 +94,45 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
     }
 
     /**
+     * The ids of a main overview are entity ids. The ids of a relation overview are child ids of `parentId`, and
+     * the record is found only by parent and child (MARLINKPRA-80). A relation overview without a parent id is not
+     * synced: the record cannot be identified, and a lookup by child id alone would hit unrelated records.
+     */
+    private toTargets(event: DiscrepancyScannedEvent, ids: number[]): AutoSyncTarget[] {
+        const { entityType, parentId } = event.payload.discrepancyOverview;
+
+        if (!isRelationDiscrepancyEntityType(entityType)) {
+            return ids.map((entityId) => ({ entityId }));
+        }
+
+        if (ids.length === 0) {
+            return [];
+        }
+
+        if (parentId === undefined || parentId === null) {
+            console.warn(
+                `⚠️ ${DiscrepancyScanOutcome.logPrefix(event.payload.tenantId)} auto-sync ${entityType}: ${ids.length} not synced, the overview has no parent id`,
+            );
+
+            return [];
+        }
+
+        return ids.map((childId) => ({ entityId: parentId, foreignEntityId: childId }));
+    }
+
+    /**
      * Syncs the entities with bounded concurrency and logs one summary line per event. Auto-sync triggered by a
      * scan belongs to that scan: once its budget expired, queued syncs are skipped (they are redone after the
      * next complete scan).
      */
-    private async syncExternalToInternal(event: DiscrepancyScannedEvent, entityIds: number[]): Promise<void> {
-        if (entityIds.length === 0) {
+    private async syncExternalToInternal(event: DiscrepancyScannedEvent, targets: AutoSyncTarget[]): Promise<void> {
+        if (targets.length === 0) {
             return;
         }
 
         const { entityType } = event.payload.discrepancyOverview;
         const results = await Promise.allSettled(
-            entityIds.map((entityId) =>
+            targets.map(({ entityId, foreignEntityId }) =>
                 this.scanCoordinatorService.runAutoSync(
                     async (): Promise<SyncDiscrepancyByEntityIdResult | 'skipped'> => {
                         if (ScanContext.isAborted()) {
@@ -110,6 +149,7 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
                                 entityId,
                                 entityType,
                                 DiscrepancySyncType.ExternalToInternal,
+                                foreignEntityId,
                             ),
                         );
                     },
@@ -138,7 +178,7 @@ export class SyncAfterDiscrepancyFoundEventHandler implements IEventHandler<Disc
             }
         }
 
-        const failed = entityIds.length - synced - skipped;
+        const failed = targets.length - synced - skipped;
         const kinds = [...failureKinds.entries()].map(([kind, n]) => `${kind} x${n}`).join(', ');
         const line = `${DiscrepancyScanOutcome.logPrefix(event.payload.tenantId)} auto-sync ${entityType}: ${synced} synced, ${failed} failed${
             kinds ? ` (${kinds})` : ''

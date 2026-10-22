@@ -4,7 +4,7 @@ import { NotFoundException } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { QueryFailedError } from 'typeorm';
 import { RetryUtility } from '../../../shared/utilities';
-import { DiscrepancyEntityType, DiscrepancySyncType } from '../../enums';
+import { DiscrepancySyncType, isRelationDiscrepancyEntityType } from '../../enums';
 import { DiscrepancyResolvedEvent } from '../../events';
 import { Discrepancy } from '../../models';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
@@ -129,17 +129,7 @@ export class SyncDiscrepancyCommandHandler implements ICommandHandler<SyncDiscre
     }
 
     private getDiscrepancyStrategy(discrepancy: Discrepancy) {
-        if (
-            [
-                DiscrepancyEntityType.GroupPolicyJumpGroup,
-                DiscrepancyEntityType.GroupPolicyJumpoint,
-                DiscrepancyEntityType.GroupPolicyTeam,
-                DiscrepancyEntityType.GroupPolicyMember,
-                DiscrepancyEntityType.JumpointNode,
-                DiscrepancyEntityType.TeamUser,
-                DiscrepancyEntityType.UserGroupPolicy,
-            ].includes(discrepancy.entityType)
-        ) {
+        if (isRelationDiscrepancyEntityType(discrepancy.entityType)) {
             return this.discrepancyStrategyProviderService.getForRelation(
                 discrepancy.entityId,
                 discrepancy.entityType,
