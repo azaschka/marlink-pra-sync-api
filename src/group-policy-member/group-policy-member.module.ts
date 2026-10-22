@@ -4,6 +4,7 @@ import { AppConfigModule } from '../app-config/app-config.module';
 import { BeyondtrustInstance } from '../beyondtrust-instance/models';
 import { RetrieveBeyondtrustInstancesQuery } from '../beyondtrust-instance/queries';
 import { ErrorProcessorUtility, PaginationUtility, UuidUtility } from '../shared/utilities';
+import { UserGroupPolicyModule } from '../user-group-policy/user-group-policy.module';
 import { CommandHandlers } from './commands/handlers';
 import { GroupPolicyMemberController } from './controllers/group-policy-member.controller';
 import { EventHandlers } from './events/handlers';
@@ -12,7 +13,8 @@ import { GroupPolicyMemberRepositoryService } from './repositories/services/grou
 import { GroupPolicyMemberService } from './services/group-policy-member.service';
 
 @Module({
-    imports: [AppConfigModule],
+    // UserGroupPolicyModule: member writes keep the user's group policy mirror current (MARLINKPRA-80).
+    imports: [AppConfigModule, UserGroupPolicyModule],
     controllers: [GroupPolicyMemberController],
     providers: [
         ...CommandHandlers,

@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { CommandBus, CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { ErrorProcessorUtility } from '../../../shared/utilities';
-import { DiscrepancyEntityType } from '../../enums';
+import { isRelationDiscrepancyEntityType } from '../../enums';
 import { SyncDiscrepancyByEntityIdFailedEvent } from '../../events';
 import { DiscrepancyRepositoryService } from '../../repositories/services/discrepancy-repository.service';
 import { DiscrepancyScanOutcome } from '../../services/discrepancy-scan-outcome';
@@ -21,7 +21,7 @@ export class SyncDiscrepancyByEntityIdCommandHandler implements ICommandHandler<
 
     public async execute(command: SyncDiscrepancyByEntityIdCommand): Promise<SyncDiscrepancyByEntityIdResult> {
         try {
-            const discrepancy = await this.getDiscrepancy(command.tenantId, command.entityType, command.entityId);
+            const discrepancy = await this.getDiscrepancy(command);
 
             await this.commandBus.execute(
                 new SyncDiscrepancyCommand(command.transactionId, command.tenantId, discrepancy.id, command.syncType),
@@ -41,15 +41,46 @@ export class SyncDiscrepancyByEntityIdCommandHandler implements ICommandHandler<
         }
     }
 
-    private async getDiscrepancy(tenantId: number, entityType: DiscrepancyEntityType, entityId: number) {
-        const discrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+    /**
+     * A relation record is identified by parent (`entityId`) and child (`foreignEntityId`). Looking it up by the
+     * parent alone would return any child of that parent, so a missing child id is an error, never a fallback.
+     */
+    private async getDiscrepancy(command: SyncDiscrepancyByEntityIdCommand) {
+        const { tenantId, entityType, entityId, foreignEntityId } = command;
+
+        if (!isRelationDiscrepancyEntityType(entityType)) {
+            const discrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeAndEntityId(
+                tenantId,
+                entityType,
+                entityId,
+            );
+
+            if (!discrepancy) {
+                throw new NotFoundException(
+                    `Discrepancy not found for entityType ${entityType} and entityId ${entityId}`,
+                );
+            }
+
+            return discrepancy;
+        }
+
+        if (foreignEntityId === undefined || foreignEntityId === null) {
+            throw new Error(
+                `Discrepancy of relation type ${entityType} (parent ${entityId}) cannot be resolved without a child id`,
+            );
+        }
+
+        const discrepancy = await this.discrepancyRepositoryService.findOneByEntityTypeEntityIdAndForeignEntityId(
             tenantId,
             entityType,
             entityId,
+            foreignEntityId,
         );
 
         if (!discrepancy) {
-            throw new NotFoundException(`Discrepancy not found for entityType ${entityType} and entityId ${entityId}`);
+            throw new NotFoundException(
+                `Discrepancy not found for entityType ${entityType}, parent ${entityId} and child ${foreignEntityId}`,
+            );
         }
 
         return discrepancy;

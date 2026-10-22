@@ -21,6 +21,14 @@ export class GroupPolicyMemberRepositoryService extends BaseTenantRepositoryServ
         await super.createOrUpdate(tenantId, entities, ['groupPolicyId', 'memberId']);
     }
 
+    public async findOneByGroupPolicyIdAndMemberId(
+        tenantId: number,
+        groupPolicyId: number,
+        memberId: number,
+    ): Promise<GroupPolicyMemberEntity | null> {
+        return await super.findOneBy(tenantId, { groupPolicyId: groupPolicyId, memberId: memberId });
+    }
+
     public async deleteByGroupPolicyId(tenantId: number, groupPolicyId: number): Promise<void> {
         await super.deleteBy(tenantId, { groupPolicyId: groupPolicyId });
     }

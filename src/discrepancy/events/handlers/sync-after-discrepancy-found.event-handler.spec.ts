@@ -2,7 +2,12 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ResourceReportRegistry } from '../../../observability/services/resource-report-registry.service';
 import { ScanContext } from '../../../shared/context/scan-context';
 import { SyncDiscrepancyByEntityIdCommand } from '../../commands';
-import { DiscrepancyEntityType, DiscrepancyScanState, DiscrepancySyncType } from '../../enums';
+import {
+    DiscrepancyEntityType,
+    DiscrepancyScanState,
+    DiscrepancySyncType,
+    RELATION_DISCREPANCY_ENTITY_TYPES,
+} from '../../enums';
 import { ScanCoordinatorService } from '../../services/scan-coordinator.service';
 import { DiscrepancyScannedEvent } from '../discrepancy-scanned.event';
 import { SyncAfterDiscrepancyFoundEventHandler } from './sync-after-discrepancy-found.event-handler';
@@ -54,11 +59,15 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 .mockResolvedValueOnce({ synced: false, failureKind: 'Database' });
 
             await handler.handle(
-                buildEvent(DiscrepancyEntityType.GroupPolicyMember, {
-                    mismatchedIds: [1],
-                    onlyInExternalIds: [2],
-                    onlyInInternalIds: [3],
-                }),
+                buildEvent(
+                    DiscrepancyEntityType.GroupPolicyMember,
+                    {
+                        mismatchedIds: [1],
+                        onlyInExternalIds: [2],
+                        onlyInInternalIds: [3],
+                    },
+                    { parentId: 40 },
+                ),
             );
 
             expect(console.warn).toHaveBeenCalledWith(
@@ -121,7 +130,7 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
             expect(new Set(autoSyncTypes)).toEqual(new Set(Object.values(DiscrepancyEntityType)));
         });
 
-        it.each(Object.values(DiscrepancyEntityType))(
+        it.each(Object.values(DiscrepancyEntityType).filter((type) => !RELATION_DISCREPANCY_ENTITY_TYPES.has(type)))(
             'should sync mismatched, external-only, and internal-only ids ExternalToInternal for %s',
             async (entityType) => {
                 await handler.handle(
@@ -133,6 +142,32 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                     expect(commandBusExecuteMethod).toHaveBeenCalledWith(
                         expect.objectContaining<Partial<SyncDiscrepancyByEntityIdCommand>>({
                             entityId,
+                            entityType,
+                            syncType: DiscrepancySyncType.ExternalToInternal,
+                            foreignEntityId: undefined,
+                        }),
+                    );
+                }
+            },
+        );
+
+        it.each([...RELATION_DISCREPANCY_ENTITY_TYPES])(
+            'should sync mismatched, external-only, and internal-only children of the parent ExternalToInternal for %s',
+            async (entityType) => {
+                await handler.handle(
+                    buildEvent(
+                        entityType,
+                        { mismatchedIds: [1], onlyInExternalIds: [2], onlyInInternalIds: [3] },
+                        { parentId: 27 },
+                    ),
+                );
+
+                expect(commandBusExecuteMethod).toHaveBeenCalledTimes(3);
+                for (const childId of [1, 2, 3]) {
+                    expect(commandBusExecuteMethod).toHaveBeenCalledWith(
+                        expect.objectContaining<Partial<SyncDiscrepancyByEntityIdCommand>>({
+                            entityId: 27,
+                            foreignEntityId: childId,
                             entityType,
                             syncType: DiscrepancySyncType.ExternalToInternal,
                         }),
@@ -254,6 +289,74 @@ describe('SyncAfterDiscrepancyFoundEventHandler', () => {
                 expect.objectContaining<Partial<SyncDiscrepancyByEntityIdCommand>>({
                     transactionId: 'tx-parallel-123',
                     tenantId: 42,
+                }),
+            );
+        });
+    });
+
+    describe('relation entity types (MARLINKPRA-80)', () => {
+        it('addresses the record by parent and child, never by the child id alone', async () => {
+            await handler.handle(
+                buildEvent(
+                    DiscrepancyEntityType.UserGroupPolicy,
+                    { mismatchedIds: [], onlyInExternalIds: [3], onlyInInternalIds: [5] },
+                    { parentId: 27 },
+                ),
+            );
+
+            const commands = commandBusExecuteMethod.mock.calls.map(
+                ([command]: [SyncDiscrepancyByEntityIdCommand]) => command,
+            );
+            expect(commands.map((command) => [command.entityId, command.foreignEntityId])).toEqual([
+                [27, 3],
+                [27, 5],
+            ]);
+        });
+
+        it('does not sync a relation overview without a parent id and warns once', async () => {
+            await handler.handle(
+                buildEvent(DiscrepancyEntityType.GroupPolicyMember, {
+                    mismatchedIds: [1],
+                    onlyInExternalIds: [2],
+                    onlyInInternalIds: [],
+                }),
+            );
+
+            expect(commandBusExecuteMethod).not.toHaveBeenCalled();
+            expect(console.warn).toHaveBeenCalledTimes(1);
+            expect(console.warn).toHaveBeenCalledWith(
+                expect.stringContaining('auto-sync group-policy-member: 2 not synced, the overview has no parent id'),
+            );
+        });
+
+        it('does not warn about a missing parent id when a relation overview has no discrepancies', async () => {
+            await handler.handle(
+                buildEvent(DiscrepancyEntityType.TeamUser, {
+                    mismatchedIds: [],
+                    onlyInExternalIds: [],
+                    onlyInInternalIds: [],
+                }),
+            );
+
+            expect(commandBusExecuteMethod).not.toHaveBeenCalled();
+            expect(console.warn).not.toHaveBeenCalled();
+        });
+
+        it('keeps the entity id of a main type and sends no child id, even when a parent id is present', async () => {
+            await handler.handle(
+                buildEvent(
+                    DiscrepancyEntityType.User,
+                    { mismatchedIds: [8], onlyInExternalIds: [], onlyInInternalIds: [] },
+                    { parentId: 99 },
+                ),
+            );
+
+            expect(commandBusExecuteMethod).toHaveBeenCalledTimes(1);
+            expect(commandBusExecuteMethod).toHaveBeenCalledWith(
+                expect.objectContaining<Partial<SyncDiscrepancyByEntityIdCommand>>({
+                    entityId: 8,
+                    foreignEntityId: undefined,
+                    entityType: DiscrepancyEntityType.User,
                 }),
             );
         });
@@ -418,12 +521,13 @@ function mockCommandBus(): CommandBus {
 function buildEvent(
     entityType: DiscrepancyEntityType,
     ids: { mismatchedIds: number[]; onlyInExternalIds: number[]; onlyInInternalIds: number[] },
-    options: { transactionId?: string; tenantId?: number } = {},
+    options: { transactionId?: string; tenantId?: number; parentId?: number } = {},
 ): DiscrepancyScannedEvent {
     return new DiscrepancyScannedEvent(options.transactionId ?? 'transaction-1', {
         tenantId: options.tenantId ?? 1,
         discrepancyOverview: {
             entityType,
+            parentId: options.parentId,
             totalBtData: 0,
             totalDbData: 0,
             identicalIds: [],

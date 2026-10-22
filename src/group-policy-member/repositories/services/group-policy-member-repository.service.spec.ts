@@ -78,6 +78,20 @@ describe('GroupPolicyMemberRepositoryService', () => {
         });
     });
 
+    describe('findOneByGroupPolicyIdAndMemberId', () => {
+        it('should call findOneBy with the group policy id and the member id', async () => {
+            const member = { groupPolicyId: 1, memberId: 2, userId: 3 } as GroupPolicyMemberEntity;
+            const baseTenantRepositoryFindOneByMethod = jest
+                .spyOn(BaseTenantRepositoryService.prototype, 'findOneBy')
+                .mockResolvedValue(member);
+
+            const result = await service.findOneByGroupPolicyIdAndMemberId(123, 1, 2);
+
+            expect(baseTenantRepositoryFindOneByMethod).toHaveBeenCalledWith(123, { groupPolicyId: 1, memberId: 2 });
+            expect(result).toBe(member);
+        });
+    });
+
     describe('deleteByGroupPolicyIdAndMemberId', () => {
         it('should call deleteBy with the correct parameters', async () => {
             const groupPolicyId = 1;

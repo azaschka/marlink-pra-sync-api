@@ -37,7 +37,7 @@ src/
 
 - **CQRS**: Commands (writes), Queries (reads), Events, and Sagas per domain module
 - **Multi-tenancy**: All API requests require the `X-Tenant-Id` header (integer)
-- **Discrepancy Engine**: Compares BeyondTrust API vs. local DB and resolves differences (`onlyInBT`, `onlyInDB`, `mismatched`)
+- **Discrepancy Engine**: Compares BeyondTrust API vs. local DB and resolves differences (`onlyInBT`, `onlyInDB`, `mismatched`). After every complete scan, auto-sync resolves them External to Internal (BeyondTrust wins). Relation discrepancies (for example user to group policy) are stored and resolved by parent id (`entity_id`) and child id (`foreign_entity_id`) together.
 - **Pagination**: Handles BeyondTrust API quirks (duplicate-page detection)
 - **Retry Logic**: BeyondTrust calls are retried only in `HttpClientService` (`BtRetryPolicy`): reads on transient failures with backoff, writes only when BeyondTrust provably did not receive them. Local database operations retry once on transient errors.
 - **Scan coordination**: at most one scan cycle per tenant (across replicas via a MariaDB named lock), one main scan per tenant and entity type, one relation scan per tenant and relation type; background work runs under global limits within the cycle budget.
