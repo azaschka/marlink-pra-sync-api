@@ -9,9 +9,11 @@ A NestJS-based synchronization API that maintains consistency between a **Beyond
 ```
 src/
 ├── app-config/                 # Centralized configuration (env vars, defaults)
+├── beyondtrust-instance/       # BeyondTrust instances (the tenants)
 ├── beyondtrust-instance-backup/ # BeyondTrust backups (streamed to disk) and their retention
 ├── beyondtrust-pra-conf-api/   # BeyondTrust HTTP client & API services
 ├── core/                       # Shared decorators, base classes, factories
+├── deployment/                 # Jumpoint node deployment (Marlink Service Manager)
 ├── discrepancy/                # Scan & sync engine (CQRS + event-driven)
 ├── group-policy/               # Group policy domain (CQRS)
 ├── group-policy-jump-group/    # Group policy ↔ jump group relations
@@ -26,6 +28,8 @@ src/
 ├── jumpoint/                   # Jumpoint domain
 ├── log/                        # System log (pra_logs), written through a bounded buffer
 ├── observability/              # Periodic resource report (heap, pool, queues)
+├── service-manager-api/        # Marlink Service Manager client
+├── session-policy/             # Session policy domain
 ├── shared/                     # Utilities, filters, interceptors
 ├── team/                       # Team domain
 ├── team-user/                  # Team ↔ user relations
@@ -36,7 +40,7 @@ src/
 ### Key Patterns
 
 - **CQRS**: Commands (writes), Queries (reads), Events, and Sagas per domain module
-- **Multi-tenancy**: All API requests require the `X-Tenant-Id` header (integer)
+- **Multi-tenancy**: tenant-scoped endpoints require the `X-Tenant-Id` header (integer, the BeyondTrust instance id). Instance, backup, deployment, log, health and scan-job endpoints are global.
 - **Discrepancy Engine**: Compares BeyondTrust API vs. local DB and resolves differences (`onlyInBT`, `onlyInDB`, `mismatched`). After every complete scan, auto-sync resolves them External to Internal (BeyondTrust wins). Relation discrepancies (for example user to group policy) are stored and resolved by parent id (`entity_id`) and child id (`foreign_entity_id`) together.
 - **Pagination**: Handles BeyondTrust API quirks (duplicate-page detection)
 - **Retry Logic**: BeyondTrust calls are retried only in `HttpClientService` (`BtRetryPolicy`): reads on transient failures with backoff, writes only when BeyondTrust provably did not receive them. Local database operations retry once on transient errors.
@@ -46,7 +50,7 @@ src/
 
 ## API Headers
 
-All endpoints require:
+Tenant-scoped endpoints require:
 
 | Header             | Type    | Description                                                       |
 | ------------------ | ------- | ----------------------------------------------------------------- |
@@ -94,3 +98,11 @@ On SIGTERM the Sync API stops the cron jobs, aborts running scans (they end as a
 ### Several replicas
 
 The scan cycle of a tenant and the backup retention run in one replica at a time (MariaDB `GET_LOCK`). `GET_LOCK` is not cluster-wide on Galera; there, run one replica or set `DISCREPANCY_SCAN_DISTRIBUTED_LOCK_ENABLED=false`, which keeps the per-process guards only.
+
+---
+
+## Repository and documentation
+
+- Source: GitHub, private repository `azaschka/marlink-pra-sync-api`. Integration branch `develop`, release branch `main`.
+- Part of the Marlink PRA Platform: called by pra-api only, never by the console. Platform documentation: the `pra-platform` workspace, [docs/knowledge/index.md](../docs/knowledge/index.md) (available when this repository is checked out inside the workspace).
+- Repository documentation: [docs/README.md](docs/README.md). Rules for AI agents and contributors: [AGENTS.md](AGENTS.md).
