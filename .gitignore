@@ -1,10 +1,21 @@
-# compiled output
-/dist
+# Dependencies
 /node_modules
-/build
 
-# TypeScript incremental build cache
+# Build output
+/dist
+/build
 *.tsbuildinfo
+
+# Test output
+/coverage
+/.nyc_output
+
+# Environment files (local overrides stay untracked)
+.env
+.env.*.local
+.env.local
+.local.env
+*.local.env
 
 # Logs
 logs
@@ -12,55 +23,30 @@ logs
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 lerna-debug.log*
 
-# OS
+# Runtime data and diagnostic reports
+pids
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Temporary files
+.temp
+.tmp
+
+# Claude Code: personal settings and notes stay local, .claude/settings.json is shared
+.claude/settings.local.json
+CLAUDE.local.md
+
+# OS files
 .DS_Store
 
-# Tests
-/coverage
-/.nyc_output
-
-# IDEs and editors
+# IDEs and editors (.zed/settings.json is tracked)
 /.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# temp directory
-.temp
-.tmp
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-.github/*
-!.github/instructions/
-!.github/instructions/*.md
-!.github/prompts/
-!.github/prompts/*.md
-!.github/copilot-instructions.md
-!.github/CROSS_REPO_CONTRACT_CHECKLIST.md
